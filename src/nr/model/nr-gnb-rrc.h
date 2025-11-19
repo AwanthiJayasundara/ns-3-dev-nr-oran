@@ -899,7 +899,7 @@ class NrGnbRrc : public Object
      * @brief Configure cell-specific parameters.
      *
      * Configure cell-specific parameters and propagate them to lower layers.
-     * The parameters include bandwidth, EARFCN (E-UTRA Absolute Radio Frequency
+     * The parameters include bandwidth, ARFCN (E-UTRA Absolute Radio Frequency
      * Channel Number), and cell ID.
      *
      * In addition to parameter configuration, this function also performs several
@@ -963,6 +963,12 @@ class NrGnbRrc : public Object
      * @return true if cellId is served by this gNB
      */
     bool HasCellId(uint16_t cellId) const;
+
+    /**
+     * @param bwpId Bandwidth-part ID
+     * @return true if bwpId is served by this gNB
+     */
+    bool HasBwpId(uint16_t bwpId) const;
 
     /**
      * Enqueue an IP data packet on the proper bearer for downlink
@@ -1547,10 +1553,6 @@ class NrGnbRrc : public Object
 
     /// True if ConfigureCell() has been completed.
     bool m_configured;
-    /// Downlink E-UTRA Absolute Radio Frequency Channel Number.
-    uint32_t m_dlEarfcn;
-    /// Uplink E-UTRA Absolute Radio Frequency Channel Number.
-    uint32_t m_ulEarfcn;
     /// Downlink transmission bandwidth configuration in number of Resource Blocks.
     uint16_t m_dlBandwidth;
     /// Uplink transmission bandwidth configuration in number of Resource Blocks.

@@ -52,18 +52,16 @@ class NrNoBackhaulEpcHelper : public NrEpcHelper
     void DoDispose() override;
 
     // inherited from NrEpcHelper
-    void AddGnb(Ptr<Node> gnbNode,
-                Ptr<NetDevice> nrGnbNetDevice,
-                std::vector<uint16_t> cellIds) override;
+    void AddGnb(Ptr<Node> gnbNode, Ptr<NetDevice> nrGnbNetDevice, uint16_t cellId) override;
     void AddUe(Ptr<NetDevice> ueNrDevice, uint64_t imsi) override;
     void AddX2Interface(Ptr<Node> gnbNode1, Ptr<Node> gnbNode2) override;
     void AddS1Interface(Ptr<Node> gnb,
                         Ipv4Address gnbAddress,
                         Ipv4Address sgwAddress,
-                        std::vector<uint16_t> cellIds) override;
+                        uint16_t cellId) override;
     uint8_t ActivateEpsBearer(Ptr<NetDevice> ueNrDevice,
                               uint64_t imsi,
-                              Ptr<NrEpcTft> tft,
+                              Ptr<NrQosRule> rule,
                               NrEpsBearer bearer) override;
     Ptr<Node> GetSgwNode() const override;
     Ptr<Node> GetPgwNode() const override;
@@ -102,11 +100,11 @@ class NrNoBackhaulEpcHelper : public NrEpcHelper
     /**
      * @brief DoActivateEpsBearerForUe: Schedule ActivateEpsBearer on the UE
      * @param ueDevice NR device for the UE
-     * @param tft TFT
+     * @param rule QoS rule
      * @param bearer Bearer
      */
     virtual void DoActivateEpsBearerForUe(const Ptr<NetDevice>& ueDevice,
-                                          const Ptr<NrEpcTft>& tft,
+                                          const Ptr<NrQosRule>& rule,
                                           const NrEpsBearer& bearer) const;
 
   private:

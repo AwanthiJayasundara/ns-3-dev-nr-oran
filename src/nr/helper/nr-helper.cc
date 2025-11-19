@@ -487,8 +487,7 @@ NrHelper::InstallSingleUeDevice(
                         "A bandwidth of " << bwInKhz / 100.0 << " kHz cannot be represented");
         cc->SetUlBandwidth(static_cast<uint16_t>(bwInKhz / 100));
         cc->SetDlBandwidth(static_cast<uint16_t>(bwInKhz / 100));
-        cc->SetDlEarfcn(0); // Used for nothing..
-        cc->SetUlEarfcn(0); // Used for nothing..
+        cc->SetArfcn(NrPhy::FrequencyHzToArfcn(allBwps[bwpId].get()->m_centralFrequency));
 
         auto mac = CreateUeMac();
         cc->SetMac(mac);
@@ -764,10 +763,10 @@ NrHelper::InstallSingleGnbDevice(
 
         cc->SetUlBandwidth(static_cast<uint16_t>(bwInKhz / 100));
         cc->SetDlBandwidth(static_cast<uint16_t>(bwInKhz / 100));
-        cc->SetDlEarfcn(0);              // Argh... handover not working
-        cc->SetUlEarfcn(0);              // Argh... handover not working
-        cc->SetCellId(cellId);           // All CCs have the same cellId
-        cc->SetCsgId(m_cellIdCounter++); // CSG IDs starts matching cellId, then gets incremented
+        cc->SetArfcn(NrPhy::FrequencyHzToArfcn(allBwps[bwpId].get()->m_centralFrequency));
+        cc->SetCellId(cellId); // CellId is set just for easier debugging
+        cc->SetBwpId(bwpId);   // CC BwpId is used to map BWPs to the correct CC PHY/MAC
+        cc->SetCsgId(0);       // Assume single group
 
         auto phy = CreateGnbPhy(
             n,
@@ -917,7 +916,7 @@ NrHelper::InstallSingleGnbDevice(
     if (m_nrEpcHelper != nullptr)
     {
         NS_LOG_INFO("adding this gNB to the EPC");
-        m_nrEpcHelper->AddGnb(n, dev, dev->GetCellIds());
+        m_nrEpcHelper->AddGnb(n, dev, cellId);
         Ptr<NrEpcGnbApplication> gnbApp = n->GetApplication(0)->GetObject<NrEpcGnbApplication>();
         NS_ASSERT_MSG(gnbApp != nullptr, "cannot retrieve NrEpcGnbApplication");
 
@@ -1125,7 +1124,7 @@ NrHelper::AttachToGnb(const Ptr<NetDevice>& ueDevice, const Ptr<NetDevice>& gnbD
     for (uint32_t i = 0; i < gnbNetDev->GetCcMapSize(); ++i)
     {
         gnbNetDev->GetPhy(i)->RegisterUe(ueNetDev->GetImsi(), ueNetDev);
-        ueNetDev->GetPhy(i)->RegisterToGnb(gnbNetDev->GetBwpId(i));
+        ueNetDev->GetPhy(i)->RegisterToGnb(gnbNetDev->GetCellId());
         ueNetDev->GetPhy(i)->SetDlAmc(
             DynamicCast<NrMacSchedulerNs3>(gnbNetDev->GetScheduler(i))->GetDlAmc());
         ueNetDev->GetPhy(i)->SetDlCtrlSyms(gnbNetDev->GetMac(i)->GetDlCtrlSyms());
@@ -1136,7 +1135,7 @@ NrHelper::AttachToGnb(const Ptr<NetDevice>& ueDevice, const Ptr<NetDevice>& gnbD
         ueNetDev->GetPhy(i)->SetNumerology(gnbNetDev->GetPhy(i)->GetNumerology());
         ueNetDev->GetPhy(i)->SetPattern(gnbNetDev->GetPhy(i)->GetPattern());
         Ptr<NrEpcUeNas> ueNas = ueNetDev->GetNas();
-        ueNas->Connect(gnbNetDev->GetBwpId(i), gnbNetDev->GetEarfcn(i));
+        ueNas->Connect(gnbNetDev->GetCellId(), gnbNetDev->GetArfcn(i));
 
         if (IsMimoFeedbackEnabled())
         {
@@ -1160,7 +1159,7 @@ NrHelper::AttachToGnb(const Ptr<NetDevice>& ueDevice, const Ptr<NetDevice>& gnbD
         // activate default EPS bearer
         m_nrEpcHelper->ActivateEpsBearer(ueDevice,
                                          ueNetDev->GetImsi(),
-                                         NrEpcTft::Default(),
+                                         NrQosRule::Default(),
                                          NrEpsBearer(NrEpsBearer::NGBR_VIDEO_TCP_DEFAULT));
     }
 
@@ -1179,26 +1178,28 @@ NrHelper::AttachToGnb(const Ptr<NetDevice>& ueDevice, const Ptr<NetDevice>& gnbD
 uint8_t
 NrHelper::ActivateDedicatedEpsBearer(NetDeviceContainer ueDevices,
                                      NrEpsBearer bearer,
-                                     Ptr<NrEpcTft> tft)
+                                     Ptr<NrQosRule> rule)
 {
     NS_LOG_FUNCTION(this);
     for (auto i = ueDevices.Begin(); i != ueDevices.End(); ++i)
     {
-        uint8_t bearerId = ActivateDedicatedEpsBearer(*i, bearer, tft);
+        uint8_t bearerId = ActivateDedicatedEpsBearer(*i, bearer, rule);
         return bearerId;
     }
     return 0;
 }
 
 uint8_t
-NrHelper::ActivateDedicatedEpsBearer(Ptr<NetDevice> ueDevice, NrEpsBearer bearer, Ptr<NrEpcTft> tft)
+NrHelper::ActivateDedicatedEpsBearer(Ptr<NetDevice> ueDevice,
+                                     NrEpsBearer bearer,
+                                     Ptr<NrQosRule> rule)
 {
     NS_LOG_FUNCTION(this);
 
     NS_ASSERT_MSG(m_nrEpcHelper, "dedicated EPS bearers cannot be set up when the EPC is not used");
 
     uint64_t imsi = ueDevice->GetObject<NrUeNetDevice>()->GetImsi();
-    uint8_t bearerId = m_nrEpcHelper->ActivateEpsBearer(ueDevice, imsi, tft, bearer);
+    uint8_t bearerId = m_nrEpcHelper->ActivateEpsBearer(ueDevice, imsi, rule, bearer);
     return bearerId;
 }
 
@@ -1601,7 +1602,7 @@ NrDrbActivator::ActivateDrb(uint64_t imsi, uint16_t cellId, uint16_t rnti)
     {
         Ptr<NrUeRrc> ueRrc = m_ueDevice->GetObject<NrUeNetDevice>()->GetRrc();
         NS_ASSERT(ueRrc->GetState() == NrUeRrc::CONNECTED_NORMALLY);
-        uint16_t rnti = ueRrc->GetRnti();
+        NS_ASSERT(rnti == ueRrc->GetRnti());
         Ptr<const NrGnbNetDevice> nrGnbDevice =
             m_ueDevice->GetObject<NrUeNetDevice>()->GetTargetGnb();
         Ptr<NrGnbRrc> gnbRrc = nrGnbDevice->GetObject<NrGnbNetDevice>()->GetRrc();

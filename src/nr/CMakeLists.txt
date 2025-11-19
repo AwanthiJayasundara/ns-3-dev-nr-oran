@@ -114,8 +114,6 @@ set(source_files
     model/nr-epc-mme-application.cc
     model/nr-epc-pgw-application.cc
     model/nr-epc-sgw-application.cc
-    model/nr-epc-tft-classifier.cc
-    model/nr-epc-tft.cc
     model/nr-epc-ue-nas.cc
     model/nr-epc-x2-header.cc
     model/nr-epc-x2.cc
@@ -187,6 +185,8 @@ set(source_files
     model/nr-pm-search-ideal.cc
     model/nr-pm-search-sasaoka.cc
     model/nr-pm-search.cc
+    model/nr-qos-rule.cc
+    model/nr-qos-rule-classifier.cc
     model/nr-radio-bearer-info.cc
     model/nr-radio-bearer-tag.cc
     model/nr-rlc-am-header.cc
@@ -308,8 +308,6 @@ set(header_files
     model/nr-epc-s11-sap.h
     model/nr-epc-s1ap-sap.h
     model/nr-epc-sgw-application.h
-    model/nr-epc-tft-classifier.h
-    model/nr-epc-tft.h
     model/nr-epc-ue-nas.h
     model/nr-epc-x2-header.h
     model/nr-epc-x2-sap.h
@@ -395,6 +393,8 @@ set(header_files
     model/nr-pm-search-ideal.h
     model/nr-pm-search-sasaoka.h
     model/nr-pm-search.h
+    model/nr-qos-rule.h
+    model/nr-qos-rule-classifier.h
     model/nr-radio-bearer-info.h
     model/nr-radio-bearer-tag.h
     model/nr-rlc-am-header.h
@@ -482,13 +482,14 @@ set(test_sources
     test/nr-test-deactivate-bearer.cc
     test/nr-test-entities.cc
     test/nr-test-epc-e2e-data.cc
-    test/nr-test-epc-tft-classifier.cc
+    test/nr-test-qos-rule-classifier.cc
     test/nr-test-fdm-of-numerologies.cc
     test/nr-test-harq.cc
     test/nr-test-ipv6-routing.cc
     test/nr-test-l2sm-eesm.cc
     test/nr-test-notching.cc
     test/nr-test-numerology-delay.cc
+    test/nr-test-phy.cc
     test/nr-test-resource-assignment-matrix.cc
     test/nr-test-rlc-am-e2e.cc
     test/nr-test-rlc-am-transmitter.cc
@@ -497,6 +498,7 @@ set(test_sources
     test/nr-test-rlc-um-transmitter.cc
     test/nr-test-rrc.cc
     test/nr-test-sched-harq.cc
+    test/nr-test-sched-lc.cc
     test/nr-test-sched-symbols-per-beam.cc
     test/nr-test-sched-temporal-fairness.cc
     test/nr-test-sched.cc

@@ -14,8 +14,8 @@
 #include "ns3/ipv4-address-helper.h"
 #include "ns3/ipv6-address-helper.h"
 #include "ns3/node-container.h"
-#include "ns3/nr-epc-tft.h"
 #include "ns3/nr-eps-bearer.h"
+#include "ns3/nr-qos-rule.h"
 #include "ns3/object.h"
 
 #include <optional>
@@ -66,9 +66,7 @@ class NrEpcHelper : public Object
      * @param nrGnbNetDevice the NrGnbNetDevice of the gNB node
      * @param cellIds IDs of cells served by this gNB
      */
-    virtual void AddGnb(Ptr<Node> gnbNode,
-                        Ptr<NetDevice> nrGnbNetDevice,
-                        std::vector<uint16_t> cellIds) = 0;
+    virtual void AddGnb(Ptr<Node> gnbNode, Ptr<NetDevice> nrGnbNetDevice, uint16_t cellId) = 0;
 
     /**
      * Notify the EPC of the existence of a new UE which might attach at a later time
@@ -97,7 +95,7 @@ class NrEpcHelper : public Object
     virtual void AddS1Interface(Ptr<Node> gnb,
                                 Ipv4Address gnbAddress,
                                 Ipv4Address sgwAddress,
-                                std::vector<uint16_t> cellIds) = 0;
+                                uint16_t cellId) = 0;
 
     /**
      * Activate an EPS bearer, setting up the corresponding S1-U tunnel.
@@ -107,13 +105,13 @@ class NrEpcHelper : public Object
      * @param ueNrDevice the Ipv4-enabled device of the UE, normally
      * connected via the NR radio interface
      * @param imsi the unique identifier of the UE
-     * @param tft the Traffic Flow Template of the new bearer
+     * @param rule the QoS rule of the new bearer
      * @param bearer struct describing the characteristics of the EPS bearer to be activated
      * @return bearer ID
      */
     virtual uint8_t ActivateEpsBearer(Ptr<NetDevice> ueNrDevice,
                                       uint64_t imsi,
-                                      Ptr<NrEpcTft> tft,
+                                      Ptr<NrQosRule> rule,
                                       NrEpsBearer bearer) = 0;
 
     /**

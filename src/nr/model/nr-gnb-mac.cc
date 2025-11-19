@@ -572,8 +572,10 @@ NrGnbMac::IsHarqReTxEnable() const
 void
 NrGnbMac::ReceiveRachPreamble(uint32_t raId)
 {
+    NS_LOG_FUNCTION(this);
     Ptr<NrRachPreambleMessage> rachMsg = Create<NrRachPreambleMessage>();
     rachMsg->SetSourceBwp(GetBwpId());
+    rachMsg->SetRapId(raId);
     m_macRxedCtrlMsgsTrace(m_currentSlot, GetCellId(), raId, GetBwpId(), rachMsg);
 
     ++m_receivedRachPreambleCount[raId];
@@ -880,8 +882,8 @@ NrGnbMac::DoReportMacCeToScheduler(nr::MacCeListElement_s bsr)
 
     m_ulCeReceived.push_back(
         mce); // this to called when NrUlCcmSapProvider::ReportMacCeToScheduler is called
-    NS_LOG_DEBUG(" Reported by UE " << static_cast<uint32_t>(bsr.m_macCeValue.m_crnti) << " size "
-                                    << size << " bsr vector ize after push_back "
+    NS_LOG_DEBUG(" Reported by UE " << static_cast<uint32_t>(bsr.m_rnti) << " size " << size
+                                    << " bsr vectorize after push_back "
                                     << static_cast<uint32_t>(m_ulCeReceived.size()));
 }
 

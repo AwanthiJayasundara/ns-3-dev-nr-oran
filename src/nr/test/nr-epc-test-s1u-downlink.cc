@@ -146,9 +146,7 @@ NrEpcS1uDlTestCase::DoRun()
         Ptr<NetDevice> gnbDevice = cellDevices.Get(cellDevices.GetN() - 1);
 
         // Note that the NrEpcGnbApplication won't care of the actual NetDevice type
-        std::vector<uint16_t> cellIds;
-        cellIds.push_back(cellId);
-        nrEpcHelper->AddGnb(gnb, gnbDevice, cellIds);
+        nrEpcHelper->AddGnb(gnb, gnbDevice, cellId);
 
         // Plug test RRC entity
         Ptr<NrEpcGnbApplication> gnbApp = gnb->GetApplication(0)->GetObject<NrEpcGnbApplication>();
@@ -198,7 +196,7 @@ NrEpcS1uDlTestCase::DoRun()
             nrEpcHelper->AddUe(ueNrDevice, imsi);
             nrEpcHelper->ActivateEpsBearer(ueNrDevice,
                                            imsi,
-                                           NrEpcTft::Default(),
+                                           NrQosRule::Default(),
                                            NrEpsBearer(NrEpsBearer::NGBR_VIDEO_TCP_DEFAULT));
             Simulator::Schedule(MilliSeconds(10),
                                 &NrEpcGnbS1SapProvider::InitialUeMessage,

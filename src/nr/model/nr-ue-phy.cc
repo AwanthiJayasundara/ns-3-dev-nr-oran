@@ -1342,16 +1342,16 @@ NrUePhy::DoReset()
 }
 
 void
-NrUePhy::DoStartCellSearch(uint16_t dlEarfcn)
+NrUePhy::DoStartCellSearch(uint16_t arfcn)
 {
-    NS_LOG_FUNCTION(this << dlEarfcn);
+    NS_LOG_FUNCTION(this << arfcn);
     DoSetInitialBandwidth();
 }
 
 void
-NrUePhy::DoSynchronizeWithGnb(uint16_t cellId, uint16_t dlEarfcn)
+NrUePhy::DoSynchronizeWithGnb(uint16_t cellId, uint16_t arfcn)
 {
-    NS_LOG_FUNCTION(this << cellId << dlEarfcn);
+    NS_LOG_FUNCTION(this << cellId << arfcn);
     DoSynchronizeWithGnb(cellId);
 }
 
@@ -1624,17 +1624,6 @@ NrUePhy::DoGetCellId() const
     return GetCellId();
 }
 
-uint32_t
-NrUePhy::DoGetDlEarfcn()
-{
-    // TBD See how to get rid of this function in future
-    // Added for the compatibility with 810 MR to LTE.
-    NS_LOG_FUNCTION(this);
-    NS_LOG_WARN("DoGetDlEarfcn function is called. This function should be removed in future once "
-                "NR has its own RRC.");
-    return 0;
-}
-
 void
 NrUePhy::DoSetDlBandwidth(uint16_t dlBandwidth)
 {
@@ -1658,9 +1647,9 @@ NrUePhy::DoSetDlBandwidth(uint16_t dlBandwidth)
 }
 
 void
-NrUePhy::DoConfigureUplink(uint16_t ulEarfcn, uint8_t ulBandwidth)
+NrUePhy::DoConfigureUplink(uint16_t arfcn, uint8_t ulBandwidth)
 {
-    NS_LOG_FUNCTION(this << ulEarfcn << +ulBandwidth);
+    NS_LOG_FUNCTION(this << arfcn << +ulBandwidth);
     // Ignore this; should be equal to dlBandwidth
     m_ulConfigured = true;
 }
