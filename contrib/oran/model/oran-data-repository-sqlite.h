@@ -88,10 +88,20 @@ class OranDataRepositorySqlite : public OranDataRepository
 
     uint64_t RegisterNode(OranNearRtRic::NodeType type, uint64_t id) override;
     uint64_t RegisterNodeLteUe(uint64_t id, uint64_t imsi) override;
+    uint64_t RegisterNodeNrUe(uint64_t id, uint64_t imsi) override;
+
     uint64_t RegisterNodeLteEnb(uint64_t id, uint16_t cellId) override;
+    uint64_t RegisterNodeNrGnb(uint64_t id, uint16_t cellId) override;
+
     uint64_t DeregisterNode(uint64_t e2NodeId) override;
     void SavePosition(uint64_t e2NodeId, Vector pos, Time t) override;
+
+    void SaveLteCellLoad(uint64_t e2NodeId, double cellLoad, Time t) override;
+    void SaveNrCellLoad(uint64_t e2NodeId, double cellLoad, Time t) override;
+
     void SaveLteUeCellInfo(uint64_t e2NodeId, uint16_t cellId, uint16_t rnti, Time t) override;
+    void SaveNrUeCellInfo(uint64_t e2NodeId, uint16_t cellId, uint16_t rnti, Time t) override;
+
     void SaveAppLoss(uint64_t e2NodeId, double appLoss, Time t) override;
     void SaveLteUeRsrpRsrq(uint64_t e2NodeId,
                            Time t,
@@ -101,19 +111,43 @@ class OranDataRepositorySqlite : public OranDataRepository
                            double rsrq,
                            bool isServingCell,
                            uint8_t componentCarrierId) override;
-
+    void SaveNrUeRsrpRsrq(uint64_t e2NodeId,
+                           Time t,
+                           uint16_t rnti,
+                           uint16_t cellId,
+                           double rsrp,
+                           double rsrq,
+                           bool isServingCell,
+                           uint8_t componentCarrierId) override;
+ 
     std::map<Time, Vector> GetNodePositions(uint64_t e2NodeId,
                                             Time fromTime,
                                             Time toTime,
                                             uint64_t maxEntries = 1) override;
+                                            
+    double GetLteCellLoad(uint64_t e2NodeId) override;
+    double GetNrCellLoad(uint64_t e2NodeId) override;  
+
     std::tuple<bool, uint16_t, uint16_t> GetLteUeCellInfo(uint64_t e2NodeId) override;
+    std::tuple<bool, uint16_t, uint16_t> GetNrUeCellInfo(uint64_t e2NodeId) override;
+
     std::vector<uint64_t> GetLteUeE2NodeIds() override;
+    std::vector<uint64_t> GetNrUeE2NodeIds() override;
+
     uint64_t GetLteUeE2NodeIdFromCellInfo(uint16_t cellId, uint16_t rnti) override;
+    uint64_t GetNrUeE2NodeIdFromCellInfo(uint16_t cellId, uint16_t rnti) override;
+
     std::tuple<bool, uint16_t> GetLteEnbCellInfo(uint64_t e2NodeId) override;
+    std::tuple<bool, uint16_t> GetNrGnbCellInfo(uint64_t e2NodeId) override;
+
     std::vector<uint64_t> GetLteEnbE2NodeIds() override;
+    std::vector<uint64_t> GetNrGnbE2NodeIds() override;
+
     std::vector<std::tuple<uint64_t, Time>> GetLastRegistrationRequests() override;
     double GetAppLoss(uint64_t e2NodeId) override;
     std::vector<std::tuple<uint16_t, uint16_t, double, double, bool, uint8_t>> GetLteUeRsrpRsrq(
+        uint64_t e2NodeId) override;
+    std::vector<std::tuple<uint16_t, uint16_t, double, double, bool, uint8_t>> GetNrUeRsrpRsrq(
         uint64_t e2NodeId) override;
 
     void LogCommandE2Terminator(Ptr<OranCommand> cmd) override;
@@ -140,21 +174,44 @@ class OranDataRepositorySqlite : public OranDataRepository
     {
         CHECK_NODE_REGISTERED = 0,         //!< Query if a node is registered
         GET_ALL_LAST_REGISTRATION_TIMES,   //!< Get node registation times
+
         GET_LTE_ALL_ENB_E2NODEIDS,         //!< Get all LTE eNB E2 IDs
+        GET_NR_ALL_GNB_E2NODEIDS,         //!< Get all NR gNB E2 IDs
+
         GET_LTE_ALL_UE_E2NODEIDS,          //!< Get all LTE UE E2 IDs
+        GET_NR_ALL_UE_E2NODEIDS,          //!< Get all NR UE E2 IDs
+
         GET_LTE_CELLID_FROM_E2NODEID,      //!< Get the cell ID of an LTE eNB from its E2 Node ID
+        GET_NR_CELLID_FROM_E2NODEID,      //!< Get the cell ID of an NR gNB from its E2 Node ID
+
         GET_LTE_UE_CELLINFO,               //!< Get the cell information associated with LTE UE
+        GET_NR_UE_CELLINFO,               //!< Get the cell information associated with LTE UE
+
         GET_LTE_UE_E2NODEID_FROM_CELLINFO, //!< Get the E2 ID of a UE from the cell information
-        GET_LTE_UE_RSRP_RSRQ,              //!< Get the UE RSRP and RSRQ measurements
+        GET_NR_UE_E2NODEID_FROM_CELLINFO, //!< Get the E2 ID of a UE from the cell information
+
+        GET_LTE_UE_RSRP_RSRQ,              //!< Get the UE RSRP and RSRQ measurements 
+        GET_NR_UE_RSRP_RSRQ,              //!< Get the UE RSRP and RSRQ measurements
+
         GET_NODE_ALL_POSITIONS,            //!< The location of all nodes E2 nodes
+
         INSERT_LTE_ENB_NODE,               //!< Add an LTE eNB E2 node
+        INSERT_NR_GNB_NODE,               //!< Add an NR gNB E2 node
+
         INSERT_LTE_UE_CELL,                //!< Add LTE UE cell information for an E2 node
+        INSERT_NR_UE_CELL,                //!< Add NR UE cell information for an E2 node
+
         INSERT_LTE_UE_NODE,                //!< Add an LTE UE E2 node
+        INSERT_NR_UE_NODE,                //!< Add an NR UE E2 node
+        
         INSERT_NODE_ADD,                   //!< Add an E2 node
         INSERT_NODE_UPDATE,                //!< Update an E2 node's information
         INSERT_NODE_LOCATION,              //!< Add an E2 node's location
         INSERT_NODE_REGISTRATION,          //!< Add an E2 node registration request
+
         INSERT_LTE_UE_RSRP_RSRQ,           //!< Add LTE UE RSRP and RSRQ
+        INSERT_NR_UE_RSRP_RSRQ,           //!< Add NR UE RSRP and RSRQ
+
         LOG_CMM_ACTION,                    //!< Log a CM module action
         LOG_E2TERMINATOR_COMMAND,          //!< Log an E2 terminator command from the RIC
         LOG_LM_ACTION,                     //!< Log an LM action
@@ -168,28 +225,55 @@ class OranDataRepositorySqlite : public OranDataRepository
     enum CreateStatementType
     {
         INDEX_LTE_ENB_CELLID = 0, //!< Index for the table with LTE eNB based on Cell IDs
+        INDEX_NR_GNB_CELLID = 0, //!< Index for the table with NR gNB based on Cell IDs
+
         INDEX_LTE_ENB_NODEID,     //!< Index for the table with LTE eNB based on E2 Node IDs
+        INDEX_NR_GNB_NODEID,     //!< Index for the table with NR gNB based on E2 Node IDs
+
         INDEX_LTE_UE_CELL_CELLID, //!< Index for the table with LTE UE Cell Information based on
                                   //!< Cell IDs
+        INDEX_NR_UE_CELL_CELLID, //!< Index for the table with NR UE Cell Information based on
+                                  //!< Cell IDs
+
         INDEX_LTE_UE_CELL_NODEID, //!< Index for the table with LTE UE Cell Information based on E2
                                   //!< Node IDs
+        INDEX_NR_UE_CELL_NODEID, //!< Index for the table with NR UE Cell Information based on E2
+                                  //!< Node IDs
+
         INDEX_LTE_UE_IMSI,        //!< Index for the table with LTE UE based on IMSI
+        INDEX_NR_UE_IMSI,        //!< Index for the table with NR UE based on IMSI
+
         INDEX_LTE_UE_NODEID,      //!< Index for the table with LTE UE based on E2 Node ID
+        INDEX_NR_UE_NODEID,      //!< Index for the table with NR UE based on E2 Node ID
+
         INDEX_NODE,               //!< Index for the table with E2 Node Information
         INDEX_NODE_LOCATION,      //!< Index for the table with Node Locations
         INDEX_NODE_REGISTRATION,  //!< Index for the table with Node Registrations
         TABLE_CMM_ACTION,         //!< Table with logs of CMM actions
         TABLE_LM_ACTION,          //!< Table with logs of LM actions
         TABLE_LM_COMMAND,         //!< Table with logs of LM commamds
+
         TABLE_LTE_ENB,            //!< Table with LTE eNB information
+        TABLE_NR_GNB,            //!< Table with NR gNB information
+
         TABLE_LTE_UE,             //!< Table with LTE UE information
+        TABLE_NR_UE,             //!< Table with NR UE information
+
         TABLE_LTE_UE_CELL,        //!< Table with LTE UE Cell Information
+        TABLE_NR_UE_CELL,        //!< Table with NR UE Cell Information
+
         TABLE_LTE_UE_RSRP_RSRQ,   //!< Table with LTE UE RSRP and RSRQ Information
+        TABLE_NR_UE_RSRP_RSRQ,   //!< Table with NR UE RSRP and RSRQ Information
+
         TABLE_NODE,               //!< Table with E2 Node Information
         TABLE_NODE_LOCATION,      //!< Table with Node Locations
         TABLE_NODE_REGISTRATION,  //!< Table with Node Registrations
         TABLE_TERMINATOR_COMMAND, //!< Table with logs of E2 Terminator Commands
-        TABLE_APPLOSS_COMMAND     //!< Table with logs of application loss Commands
+        TABLE_APPLOSS_COMMAND,     //!< Table with logs of application loss Commands
+        
+        TABLE_LTE_CELL_LOAD_COMMAND,     //!< Table with logs of cell load Commands
+        TABLE_NR_CELL_LOAD_COMMAND     //!< Table with logs of cell load Commands
+
     };
 
     /**

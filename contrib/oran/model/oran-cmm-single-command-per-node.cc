@@ -31,6 +31,7 @@
 #include "oran-cmm-single-command-per-node.h"
 
 #include "oran-command-lte-2-lte-handover.h"
+#include "oran-command-nr-2-nr-handover.h"
 #include "oran-command.h"
 #include "oran-data-repository.h"
 #include "oran-near-rt-ric.h"
@@ -111,6 +112,20 @@ OranCmmSingleCommandPerNode::Filter(
                         (command->GetObject<OranCommandLte2LteHandover>())->GetTargetRnti());
 
                     LogLogicToStorage("Evaluating LTE-to-LTE Handover command affecting E2 Node " +
+                                      std::to_string(affectedNodeId));
+                }
+                else if (command->GetInstanceTypeId() == OranCommandNr2NrHandover::GetTypeId())
+                {
+                    uint16_t cellId;
+                    bool found;
+                    std::tie(found, cellId) =
+                        m_nearRtRic->Data()->GetNrGnbCellInfo(command->GetTargetE2NodeId());
+
+                    affectedNodeId = m_nearRtRic->Data()->GetNrUeE2NodeIdFromCellInfo(
+                        cellId,
+                        command->GetObject<OranCommandNr2NrHandover>()->GetTargetRnti());
+
+                    LogLogicToStorage("Evaluating NR-to-NR Handover command affecting E2 Node " +
                                       std::to_string(affectedNodeId));
                 }
                 else

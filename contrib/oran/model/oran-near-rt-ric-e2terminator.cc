@@ -32,22 +32,44 @@
 
 #include "oran-command.h"
 #include "oran-data-repository.h"
+
 #include "oran-e2-node-terminator-lte-enb.h"
+#include "oran-e2-node-terminator-nr-gnb.h"
+
 #include "oran-e2-node-terminator-lte-ue.h"
+#include "oran-e2-node-terminator-nr-ue.h"
+
 #include "oran-e2-node-terminator.h"
 #include "oran-near-rt-ric.h"
 #include "oran-report-apploss.h"
 #include "oran-report-location.h"
+
+#include "oran-report-lte-cell-load.h"
+#include "oran-report-nr-cell-load.h"
+
 #include "oran-report-lte-ue-cell-info.h"
+#include "oran-report-nr-ue-cell-info.h"
+
 #include "oran-report-lte-ue-rsrp-rsrq.h"
+#include "oran-report-nr-ue-rsrp-rsrq.h"
+
 #include "oran-report.h"
 
 #include "ns3/abort.h"
 #include "ns3/log.h"
+
 #include "ns3/lte-enb-net-device.h"
+#include "ns3/nr-gnb-net-device.h"
+
 #include "ns3/lte-enb-rrc.h"
+#include "ns3/nr-gnb-rrc.h"
+
 #include "ns3/lte-ue-net-device.h"
+#include "ns3/nr-ue-net-device.h"
+
 #include "ns3/lte-ue-rrc.h"
+#include "ns3/nr-ue-rrc.h"
+
 #include "ns3/pointer.h"
 #include "ns3/simulator.h"
 #include "ns3/string.h"
@@ -146,10 +168,22 @@ OranNearRtRicE2Terminator::ReceiveRegistrationRequest(OranNearRtRic::NodeType ty
                                                      ->GetRrc()
                                                      ->GetImsi());
             break;
+        case OranNearRtRic::NodeType::NRUE:
+            e2NodeId = m_data->RegisterNodeNrUe(id,
+                                                 terminator->GetObject<OranE2NodeTerminatorNrUe>()
+                                                     ->GetNetDevice()
+                                                     ->GetRrc()
+                                                     ->GetImsi());
+            break;
         case OranNearRtRic::NodeType::LTEENB:
             e2NodeId = m_data->RegisterNodeLteEnb(
                 id,
                 terminator->GetObject<OranE2NodeTerminatorLteEnb>()->GetNetDevice()->GetCellId());
+            break;
+        case OranNearRtRic::NodeType::NRGNB:
+            e2NodeId = m_data->RegisterNodeNrGnb(
+                id,
+                terminator->GetObject<OranE2NodeTerminatorNrGnb>()->GetNetDevice()->GetCellId());
             break;
         default:
             e2NodeId = m_data->RegisterNode(type, id);
@@ -203,6 +237,22 @@ OranNearRtRicE2Terminator::ReceiveReport(Ptr<OranReport> report)
                                  posRpt->GetTime());
         }
         else if (report->GetInstanceTypeId() ==
+                 TypeId::LookupByName("ns3::OranReportLteCellLoad"))
+        {
+            Ptr<OranReportLteCellLoad> cellLoadRpt = report->GetObject<OranReportLteCellLoad>();
+            m_data->SaveLteCellLoad(cellLoadRpt->GetReporterE2NodeId(),
+                                    cellLoadRpt->GetCellLoad(),
+                                    cellLoadRpt->GetTime());
+        }
+        else if (report->GetInstanceTypeId() ==
+                 TypeId::LookupByName("ns3::OranReportNrCellLoad"))
+        {
+            Ptr<OranReportNrCellLoad> cellLoadRpt = report->GetObject<OranReportNrCellLoad>();
+            m_data->SaveNrCellLoad(cellLoadRpt->GetReporterE2NodeId(),
+                                    cellLoadRpt->GetCellLoad(),
+                                    cellLoadRpt->GetTime());
+        }
+        else if (report->GetInstanceTypeId() ==
                  TypeId::LookupByName("ns3::OranReportLteUeCellInfo"))
         {
             Ptr<OranReportLteUeCellInfo> lteUeCellInfoRpt =
@@ -211,6 +261,16 @@ OranNearRtRicE2Terminator::ReceiveReport(Ptr<OranReport> report)
                                       lteUeCellInfoRpt->GetCellId(),
                                       lteUeCellInfoRpt->GetRnti(),
                                       lteUeCellInfoRpt->GetTime());
+        }
+        else if (report->GetInstanceTypeId() ==
+                 TypeId::LookupByName("ns3::OranReportNrUeCellInfo"))
+        {
+            Ptr<OranReportNrUeCellInfo> nrUeCellInfoRpt =
+                report->GetObject<OranReportNrUeCellInfo>();
+            m_data->SaveNrUeCellInfo(nrUeCellInfoRpt->GetReporterE2NodeId(),
+                                      nrUeCellInfoRpt->GetCellId(),
+                                      nrUeCellInfoRpt->GetRnti(),
+                                      nrUeCellInfoRpt->GetTime());
         }
         else if (report->GetInstanceTypeId() == TypeId::LookupByName("ns3::OranReportAppLoss"))
         {
@@ -232,6 +292,19 @@ OranNearRtRicE2Terminator::ReceiveReport(Ptr<OranReport> report)
                                       rsrpRsrqRpt->GetIsServingCell(),
                                       rsrpRsrqRpt->GetComponentCarrierId());
         }
+        else if (report->GetInstanceTypeId() ==
+                 TypeId::LookupByName("ns3::OranReportNrUeRsrpRsrq"))
+        {
+            Ptr<OranReportNrUeRsrpRsrq> rsrpRsrqRpt = report->GetObject<OranReportNrUeRsrpRsrq>();
+            m_data->SaveNrUeRsrpRsrq(rsrpRsrqRpt->GetReporterE2NodeId(),
+                                      rsrpRsrqRpt->GetTime(),
+                                      rsrpRsrqRpt->GetRnti(),
+                                      rsrpRsrqRpt->GetCellId(),
+                                      rsrpRsrqRpt->GetRsrp(),
+                                      rsrpRsrqRpt->GetRsrq(),
+                                      rsrpRsrqRpt->GetIsServingCell(),
+                                      rsrpRsrqRpt->GetComponentCarrierId());
+        }
 
         m_nearRtRic->NotifyReportReceived(report);
     }
@@ -241,7 +314,10 @@ void
 OranNearRtRicE2Terminator::SendCommand(Ptr<OranCommand> command)
 {
     NS_LOG_FUNCTION(this << command->ToString());
-
+    NS_LOG_INFO("RIC_E2Terminator: Sending command “"
+                 << command->ToString()
+                 << "” to E2NodeId="
+                 << command->GetTargetE2NodeId());
     if (m_active)
     {
         NS_ABORT_MSG_IF(

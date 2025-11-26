@@ -128,6 +128,20 @@ class OranDataRepository : public Object
      */
     virtual uint64_t RegisterNodeLteUe(uint64_t id, uint64_t imsi) = 0;
     /**
+     * Register a new NR UE node and return the E2 Node ID.
+     *
+     * NR UEs are uniquely identified by their IMSI.
+     *
+     * If the UE is already registered, return the currently assigned E2 Node ID.
+     * If the UE is not registered, generate and store a new E2 node ID for this UE.
+     *
+     * @param id The unique ID for this node in the simulation.
+     * @param imsi The IMSI of the LTE UE.
+     *
+     * @return The E2 Node ID for this node.
+     */
+    virtual uint64_t RegisterNodeNrUe(uint64_t id, uint64_t imsi) = 0;
+    /**
      * Register a new LTE eNB node and return the E2 Node ID.
      *
      * LTE eNBs are uniquely identified by their Cell ID.
@@ -141,6 +155,20 @@ class OranDataRepository : public Object
      * @return The E2 Node ID for this node.
      */
     virtual uint64_t RegisterNodeLteEnb(uint64_t id, uint16_t cellId) = 0;
+    /**
+     * Register a new NR gNB node and return the E2 Node ID.
+     *
+     * NR eNBs are uniquely identified by their Cell ID.
+     *
+     * If the gNB is already registered, return the currently assigned E2 Node ID.
+     * If the gNB is not registered, generate and store a new E2 node ID for this eNB.
+     *
+     * @param id The unique ID for this node in the simulation.
+     * @param cellId The cell ID of the LTE eNB.
+     *
+     * @return The E2 Node ID for this node.
+     */
+    virtual uint64_t RegisterNodeNrGnb(uint64_t id, uint16_t cellId) = 0;
     /**
      * Deregister an E2 Node.
      *
@@ -159,6 +187,10 @@ class OranDataRepository : public Object
      * @param t The time at which this position was reported for the node.
      */
     virtual void SavePosition(uint64_t e2NodeId, Vector pos, Time t) = 0;
+
+    virtual void SaveLteCellLoad(uint64_t e2NodeId, double cellLoad, Time t) = 0;
+    
+    virtual void SaveNrCellLoad(uint64_t e2NodeId, double cellLoad, Time t) = 0;
     /**
      * Store the UE's connected cell information at the given time.
      *
@@ -168,6 +200,17 @@ class OranDataRepository : public Object
      * @param t The time at which this cell information was reported by the node.
      */
     virtual void SaveLteUeCellInfo(uint64_t e2NodeId, uint16_t cellId, uint16_t rnti, Time t) = 0;
+
+    /**
+     * Store the UE's connected cell information at the given time.
+     *
+     * @param e2NodeId The E2 Node ID of the node.
+     * @param cellId The cell ID of the connected cell.
+     * @param rnti The RNTI assigned to the UE by the cell.
+     * @param t The time at which this cell information was reported by the node.
+     */
+    virtual void SaveNrUeCellInfo(uint64_t e2NodeId, uint16_t cellId, uint16_t rnti, Time t) = 0;
+
     /**
      * Store the UE's application packet loss.
      *
@@ -196,6 +239,26 @@ class OranDataRepository : public Object
                                    double rsrq,
                                    bool isServingCell,
                                    uint8_t componentCarrierId) = 0;
+    /**
+     * Store the UE's RSRP and RSRQ.
+     *
+     * @param e2NodeId The E2 Node ID of the node.
+     * @param t The time at which this cell information was reported by the node.
+     * @param rnti The RNTI assigned to the UE by the cell.
+     * @param cellId The cell ID of the connected cell.
+     * @param rsrp The RSRP value.
+     * @param rsrq The RSRQ value.
+     * @param bool isServingCell A flag that indicates if this is the serving cell.
+     * @param componentCarrierId The component carrier ID.
+     */
+    virtual void SaveNrUeRsrpRsrq(uint64_t e2NodeId,
+                                   Time t,
+                                   uint16_t rnti,
+                                   uint16_t cellId,
+                                   double rsrp,
+                                   double rsrq,
+                                   bool isServingCell,
+                                   uint8_t componentCarrierId) = 0;
 
     /* Data Access API */
     /**
@@ -212,6 +275,8 @@ class OranDataRepository : public Object
                                                     Time fromTime,
                                                     Time toTime,
                                                     uint64_t maxEntries = 1) = 0;
+    virtual double GetLteCellLoad(uint64_t e2NodeId) = 0;
+    virtual double GetNrCellLoad(uint64_t e2NodeId) = 0;
     /**
      * Gets the the cell information for a UE.
      *
@@ -222,11 +287,26 @@ class OranDataRepository : public Object
      */
     virtual std::tuple<bool, uint16_t, uint16_t> GetLteUeCellInfo(uint64_t e2NodeId) = 0;
     /**
+     * Gets the the cell information for a UE.
+     *
+     * @param e2NodeId The E2 Node ID.
+     *
+     * @return A tuple with a boolean indicating if the cell info for the UE was found, the eNB cell
+     * ID, and the UE RNTI.
+     */
+    virtual std::tuple<bool, uint16_t, uint16_t> GetNrUeCellInfo(uint64_t e2NodeId) = 0;
+    /**
      * Gets the E2 Node ID of all registered LTE UEs.
      *
      * @return The collection of E2 Node IDs.
      */
     virtual std::vector<uint64_t> GetLteUeE2NodeIds() = 0;
+    /**
+     * Gets the E2 Node ID of all registered NR UEs.
+     *
+     * @return The collection of E2 Node IDs.
+     */
+    virtual std::vector<uint64_t> GetNrUeE2NodeIds() = 0;
     /**
      * Get the E2 Node ID for an LTE UE given the cell ID and RNTI of the UE in the cell.
      *
@@ -235,6 +315,14 @@ class OranDataRepository : public Object
      * @return The E2 Node ID of the Lte UE.
      */
     virtual uint64_t GetLteUeE2NodeIdFromCellInfo(uint16_t cellId, uint16_t rnti) = 0;
+    /**
+     * Get the E2 Node ID for an NR UE given the cell ID and RNTI of the UE in the cell.
+     *
+     * @param cellId The Cell ID .
+     * @param rnti The RNTI of the UE.
+     * @return The E2 Node ID of the Lte UE.
+     */
+    virtual uint64_t GetNrUeE2NodeIdFromCellInfo(uint16_t cellId, uint16_t rnti) = 0;
     /**
      * Gets the the cell information for an eNB.
      *
@@ -245,11 +333,26 @@ class OranDataRepository : public Object
      */
     virtual std::tuple<bool, uint16_t> GetLteEnbCellInfo(uint64_t e2NodeId) = 0;
     /**
+     * Gets the the cell information for an gNB.
+     *
+     * @param e2NodeId The E2 Node ID.
+     *
+     * @return A tuple with a boolean indicating if the cell info for the eNB was found, and the eNB
+     * cell ID.
+     */
+    virtual std::tuple<bool, uint16_t> GetNrGnbCellInfo(uint64_t e2NodeId) = 0;
+    /**
      * Gets the E2 Node ID of all registered LTE eNBs.
      *
      * @return The collection of E2 Node IDs.
      */
     virtual std::vector<uint64_t> GetLteEnbE2NodeIds() = 0;
+    /**
+     * Gets the E2 Node ID of all registered NR gNBs.
+     *
+     * @return The collection of E2 Node IDs.
+     */
+    virtual std::vector<uint64_t> GetNrGnbE2NodeIds() = 0;
     /**
      * Gets the last time that a registration was received for all registered nodes.
      *
@@ -272,6 +375,15 @@ class OranDataRepository : public Object
      */
     virtual std::vector<std::tuple<uint16_t, uint16_t, double, double, bool, uint8_t>>
     GetLteUeRsrpRsrq(uint64_t e2NodeId) = 0;
+    /**
+     * Gets the last reported RSRP and RSRQ values.
+     *
+     * @param e2NodeId The E2 Node ID.
+     * @return A collection of RNTI, cell ID, RSRP, RSRQ, is serving, and component carrier ID
+     * tuples.
+     */
+    virtual std::vector<std::tuple<uint16_t, uint16_t, double, double, bool, uint8_t>>
+    GetNrUeRsrpRsrq(uint64_t e2NodeId) = 0;
 
     /* Logging API */
     /**

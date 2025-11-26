@@ -28,18 +28,13 @@
  * employees is not subject to copyright protection within the United States.
  */
 
-#include "oran-report-trigger-location-change.h"
+#include "oran-report-trigger-nr-ue-handover.h"
 
 #include "oran-reporter.h"
 
 #include "ns3/log.h"
-
-#include "ns3/lte-ue-net-device.h"
 #include "ns3/nr-ue-net-device.h"
-
-#include "ns3/lte-ue-rrc.h"
 #include "ns3/nr-ue-rrc.h"
-
 #include "ns3/nstime.h"
 #include "ns3/pointer.h"
 #include "ns3/random-variable-stream.h"
@@ -49,53 +44,62 @@
 namespace ns3
 {
 
-NS_LOG_COMPONENT_DEFINE("OranReportTriggerLocationChange");
+NS_LOG_COMPONENT_DEFINE("OranReportTriggerNrUeHandover");
 
-NS_OBJECT_ENSURE_REGISTERED(OranReportTriggerLocationChange);
+NS_OBJECT_ENSURE_REGISTERED(OranReportTriggerNrUeHandover);
 
 TypeId
-OranReportTriggerLocationChange::GetTypeId()
+OranReportTriggerNrUeHandover::GetTypeId()
 {
-    static TypeId tid = TypeId("ns3::OranReportTriggerLocationChange")
+    static TypeId tid = TypeId("ns3::OranReportTriggerNrUeHandover")
                             .SetParent<OranReportTrigger>()
-                            .AddConstructor<OranReportTriggerLocationChange>();
+                            .AddConstructor<OranReportTriggerNrUeHandover>();
 
     return tid;
 }
 
-OranReportTriggerLocationChange::OranReportTriggerLocationChange()
+OranReportTriggerNrUeHandover::OranReportTriggerNrUeHandover()
     : OranReportTrigger()
 {
     NS_LOG_FUNCTION(this);
 }
 
-OranReportTriggerLocationChange::~OranReportTriggerLocationChange()
+OranReportTriggerNrUeHandover::~OranReportTriggerNrUeHandover()
 {
     NS_LOG_FUNCTION(this);
 }
 
 void
-OranReportTriggerLocationChange::Activate(Ptr<OranReporter> reporter)
+OranReportTriggerNrUeHandover::Activate(Ptr<OranReporter> reporter)
 {
     NS_LOG_FUNCTION(this << reporter);
 
     if (!m_active)
     {
-        Ptr<MobilityModel> mobility =
-            reporter->GetTerminator()->GetNode()->GetObject<MobilityModel>();
+        Ptr<NrUeNetDevice> nrUeNetDev = nullptr;
+        Ptr<Node> node = reporter->GetTerminator()->GetNode();
 
-        NS_ABORT_MSG_IF(mobility == nullptr, "Unable to find mobility model");
+        for (uint32_t idx = 0; nrUeNetDev == nullptr && idx < node->GetNDevices(); idx++)
+        {
+            nrUeNetDev = node->GetDevice(idx)->GetObject<NrUeNetDevice>();
+        }
 
-        mobility->TraceConnectWithoutContext(
-            "CourseChange",
-            MakeCallback(&OranReportTriggerLocationChange::CourseChangedSink, this));
+        NS_ABORT_MSG_IF(nrUeNetDev == nullptr, "Unable to find appropriate network device");
+
+        nrUeNetDev->GetRrc()->TraceConnectWithoutContext(
+            "HandoverEndOk",
+            MakeCallback(&OranReportTriggerNrUeHandover::HandoverCompleteSink, this));
+
+        nrUeNetDev->GetRrc()->TraceConnectWithoutContext(
+            "ConnectionEstablished",
+            MakeCallback(&OranReportTriggerNrUeHandover::ConnectionEstablishedSink, this));
     }
 
     OranReportTrigger::Activate(reporter);
 }
 
 void
-OranReportTriggerLocationChange::Deactivate()
+OranReportTriggerNrUeHandover::Deactivate()
 {
     NS_LOG_FUNCTION(this);
 
@@ -108,7 +112,7 @@ OranReportTriggerLocationChange::Deactivate()
 }
 
 void
-OranReportTriggerLocationChange::DoDispose()
+OranReportTriggerNrUeHandover::DoDispose()
 {
     NS_LOG_FUNCTION(this);
 
@@ -121,28 +125,49 @@ OranReportTriggerLocationChange::DoDispose()
 }
 
 void
-OranReportTriggerLocationChange::CourseChangedSink(Ptr<const MobilityModel> mobility)
+OranReportTriggerNrUeHandover::HandoverCompleteSink(uint64_t imsi, uint16_t cellId, uint16_t rnti)
 {
-    NS_LOG_FUNCTION(this << mobility);
+    NS_LOG_FUNCTION(this << imsi << (uint32_t)cellId << (uint32_t)rnti);
 
-    NS_LOG_LOGIC("Location change triggering report");
+    NS_LOG_LOGIC("Handover triggering report");
 
     TriggerReport();
 }
 
 void
-OranReportTriggerLocationChange::DisconnectSink()
+OranReportTriggerNrUeHandover::ConnectionEstablishedSink(uint64_t imsi,
+                                                          uint16_t cellId,
+                                                          uint16_t rnti)
+{
+    NS_LOG_FUNCTION(this << imsi << (uint32_t)cellId << (uint32_t)rnti);
+
+    NS_LOG_LOGIC("Connection established triggering report");
+
+    TriggerReport();
+}
+
+void
+OranReportTriggerNrUeHandover::DisconnectSink()
 {
     NS_LOG_FUNCTION(this);
 
-    Ptr<MobilityModel> mobility =
-        m_reporter->GetTerminator()->GetNode()->GetObject<MobilityModel>();
+    Ptr<NrUeNetDevice> nrUeNetDev = nullptr;
+    Ptr<Node> node = m_reporter->GetTerminator()->GetNode();
 
-    NS_ABORT_MSG_IF(mobility == nullptr, "Unable to find mobility model");
+    for (uint32_t idx = 0; nrUeNetDev == nullptr && idx < node->GetNDevices(); idx++)
+    {
+        nrUeNetDev = node->GetDevice(idx)->GetObject<NrUeNetDevice>();
+    }
 
-    mobility->TraceDisconnectWithoutContext(
-        "CourseChange",
-        MakeCallback(&OranReportTriggerLocationChange::CourseChangedSink, this));
+    NS_ABORT_MSG_IF(nrUeNetDev == nullptr, "Unable to find appropriate network device");
+
+    nrUeNetDev->GetRrc()->TraceDisconnectWithoutContext(
+        "HandoverEndOk",
+        MakeCallback(&OranReportTriggerNrUeHandover::HandoverCompleteSink, this));
+
+    nrUeNetDev->GetRrc()->TraceDisconnectWithoutContext(
+        "ConnectionEstablished",
+        MakeCallback(&OranReportTriggerNrUeHandover::ConnectionEstablishedSink, this));
 }
 
 } // namespace ns3

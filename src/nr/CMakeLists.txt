@@ -120,6 +120,8 @@ set(source_files
     model/nr-eps-bearer-tag.cc
     model/nr-eps-bearer.cc
     model/nr-error-model.cc
+    model/nr-ffr-algorithm.cc
+    model/nr-ffr-sap.h
     model/nr-fh-control.cc
     model/nr-fh-phy-sap.cc
     model/nr-fh-sched-sap.cc
@@ -315,6 +317,8 @@ set(header_files
     model/nr-eps-bearer-tag.h
     model/nr-eps-bearer.h
     model/nr-error-model.h
+    model/nr-ffr-algorithm.h
+    model/nr-ffr-sap.h
     model/nr-fh-control.h
     model/nr-fh-phy-sap.h
     model/nr-fh-sched-sap.h

@@ -122,8 +122,8 @@ OranCmmHandover::Filter(
                 }
             }
             else
-            {
-                commands.push_back(cmd);
+                {
+            commands.push_back(cmd);
             }
         }
     }

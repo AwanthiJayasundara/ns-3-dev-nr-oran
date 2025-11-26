@@ -63,9 +63,11 @@ if(${Torch_FOUND})
   set(torch_libraries ${Torch_LIBRARIES})
   set(oran_torch_sources
       model/oran-lm-lte-2-lte-torch-handover.cc
+      model/oran-lm-nr-2-nr-torch-handover.cc
   )
   set(oran_torch_headers
       model/oran-lm-lte-2-lte-torch-handover.h
+      model/oran-lm-nr-2-nr-torch-handover.h
   )
 endif()
 
@@ -104,9 +106,11 @@ if(${OnnxRuntime_FOUND})
   set(onnxruntime_libraries ${OnnxRuntime_LIBRARIES})
   set(oran_onnxruntime_sources
       model/oran-lm-lte-2-lte-onnx-handover.cc
+      model/oran-lm-nr-2-nr-onnx-handover.cc
   )
   set(oran_onnxruntime_headers
       model/oran-lm-lte-2-lte-onnx-handover.h
+      model/oran-lm-nr-2-nr-onnx-handover.h
   )
 endif()
 
@@ -118,33 +122,46 @@ build_lib(
     model/oran-lm-noop.cc
     model/oran-lm-lte-2-lte-distance-handover.cc
     model/oran-lm-lte-2-lte-rsrp-handover.cc
+    model/oran-lm-nr-2-nr-rsrp-handover.cc
     model/oran-cmm.cc
     model/oran-cmm-handover.cc
     model/oran-cmm-noop.cc
     model/oran-cmm-single-command-per-node.cc
     model/oran-command.cc
     model/oran-command-lte-2-lte-handover.cc
+    model/oran-command-nr-2-nr-handover.cc
     model/oran-report.cc
     model/oran-report-apploss.cc
     model/oran-report-lte-ue-rsrp-rsrq.cc
+    model/oran-report-nr-ue-rsrp-rsrq.cc
     model/oran-report-location.cc
+    model/oran-report-lte-cell-load.cc
+    model/oran-report-nr-cell-load.cc
     model/oran-report-lte-ue-cell-info.cc
+    model/oran-report-nr-ue-cell-info.cc
     model/oran-reporter.cc
     model/oran-reporter-apploss.cc
     model/oran-reporter-lte-ue-rsrp-rsrq.cc
+    model/oran-reporter-nr-ue-rsrp-rsrq.cc
     model/oran-reporter-location.cc
+    model/oran-reporter-lte-cell-load.cc
+    model/oran-reporter-nr-cell-load.cc
     model/oran-reporter-lte-ue-cell-info.cc
+    model/oran-reporter-nr-ue-cell-info.cc
     model/oran-data-repository.cc
     model/oran-data-repository-sqlite.cc
     model/oran-near-rt-ric-e2terminator.cc
     model/oran-e2-node-terminator.cc
     model/oran-e2-node-terminator-wired.cc
     model/oran-e2-node-terminator-lte-enb.cc
+    model/oran-e2-node-terminator-nr-gnb.cc
     model/oran-e2-node-terminator-lte-ue.cc
+    model/oran-e2-node-terminator-nr-ue.cc
     model/oran-e2-node-terminator-container.cc
     model/oran-report-trigger.cc
     model/oran-report-trigger-periodic.cc
     model/oran-report-trigger-lte-ue-handover.cc
+    model/oran-report-trigger-nr-ue-handover.cc
     model/oran-report-trigger-location-change.cc
     model/oran-query-trigger.cc
     model/oran-query-trigger-noop.cc
@@ -158,33 +175,46 @@ build_lib(
     model/oran-lm-noop.h
     model/oran-lm-lte-2-lte-distance-handover.h
     model/oran-lm-lte-2-lte-rsrp-handover.h
+    model/oran-lm-nr-2-nr-rsrp-handover.h
     model/oran-cmm.h
     model/oran-cmm-handover.h
     model/oran-cmm-noop.h
     model/oran-cmm-single-command-per-node.h
     model/oran-command.h
     model/oran-command-lte-2-lte-handover.h
+    model/oran-command-nr-2-nr-handover.h
     model/oran-report.h
     model/oran-report-apploss.h
     model/oran-report-lte-ue-rsrp-rsrq.h
+    model/oran-report-nr-ue-rsrp-rsrq.h
     model/oran-report-location.h
+    model/oran-report-lte-cell-load.h
+    model/oran-report-nr-cell-load.h
     model/oran-report-lte-ue-cell-info.h
+    model/oran-report-nr-ue-cell-info.h
     model/oran-reporter.h
     model/oran-reporter-apploss.h
     model/oran-reporter-lte-ue-rsrp-rsrq.h
+    model/oran-reporter-nr-ue-rsrp-rsrq.h
     model/oran-reporter-location.h
+    model/oran-reporter-lte-cell-load.h
+    model/oran-reporter-nr-cell-load.h
     model/oran-reporter-lte-ue-cell-info.h
+    model/oran-reporter-nr-ue-cell-info.h
     model/oran-data-repository.h
     model/oran-data-repository-sqlite.h
     model/oran-near-rt-ric-e2terminator.h
     model/oran-e2-node-terminator.h
     model/oran-e2-node-terminator-wired.h
     model/oran-e2-node-terminator-lte-enb.h
+    model/oran-e2-node-terminator-nr-gnb.h
     model/oran-e2-node-terminator-lte-ue.h
+    model/oran-e2-node-terminator-nr-ue.h
     model/oran-e2-node-terminator-container.h
     model/oran-report-trigger.h
     model/oran-report-trigger-periodic.h
     model/oran-report-trigger-lte-ue-handover.h
+    model/oran-report-trigger-nr-ue-handover.h
     model/oran-report-trigger-location-change.h
     model/oran-query-trigger.h
     model/oran-query-trigger-custom.h
@@ -198,6 +228,7 @@ build_lib(
     ${sqlite_libraries}
     ${torch_libraries}
     ${onnxruntime_libraries}
+    ${libnr}
   TEST_SOURCES
     test/oran-test-suite.cc
 )
