@@ -50,3 +50,8 @@ vcpkg/
 
 # Ignore local cache used by e.g. clangd
 .cache/
+oran-repository-lte.db
+oran-repository.db
+results/lte/rsrp-qos-vs-time.txt
+libtorch/
+onnxruntime-linux-x64-1.14.1/
