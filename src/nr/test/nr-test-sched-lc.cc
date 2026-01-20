@@ -69,7 +69,7 @@ class NrTestMacSchedLcRr : public TestCase
         {
             auto lcgEntry = std::make_unique<NrMacSchedulerLCG>(lcgId);
             m_lcg.emplace(lcgId, std::move(lcgEntry));
-            nr::LogicalChannelConfigListElement_s config{.m_qci = 5};
+            nr::LogicalChannelConfigListElement_s config{.m_fiveQi = 5};
             auto lcEntry = std::make_unique<NrMacSchedulerLC>(config);
             lcEntry->m_id = lcgId;
             m_lcg.at(lcgId)->Insert(std::move(lcEntry));
@@ -101,9 +101,10 @@ NrTestMacSchedLcRr::DoRun()
         uint32_t totalAssignedBytes = 0;
         for (auto [lcgId, lcgBytes] : m_expectedAssignedBytes)
         {
-            auto lcgAssigned = std::find_if(assignedBytes->begin(),
-                                            assignedBytes->end(),
-                                            [lcgId](auto& entry) { return entry.m_lcg == lcgId; });
+            auto lcgAssigned =
+                std::find_if(assignedBytes->begin(),
+                             assignedBytes->end(),
+                             [lcg = lcgId](auto& entry) { return entry.m_lcg == lcg; });
             if (lcgAssigned != assignedBytes->end())
             {
                 NS_TEST_ASSERT_MSG_EQ(lcgAssigned->m_bytes,

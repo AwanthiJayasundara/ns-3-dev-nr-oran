@@ -13,6 +13,7 @@
 #include "ns3/ipv6-address.h"
 #include "ns3/simple-ref-count.h"
 
+#include <compare>
 #include <list>
 
 namespace ns3
@@ -21,13 +22,17 @@ namespace ns3
 /**
  * This class implements the model for a 5G NR QoS rule
  * which is the set of all packet filters associated with a
- * data radio bearer, as well as selected QoS parameters
+ * data radio bearer, a precedence value (ranging from
+ * 1-255) and a QoS Flow Identifier (QFI) ranging from
+ * 1-64.
  */
 class NrQosRule : public SimpleRefCount<NrQosRule>
 {
   public:
     /**
-     * creates a QoS rule matching any traffic
+     * Creates a QoS rule with a single packet filter matching any traffic.
+     * The QFI is initialized to zero (an invalid value; must be later set to
+     * a value between 1-64) and the precedence is initialized to 255.
      *
      * @return a newly created QoS rule that will match any traffic
      */
@@ -96,10 +101,6 @@ class NrQosRule : public SimpleRefCount<NrQosRule>
                      uint16_t lp,
                      uint8_t tos);
 
-        /// Used to specify the precedence for the packet filter among all packet filters in the
-        /// QoS rule; higher values will be evaluated last.
-        uint8_t precedence;
-
         /// Whether the filter needs to be applied to uplink / downlink only, or in both cases
         Direction direction;
 
@@ -120,6 +121,14 @@ class NrQosRule : public SimpleRefCount<NrQosRule>
 
         uint8_t typeOfService;     //!< type of service field
         uint8_t typeOfServiceMask; //!< type of service field mask
+
+        /**
+         * @brief Three-way comparison operator.
+         *
+         * @param other the other PacketFilter to compare with
+         * @returns comparison result
+         */
+        std::strong_ordering operator<=>(const PacketFilter& other) const = default;
     };
 
     NrQosRule();
@@ -178,9 +187,46 @@ class NrQosRule : public SimpleRefCount<NrQosRule>
      */
     std::list<PacketFilter> GetPacketFilters() const;
 
+    /**
+     * Check if this is a default QoS rule (catch-all rule matching all traffic)
+     *
+     * This method does not evaluate the values of QFI or precedence; it only
+     * checks whether there is one PacketFilter that matches the single PacketFilter
+     * that is produced by a call to NrQosRule::Default().
+     *
+     * @return true if this rule matches all traffic, false otherwise
+     */
+    bool IsDefault() const;
+
+    /**
+     * Set the precedence of the QoS rule
+     * @param precedence the precedence value
+     */
+    void SetPrecedence(uint8_t precedence);
+
+    /**
+     * Get the precedence of the QoS rule
+     * @return the precedence value
+     */
+    uint8_t GetPrecedence() const;
+
+    /**
+     * Set the QFI of the QoS rule
+     * @param qfi the QFI value
+     */
+    void SetQfi(uint8_t qfi);
+
+    /**
+     * Get the QFI of the QoS rule
+     * @return the QFI value
+     */
+    uint8_t GetQfi() const;
+
   private:
     std::list<PacketFilter> m_filters; ///< packet filter list
     uint8_t m_numFilters;              ///< number of packet filters applied to this QoS rule
+    uint8_t m_precedence;              ///< precedence of the QoS rule
+    uint8_t m_qfi;                     ///< QFI of the QoS rule
 };
 
 std::ostream& operator<<(std::ostream& os, const NrQosRule::Direction& d);

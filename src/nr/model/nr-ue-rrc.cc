@@ -81,21 +81,48 @@ UeMemberNrUeCmacSapUser::NotifyRandomAccessFailed()
 }
 
 /// Map each of UE RRC states to its string representation.
-static const std::string g_ueRrcStateName[NrUeRrc::NUM_STATES] = {
-    "IDLE_START",
-    "IDLE_CELL_SEARCH",
-    "IDLE_WAIT_MIB_SIB1",
-    "IDLE_WAIT_MIB",
-    "IDLE_WAIT_SIB1",
-    "IDLE_CAMPED_NORMALLY",
-    "IDLE_WAIT_SIB2",
-    "IDLE_RANDOM_ACCESS",
-    "IDLE_CONNECTING",
-    "CONNECTED_NORMALLY",
-    "CONNECTED_HANDOVER",
-    "CONNECTED_PHY_PROBLEM",
-    "CONNECTED_REESTABLISHING",
-};
+const std::string
+ToString(NrUeRrc::State state)
+{
+    switch (state)
+    {
+    case NrUeRrc::IDLE_START:
+        return "IDLE_START";
+    case NrUeRrc::IDLE_CELL_SEARCH:
+        return "IDLE_CELL_SEARCH";
+    case NrUeRrc::IDLE_WAIT_MIB_SIB1:
+        return "IDLE_WAIT_MIB_SIB1";
+    case NrUeRrc::IDLE_WAIT_MIB:
+        return "IDLE_WAIT_MIB";
+    case NrUeRrc::IDLE_WAIT_SIB1:
+        return "IDLE_WAIT_SIB1";
+    case NrUeRrc::IDLE_CAMPED_NORMALLY:
+        return "IDLE_CAMPED_NORMALLY";
+    case NrUeRrc::IDLE_WAIT_SIB2:
+        return "IDLE_WAIT_SIB2";
+    case NrUeRrc::IDLE_RANDOM_ACCESS:
+        return "IDLE_RANDOM_ACCESS";
+    case NrUeRrc::IDLE_CONNECTING:
+        return "IDLE_CONNECTING";
+    case NrUeRrc::CONNECTED_NORMALLY:
+        return "CONNECTED_NORMALLY";
+    case NrUeRrc::CONNECTED_HANDOVER:
+        return "CONNECTED_HANDOVER";
+    case NrUeRrc::CONNECTED_PHY_PROBLEM:
+        return "CONNECTED_PHY_PROBLEM";
+    case NrUeRrc::CONNECTED_REESTABLISHING:
+        return "CONNECTED_REESTABLISHING";
+    default:
+        return "UNKNOWN_STATE";
+    }
+}
+
+std::ostream&
+operator<<(std::ostream& os, NrUeRrc::State state)
+{
+    os << ToString(state);
+    return os;
+}
 
 /////////////////////////////
 // ue RRC methods
@@ -554,11 +581,13 @@ NrUeRrc::InitializeSrb0()
     m_rrcSapUser->Setup(ueParams);
 
     // CCCH (LCID 0) is pre-configured, here is the hardcoded configuration:
-    NrUeCmacSapProvider::LogicalChannelConfig lcConfig;
+    NrUeCmacSapProvider::LogicalChannelConfig lcConfig{};
     lcConfig.priority = 0;                   // highest priority
     lcConfig.prioritizedBitRateKbps = 65535; // maximum
     lcConfig.bucketSizeDurationMs = 65535;   // maximum
     lcConfig.logicalChannelGroup = 0;        // all SRBs mapped to LCG 0
+    // Arbitrary 5QI to route UE RRC UL messages through BWP manager
+    lcConfig.fiveQi = NrQosFlow::GBR_CONV_VOICE;
     NrMacSapUser* msu =
         m_ccmRrcSapProvider->ConfigureSignalBearer(lcid, lcConfig, rlc->GetNrMacSapUser());
     m_cmacSapProvider.at(GetPrimaryUlIndex())->AddLc(lcid, lcConfig, msu);
@@ -589,16 +618,17 @@ NrUeRrc::InitializeSap()
 }
 
 void
-NrUeRrc::DoSendData(Ptr<Packet> packet, uint8_t bid)
+NrUeRrc::DoSendData(Ptr<Packet> packet, uint8_t qfi)
 {
-    NS_LOG_FUNCTION(this << packet);
+    NS_LOG_FUNCTION(this << packet << qfi);
 
-    uint8_t drbid = Bid2Drbid(bid);
+    uint8_t drbid = Qfi2Drbid(qfi);
 
     if (drbid != 0)
     {
         auto it = m_drbMap.find(drbid);
-        NS_ASSERT_MSG(it != m_drbMap.end(), "could not find bearer with drbid == " << drbid);
+        NS_ASSERT_MSG(it != m_drbMap.end(),
+                      "could not find bearer with drbid == " << +drbid << " for QFI " << +qfi);
 
         NrPdcpSapProvider::TransmitPdcpSduParameters params;
         params.pdcpSdu = packet;
@@ -1496,6 +1526,7 @@ NrUeRrc::ApplyRadioResourceConfigDedicated(NrRrcSap::RadioResourceConfigDedicate
             m_srb1CreatedTrace(m_imsi, m_cellId, m_rnti);
 
             m_srb1->m_logicalChannelConfig.priority = stamIt->logicalChannelConfig.priority;
+            m_srb1->m_logicalChannelConfig.fiveQi = stamIt->logicalChannelConfig.fiveQi;
             m_srb1->m_logicalChannelConfig.prioritizedBitRateKbps =
                 stamIt->logicalChannelConfig.prioritizedBitRateKbps;
             m_srb1->m_logicalChannelConfig.bucketSizeDurationMs =
@@ -1505,6 +1536,7 @@ NrUeRrc::ApplyRadioResourceConfigDedicated(NrRrcSap::RadioResourceConfigDedicate
 
             NrUeCmacSapProvider::LogicalChannelConfig lcConfig;
             lcConfig.priority = stamIt->logicalChannelConfig.priority;
+            lcConfig.fiveQi = stamIt->logicalChannelConfig.fiveQi;
             lcConfig.prioritizedBitRateKbps = stamIt->logicalChannelConfig.prioritizedBitRateKbps;
             lcConfig.bucketSizeDurationMs = stamIt->logicalChannelConfig.bucketSizeDurationMs;
             lcConfig.logicalChannelGroup = stamIt->logicalChannelConfig.logicalChannelGroup;
@@ -1577,7 +1609,7 @@ NrUeRrc::ApplyRadioResourceConfigDedicated(NrRrcSap::RadioResourceConfigDedicate
 
             Ptr<NrDataRadioBearerInfo> drbInfo = CreateObject<NrDataRadioBearerInfo>();
             drbInfo->m_rlc = rlc;
-            drbInfo->m_epsBearerIdentity = dtamIt->epsBearerIdentity;
+            drbInfo->m_qosFlowIdentity = dtamIt->qosFlowIdentity;
             drbInfo->m_logicalChannelIdentity = dtamIt->logicalChannelIdentity;
             drbInfo->m_drbIdentity = dtamIt->drbIdentity;
 
@@ -1594,15 +1626,18 @@ NrUeRrc::ApplyRadioResourceConfigDedicated(NrRrcSap::RadioResourceConfigDedicate
                 drbInfo->m_pdcp = pdcp;
             }
 
-            m_bid2DrbidMap[dtamIt->epsBearerIdentity] = dtamIt->drbIdentity;
+            m_qfi2DrbidMap[dtamIt->qosFlowIdentity] = dtamIt->drbIdentity;
 
             m_drbMap.insert(
                 std::pair<uint8_t, Ptr<NrDataRadioBearerInfo>>(dtamIt->drbIdentity, drbInfo));
+            NS_LOG_DEBUG("Inserting drbid " << +dtamIt->drbIdentity << " qfi "
+                                            << +dtamIt->qosFlowIdentity << " to DRB map");
 
             m_drbCreatedTrace(m_imsi, m_cellId, m_rnti, dtamIt->drbIdentity);
 
             NrUeCmacSapProvider::LogicalChannelConfig lcConfig;
             lcConfig.priority = dtamIt->logicalChannelConfig.priority;
+            lcConfig.fiveQi = dtamIt->logicalChannelConfig.fiveQi;
             lcConfig.prioritizedBitRateKbps = dtamIt->logicalChannelConfig.prioritizedBitRateKbps;
             lcConfig.bucketSizeDurationMs = dtamIt->logicalChannelConfig.bucketSizeDurationMs;
             lcConfig.logicalChannelGroup = dtamIt->logicalChannelConfig.logicalChannelGroup;
@@ -1653,14 +1688,20 @@ NrUeRrc::ApplyRadioResourceConfigDedicated(NrRrcSap::RadioResourceConfigDedicate
         NS_LOG_INFO(this << " IMSI " << m_imsi << " releasing DRB " << (uint32_t)drbid);
         auto it = m_drbMap.find(drbid);
         NS_ASSERT_MSG(it != m_drbMap.end(), "could not find bearer with given lcid");
+        uint8_t qfi = it->second->m_qosFlowIdentity;
         m_drbMap.erase(it);
-        m_bid2DrbidMap.erase(drbid);
-        // Remove LCID
+        m_qfi2DrbidMap.erase(qfi);
+        NS_LOG_INFO("IMSI " << m_imsi << " releasing QFI " << +qfi);
+
+        // Remove QoS rules from the classifier for this flow only
+        m_asSapUser->DeactivateQosFlow(qfi);
+
+        // Remove LCID using the new direct mapping: LCID = DRBID (not DRBID + 2)
         for (uint32_t i = 0; i < m_numberOfComponentCarriers; i++)
         {
-            m_cmacSapProvider.at(i)->RemoveLc(drbid + 2);
+            m_cmacSapProvider.at(i)->RemoveLc(nr::Drbid2Lcid(drbid));
         }
-        // m_ccmRrcSapProvider->RemoveLc(drbid+2);
+        // m_ccmRrcSapProvider->RemoveLc(nr::Drbid2Lcid(drbid));
     }
 }
 
@@ -3195,7 +3236,7 @@ NrUeRrc::LeaveConnectedMode()
     }
 
     m_drbMap.clear();
-    m_bid2DrbidMap.clear();
+    m_qfi2DrbidMap.clear();
     m_srb1 = nullptr;
     m_hasReceivedMib = false;
     m_hasReceivedSib1 = false;
@@ -3253,11 +3294,11 @@ NrUeRrc::DisposeOldSrb1()
 }
 
 uint8_t
-NrUeRrc::Bid2Drbid(uint8_t bid)
+NrUeRrc::Qfi2Drbid(uint8_t qfi)
 {
-    auto it = m_bid2DrbidMap.find(bid);
-    // NS_ASSERT_MSG (it != m_bid2DrbidMap.end (), "could not find BID " << bid);
-    if (it == m_bid2DrbidMap.end())
+    auto it = m_qfi2DrbidMap.find(qfi);
+    // NS_ASSERT_MSG (it != m_qfi2DrbidMap.end (), "could not find QFI " << +qfi);
+    if (it == m_qfi2DrbidMap.end())
     {
         return 0;
     }
@@ -3384,11 +3425,4 @@ NrUeRrc::ResetRlfParams()
     m_noOfSyncIndications = 0;
     m_cphySapProvider.at(GetPrimaryDlIndex())->ResetRlfParams();
 }
-
-const std::string
-NrUeRrc::ToString(NrUeRrc::State s)
-{
-    return g_ueRrcStateName[s];
-}
-
 } // namespace ns3

@@ -164,8 +164,8 @@ NrNoOpComponentCarrierManager::DoRemoveUe(uint16_t rnti)
 }
 
 std::vector<NrCcmRrcSapProvider::LcsConfig>
-NrNoOpComponentCarrierManager::DoSetupDataRadioBearer(NrEpsBearer bearer,
-                                                      uint8_t bearerId,
+NrNoOpComponentCarrierManager::DoSetupDataRadioBearer(NrQosFlow flow,
+                                                      uint8_t qfi,
                                                       uint16_t rnti,
                                                       uint8_t lcid,
                                                       uint8_t lcGroup,
@@ -189,14 +189,14 @@ NrNoOpComponentCarrierManager::DoSetupDataRadioBearer(NrEpsBearer bearer,
         lci.rnti = rnti;
         lci.lcId = lcid;
         lci.lcGroup = lcGroup;
-        lci.qci = bearer.qci;
+        lci.fiveQi = flow.fiveQi;
         if (ncc == 0)
         {
-            lci.resourceType = bearer.GetResourceType();
-            lci.mbrUl = bearer.gbrQosInfo.mbrUl;
-            lci.mbrDl = bearer.gbrQosInfo.mbrDl;
-            lci.gbrUl = bearer.gbrQosInfo.gbrUl;
-            lci.gbrDl = bearer.gbrQosInfo.gbrDl;
+            lci.resourceType = flow.GetResourceType();
+            lci.mbrUl = flow.gbrQosInfo.mbrUl;
+            lci.mbrDl = flow.gbrQosInfo.mbrDl;
+            lci.gbrUl = flow.gbrQosInfo.gbrUl;
+            lci.gbrDl = flow.gbrQosInfo.gbrDl;
         }
         else
         {
@@ -220,12 +220,12 @@ NrNoOpComponentCarrierManager::DoSetupDataRadioBearer(NrEpsBearer bearer,
         lcinfo.rnti = rnti;
         lcinfo.lcId = lcid;
         lcinfo.lcGroup = lcGroup;
-        lcinfo.qci = bearer.qci;
-        lcinfo.resourceType = bearer.GetResourceType();
-        lcinfo.mbrUl = bearer.gbrQosInfo.mbrUl;
-        lcinfo.mbrDl = bearer.gbrQosInfo.mbrDl;
-        lcinfo.gbrUl = bearer.gbrQosInfo.gbrUl;
-        lcinfo.gbrDl = bearer.gbrQosInfo.gbrDl;
+        lcinfo.fiveQi = flow.fiveQi;
+        lcinfo.resourceType = flow.GetResourceType();
+        lcinfo.mbrUl = flow.gbrQosInfo.mbrUl;
+        lcinfo.mbrDl = flow.gbrQosInfo.mbrDl;
+        lcinfo.gbrUl = flow.gbrQosInfo.gbrUl;
+        lcinfo.gbrDl = flow.gbrQosInfo.gbrDl;
         rntiIt->second.m_rlcLcInstantiated.emplace(lcinfo.lcId, lcinfo);
         rntiIt->second.m_ueAttached.emplace(lcinfo.lcId, msu);
     }
@@ -241,8 +241,11 @@ NrNoOpComponentCarrierManager::DoReleaseDataRadioBearer(uint16_t rnti, uint8_t l
 {
     NS_LOG_FUNCTION(this << rnti << +lcid);
 
-    // Here we receive directly the RNTI and the LCID, instead of only DRB ID
-    // DRB ID are mapped as DRBID = LCID + 2
+    // Here we receive directly the RNTI and the LCID, instead of only DRB ID.
+    // With the updated mapping scheme:
+    // DRBID = LCID (direct mapping, no offset)
+    // LCID 3: Default DRB (QFI 1)
+    // LCID 5+: Dedicated DRBs
     auto rntiIt = m_ueInfo.find(rnti);
     NS_ASSERT_MSG(rntiIt != m_ueInfo.end(),
                   "request to Release Data Radio Bearer on UE with unknown RNTI " << rnti);

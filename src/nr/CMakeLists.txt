@@ -117,11 +117,7 @@ set(source_files
     model/nr-epc-ue-nas.cc
     model/nr-epc-x2-header.cc
     model/nr-epc-x2.cc
-    model/nr-eps-bearer-tag.cc
-    model/nr-eps-bearer.cc
     model/nr-error-model.cc
-    model/nr-ffr-algorithm.cc
-    model/nr-ffr-sap.h
     model/nr-fh-control.cc
     model/nr-fh-phy-sap.cc
     model/nr-fh-sched-sap.cc
@@ -170,6 +166,7 @@ set(source_files
     model/nr-mac-scheduler-ue-info.cc
     model/nr-mac-scheduler.cc
     model/nr-mac-short-bsr-ce.cc
+    model/nr-mcs-tables.cc
     model/nr-mimo-chunk-processor.cc
     model/nr-mimo-matrices.cc
     model/nr-mimo-signal.cc
@@ -187,6 +184,8 @@ set(source_files
     model/nr-pm-search-ideal.cc
     model/nr-pm-search-sasaoka.cc
     model/nr-pm-search.cc
+    model/nr-qos-flow-tag.cc
+    model/nr-qos-flow.cc
     model/nr-qos-rule.cc
     model/nr-qos-rule-classifier.cc
     model/nr-radio-bearer-info.cc
@@ -314,11 +313,7 @@ set(header_files
     model/nr-epc-x2-header.h
     model/nr-epc-x2-sap.h
     model/nr-epc-x2.h
-    model/nr-eps-bearer-tag.h
-    model/nr-eps-bearer.h
     model/nr-error-model.h
-    model/nr-ffr-algorithm.h
-    model/nr-ffr-sap.h
     model/nr-fh-control.h
     model/nr-fh-phy-sap.h
     model/nr-fh-sched-sap.h
@@ -378,6 +373,7 @@ set(header_files
     model/nr-mac-scheduler-ue-info.h
     model/nr-mac-scheduler.h
     model/nr-mac-short-bsr-ce.h
+    model/nr-mcs-tables.h
     model/nr-mimo-chunk-processor.h
     model/nr-mimo-matrices.h
     model/nr-mimo-signal.h
@@ -397,6 +393,8 @@ set(header_files
     model/nr-pm-search-ideal.h
     model/nr-pm-search-sasaoka.h
     model/nr-pm-search.h
+    model/nr-qos-flow-tag.h
+    model/nr-qos-flow.h
     model/nr-qos-rule.h
     model/nr-qos-rule-classifier.h
     model/nr-radio-bearer-info.h
@@ -503,6 +501,7 @@ set(test_sources
     test/nr-test-rrc.cc
     test/nr-test-sched-harq.cc
     test/nr-test-sched-lc.cc
+    test/nr-test-sched-ofdma-frequency-domain.cc
     test/nr-test-sched-symbols-per-beam.cc
     test/nr-test-sched-temporal-fairness.cc
     test/nr-test-sched.cc
@@ -514,6 +513,7 @@ set(test_sources
     test/system-scheduler-test.cc
     test/ul-scheduling-test.cc
     utils/traffic-generators/test/traffic-generator-test.cc
+    test/nr-test-hexagonal-grid-scenario-helper.cc
     # cmake-format: off
     # todo:
     # test/nr-test-x2-handover.cc               \
@@ -605,7 +605,7 @@ string(
 )
 build_exec(
   EXECNAME nr-print-introspected-doxygen
-  SOURCE_FILES ./utils/print-introspected-doxygen.cc
+  SOURCE_FILES ./tools/print-introspected-doxygen.cc
   LIBRARIES_TO_LINK ${libnr}
   EXECUTABLE_DIRECTORY_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${FOLDER}
 )

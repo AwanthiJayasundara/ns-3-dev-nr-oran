@@ -329,12 +329,6 @@ class NrUeRrc : public Object
     uint16_t GetPrimaryDlIndex() const;
 
     /**
-     * @param s The UE RRC state.
-     * @return The string representation of the given state.
-     */
-    static const std::string ToString(NrUeRrc::State s);
-
-    /**
      * TracedCallback signature for imsi, cellId and rnti events.
      *
      * @param [in] imsi
@@ -466,9 +460,9 @@ class NrUeRrc : public Object
      * Send data function
      *
      * @param packet the packet
-     * @param bid the BID
+     * @param qfi the QoS flow ID
      */
-    void DoSendData(Ptr<Packet> packet, uint8_t bid);
+    void DoSendData(Ptr<Packet> packet, uint8_t qfi);
     /// Disconnect function
     void DoDisconnect();
 
@@ -750,18 +744,22 @@ class NrUeRrc : public Object
     /// Dispose old SRB1
     void DisposeOldSrb1();
     /**
-     * Bid 2 DR bid.
-     * @param bid the BID
+     * Convert QFI to DRB ID
+     * @param qfi the QoS Flow ID
      * @returns the DR bid
      */
-    uint8_t Bid2Drbid(uint8_t bid);
+    uint8_t Qfi2Drbid(uint8_t qfi);
     /**
      * Switch the UE RRC to the given state.
      * @param s the destination state
      */
     void SwitchToState(State s);
 
-    std::map<uint8_t, uint8_t> m_bid2DrbidMap; ///< bid to DR bid map
+    // QFI to DRBID mapping, maintained for defensive programming purposes. While the
+    // current ns-3 implementation enforces DRBID = QFI + 2 (which could be computed with
+    // a formula), this explicit map allows for future changes to the identifier mapping
+    // scheme without requiring code modifications elsewhere in the UE RRC layer.
+    std::map<uint8_t, uint8_t> m_qfi2DrbidMap; ///< QFI to DR bearer id map
 
     std::vector<NrUeCphySapUser*> m_cphySapUser;         ///< UE CPhy SAP user
     std::vector<NrUeCphySapProvider*> m_cphySapProvider; ///< UE CPhy SAP provider
@@ -1361,6 +1359,20 @@ class NrUeRrc : public Object
     uint16_t m_numberOfComponentCarriers;
 
 }; // end of class NrUeRrc
+
+/**
+ * Converts NrUeRrc::State to a string
+ * @param state enum value of the state
+ * @return string value of the state
+ */
+const std::string ToString(NrUeRrc::State state);
+/**
+ * Prints to the output stream the NrUeRrc::State
+ * @param os output stream
+ * @param state the enum value of the state
+ * @return the output stream
+ */
+std::ostream& operator<<(std::ostream& os, NrUeRrc::State state);
 
 } // namespace ns3
 

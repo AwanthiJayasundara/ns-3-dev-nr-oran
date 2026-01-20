@@ -4,6 +4,7 @@
 
 #include "ns3/nr-mac-sched-sap.h"
 #include "ns3/nr-mac-scheduler-ofdma-rr.h"
+#include "ns3/nr-mac-scheduler-ofdma-symbol-per-beam.h"
 #include "ns3/nr-mac-scheduler-ofdma.h"
 #include "ns3/nr-mac-short-bsr-ce.h"
 #include "ns3/object-factory.h"
@@ -167,7 +168,7 @@ NrSchedOfdmaSymbolPerBeamTestCase::LcConfig(uint16_t rnti,
     params.m_reconfigureFlag = false;
     lc.m_direction = nr::LogicalChannelConfigListElement_s::Direction_e::DIR_BOTH;
     lc.m_qosBearerType = nr::LogicalChannelConfigListElement_s::QosBearerType_e::QBT_NON_GBR;
-    lc.m_qci = 9;
+    lc.m_fiveQi = 9;
     for (size_t i = 0; i < 4; i++)
     {
         lc.m_logicalChannelGroup = i;

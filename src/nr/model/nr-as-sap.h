@@ -64,9 +64,9 @@ class NrAsSapProvider
      * @brief Send a data packet.
      *
      * @param packet the packet
-     * @param bid the EPS bearer ID
+     * @param qfi the QoS Flow ID
      */
-    virtual void SendData(Ptr<Packet> packet, uint8_t bid) = 0;
+    virtual void SendData(Ptr<Packet> packet, uint8_t qfi) = 0;
 
     /**
      * @brief Tell the RRC entity to release the connection.
@@ -102,6 +102,12 @@ class NrAsSapUser
     virtual void NotifyConnectionReleased() = 0;
 
     /**
+     * Notify the NAS that a dedicated QoS flow should be removed
+     * @param qfi the Qos Flow ID
+     */
+    virtual void DeactivateQosFlow(uint8_t qfi) = 0;
+
+    /**
      * receive a data packet
      *
      * @param packet the packet
@@ -132,7 +138,7 @@ class MemberNrAsSapProvider : public NrAsSapProvider
     void StartCellSelection(uint32_t arfcn) override;
     void ForceCampedOnGnb(uint16_t cellId, uint32_t arfcn) override;
     void Connect() override;
-    void SendData(Ptr<Packet> packet, uint8_t bid) override;
+    void SendData(Ptr<Packet> packet, uint8_t qfi) override;
     void Disconnect() override;
 
   private:
@@ -210,6 +216,7 @@ class MemberNrAsSapUser : public NrAsSapUser
     void NotifyConnectionFailed() override;
     void RecvData(Ptr<Packet> packet) override;
     void NotifyConnectionReleased() override;
+    void DeactivateQosFlow(uint8_t qfi) override;
 
   private:
     C* m_owner; ///< the owner class
@@ -247,6 +254,13 @@ void
 MemberNrAsSapUser<C>::NotifyConnectionReleased()
 {
     m_owner->DoNotifyConnectionReleased();
+}
+
+template <class C>
+void
+MemberNrAsSapUser<C>::DeactivateQosFlow(uint8_t qfi)
+{
+    m_owner->DoDeactivateQosFlow(qfi);
 }
 
 } // namespace ns3

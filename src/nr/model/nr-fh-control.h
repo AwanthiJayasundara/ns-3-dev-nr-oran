@@ -9,8 +9,11 @@
 #include "nr-eesm-t2.h"
 #include "nr-fh-phy-sap.h"
 #include "nr-fh-sched-sap.h"
+#include "nr-phy-mac-common.h"
+#include "sfnsf.h"
 
 #include "ns3/object.h"
+#include "ns3/traced-callback.h"
 
 namespace ns3
 {

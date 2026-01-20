@@ -64,10 +64,15 @@ operator<<(std::ostream& os, const NrQosRule::PacketFilter& f)
 }
 
 NrQosRule::PacketFilter::PacketFilter()
-    : precedence(255),
-      direction(BIDIRECTIONAL),
+    : direction(BIDIRECTIONAL),
+      remoteAddress(Ipv4Address("0.0.0.0")),
       remoteMask("0.0.0.0"),
+      localAddress(Ipv4Address("0.0.0.0")),
       localMask("0.0.0.0"),
+      remoteIpv6Address(Ipv6Address("::")),
+      remoteIpv6Prefix(static_cast<uint8_t>(0)),
+      localIpv6Address(Ipv6Address("::")),
+      localIpv6Prefix(static_cast<uint8_t>(0)),
       remotePortStart(0),
       remotePortEnd(65535),
       localPortStart(0),
@@ -217,14 +222,18 @@ NrQosRule::PacketFilter::Matches(Direction d,
 Ptr<NrQosRule>
 NrQosRule::Default()
 {
+    NS_LOG_FUNCTION_NOARGS();
     Ptr<NrQosRule> rule = Create<NrQosRule>();
     NrQosRule::PacketFilter defaultPacketFilter;
     rule->Add(defaultPacketFilter);
+    rule->SetPrecedence(255);
     return rule;
 }
 
 NrQosRule::NrQosRule()
-    : m_numFilters(0)
+    : m_numFilters(0),
+      m_precedence(128),
+      m_qfi(0)
 {
     NS_LOG_FUNCTION(this);
 }
@@ -236,7 +245,7 @@ NrQosRule::Add(PacketFilter f)
     NS_ABORT_MSG_IF(m_numFilters >= 16, "Maximum number of packet filters limited to 16");
 
     std::list<PacketFilter>::iterator it;
-    for (it = m_filters.begin(); (it != m_filters.end()) && (it->precedence <= f.precedence); ++it)
+    for (it = m_filters.begin(); it != m_filters.end(); ++it)
     {
     }
     m_filters.insert(it, f);
@@ -299,6 +308,53 @@ NrQosRule::GetPacketFilters() const
 {
     NS_LOG_FUNCTION(this);
     return m_filters;
+}
+
+bool
+NrQosRule::IsDefault() const
+{
+    // A default rule should match what Default() produces
+    if (m_numFilters != 1)
+    {
+        return false;
+    }
+
+    // Compare with the default rule
+    Ptr<NrQosRule> defaultRule = Default();
+    auto defaultFilters = defaultRule->GetPacketFilters();
+
+    NS_ASSERT_MSG(defaultFilters.size() == 1, "Default rule should have one packet filter");
+
+    // Compare the packet filters
+    return (m_filters.front() == defaultFilters.front());
+}
+
+void
+NrQosRule::SetPrecedence(uint8_t precedence)
+{
+    NS_LOG_FUNCTION(this << precedence);
+    NS_ABORT_MSG_IF(!precedence, "Precedence must be greater than 0");
+    m_precedence = precedence;
+}
+
+uint8_t
+NrQosRule::GetPrecedence() const
+{
+    return m_precedence;
+}
+
+void
+NrQosRule::SetQfi(uint8_t qfi)
+{
+    NS_LOG_FUNCTION(this << qfi);
+    NS_ABORT_MSG_IF(qfi > 63, "QFI must be less than 64");
+    m_qfi = qfi;
+}
+
+uint8_t
+NrQosRule::GetQfi() const
+{
+    return m_qfi;
 }
 
 } // namespace ns3

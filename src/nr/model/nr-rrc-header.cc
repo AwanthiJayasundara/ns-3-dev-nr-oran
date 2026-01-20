@@ -174,7 +174,7 @@ NrRrcAsn1Header::SerializeDrbToAddModList(std::list<NrRrcSap::DrbToAddMod> drbTo
         SerializeSequence(drbToAddModListOptionalFieldsPresent, true);
 
         // Serialize eps-BearerIdentity::=INTEGER (0..15)
-        SerializeInteger(it->epsBearerIdentity, 0, 15);
+        SerializeInteger(it->qosFlowIdentity, 0, 15);
 
         // Serialize drb-Identity ::= INTEGER (1..32)
         SerializeInteger(it->drbIdentity, 1, 32);
@@ -282,8 +282,8 @@ NrRrcAsn1Header::SerializeLogicalChannelConfig(
     // 1 optional field (logicalChannelGroup), which is present. No extension marker.
     SerializeSequence(std::bitset<1>(1), false);
 
-    // Serialize priority ::= INTEGER (1..16)
-    SerializeInteger(logicalChannelConfig.priority, 1, 16);
+    // Serialize priority ::= INTEGER (1..90)
+    SerializeInteger(logicalChannelConfig.priority, 1, 90);
 
     // Serialize prioritisedBitRate
     int prioritizedBitRate;
@@ -344,6 +344,9 @@ NrRrcAsn1Header::SerializeLogicalChannelConfig(
 
     // Serialize logicalChannelGroup ::= INTEGER (0..3)
     SerializeInteger(logicalChannelConfig.logicalChannelGroup, 0, 3);
+
+    // Serialize fiveQi ::= INTEGER (0..255)
+    SerializeInteger(logicalChannelConfig.fiveQi, 0, 255);
 }
 
 void
@@ -2372,9 +2375,9 @@ NrRrcAsn1Header::DeserializeDrbToAddModList(std::list<NrRrcSap::DrbToAddMod>* dr
 
         if (optionalFields[4])
         {
-            // Deserialize epsBearerIdentity
+            // Deserialize qosFlowIdentity
             bIterator = DeserializeInteger(&val, 0, 15, bIterator);
-            drbToAddMod.epsBearerIdentity = val;
+            drbToAddMod.qosFlowIdentity = val;
         }
 
         bIterator = DeserializeInteger(&val, 1, 32, bIterator);
@@ -2479,7 +2482,7 @@ NrRrcAsn1Header::DeserializeLogicalChannelConfig(
         bIterator = DeserializeSequence(&bitset1, false, bIterator);
 
         // Deserialize priority
-        bIterator = DeserializeInteger(&n, 1, 16, bIterator);
+        bIterator = DeserializeInteger(&n, 1, 90, bIterator);
         logicalChannelConfig->priority = n;
 
         // Deserialize prioritisedBitRate
@@ -2545,12 +2548,13 @@ NrRrcAsn1Header::DeserializeLogicalChannelConfig(
         }
         logicalChannelConfig->bucketSizeDurationMs = bucketSizeDurationMs;
 
-        if (bitset1[0])
-        {
-            // Deserialize logicalChannelGroup
-            bIterator = DeserializeInteger(&n, 0, 3, bIterator);
-            logicalChannelConfig->logicalChannelGroup = n;
-        }
+        // Deserialize logicalChannelGroup
+        bIterator = DeserializeInteger(&n, 0, 3, bIterator);
+        logicalChannelConfig->logicalChannelGroup = n;
+
+        // Serialize fiveQi ::= INTEGER (0..255)
+        bIterator = DeserializeInteger(&n, 0, 255, bIterator);
+        logicalChannelConfig->fiveQi = static_cast<NrQosFlow::FiveQi>(n);
     }
     return bIterator;
 }
@@ -3099,7 +3103,7 @@ NrRrcAsn1Header::Print(std::ostream& os,
     auto it2 = radioResourceConfigDedicated.drbToAddModList.begin();
     for (; it2 != radioResourceConfigDedicated.drbToAddModList.end(); it2++)
     {
-        os << "      epsBearerIdentity: " << (int)it2->epsBearerIdentity << std::endl;
+        os << "      qosFlowIdentity: " << (int)it2->qosFlowIdentity << std::endl;
         os << "      drbIdentity: " << (int)it2->drbIdentity << std::endl;
         os << "      rlcConfig: " << it2->rlcConfig.choice << std::endl;
         os << "      logicalChannelIdentity: " << (int)it2->logicalChannelIdentity << std::endl;

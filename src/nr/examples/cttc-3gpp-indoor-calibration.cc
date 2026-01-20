@@ -9,8 +9,8 @@
 #include "ns3/flow-monitor-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/mobility-module.h"
-#include "ns3/nr-eps-bearer-tag.h"
 #include "ns3/nr-module.h"
+#include "ns3/parse-string-to-vector.h"
 #include "ns3/point-to-point-helper.h"
 
 using namespace ns3;
@@ -163,7 +163,7 @@ class Nr3gppIndoorCalibration
              std::string beamformingMethod,
              bool enableShadowing,
              bool enableInitialAssoc,
-             NrHelper::InitialAssocParams Initparams,
+             NrHelper::InitialAssocParams initParams,
              bool gNbAntennaModel,
              bool ueAntennaModel,
              std::string indoorScenario,
@@ -173,6 +173,7 @@ class Nr3gppIndoorCalibration
              uint32_t duration,
              uint8_t numUePanel,
              uint16_t ueCount,
+             std::string confType,
              DroppingParameters dropParam = DroppingParameters());
     /**
      * @brief Destructor that closes the output file stream and finished the
@@ -299,7 +300,7 @@ UeRssiPerProcessedChunkTrace(Nr3gppIndoorCalibration* scenario, double rssidBm)
 void
 Nr3gppIndoorCalibration::UeReception(RxPacketTraceParams params)
 {
-    m_outSinrFile << params.m_cellId << params.m_rnti << "\t" << 10 * log10(params.m_sinr)
+    m_outSinrFile << params.m_cellId << "\t" << params.m_rnti << "\t" << 10 * log10(params.m_sinr)
                   << std::endl;
 }
 
@@ -379,7 +380,7 @@ Nr3gppIndoorCalibration::Run(double centralFrequencyBand,
                              std::string beamformingMethod,
                              bool enableShadowing,
                              bool enableInitialAssoc,
-                             NrHelper::InitialAssocParams Initparams,
+                             NrHelper::InitialAssocParams initParams,
                              bool gNbAntennaModel,
                              bool ueAntennaModel,
                              std::string indoorScenario,
@@ -389,6 +390,7 @@ Nr3gppIndoorCalibration::Run(double centralFrequencyBand,
                              uint32_t duration,
                              uint8_t numUePanel,
                              uint16_t ueCount,
+                             std::string confType,
                              DroppingParameters dropParam)
 {
     Time simTime = MilliSeconds(duration);
@@ -408,7 +410,14 @@ Nr3gppIndoorCalibration::Run(double centralFrequencyBand,
     // if simulation tag is not provided create one
     if (tag.empty())
     {
-        tag = BuildTag(gNbAntennaModel, ueAntennaModel, indoorScenario, speed);
+        if (confType == "3gppCalibConf")
+        {
+            tag = confType;
+        }
+        else
+        {
+            tag = BuildTag(gNbAntennaModel, ueAntennaModel, indoorScenario, speed);
+        }
     }
     std::string filenameSinr = BuildFileNameString(resultsDirPath, "sinrs", tag);
     std::string filenameSnr = BuildFileNameString(resultsDirPath, "snrs", tag);
@@ -424,6 +433,7 @@ Nr3gppIndoorCalibration::Run(double centralFrequencyBand,
     {
         NS_ABORT_MSG("Can't open file " << filenameSinr);
     }
+    m_outSinrFile << "CellId" << "\t" << "Rnti" << "\t" << "SINR (dB)" << std::endl;
 
     m_outSnrFile.open(filenameSnr.c_str());
     m_outSnrFile.setf(std::ios_base::fixed);
@@ -576,11 +586,6 @@ Nr3gppIndoorCalibration::Run(double centralFrequencyBand,
     channelHelper->AssignChannelsToBands({band});
     allBwps = CcBwpCreator::GetAllBwps({band});
 
-    // Disable channel matrix update to speed up the simulation execution
-    // Config::SetDefault ("ns3::Nr3gppChannel::UpdatePeriod", TimeValue (MilliSeconds(0)));
-    // Config::SetDefault ("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(999999999));
-    // Config::SetDefault ("ns3::NrRlcUmLowLat::MaxTxBufferSize", UintegerValue(999999999))
-
     if (beamformingMethod == "KroneckerBeamforming")
     {
         idealBeamformingHelper->SetAttribute("BeamformingMethod",
@@ -597,12 +602,19 @@ Nr3gppIndoorCalibration::Run(double centralFrequencyBand,
         idealBeamformingHelper->SetAttribute("BeamformingMethod",
                                              TypeIdValue(DirectPathBeamforming::GetTypeId()));
     }
-
     else
     {
         NS_ABORT_MSG("Unsupported Beamforming Method");
     }
-    nrHelper->SetSchedulerTypeId(TypeId::LookupByName("ns3::NrMacSchedulerTdmaPF"));
+
+    if (confType == "3gppCalibConf")
+    {
+        nrHelper->SetSchedulerTypeId(TypeId::LookupByName("ns3::NrMacSchedulerTdmaRandom"));
+    }
+    else
+    {
+        nrHelper->SetSchedulerTypeId(TypeId::LookupByName("ns3::NrMacSchedulerTdmaPF"));
+    }
     nrHelper->SetSchedulerAttribute("EnableHarqReTx", BooleanValue(false));
 
     // Antennas for all the UEs - Should be 2x4 = 8 antenna elements
@@ -619,9 +631,18 @@ Nr3gppIndoorCalibration::Run(double centralFrequencyBand,
         nrHelper->SetUeAntennaAttribute("AntennaElement",
                                         PointerValue(CreateObject<ThreeGppAntennaModel>()));
     }
-    // Antennas for all the gNbs - Should be 4x8 = 32 antenna elements
-    nrHelper->SetGnbAntennaAttribute("NumRows", UintegerValue(4));
-    nrHelper->SetGnbAntennaAttribute("NumColumns", UintegerValue(8));
+
+    if (confType == "3gppCalibConf")
+    {
+        nrHelper->SetGnbAntennaAttribute("NumRows", UintegerValue(2));
+        nrHelper->SetGnbAntennaAttribute("NumColumns", UintegerValue(4));
+    }
+    else
+    {
+        // Antennas for all the gNbs - Should be 4x8 = 32 antenna elements
+        nrHelper->SetGnbAntennaAttribute("NumRows", UintegerValue(4));
+        nrHelper->SetGnbAntennaAttribute("NumColumns", UintegerValue(8));
+    }
     // Antenna element type for gNBs
     if (gNbAntennaModel)
     {
@@ -640,8 +661,6 @@ Nr3gppIndoorCalibration::Run(double centralFrequencyBand,
     if (dropParam.gnbAntennaPolarization)
     {
         nrHelper->SetGnbAntennaAttribute("IsDualPolarized", BooleanValue(true));
-        nrHelper->SetGnbAntennaAttribute("DowntiltAngle",
-                                         DoubleValue(downtiltAnglegNB * M_PI / 180.0));
         nrHelper->SetGnbAntennaAttribute("PolSlantAngle",
                                          DoubleValue(polSlantAnglegNB * M_PI / 180.0));
     }
@@ -650,12 +669,14 @@ Nr3gppIndoorCalibration::Run(double centralFrequencyBand,
         nrHelper->SetUeAntennaAttribute("IsDualPolarized", BooleanValue(true));
         nrHelper->SetUeAntennaAttribute("PolSlantAngle", DoubleValue(0 * M_PI / 180.0));
     }
+    // Set gNB pointing downwards (ceiling mounted) and UE pointing upwards (phone resting in desk)
+    nrHelper->SetGnbAntennaAttribute("DowntiltAngle", DoubleValue(downtiltAnglegNB * M_PI / 180.0));
+    nrHelper->SetUeAntennaAttribute("DowntiltAngle", DoubleValue(-downtiltAnglegNB * M_PI / 180.0));
     nrHelper->SetGnbAntennaAttribute("NumVerticalPorts", UintegerValue(dropParam.numVPortsGnb));
     nrHelper->SetGnbAntennaAttribute("NumHorizontalPorts", UintegerValue(dropParam.numHPortsGnb));
     nrHelper->SetUeAntennaAttribute("NumVerticalPorts", UintegerValue(dropParam.numVPortsUe));
     nrHelper->SetUeAntennaAttribute("NumHorizontalPorts", UintegerValue(dropParam.numHPortsUe));
     nrHelper->SetUeSpectrumAttribute("NumAntennaPanel", UintegerValue(numUePanel));
-    // mobility.SetPositionAllocator (ueRandomRectPosAlloc);
     // install nr net devices
     NetDeviceContainer gNbDevs = nrHelper->InstallGnbDevice(gNbNodes, allBwps);
     NetDeviceContainer ueNetDevs = nrHelper->InstallUeDevice(selectedUeNodes, allBwps);
@@ -693,7 +714,7 @@ Nr3gppIndoorCalibration::Run(double centralFrequencyBand,
     // attach UEs to the closest gNB
     if (enableInitialAssoc)
     {
-        nrHelper->SetupInitialAssoc(Initparams);
+        nrHelper->SetupInitialAssoc(initParams);
         nrHelper->AttachToMaxRsrpGnb(ueNetDevs, gNbDevs);
     }
     else
@@ -838,6 +859,39 @@ Nr3gppIndoorCalibration::Run(double centralFrequencyBand,
 int
 main(int argc, char* argv[])
 {
+    // Angles for 30 GHz scenario, but shifted 90 degrees for column because 3GPP
+    // assumes beam is centered in 0 degrees and we assume at 90.
+    // We also include the beam perpendicular to the panel (90, 90), equivalent to 3GPP (0, 90),
+    // since it significantly affects results, better overlapping with 3GPP reference curves.
+    std::string columnAngles = "-67.5|-22.5|0.0|22.5|67.5";
+    std::string rowAngles = "45.0|90.0|135.0";
+
+    // Set 3GPP indoor calibration settings based on RP-180524 as defaults at the very beginning
+    // of simulation, so users can override these settings via command line
+    Config::SetDefault("ns3::ThreeGppAntennaModel::RadiationPattern",
+                       EnumValue(ns3::ThreeGppAntennaModel::RadiationPattern::INDOOR));
+
+    // Use 3GPP reference azimuth and zenith angles, instead of previously used ULA V|H angles
+    Config::SetDefault("ns3::PhasedArrayAngleConvention::AngleConvention", StringValue("3GPP"));
+
+    Config::SetDefault("ns3::KroneckerBeamforming::TxColumnAngles", StringValue(columnAngles));
+    Config::SetDefault("ns3::KroneckerBeamforming::TxRowAngles", StringValue(rowAngles));
+
+    Config::SetDefault("ns3::KroneckerBeamforming::RxColumnAngles", StringValue(columnAngles));
+    Config::SetDefault("ns3::KroneckerBeamforming::RxRowAngles", StringValue(rowAngles));
+
+    // Disable channel matrix update to speed up the simulation execution
+    Config::SetDefault("ns3::ThreeGppChannelModel::UpdatePeriod", TimeValue(MilliSeconds(0)));
+
+    // Set CSI feedback source and RI/PMI settings
+    Config::SetDefault("ns3::NrHelper::CsiFeedbackFlags", UintegerValue(CQI_CSI_RS | CQI_CSI_IM));
+    Config::SetDefault("ns3::NrHelper::PmSearchMethod", StringValue("ns3::NrPmSearchFull"));
+    Config::SetDefault("ns3::NrPmSearchFull::CodebookType", StringValue("ns3::NrCbTypeOneSp"));
+    Config::SetDefault("ns3::NrPmSearch::SubbandSize", UintegerValue(8));
+
+    // Config::SetDefault ("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(999999999));
+    // Config::SetDefault ("ns3::NrRlcUmLowLat::MaxTxBufferSize", UintegerValue(999999999))
+
     // Parameters according to RP-180524 Indoor Hotspot Config B,
     // Evaluation assumptions for Phase 1 NR MIMO system level calibration,
     double centralFrequencyBand = 30e9;
@@ -850,8 +904,9 @@ main(int argc, char* argv[])
     bool enableGnbIso = false;
     bool enableUeIso = false;
     bool enableShadowing = false;
-    std::string indoorScenario = "InH-OfficeOpen";
+    std::string indoorScenario = "InH-OfficeMixed";
     std::string beamformingMethod = "KroneckerBeamforming";
+    std::string confType = "customConf";
     double speed = 3.00;
     bool polarizedAntennas = true;
     std::string outdir = "./";
@@ -861,13 +916,13 @@ main(int argc, char* argv[])
     uint8_t numVPortsUe = 1;
     uint8_t numHPortsUe = 1;
     uint8_t numUePanel = 2;
-    uint16_t ueCount = 120;
-    NrHelper::InitialAssocParams Initparams;
-    Initparams.rowAngles = {-67.5, -22.5, 22.5, 67.5};
-    Initparams.colAngles = {45, 135};
+    uint16_t ueCount = 24; // 20% of number of UEs from reference, to execute faster during testing
+    NrHelper::InitialAssocParams initParams;
+    initParams.colAngles = ParseVBarSeparatedValuesStringToVector(columnAngles);
+    initParams.rowAngles = ParseVBarSeparatedValuesStringToVector(rowAngles);
 
     CommandLine cmd(__FILE__);
-
+    cmd.AddValue("configurationType", "Choose among a) customConf and b) 3gppCalibConf.", confType);
     cmd.AddValue("duration",
                  "Simulation duration in ms, should be greater than 100 ms to allow the collection "
                  "of traces",
@@ -885,7 +940,7 @@ main(int argc, char* argv[])
     cmd.AddValue("numUePanel", "Number of UE panels in spectrum phy ", numUePanel);
     cmd.AddValue("handoffMargin",
                  "Hand-off margin in initial association to attach UEs,",
-                 Initparams.handoffMargin);
+                 initParams.handoffMargin);
     cmd.AddValue("ueCount", "Number of UE count ", ueCount);
     cmd.AddValue("enableShadowing", "Enable shadowing in the channel modeling", enableShadowing);
     cmd.AddValue("enableInitialAssoc",
@@ -909,6 +964,35 @@ main(int argc, char* argv[])
     ConfigStore inputConfig;
     inputConfig.ConfigureDefaults();
 
+    // If calibration configuration is selected, override the default parameters
+    if (confType == "3gppCalibConf")
+    {
+        // Requires channel consistency in ns-3.47
+        Config::SetDefault("ns3::ThreeGppChannelModel::UpdatePeriod", TimeValue(MilliSeconds(100)));
+        centralFrequencyBand = 30e9;
+        bandwidthBand = 40e6;
+        numerology = 2;
+        totalTxPower = 20;
+        ueTxPower = 23;
+        enableInitialAssoc = true;
+        enableGnbIso = false;
+        enableUeIso = false;
+        enableShadowing = false;
+        beamformingMethod = "KroneckerBeamforming";
+        speed = 3.00;
+        polarizedAntennas = false;
+        numVPortsGnb = 1;
+        numHPortsGnb = 1;
+        numVPortsUe = 1;
+        numHPortsUe = 1;
+        numUePanel = 2;
+        ueCount = 120;
+        duration = 1000;
+        indoorScenario = "InH-OfficeMixed";
+
+        initParams.colAngles = {-67.5, -22.5, 0.0, 22.5, 67.5};
+        initParams.rowAngles = {45.0, 90.0, 135.0};
+    }
     Nr3gppIndoorCalibration phase1CalibrationScenario;
 
     DroppingParameters dropParam = {polarizedAntennas,
@@ -925,7 +1009,7 @@ main(int argc, char* argv[])
                                   beamformingMethod,
                                   enableShadowing,
                                   enableInitialAssoc,
-                                  Initparams,
+                                  initParams,
                                   enableGnbIso,
                                   enableUeIso,
                                   indoorScenario,
@@ -935,6 +1019,7 @@ main(int argc, char* argv[])
                                   duration,
                                   numUePanel,
                                   ueCount,
+                                  confType,
                                   dropParam);
     return 0;
 }

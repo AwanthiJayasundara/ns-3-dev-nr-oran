@@ -8,6 +8,8 @@
 #ifndef NR_RRC_SAP_H
 #define NR_RRC_SAP_H
 
+#include "nr-qos-flow.h"
+
 #include "ns3/ptr.h"
 #include "ns3/simulator.h"
 
@@ -95,6 +97,7 @@ class NrRrcSap
     struct LogicalChannelConfig
     {
         uint8_t priority;                ///< priority
+        NrQosFlow::FiveQi fiveQi;        ///< 5G QoS Identifier
         uint16_t prioritizedBitRateKbps; ///< prioritized bit rate Kbps
         uint16_t bucketSizeDurationMs;   ///< bucket size duration ms
         uint8_t logicalChannelGroup;     ///< logical channel group
@@ -230,7 +233,7 @@ class NrRrcSap
     /// DrbToAddMod structure
     struct DrbToAddMod
     {
-        uint8_t epsBearerIdentity;                 ///< EPS bearer identity
+        uint8_t qosFlowIdentity;                   ///< QoS flow identity
         uint8_t drbIdentity;                       ///< DRB identity
         RlcConfig rlcConfig;                       ///< RLC config
         uint8_t logicalChannelIdentity;            ///< logical channel identify

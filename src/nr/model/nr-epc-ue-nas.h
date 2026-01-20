@@ -8,7 +8,7 @@
 #define NR_EPC_UE_NAS_H
 
 #include "nr-as-sap.h"
-#include "nr-eps-bearer.h"
+#include "nr-qos-flow.h"
 #include "nr-qos-rule-classifier.h"
 
 #include "ns3/object.h"
@@ -123,15 +123,15 @@ class NrEpcUeNas : public Object
     void Disconnect();
 
     /**
-     * Activate an EPS bearer
+     * Activate an QoS flow
      *
-     * @param bearer the characteristics of the bearer to be created
-     * @param rule the QoS rule identifying the traffic that will go on this bearer
+     * @param flow the characteristics of the flow to be created
+     * @param rule the QoS rule identifying the traffic that will go on this flow
      */
-    void ActivateEpsBearer(NrEpsBearer bearer, Ptr<NrQosRule> rule);
+    void ActivateQosFlow(NrQosFlow flow, Ptr<NrQosRule> rule);
 
     /**
-     * Enqueue an IP packet on the proper bearer for uplink transmission
+     * Enqueue an IP packet on the proper QoS flow for uplink transmission
      *
      * @param p the packet
      * @param protocolNumber the protocol number of the packet
@@ -176,6 +176,9 @@ class NrEpcUeNas : public Object
     void DoNotifyConnectionFailed();
     /// Notify connection released
     void DoNotifyConnectionReleased();
+    /// Deactivate QosFlow
+    void DoDeactivateQosFlow(uint8_t qfi);
+
     /**
      * Receive data
      * @param packet the packet
@@ -184,11 +187,11 @@ class NrEpcUeNas : public Object
 
     // internal methods
     /**
-     * Activate EPS Bearer
-     * @param bearer the EPS bearer
+     * Activate QoS flow
+     * @param flow the QoS flow
      * @param rule the QoS rule
      */
-    void DoActivateEpsBearer(NrEpsBearer bearer, Ptr<NrQosRule> rule);
+    void DoActivateQosFlow(NrQosFlow flow, Ptr<NrQosRule> rule);
     /**
      * Switch the UE RRC to the given state.
      * @param s the destination state
@@ -219,26 +222,25 @@ class NrEpcUeNas : public Object
     /// NR SAP user
     NrAsSapUser* m_asSapUser;
 
-    uint8_t m_bidCounter;                    ///< bid counter
     NrQosRuleClassifier m_qosRuleClassifier; ///< QoS rule classifier
 
     Callback<void, Ptr<Packet>> m_forwardUpCallback; ///< upward callback
 
-    /// BearerToBeActivated structure
-    struct BearerToBeActivated
+    /// QosFlowToBeActivated structure
+    struct QosFlowToBeActivated
     {
-        NrEpsBearer bearer;  ///< EPS bearer
+        NrQosFlow flow;      ///< QoS flow
         Ptr<NrQosRule> rule; ///< QoS rule
     };
 
-    std::list<BearerToBeActivated> m_bearersToBeActivatedList; ///< bearers to be activated list
+    std::list<QosFlowToBeActivated> m_qosFlowsToBeActivatedList; ///< QoS flows to be activated list
 
     /**
-     * bearers to be activated list maintained and to be used for reconnecting
+     * QoS flows to be activated list maintained and to be used for reconnecting
      * an out-of-sync UE
      *
      */
-    std::list<BearerToBeActivated> m_bearersToBeActivatedListForReconnection;
+    std::list<QosFlowToBeActivated> m_qosFlowsToBeActivatedListForReconnection;
 };
 
 } // namespace ns3

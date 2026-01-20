@@ -61,7 +61,6 @@ SystemSchedulerTestQos::DoRun()
 
     Config::SetDefault("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(999999999));
     Config::SetDefault("ns3::NrRlcUm::ReorderingTimer", TimeValue(Seconds(1)));
-    Config::SetDefault("ns3::NrEpsBearer::Release", UintegerValue(15));
 
     // create base stations and mobile terminals
     int64_t randomStream = 1;
@@ -187,12 +186,12 @@ SystemSchedulerTestQos::DoRun()
     uint32_t bwpIdForLowLat = 0;
     uint32_t bwpIdForVoice = 0;
 
-    // gNb routing between Bearer and bandwidh part
+    // gNb routing between QoS flow and bandwidh part
     nrHelper->SetGnbBwpManagerAlgorithmAttribute("NGBR_LOW_LAT_EMBB",
                                                  UintegerValue(bwpIdForLowLat));
     nrHelper->SetGnbBwpManagerAlgorithmAttribute("GBR_CONV_VOICE", UintegerValue(bwpIdForVoice));
 
-    // Ue routing between Bearer and bandwidth part
+    // Ue routing between QoS flow and bandwidth part
     nrHelper->SetUeBwpManagerAlgorithmAttribute("NGBR_LOW_LAT_EMBB", UintegerValue(bwpIdForLowLat));
     nrHelper->SetUeBwpManagerAlgorithmAttribute("GBR_CONV_VOICE", UintegerValue(bwpIdForVoice));
 
@@ -333,7 +332,7 @@ SystemSchedulerTestQos::DoRun()
         ulpfLowLat.direction = NrQosRule::UPLINK;
         ulLowLatRule->Add(ulpfLowLat);
 
-        NrEpsBearer bearerLowLat(NrEpsBearer::NGBR_LOW_LAT_EMBB);
+        NrQosFlow flowLowLat(NrQosFlow::NGBR_LOW_LAT_EMBB);
 
         UdpClientHelper ulClientVoice;
         ulClientVoice.SetAttribute("MaxPackets", UintegerValue(0xFFFFFFFF));
@@ -347,7 +346,7 @@ SystemSchedulerTestQos::DoRun()
         ulpfVoice.direction = NrQosRule::UPLINK;
         ulVoiceRule->Add(ulpfVoice);
 
-        NrEpsBearer bearerVoice(NrEpsBearer::GBR_CONV_VOICE);
+        NrQosFlow flowVoice(NrQosFlow::GBR_CONV_VOICE);
 
         // configure here UDP traffic flows
         for (uint32_t j = 0; j < ueLowLatContainer.GetN(); ++j)
@@ -357,7 +356,7 @@ SystemSchedulerTestQos::DoRun()
                                             internetIpIfacesLowLat.GetAddress(1),
                                             ulPortLowLat)));
             clientAppsUl.Add(ulClientLowlat.Install(ueLowLatContainer.Get(j)));
-            nrHelper->ActivateDedicatedEpsBearer(ueLowLatNetDev.Get(j), bearerLowLat, ulLowLatRule);
+            nrHelper->ActivateDedicatedQosFlow(ueLowLatNetDev.Get(j), flowLowLat, ulLowLatRule);
         }
 
         // configure here UDP traffic flows
@@ -368,7 +367,7 @@ SystemSchedulerTestQos::DoRun()
                                            internetIpIfacesVoice.GetAddress(1),
                                            ulPortVoice)));
             clientAppsUl.Add(ulClientVoice.Install(ueVoiceContainer.Get(j)));
-            nrHelper->ActivateDedicatedEpsBearer(ueVoiceNetDev.Get(j), bearerVoice, ulVoiceRule);
+            nrHelper->ActivateDedicatedQosFlow(ueVoiceNetDev.Get(j), flowVoice, ulVoiceRule);
         }
 
         serverAppsUlLowLat.Start(udpAppStartTimeUl);
@@ -395,7 +394,7 @@ SystemSchedulerTestQos::DoRun()
         dlpfLowLat.direction = NrQosRule::DOWNLINK;
         dlLowLatRule->Add(dlpfLowLat);
 
-        NrEpsBearer bearerLowlat(NrEpsBearer::NGBR_LOW_LAT_EMBB);
+        NrQosFlow flowLowlat(NrQosFlow::NGBR_LOW_LAT_EMBB);
 
         Ptr<NrQosRule> dlVoiceRule = Create<NrQosRule>();
         NrQosRule::PacketFilter dlpfVoice;
@@ -404,7 +403,7 @@ SystemSchedulerTestQos::DoRun()
         dlpfVoice.direction = NrQosRule::DOWNLINK;
         dlVoiceRule->Add(dlpfVoice);
 
-        NrEpsBearer bearerVoice(NrEpsBearer::GBR_CONV_VOICE);
+        NrQosFlow flowVoice(NrQosFlow::GBR_CONV_VOICE);
 
         for (uint32_t j = 0; j < ueLowLatContainer.GetN(); ++j)
         {
@@ -414,7 +413,7 @@ SystemSchedulerTestQos::DoRun()
             dlClient.SetAttribute("Interval", TimeValue(Seconds(1.0 / lambdaULL)));
             clientAppsDl.Add(dlClient.Install(remoteHost));
 
-            nrHelper->ActivateDedicatedEpsBearer(ueLowLatNetDev.Get(j), bearerLowlat, dlLowLatRule);
+            nrHelper->ActivateDedicatedQosFlow(ueLowLatNetDev.Get(j), flowLowlat, dlLowLatRule);
         }
 
         for (uint32_t j = 0; j < ueVoiceContainer.GetN(); ++j)
@@ -425,7 +424,7 @@ SystemSchedulerTestQos::DoRun()
             dlClient.SetAttribute("Interval", TimeValue(Seconds(1.0 / lambdaBe)));
             clientAppsDl.Add(dlClient.Install(remoteHost));
 
-            nrHelper->ActivateDedicatedEpsBearer(ueVoiceNetDev.Get(j), bearerVoice, dlVoiceRule);
+            nrHelper->ActivateDedicatedQosFlow(ueVoiceNetDev.Get(j), flowVoice, dlVoiceRule);
         }
 
         // start UDP server and client apps
@@ -444,8 +443,8 @@ SystemSchedulerTestQos::DoRun()
 
     uint32_t appTime = (simTime.GetSeconds() - udpAppStartTimeDl.GetSeconds());
 
-    // Test Case 1: Half UEs QCI 1 saturated
-    // and Half UEs QCI 80
+    // Test Case 1: Half UEs 5QI 1 saturated
+    // and Half UEs 5QI 80
     // check if ratio of throughputs is equal to ratio of priorities
     double dlThroughputLowLat = 0;
     double dlThroughputVoice = 0;
@@ -465,23 +464,23 @@ SystemSchedulerTestQos::DoRun()
             dlThroughputVoice += (serverApp->GetReceived() * udpPacketSizeBe * 8) / appTime;
         }
 
-        // Flow 2 is saturated and it must be prioritized (QCI 1 vs 80)
+        // Flow 2 is saturated and it must be prioritized (5QI 1 vs 80)
 
-        double qciRatio = (100 - m_p1) / (100 - m_p2);
+        double fiveQiRatio = (100 - m_p1) / (100 - m_p2);
         double throughputRatio = dlThroughputVoice / dlThroughputLowLat;
 
         if (verbose)
         {
             std::cout << "dlThroughputLowLat: " << dlThroughputVoice
                       << " dlThroughputVoice: " << dlThroughputLowLat << std::endl;
-            std::cout << "ratio: " << qciRatio << " throughput ratio: " << throughputRatio
+            std::cout << "ratio: " << fiveQiRatio << " throughput ratio: " << throughputRatio
                       << std::endl;
         }
 
-        NS_TEST_ASSERT_MSG_EQ_TOL(qciRatio,
+        NS_TEST_ASSERT_MSG_EQ_TOL(fiveQiRatio,
                                   throughputRatio,
-                                  (qciRatio * 0.1),
-                                  "DL qci Ratio and throughput Ratio are not "
+                                  (fiveQiRatio * 0.1),
+                                  "DL fiveQi Ratio and throughput Ratio are not "
                                   "equal within tolerance");
     }
     if (m_isUplink)
@@ -497,21 +496,21 @@ SystemSchedulerTestQos::DoRun()
             ulThroughputVoice += (serverApp->GetReceived() * udpPacketSizeBe * 8) / appTime;
         }
 
-        double qciRatio = (100 - m_p1) / (100 - 90); // Hardcoded P due to scheduler restrictions
+        double fiveQiRatio = (100 - m_p1) / (100 - 90); // Hardcoded P due to scheduler restrictions
         double throughputRatio = ulThroughputVoice / ulThroughputLowLat;
 
         if (verbose)
         {
             std::cout << "ulThroughputLowLat: " << ulThroughputVoice
                       << " ulThroughputVoice: " << ulThroughputLowLat << std::endl;
-            std::cout << "ratio: " << qciRatio << " throughput ratio: " << throughputRatio
+            std::cout << "ratio: " << fiveQiRatio << " throughput ratio: " << throughputRatio
                       << std::endl;
         }
 
-        NS_TEST_ASSERT_MSG_EQ_TOL(qciRatio,
+        NS_TEST_ASSERT_MSG_EQ_TOL(fiveQiRatio,
                                   throughputRatio,
-                                  (qciRatio * 0.1),
-                                  "UL qci Ratio and throughput Ratio are not "
+                                  (fiveQiRatio * 0.1),
+                                  "UL fiveQi Ratio and throughput Ratio are not "
                                   "equal within tolerance");
     }
 

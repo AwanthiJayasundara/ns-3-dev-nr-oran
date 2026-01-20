@@ -34,30 +34,62 @@ NrEpcPgwApplication::NrUeInfo::NrUeInfo()
 }
 
 void
-NrEpcPgwApplication::NrUeInfo::AddBearer(uint8_t bearerId, uint32_t teid, Ptr<NrQosRule> rule)
+NrEpcPgwApplication::NrUeInfo::AddFlow(uint8_t qfi, uint32_t teid, Ptr<NrQosRule> rule)
 {
-    NS_LOG_FUNCTION(this << (uint16_t)bearerId << teid << rule);
-    m_teidByBearerIdMap[bearerId] = teid;
-    return m_qosRuleClassifier.Add(rule, teid);
+    NS_LOG_FUNCTION(this << (uint16_t)qfi << teid << rule);
+    m_teidByFlowIdMap[qfi] = teid;
+    NS_LOG_INFO("Add entry to TEID: " << teid << " by flow ID: " << +qfi << " map");
+    m_qosRuleClassifier.Add(rule, qfi);
+    NS_LOG_INFO("Add QosRule entry to classifier for QFI: " << +qfi);
 }
 
 void
-NrEpcPgwApplication::NrUeInfo::RemoveBearer(uint8_t bearerId)
+NrEpcPgwApplication::NrUeInfo::RemoveFlow(uint8_t qfi)
 {
-    NS_LOG_FUNCTION(this << (uint16_t)bearerId);
-    auto it = m_teidByBearerIdMap.find(bearerId);
-    m_qosRuleClassifier.Delete(it->second); // delete rule
-    m_teidByBearerIdMap.erase(bearerId);
+    NS_LOG_FUNCTION(this << (uint16_t)qfi);
+    auto it = m_teidByFlowIdMap.find(qfi);
+    bool found = m_qosRuleClassifier.Delete(qfi);
+    if (!found)
+    {
+        NS_LOG_WARN("Could not remove entry in classifier for QFI: " << +qfi);
+    }
+    else
+    {
+        NS_LOG_INFO("Removed QosRule entry from classifier for QFI: " << +qfi);
+    }
+    std::size_t erasedCount = m_teidByFlowIdMap.erase(qfi);
+    if (!erasedCount)
+    {
+        NS_LOG_WARN("TEID by Flow ID map did not erase flow ID: " << +qfi << " (not found)");
+    }
+    else
+    {
+        NS_LOG_INFO("Removed entry from TEID: " << it->second << " by flow ID: " << +qfi << " map");
+    }
 }
 
-uint32_t
+std::optional<uint32_t>
 NrEpcPgwApplication::NrUeInfo::Classify(Ptr<Packet> p, uint16_t protocolNumber)
 {
     NS_LOG_FUNCTION(this << p);
-    // we hardcode DOWNLINK direction since the PGW is expected to
+    // We hardcode DOWNLINK direction since the PGW is expected to
     // classify only downlink packets (uplink packets will go to the
     // internet without any classification).
-    return m_qosRuleClassifier.Classify(p, NrQosRule::DOWNLINK, protocolNumber);
+    auto qfi = m_qosRuleClassifier.Classify(p, NrQosRule::DOWNLINK, protocolNumber);
+    if (!qfi.has_value())
+    {
+        return std::nullopt;
+    }
+
+    // Look up the TEID corresponding to the matched QFI
+    auto it = m_teidByFlowIdMap.find(qfi.value());
+    if (it == m_teidByFlowIdMap.end())
+    {
+        NS_LOG_WARN("QFI " << +qfi.value() << " not found in TEID map");
+        return std::nullopt;
+    }
+
+    return std::optional<uint32_t>(it->second);
 }
 
 Ipv4Address
@@ -158,6 +190,24 @@ NrEpcPgwApplication::RecvFromTunDevice(Ptr<Packet> packet,
     NS_LOG_FUNCTION(this << source << dest << protocolNumber << packet << packet->GetSize());
     m_rxTunPktTrace(packet->Copy());
 
+    // Downlink packet routing (internet to UE).
+    // This method handles downlink packets arriving from the internet via the TUN device.
+    // The routing procedure is:
+    // 1. Extract UE destination address from IP header
+    // 2. Find the NrUeInfo context for this UE using the address
+    // 3. Call Classify() which internally:
+    //    a. Classifies packet using QoS rules to obtain QFI
+    //    b. Looks up TEID from m_teidByFlowIdMap[qfi]
+    //    c. Returns TEID directly
+    // 4. Encapsulate packet in GTP-U header with TEID for tunneling to SGW
+    // 5. Send via S5-U interface to SGW
+    //
+    // Note on TEID allocation: The TEID is allocated by SGW and received during
+    // bearer setup in DoRecvCreateSessionRequest(). At PGW, we maintain the mapping
+    // from QFI to TEID in m_teidByFlowIdMap. The gNB maintains the reverse mapping
+    // (TEID -> (RNTI, QFI)) via m_teidRqfiMap for routing downlink packets back to
+    // the correct bearer.
+
     // get IP address of UE
     if (protocolNumber == Ipv4L3Protocol::PROT_NUMBER)
     {
@@ -175,14 +225,14 @@ NrEpcPgwApplication::RecvFromTunDevice(Ptr<Packet> packet,
         else
         {
             Ipv4Address sgwAddr = it->second->GetSgwAddr();
-            uint32_t teid = it->second->Classify(packet, protocolNumber);
-            if (teid == 0)
+            auto teid = it->second->Classify(packet, protocolNumber);
+            if (!teid.has_value())
             {
-                NS_LOG_WARN("no matching bearer for this packet");
+                NS_LOG_WARN("no matching flow for this packet");
             }
             else
             {
-                SendToS5uSocket(packet, sgwAddr, teid);
+                SendToS5uSocket(packet, sgwAddr, teid.value());
             }
         }
     }
@@ -202,14 +252,14 @@ NrEpcPgwApplication::RecvFromTunDevice(Ptr<Packet> packet,
         else
         {
             Ipv4Address sgwAddr = it->second->GetSgwAddr();
-            uint32_t teid = it->second->Classify(packet, protocolNumber);
-            if (teid == 0)
+            auto teid = it->second->Classify(packet, protocolNumber);
+            if (!teid.has_value())
             {
-                NS_LOG_WARN("no matching bearer for this packet");
+                NS_LOG_WARN("no matching flow for this packet");
             }
             else
             {
-                SendToS5uSocket(packet, sgwAddr, teid);
+                SendToS5uSocket(packet, sgwAddr, teid.value());
             }
         }
     }
@@ -256,16 +306,16 @@ NrEpcPgwApplication::RecvFromS5cSocket(Ptr<Socket> socket)
         DoRecvCreateSessionRequest(packet);
         break;
 
-    case NrGtpcHeader::ModifyBearerRequest:
-        DoRecvModifyBearerRequest(packet);
+    case NrGtpcHeader::ModifyFlowRequest:
+        DoRecvModifyFlowRequest(packet);
         break;
 
-    case NrGtpcHeader::DeleteBearerCommand:
-        DoRecvDeleteBearerCommand(packet);
+    case NrGtpcHeader::DeleteFlowCommand:
+        DoRecvDeleteFlowCommand(packet);
         break;
 
-    case NrGtpcHeader::DeleteBearerResponse:
-        DoRecvDeleteBearerResponse(packet);
+    case NrGtpcHeader::DeleteFlowResponse:
+        DoRecvDeleteFlowResponse(packet);
         break;
 
     default:
@@ -302,31 +352,31 @@ NrEpcPgwApplication::DoRecvCreateSessionRequest(Ptr<Packet> packet)
     pgwS5cFteid.addr = m_pgwS5Addr;
     msgOut.SetSenderCpFteid(pgwS5cFteid);
 
-    std::list<NrGtpcCreateSessionRequestMessage::BearerContextToBeCreated> bearerContexts =
-        msg.GetBearerContextsToBeCreated();
-    NS_LOG_DEBUG("BearerContextsToBeCreated size = " << bearerContexts.size());
+    std::list<NrGtpcCreateSessionRequestMessage::FlowContextToBeCreated> flowContexts =
+        msg.GetFlowContextsToBeCreated();
+    NS_LOG_DEBUG("FlowContextsToBeCreated size = " << flowContexts.size());
 
-    std::list<NrGtpcCreateSessionResponseMessage::BearerContextCreated> bearerContextsCreated;
-    for (auto& bearerContext : bearerContexts)
+    std::list<NrGtpcCreateSessionResponseMessage::FlowContextCreated> flowContextsCreated;
+    for (auto& flowContext : flowContexts)
     {
-        uint32_t teid = bearerContext.sgwS5uFteid.teid;
-        NS_LOG_DEBUG("bearerId " << (uint16_t)bearerContext.epsBearerId << " SGW "
-                                 << bearerContext.sgwS5uFteid.addr << " TEID " << teid);
+        uint32_t teid = flowContext.sgwS5uFteid.teid;
+        NS_LOG_DEBUG("qfi " << (uint16_t)flowContext.qfi << " SGW " << flowContext.sgwS5uFteid.addr
+                            << " TEID " << teid);
 
-        ueit->second->AddBearer(bearerContext.epsBearerId, teid, bearerContext.rule);
+        ueit->second->AddFlow(flowContext.qfi, teid, flowContext.rule);
 
-        NrGtpcCreateSessionResponseMessage::BearerContextCreated bearerContextOut;
-        bearerContextOut.fteid.interfaceType = NrGtpcHeader::S5_PGW_GTPU;
-        bearerContextOut.fteid.teid = teid;
-        bearerContextOut.fteid.addr = m_pgwS5Addr;
-        bearerContextOut.epsBearerId = bearerContext.epsBearerId;
-        bearerContextOut.bearerLevelQos = bearerContext.bearerLevelQos;
-        bearerContextOut.rule = bearerContext.rule;
-        bearerContextsCreated.push_back(bearerContextOut);
+        NrGtpcCreateSessionResponseMessage::FlowContextCreated flowContextOut;
+        flowContextOut.fteid.interfaceType = NrGtpcHeader::S5_PGW_GTPU;
+        flowContextOut.fteid.teid = teid;
+        flowContextOut.fteid.addr = m_pgwS5Addr;
+        flowContextOut.qfi = flowContext.qfi;
+        flowContextOut.flow = flowContext.flow;
+        flowContextOut.rule = flowContext.rule;
+        flowContextsCreated.push_back(flowContextOut);
     }
 
-    NS_LOG_DEBUG("BearerContextsCreated size = " << bearerContextsCreated.size());
-    msgOut.SetBearerContextsCreated(bearerContextsCreated);
+    NS_LOG_DEBUG("FlowContextsCreated size = " << flowContextsCreated.size());
+    msgOut.SetFlowContextsCreated(flowContextsCreated);
     msgOut.SetTeid(sgwS5cFteid.teid);
     msgOut.ComputeMessageLength();
 
@@ -337,11 +387,11 @@ NrEpcPgwApplication::DoRecvCreateSessionRequest(Ptr<Packet> packet)
 }
 
 void
-NrEpcPgwApplication::DoRecvModifyBearerRequest(Ptr<Packet> packet)
+NrEpcPgwApplication::DoRecvModifyFlowRequest(Ptr<Packet> packet)
 {
     NS_LOG_FUNCTION(this);
 
-    NrGtpcModifyBearerRequestMessage msg;
+    NrGtpcModifyFlowRequestMessage msg;
     packet->RemoveHeader(msg);
     uint64_t imsi = msg.GetImsi();
     uint16_t cellId = msg.GetUliEcgi();
@@ -351,72 +401,71 @@ NrEpcPgwApplication::DoRecvModifyBearerRequest(Ptr<Packet> packet)
     NS_ASSERT_MSG(ueit != m_ueInfoByImsiMap.end(), "unknown IMSI " << imsi);
     ueit->second->SetSgwAddr(m_sgwS5Addr);
 
-    std::list<NrGtpcModifyBearerRequestMessage::BearerContextToBeModified> bearerContexts =
-        msg.GetBearerContextsToBeModified();
-    NS_LOG_DEBUG("BearerContextsToBeModified size = " << bearerContexts.size());
+    std::list<NrGtpcModifyFlowRequestMessage::FlowContextToBeModified> flowContexts =
+        msg.GetFlowContextsToBeModified();
+    NS_LOG_DEBUG("FlowContextsToBeModified size = " << flowContexts.size());
 
-    for (auto& bearerContext : bearerContexts)
+    for (auto& flowContext : flowContexts)
     {
-        Ipv4Address sgwAddr = bearerContext.fteid.addr;
-        uint32_t teid = bearerContext.fteid.teid;
-        NS_LOG_DEBUG("bearerId " << (uint16_t)bearerContext.epsBearerId << " SGW " << sgwAddr
-                                 << " TEID " << teid);
+        Ipv4Address sgwAddr = flowContext.fteid.addr;
+        uint32_t teid = flowContext.fteid.teid;
+        NS_LOG_DEBUG("qfi " << (uint16_t)flowContext.qfi << " SGW " << sgwAddr << " TEID " << teid);
     }
 
-    NrGtpcModifyBearerResponseMessage msgOut;
+    NrGtpcModifyFlowResponseMessage msgOut;
     msgOut.SetCause(NrGtpcIes::REQUEST_ACCEPTED);
     msgOut.SetTeid(imsi);
     msgOut.ComputeMessageLength();
 
     Ptr<Packet> packetOut = Create<Packet>();
     packetOut->AddHeader(msgOut);
-    NS_LOG_DEBUG("Send ModifyBearerResponse to SGW " << m_sgwS5Addr);
+    NS_LOG_DEBUG("Send ModifyFlowResponse to SGW " << m_sgwS5Addr);
     m_s5cSocket->SendTo(packetOut, 0, InetSocketAddress(m_sgwS5Addr, m_gtpcUdpPort));
 }
 
 void
-NrEpcPgwApplication::DoRecvDeleteBearerCommand(Ptr<Packet> packet)
+NrEpcPgwApplication::DoRecvDeleteFlowCommand(Ptr<Packet> packet)
 {
     NS_LOG_FUNCTION(this);
 
-    NrGtpcDeleteBearerCommandMessage msg;
+    NrGtpcDeleteFlowCommandMessage msg;
     packet->RemoveHeader(msg);
 
-    std::list<uint8_t> epsBearerIds;
-    for (auto& bearerContext : msg.GetBearerContexts())
+    std::list<uint8_t> qosFlowIds;
+    for (auto& flowContext : msg.GetFlowContexts())
     {
-        NS_LOG_DEBUG("ebid " << (uint16_t)bearerContext.m_epsBearerId);
-        epsBearerIds.push_back(bearerContext.m_epsBearerId);
+        NS_LOG_DEBUG("QFI to delete " << (uint16_t)flowContext.m_qfi);
+        qosFlowIds.push_back(flowContext.m_qfi);
     }
 
-    NrGtpcDeleteBearerRequestMessage msgOut;
-    msgOut.SetEpsBearerIds(epsBearerIds);
+    NrGtpcDeleteFlowRequestMessage msgOut;
+    msgOut.SetQosFlowIds(qosFlowIds);
     msgOut.SetTeid(msg.GetTeid());
     msgOut.ComputeMessageLength();
 
     Ptr<Packet> packetOut = Create<Packet>();
     packetOut->AddHeader(msgOut);
-    NS_LOG_DEBUG("Send DeleteBearerRequest to SGW " << m_sgwS5Addr);
+    NS_LOG_DEBUG("Send DeleteFlowRequest to SGW " << m_sgwS5Addr);
     m_s5cSocket->SendTo(packetOut, 0, InetSocketAddress(m_sgwS5Addr, m_gtpcUdpPort));
 }
 
 void
-NrEpcPgwApplication::DoRecvDeleteBearerResponse(Ptr<Packet> packet)
+NrEpcPgwApplication::DoRecvDeleteFlowResponse(Ptr<Packet> packet)
 {
     NS_LOG_FUNCTION(this);
 
-    NrGtpcDeleteBearerResponseMessage msg;
+    NrGtpcDeleteFlowResponseMessage msg;
     packet->RemoveHeader(msg);
 
     uint64_t imsi = msg.GetTeid();
     auto ueit = m_ueInfoByImsiMap.find(imsi);
     NS_ASSERT_MSG(ueit != m_ueInfoByImsiMap.end(), "unknown IMSI " << imsi);
 
-    for (auto& epsBearerId : msg.GetEpsBearerIds())
+    for (auto& qfi : msg.GetQosFlowIds())
     {
-        // Remove de-activated bearer contexts from PGW side
-        NS_LOG_INFO("PGW removing bearer " << (uint16_t)epsBearerId << " of IMSI " << imsi);
-        ueit->second->RemoveBearer(epsBearerId);
+        // Remove de-activated flow contexts from PGW side
+        NS_LOG_INFO("PGW removing flow " << (uint16_t)qfi << " of IMSI " << imsi);
+        ueit->second->RemoveFlow(qfi);
     }
 }
 
@@ -463,6 +512,8 @@ NrEpcPgwApplication::SendToS5uSocket(Ptr<Packet> packet, Ipv4Address sgwAddr, ui
     gtpu.SetLength(packet->GetSize() + gtpu.GetSerializedSize() - 8);
     packet->AddHeader(gtpu);
     uint32_t flags = 0;
+    NS_LOG_INFO("Sending packet to S5U socket with TEID " << teid << " address " << sgwAddr
+                                                          << " port " << m_gtpuUdpPort);
     m_s5uSocket->SendTo(packet, flags, InetSocketAddress(sgwAddr, m_gtpuUdpPort));
 }
 
