@@ -1,4 +1,4 @@
-# ORAN Handover Optimization + Cell Load Experiment (ns-3 NR/ORAN)
+# ORAN Handover Optimization (ns-3 NR/ORAN)
 
 This repository extends the original ns-3 ORAN handover examples into a **large-scale-optimized, performance-oriented multi-cell experiment** with additional **NR-compatible reporters, learning models, CMM orchestration logic, and SQLite-based data storage**.
 
