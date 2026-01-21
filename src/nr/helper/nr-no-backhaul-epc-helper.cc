@@ -427,8 +427,17 @@ NrNoBackhaulEpcHelper::DoAddX2Interface(const Ptr<NrEpcX2>& gnb1X2,
     NS_LOG_LOGIC("NrGnbNetDevice #1 = " << gnb1NrDev << " - CellId = " << gnb1CellId);
     NS_LOG_LOGIC("NrGnbNetDevice #2 = " << gnb2NrDev << " - CellId = " << gnb2CellId);
 
-    gnb1X2->AddX2Interface(gnb1CellId, gnb1X2Address, gnb2NrDevice->GetBwpIds(), gnb2X2Address);
-    gnb2X2->AddX2Interface(gnb2CellId, gnb2X2Address, gnb1NrDevice->GetBwpIds(), gnb1X2Address);
+    // gnb1X2->AddX2Interface(gnb1CellId, gnb1X2Address, gnb2NrDevice->GetBwpIds(), gnb2X2Address);
+    // gnb2X2->AddX2Interface(gnb2CellId, gnb2X2Address, gnb1NrDevice->GetBwpIds(), gnb1X2Address);
+    
+    // FIX: X2 expects *remote CellIds*, not BWP IDs.
+    // Using GetBwpIds() gives {0,1,...} which repeats for every neighbor -> remoteCellId=0 duplication crash.
+    std::vector<uint16_t> gnb2RemoteCellIds { gnb2CellId };
+    std::vector<uint16_t> gnb1RemoteCellIds { gnb1CellId };
+
+    gnb1X2->AddX2Interface(gnb1CellId, gnb1X2Address, gnb2RemoteCellIds, gnb2X2Address);
+    gnb2X2->AddX2Interface(gnb2CellId, gnb2X2Address, gnb1RemoteCellIds, gnb1X2Address);
+
 
     gnb1NrDevice->GetRrc()->AddX2Neighbour(gnb2CellId);
     gnb2NrDevice->GetRrc()->AddX2Neighbour(gnb1CellId);
