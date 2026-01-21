@@ -160,13 +160,70 @@ Introduced an **NR FFR (Fractional Frequency Reuse) Algorithm** for frequency re
 
 ---
 
-## 3️⃣ NR → NR Handover Learning Models and Command
+## 3️⃣ ORAN CMM (Control/Management) Logic
+
+Implemented ORAN **CMM handover coordination logic** to manage how HO commands are issued.
+
+### ✅ Handover orchestration
+- `model/oran-cmm-handover.cc`
+
+### ✅ Single-command-per-node control
+- `model/oran-cmm-single-command-per-node.cc`
+
+These are used together with the NR→NR command + learning models to coordinate handover behavior per node.
+
+---
+
+## 4️⃣ Data Repository with SQLite Backend
+
+Extended ORAN data handling with a repository abstraction and SQLite storage backend.
+
+### ✅ Generic repository interface
+- `model/oran-data-repository.h`
+
+### ✅ SQLite-backed implementation
+- `model/oran-data-repository-sqlite.cc`
+- `model/oran-data-repository-sqlite.h`
+
+---
+
+## 5️⃣ NR E2 Node Terminators
+
+Extended E2 node terminator support for NR endpoints.
+
+### ✅ NR gNB E2 node terminator
+- `model/oran-e2-node-terminator-nr-gnb.cc`
+- `model/oran-e2-node-terminator-nr-gnb.h`
+
+### ✅ NR UE E2 node terminator
+- `model/oran-e2-node-terminator-nr-ue.cc`
+- `model/oran-e2-node-terminator-nr-ue.h`
+
+---
+
+## 6️⃣ Build Integration and Robustness
+
+All new components were integrated into the ORAN module build system and hardened with logging + error handling.
+
+### ✅ Build integration updates
+- `contrib/oran/CMakeLists.txt`
+
+### Robustness improvements across
+- NR UE reporters  
+- NR load/cell reporting  
+- NR FFR algorithm + SAPs  
+- NR→NR learning models + commands  
+- CMM handover logic  
+- SQLite-backed data repository  
+- NR E2 node terminators  
+
+---
+
+## 7️⃣ NR → NR Handover Optimization Models
 
 Implemented multiple NR→NR handover decision models and the command interface to execute HO decisions.
 
-*** Policy-Based Handover Mechanisms ***
-
-## 📶 NR → NR Handover Decision Models & Command Interface
+## ✅ NR → NR Handover Decision Models & Command Interface
 
 Implemented multiple **NR→NR handover decision models** and the **command interface** required to execute handover actions from the Near-RT RIC.
 
@@ -203,90 +260,34 @@ The command contains:
 **Files:**
 - `model/oran-command-nr-2-nr-handover.cc`
 - `model/oran-command-nr-2-nr-handover.h`
+---
 
+## 🔴 Present Work
 
+- Looking for a way to add a **maximum cell load capacity threshold**
+- Adding support to retrieve and track **handover decision failures** (e.g., HO command issued but not successfully completed)
 
-  
 
   ***Below will be implemented in the Future***
   
-  ### ***Optimize handover based on Game theory***
+  ### *** Optimize handover based on Game theory ***
   
-  ### ***ML-Based Handover Mechanisms***
+  ### *** ML-Based Handover Mechanisms ***
 
-### ✅ Torch-based NR→NR HO Learning Model
+### Torch-based NR→NR HO Learning Model
 - `model/oran-lm-nr-2-nr-torch-handover.cc`
 - `model/oran-lm-nr-2-nr-torch-handover.h`
 
-### ✅ ONNX-based NR→NR HO Learning Model
+### ONNX-based NR→NR HO Learning Model
 - `model/oran-lm-nr-2-nr-onnx-handover.cc`
 - `model/oran-lm-nr-2-nr-onnx-handover.h`
 
 ---
 
-## 4️⃣ ORAN CMM (Control/Management) Logic
-
-Implemented ORAN **CMM handover coordination logic** to manage how HO commands are issued.
-
-### ✅ Handover orchestration
-- `model/oran-cmm-handover.cc`
-
-### ✅ Single-command-per-node control
-- `model/oran-cmm-single-command-per-node.cc`
-
-These are used together with the NR→NR command + learning models to coordinate handover behavior per node.
-
----
-
-## 5️⃣ Data Repository with SQLite Backend
-
-Extended ORAN data handling with a repository abstraction and SQLite storage backend.
-
-### Generic repository interface
-- `model/oran-data-repository.h`
-
-### SQLite-backed implementation
-- `model/oran-data-repository-sqlite.cc`
-- `model/oran-data-repository-sqlite.h`
-
----
-
-## 6️⃣ NR E2 Node Terminators
-
-Extended E2 node terminator support for NR endpoints.
-
-### ✅ NR gNB E2 node terminator
-- `model/oran-e2-node-terminator-nr-gnb.cc`
-- `model/oran-e2-node-terminator-nr-gnb.h`
-
-### ✅ NR UE E2 node terminator
-- `model/oran-e2-node-terminator-nr-ue.cc`
-- `model/oran-e2-node-terminator-nr-ue.h`
-
----
-
-## 7️⃣ Build Integration and Robustness
-
-All new components were integrated into the ORAN module build system and hardened with logging + error handling.
-
-### Build integration updates
-- `contrib/oran/CMakeLists.txt`
-
-### Robustness improvements across
-- NR UE reporters  
-- NR load/cell reporting  
-- NR FFR algorithm + SAPs  
-- NR→NR learning models + commands  
-- CMM handover logic  
-- SQLite-backed data repository  
-- NR E2 node terminators  
-
----
-
-## ✅ Notes / Future Extensions
+## ✅ Notes / Future Extensions Summary
 This framework can be extended further to support:
-- Load-aware HO steering (RSRP + cell load)
-- Multi-objective optimization (QoS + PHY + load)
+- Load-aware HO steering (RSRP + cell load) : Keep a cell load capacity and design the model
+- Multi-objective optimization (QoS + PHY + load) - Game theory
 - RIC-driven ML-based decision loops using the SQLite repository
 
 ---
