@@ -291,3 +291,11 @@ This framework can be extended further to support:
 - RIC-driven ML-based decision loops using the SQLite repository
 
 ---
+
+### Proposed dynamic movement of the UAV
+<img width="1112" height="734" alt="Screenshot from 2026-01-21 11-44-38" src="https://github.com/user-attachments/assets/f3cca852-05b9-48d1-b783-8ab03dfc4933" />
+
+Currently using ns3::RandomDirection2dMobilityModel for testing purposes with static height.
+
+
+
