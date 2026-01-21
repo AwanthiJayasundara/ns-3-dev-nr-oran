@@ -268,7 +268,7 @@ The command contains:
 - Adding support to retrieve and track **handover decision failures** (e.g., HO command issued but not successfully completed)
 
 
-  ***Below will be implemented in the Future***
+ ## 🔴 ***Below will be implemented in the Future***
   
   ### *** Optimize handover based on Game theory ***
   
