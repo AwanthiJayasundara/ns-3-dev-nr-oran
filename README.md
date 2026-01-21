@@ -5,6 +5,7 @@ This repository extends the original ns-3 ORAN handover examples into a **large-
 ---
 
 ## 📌 Example: `oran-lte-2-lte-rsrp-ue-handover-simulation.cc`
+This example is used to verify the simulation speed compared to NR channel and retrieve the results for more than 50 users. With Nr channel conditions, it's taking a longer time to simulate, and earlier it was suspected that due to the effect of UAV dynamic movements, but it was not the reason behind the NR simulation taking a longer time to end. 
 
 ### Background (Original ORAN Example)
 The original ORAN example **`oran-lte-2-lte-rsrp-handover-lm-example`** is intentionally minimal and focused:
@@ -92,8 +93,9 @@ In addition to the handover experiment above, cell load reporting support was im
 ### ✅ NR Cell Load
 - **Files:**
   - `model/oran-report-nr-cell-load.cc`
+  - `model/oran-report-nr-cell-load.h`
 
-These reports enable the RIC/LM pipeline to track how busy each cell is and enable future load-aware decision policies.
+***These reports enable the RIC/LM pipeline to track how busy each cell is and enable future load-aware decision policies.***
 
 ---
 
@@ -162,6 +164,56 @@ Introduced an **NR FFR (Fractional Frequency Reuse) Algorithm** for frequency re
 
 Implemented multiple NR→NR handover decision models and the command interface to execute HO decisions.
 
+*** Policy-Based Handover Mechanisms ***
+
+## 📶 NR → NR Handover Decision Models & Command Interface
+
+Implemented multiple **NR→NR handover decision models** and the **command interface** required to execute handover actions from the Near-RT RIC.
+
+These components enable policy-driven and ML-driven handover control where:
+- UEs and gNBs send measurement/state reports to the Near-RT RIC
+- Logic Modules (LMs) make decisions periodically (based on the configured query interval)
+- Commands are issued back to the source gNB to perform NR→NR handover
+
+---
+
+### *** Policy-Based Handover Mechanisms ***
+
+#### ✅ RSRP-based NR→NR HO Logic Module (LM)
+A lightweight **policy-based handover** model that selects the best serving gNB using **maximum RSRP**:
+
+- Retrieves UE serving-cell info (CellId, RNTI)
+- Reads UE measurement reports (RSRP/RSRQ to multiple gNBs)
+- Chooses the **highest RSRP** gNB as the target cell
+- Avoids repeated handover retries by falling back to the **second-best** RSRP candidate when needed
+
+**File:**
+- `model/oran-lm-nr-2-nr-rsrp-handover.cc`
+
+---
+
+#### ✅ NR→NR Handover Command Implementation
+Implements the command object used by the RIC to instruct the **current serving gNB** to handover a specific UE to a **target NR cell**.
+
+The command contains:
+- Source/Target E2 Node ID
+- UE RNTI
+- Target Cell ID
+
+**Files:**
+- `model/oran-command-nr-2-nr-handover.cc`
+- `model/oran-command-nr-2-nr-handover.h`
+
+
+
+  
+
+  ***Below will be implemented in the Future***
+  
+  ### ***Optimize handover based on Game theory***
+  
+  ### ***ML-Based Handover Mechanisms***
+
 ### ✅ Torch-based NR→NR HO Learning Model
 - `model/oran-lm-nr-2-nr-torch-handover.cc`
 - `model/oran-lm-nr-2-nr-torch-handover.h`
@@ -169,13 +221,6 @@ Implemented multiple NR→NR handover decision models and the command interface 
 ### ✅ ONNX-based NR→NR HO Learning Model
 - `model/oran-lm-nr-2-nr-onnx-handover.cc`
 - `model/oran-lm-nr-2-nr-onnx-handover.h`
-
-### ✅ RSRP-based NR→NR HO Learning Model
-- `model/oran-lm-nr-2-nr-rsrp-handover.cc`
-
-### ✅ NR→NR HO Command Implementation
-- `model/oran-command-nr-2-nr-handover.cc`
-- `model/oran-command-nr-2-nr-handover.h`
 
 ---
 
