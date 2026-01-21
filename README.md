@@ -218,6 +218,9 @@ All new components were integrated into the ORAN module build system and hardene
 - NR E2 node terminators  
 
 ---
+### Protocol
+<img width="1079" height="792" alt="Screenshot from 2026-01-21 12-28-51" src="https://github.com/user-attachments/assets/14c011e4-fa52-45e4-b944-b3a68413e684" />
+
 
 ## 7️⃣ NR → NR Handover Optimization Models
 
@@ -296,6 +299,9 @@ This framework can be extended further to support:
 <img width="1112" height="734" alt="Screenshot from 2026-01-21 11-44-38" src="https://github.com/user-attachments/assets/f3cca852-05b9-48d1-b783-8ab03dfc4933" />
 
 Currently using ns3::RandomDirection2dMobilityModel for testing purposes with static height.
+
+### Architecture
+<img width="1121" height="804" alt="Screenshot from 2026-01-21 12-27-03" src="https://github.com/user-attachments/assets/1a95fdbb-1238-4624-a13a-7863cca40451" />
 
 
 
