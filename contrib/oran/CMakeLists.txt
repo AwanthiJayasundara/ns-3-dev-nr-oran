@@ -51,8 +51,38 @@ else()
                         LIBRARY_NAME torch)
 endif()
 
+# if(${Torch_FOUND})
+#   include_directories(${Torch_INCLUDE_DIRS})
+#   link_libraries(${Torch_LIBRARIES})
+# endif()
 if(${Torch_FOUND})
   include_directories(${Torch_INCLUDE_DIRS})
+
+  # -------------------------------------------------------------------
+  # Also find the extra shared libraries that libtorch depends on:
+  #   - libtorch_cpu.so
+  #   - libc10.so
+  # -------------------------------------------------------------------
+  if(DEFINED ENV{LIBTORCHPATH})
+    set(_TORCH_LIB_DIR "$ENV{LIBTORCHPATH}/lib")
+    find_library(Torch_CPU_LIBRARY torch_cpu
+                 HINTS "${_TORCH_LIB_DIR}" NO_DEFAULT_PATH)
+    find_library(Torch_C10_LIBRARY c10
+                 HINTS "${_TORCH_LIB_DIR}" NO_DEFAULT_PATH)
+  else()
+    find_library(Torch_CPU_LIBRARY torch_cpu)
+    find_library(Torch_C10_LIBRARY c10)
+  endif()
+
+  if(Torch_CPU_LIBRARY)
+    list(APPEND Torch_LIBRARIES ${Torch_CPU_LIBRARY})
+  endif()
+
+  if(Torch_C10_LIBRARY)
+    list(APPEND Torch_LIBRARIES ${Torch_C10_LIBRARY})
+  endif()
+
+  # Make these libraries visible to all targets in this directory and subdirs
   link_libraries(${Torch_LIBRARIES})
 endif()
 
