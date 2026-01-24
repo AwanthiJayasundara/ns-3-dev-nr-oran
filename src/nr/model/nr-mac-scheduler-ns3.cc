@@ -918,7 +918,15 @@ NrMacSchedulerNs3::DoSchedDlCqiInfoReq(
 
     for (const auto& cqi : params.m_cqiList)
     {
-        NS_ASSERT(m_ueMap.find(cqi.m_rnti) != m_ueMap.end());
+        //NS_ASSERT(m_ueMap.find(cqi.m_rnti) != m_ueMap.end());
+        auto it = m_ueMap.find(cqi.m_rnti);
+        if (it == m_ueMap.end())
+        {
+            NS_LOG_WARN("Dropping DL CQI for unknown RNTI=" << cqi.m_rnti
+                        << " (likely due to handover timing)");
+            return;
+        }
+
         const std::shared_ptr<NrMacSchedulerUeInfo>& ue = m_ueMap.find(cqi.m_rnti)->second;
         m_cqiManagement.DlCqiReported(cqi, ue, expirationTime, m_maxDlMcs, GetBandwidthInRbg());
         m_csiFeedbackReceived(GetCellId(), GetBwpId(), ue);
