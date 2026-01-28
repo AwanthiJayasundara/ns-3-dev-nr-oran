@@ -43,6 +43,8 @@
 #include <ns3/nr-fh-sched-sap.h>
 #include "ns3/nr-ffr-sap.h"
 //#include "ns3/nr-ue-phy.h" 
+#include "ns3/nr-gnb-phy.h"
+
 
 #include <ns3/mobility-model.h>
 #include <ns3/simulator.h>

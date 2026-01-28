@@ -78,27 +78,69 @@ OranE2NodeTerminatorNrGnb::GetNodeType() const
 
 void
 OranE2NodeTerminatorNrGnb::ReceiveCommand(Ptr<OranCommand> command)
+// {
+//     NS_LOG_FUNCTION(this << command);
+
+//     if (m_active)
+//     {
+//         //Confirms this command is a OranCommandNr2NrHandover (not some other ORAN command).
+//         if (command->GetInstanceTypeId() == OranCommandNr2NrHandover::GetTypeId())
+//         {
+//             Ptr<Node> node = GetNode();
+//             //Casts the generic OranCommand to the specific OranCommandNr2NrHandover 
+//             //So that we can access RNTI and target cell info
+//             Ptr<OranCommandNr2NrHandover> handoverCommand =
+//                 command->GetObject<OranCommandNr2NrHandover>();
+//             //Fetches the RRC (Radio Resource Control) module from the gNB’s NetDevice. 
+//             //This is the module that controls UEs, including handovers.
+//             Ptr<NrGnbRrc> nrGnbRrc = GetNetDevice()->GetRrc();
+//             //The serving gNB uses RRC to send a handover request for the specified UE (RNTI) to the target cell (CellId).
+//             nrGnbRrc->SendHandoverRequest(handoverCommand->GetTargetRnti(),
+//                                            handoverCommand->GetTargetCellId());
+//         }
+//     }
+// }
 {
     NS_LOG_FUNCTION(this << command);
 
-    if (m_active)
+    if (!m_active)
     {
-        //Confirms this command is a OranCommandNr2NrHandover (not some other ORAN command).
-        if (command->GetInstanceTypeId() == OranCommandNr2NrHandover::GetTypeId())
-        {
-            Ptr<Node> node = GetNode();
-            //Casts the generic OranCommand to the specific OranCommandNr2NrHandover 
-            //So that we can access RNTI and target cell info
-            Ptr<OranCommandNr2NrHandover> handoverCommand =
-                command->GetObject<OranCommandNr2NrHandover>();
-            //Fetches the RRC (Radio Resource Control) module from the gNB’s NetDevice. 
-            //This is the module that controls UEs, including handovers.
-            Ptr<NrGnbRrc> nrGnbRrc = GetNetDevice()->GetRrc();
-            //The serving gNB uses RRC to send a handover request for the specified UE (RNTI) to the target cell (CellId).
-            nrGnbRrc->SendHandoverRequest(handoverCommand->GetTargetRnti(),
-                                           handoverCommand->GetTargetCellId());
-        }
+        return;
     }
+
+    if (command->GetInstanceTypeId() != OranCommandNr2NrHandover::GetTypeId())
+    {
+        return;
+    }
+
+    Ptr<OranCommandNr2NrHandover> hoCmd = command->GetObject<OranCommandNr2NrHandover>();
+    Ptr<NrGnbRrc> gnbRrc = GetNetDevice()->GetRrc();
+
+    const uint16_t rnti = hoCmd->GetTargetRnti();
+    const uint16_t targetCellId = hoCmd->GetTargetCellId();
+
+    // 1) If this gNB doesn't currently manage that RNTI, it's a stale command -> DROP
+    if (!gnbRrc->HasUeManager(rnti))
+    {
+        NS_LOG_WARN("DROP HO cmd: no UE manager for RNTI=" << rnti
+                    << " (stale command?) targetCellId=" << targetCellId);
+        return;
+    }
+
+    Ptr<NrUeManager> ueMan = gnbRrc->GetUeManager(rnti);
+    const auto st = ueMan->GetState();
+
+    // 2) Only allow HO when UE is in a stable connected state
+    if (st != NrUeManager::CONNECTED_NORMALLY &&
+        st != NrUeManager::CONNECTION_RECONFIGURATION)
+    {
+        NS_LOG_WARN("DROP HO cmd: UE state not stable. RNTI=" << rnti
+                    << " state=" << st << " targetCellId=" << targetCellId);
+        return;
+    }
+
+    // Safe to trigger HO now
+    gnbRrc->SendHandoverRequest(rnti, targetCellId);
 }
 
 Ptr<NrGnbNetDevice>

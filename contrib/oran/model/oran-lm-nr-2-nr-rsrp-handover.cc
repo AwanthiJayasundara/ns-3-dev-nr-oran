@@ -11,6 +11,7 @@
 #include "ns3/uinteger.h"
 
 #include <cfloat>
+#include <map>
 
 namespace ns3
 {
@@ -234,31 +235,29 @@ OranLmNr2NrRsrpHandover::GetHandoverCommands(
 {
     NS_LOG_FUNCTION(this << data);
 
-    // Static map to track last attempted handover target for each UE (by UE Node ID).
-    static std::map<uint64_t, uint16_t> lastHandoverTarget;
+    static std::map<uint64_t, Time> lastHoCmdTime;       // UE nodeId -> last HO cmd time
+    static std::map<uint64_t, uint16_t> pendingHoTarget; // UE nodeId -> target cell
+
+    static const Time warmup = Seconds(4.0);
+    static const Time minHoInterval = Seconds(4.0);
+    static const Time hoAttemptTimeout = Seconds(3.0);
 
     std::vector<Ptr<OranCommand>> commands;
 
-    // **Reset last attempted target if handover succeeded**:
-    // If the UE's current cell matches the last attempted target, clear the record (handover was successful).
     for (auto ueInfo : ueInfos)
     {
-        auto it = lastHandoverTarget.find(ueInfo.nodeId);
-        if (it != lastHandoverTarget.end() && it->second == ueInfo.cellId)
+        if (Simulator::Now() < warmup)
         {
-            // Handover to that target succeeded, so remove tracking.
-            lastHandoverTarget.erase(it);
+            continue;
         }
-    }
 
-    // Compare the RSRP of each active gNB with the RSRP of each UE and decide handovers.
-    for (auto ueInfo : ueInfos)
-    {
-        double max = -DBL_MAX;               // Highest RSRP found
-        double secondMax = -DBL_MAX;         // Second-highest RSRP found
-        uint64_t oldCellNodeId = 0;          // Node ID of the currently serving cell (gNB)
-        uint16_t newCellId = ueInfo.cellId;  // Cell ID of the best (highest RSRP) candidate (initialized to current cell)
-        uint16_t secondBestCellId = ueInfo.cellId; // Cell ID of the second-best candidate (initialized to current)
+        // ---- Get best cell + serving cell from measurements ----
+        double bestRsrp = -DBL_MAX;
+        uint16_t bestCellId = ueInfo.cellId;
+
+        double servingRsrp = -DBL_MAX;
+        uint16_t servingCellId = 0;
+        uint16_t servingRnti = 0;
 
         auto rsrpMeasurements = data->GetNrUeRsrpRsrq(ueInfo.nodeId);
         for (auto rsrpMeasurement : rsrpMeasurements)
@@ -271,91 +270,106 @@ OranLmNr2NrRsrpHandover::GetHandoverCommands(
             uint16_t componentCarrierId;
             std::tie(rnti, cellId, rsrp, rsrq, isServingCell, componentCarrierId) = rsrpMeasurement;
 
-            LogLogicToRepository("RSRP from UE with RNTI " + std::to_string(rnti) +
-                                 " in CellID " + std::to_string(ueInfo.cellId) +
-                                 " to gNB with CellID " + std::to_string(cellId) +
-                                 " is " + std::to_string(rsrp));
-
-            // Check if this RSRP is greater than the current maximum.
-            if (rsrp > max)
+            // only decide HO using DL measurements (BWP/CC 0)
+            if (componentCarrierId != 0)
             {
-                // Update second-best to previous best before updating max.
-                secondMax = max;
-                secondBestCellId = newCellId;
-                // Update best RSRP and cell.
-                max = rsrp;
-                newCellId = cellId;
-                LogLogicToRepository("RSRP to gNB with CellID " + std::to_string(cellId) +
-                                     " is largest so far");
+                continue;
             }
-            // Else if this RSRP is the second highest so far (and not equal to the max).
-            else if (rsrp > secondMax && cellId != newCellId)
+
+            if (isServingCell)
             {
-                secondMax = rsrp;
-                secondBestCellId = cellId;
-                LogLogicToRepository("RSRP to gNB with CellID " + std::to_string(cellId) +
-                                     " is second largest so far");
+                servingRsrp = rsrp;
+                servingCellId = cellId;  // <<< FIX 2: use serving cellId from PHY meas
+                servingRnti = rnti;      // <<< FIX 2: use serving RNTI from PHY meas
+            }
+
+            if (rsrp > bestRsrp)
+            {
+                bestRsrp = rsrp;
+                bestCellId = cellId;
             }
         }
 
-        // Find the Node ID of the currently serving gNB (old cell).
+        // If we don't know who is serving right now, don't risk a stale command
+        if (servingCellId == 0 || servingRnti == 0)
+        {
+            continue;
+        }
+
+        const uint16_t currentCellId = servingCellId; // <<< use serving cell, NOT ueInfo.cellId
+        const uint16_t currentRnti   = servingRnti;   // <<< use serving RNTI, NOT ueInfo.rnti
+
+        // ---- Clear pending if UE reached target ----
+        auto pit = pendingHoTarget.find(ueInfo.nodeId);
+        if (pit != pendingHoTarget.end() && pit->second == currentCellId)
+        {
+            pendingHoTarget.erase(pit);
+        }
+
+        // ---- If HO pending and not timed out, do not send another ----
+        auto tit = lastHoCmdTime.find(ueInfo.nodeId);
+        if (pendingHoTarget.count(ueInfo.nodeId) && tit != lastHoCmdTime.end())
+        {
+            if (Simulator::Now() - tit->second < hoAttemptTimeout)
+            {
+                continue;
+            }
+        }
+
+        // ---- Cooldown ----
+        if (tit != lastHoCmdTime.end() && (Simulator::Now() - tit->second) < minHoInterval)
+        {
+            continue;
+        }
+
+        // ---- Map serving cellId to serving gNB E2 node id ----
+        uint64_t oldCellNodeId = 0;
         for (const auto& gnbInfo : gnbInfos)
         {
-            if (ueInfo.cellId == gnbInfo.cellId)
+            if (currentCellId == gnbInfo.cellId)   // <<< FIX 2: use currentCellId
             {
                 oldCellNodeId = gnbInfo.nodeId;
                 break;
             }
         }
-
-        // Determine if a handover should be issued:
-        // Check if the best candidate cell is different from the UE's current cell.
-        if (newCellId != ueInfo.cellId)
+        if (oldCellNodeId == 0)
         {
-            bool alreadyTriedBest = false;
-            auto it = lastHandoverTarget.find(ueInfo.nodeId);
-            if (it != lastHandoverTarget.end() && it->second == newCellId)
-            {
-                // We have attempted a handover to newCellId before (and UE is still on old cell, meaning it likely failed).
-                alreadyTriedBest = true;
-            }
-
-            uint16_t targetCellForHandover;
-            if (!alreadyTriedBest)
-            {
-                // **Primary Handover Attempt**: Use the best (highest RSRP) cell.
-                targetCellForHandover = newCellId;
-            }
-            else
-            {
-                // **Fallback Handover Attempt**: The best was already tried and failed, use second-best cell.
-                targetCellForHandover = secondBestCellId;
-                LogLogicToRepository("Best candidate (CellID " + std::to_string(newCellId) +
-                                     ") was already tried and failed. Using second-best (CellID " +
-                                     std::to_string(secondBestCellId) + ") for handover.");
-            }
-
-            // Only issue the command if the target is different from current and a valid cell.
-            if (targetCellForHandover != ueInfo.cellId)
-            {
-                Ptr<OranCommandNr2NrHandover> handoverCommand = CreateObject<OranCommandNr2NrHandover>();
-                handoverCommand->SetAttribute("TargetE2NodeId", UintegerValue(oldCellNodeId));    // source (current) gNB
-                handoverCommand->SetAttribute("TargetRnti", UintegerValue(ueInfo.rnti));          // UE's RNTI on source
-                handoverCommand->SetAttribute("TargetCellId", UintegerValue(targetCellForHandover)); // target cell ID
-
-                // Log and record the handover command.
-                data->LogCommandLm(m_name, handoverCommand);
-                commands.push_back(handoverCommand);
-                lastHandoverTarget[ueInfo.nodeId] = targetCellForHandover;  // record this attempt
-
-                LogLogicToRepository(std::string("Issuing handover command: UE ") +
-                                     std::to_string(ueInfo.nodeId) + " from CellID " +
-                                     std::to_string(ueInfo.cellId) + " to CellID " +
-                                     std::to_string(targetCellForHandover) +
-                                     (alreadyTriedBest ? " (second-best candidate)." : " (best candidate)."));
-            }
+            continue;
         }
-        // (Optional) Else: newCellId == ueInfo.cellId, no better cell found or already on best cell, no handover.
+
+        // ---- Decide HO (compare against CURRENT serving cell) ----
+        if (bestCellId != currentCellId)
+        {
+            const double hysteresisDb = 4.0;
+            if (servingRsrp > -DBL_MAX && !(bestRsrp > servingRsrp + hysteresisDb))
+            {
+                continue;
+            }
+
+            Ptr<OranCommandNr2NrHandover> handoverCommand = CreateObject<OranCommandNr2NrHandover>();
+            handoverCommand->SetAttribute("TargetE2NodeId", UintegerValue(oldCellNodeId)); // source gNB
+            handoverCommand->SetAttribute("TargetRnti", UintegerValue(currentRnti));       // <<< FIX 2
+            handoverCommand->SetAttribute("TargetCellId", UintegerValue(bestCellId));      // target cell
+            
+            NS_LOG_UNCOND("LM HO decision UE nodeId=" << ueInfo.nodeId
+                << " rnti=" << currentRnti
+                << " fromCell=" << currentCellId
+                << " toCell=" << bestCellId
+                << " bestRsrp=" << bestRsrp
+                << " servingRsrp=" << servingRsrp);
+
+
+            data->LogCommandLm(m_name, handoverCommand);
+            commands.push_back(handoverCommand);
+
+            lastHoCmdTime[ueInfo.nodeId] = Simulator::Now();
+            pendingHoTarget[ueInfo.nodeId] = bestCellId;
+
+            LogLogicToRepository("HO CMD t=" + std::to_string(Simulator::Now().GetSeconds()) +
+                                 " UE=" + std::to_string(ueInfo.nodeId) +
+                                 " rnti=" + std::to_string(currentRnti) +
+                                 " " + std::to_string(currentCellId) + "->" + std::to_string(bestCellId));
+        }
     }
 
     return commands;

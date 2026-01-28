@@ -120,3 +120,23 @@ build_lib_example(
     ${libmobility}
 )
 
+build_lib_example(
+  NAME oran-lte-2-lte-rsrp-ue-handover-simulation
+  SOURCE_FILES oran-lte-2-lte-rsrp-ue-handover-simulation.cc
+  LIBRARIES_TO_LINK
+    ${liboran}
+    ${libnetwork}
+    ${liblte}
+    ${libmobility}
+)
+
+build_lib_example(
+  NAME oran-nr-2-nr-rsrp-uav-handover-simulation
+  SOURCE_FILES oran-nr-2-nr-rsrp-uav-handover-simulation.cc
+  LIBRARIES_TO_LINK
+    ${liboran}
+    ${libnetwork}
+    ${libnr}
+    ${libmobility}
+)
+
