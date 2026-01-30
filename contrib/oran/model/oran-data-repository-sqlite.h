@@ -1,32 +1,4 @@
-/**
- * NIST-developed software is provided by NIST as a public service. You may
- * use, copy and distribute copies of the software in any medium, provided that
- * you keep intact this entire notice. You may improve, modify and create
- * derivative works of the software or any portion of the software, and you may
- * copy and distribute such modifications or works. Modified works should carry
- * a notice stating that you changed the software and should note the date and
- * nature of any such change. Please explicitly acknowledge the National
- * Institute of Standards and Technology as the source of the software.
- *
- * NIST-developed software is expressly provided "AS IS." NIST MAKES NO
- * WARRANTY OF ANY KIND, EXPRESS, IMPLIED, IN FACT OR ARISING BY OPERATION OF
- * LAW, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTY OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT AND DATA ACCURACY. NIST
- * NEITHER REPRESENTS NOR WARRANTS THAT THE OPERATION OF THE SOFTWARE WILL BE
- * UNINTERRUPTED OR ERROR-FREE, OR THAT ANY DEFECTS WILL BE CORRECTED. NIST
- * DOES NOT WARRANT OR MAKE ANY REPRESENTATIONS REGARDING THE USE OF THE
- * SOFTWARE OR THE RESULTS THEREOF, INCLUDING BUT NOT LIMITED TO THE
- * CORRECTNESS, ACCURACY, RELIABILITY, OR USEFULNESS OF THE SOFTWARE.
- *
- * You are solely responsible for determining the appropriateness of using and
- * distributing the software and you assume all risks associated with its use,
- * including but not limited to the risks and costs of program errors,
- * compliance with applicable laws, damage to or loss of data, programs or
- * equipment, and the unavailability or interruption of operation. This
- * software is not intended to be used in any situation where a failure could
- * cause risk of injury or damage to property. The software developed by NIST
- * employees is not subject to copyright protection within the United States.
- */
+
 
 #ifndef ORAN_DATA_REPOSITORY_SQLITE_H
 #define ORAN_DATA_REPOSITORY_SQLITE_H
@@ -37,6 +9,10 @@
 
 #include <sqlite3.h>
 #include <sstream>
+#include <vector>
+#include <tuple>
+#include <string>
+#include <map>
 
 namespace ns3
 {
@@ -119,6 +95,15 @@ class OranDataRepositorySqlite : public OranDataRepository
                            double rsrq,
                            bool isServingCell,
                            uint8_t componentCarrierId) override;
+
+    void SaveNrUeSinr(uint64_t e2NodeId,
+                  Time t,
+                  uint16_t rnti,
+                  uint16_t cellId,
+                  uint16_t bwpId,
+                  double sinrLin,
+                  double sinrDb,
+                  bool isCtrl) override;
  
     std::map<Time, Vector> GetNodePositions(uint64_t e2NodeId,
                                             Time fromTime,
@@ -149,6 +134,23 @@ class OranDataRepositorySqlite : public OranDataRepository
         uint64_t e2NodeId) override;
     std::vector<std::tuple<uint16_t, uint16_t, double, double, bool, uint8_t>> GetNrUeRsrpRsrq(
         uint64_t e2NodeId) override;
+    std::vector<std::tuple<uint16_t, uint16_t, uint16_t, double, double, bool>> GetNrUeSinr(
+        uint64_t e2NodeId) override;
+
+    // ---- Eve helpers ----
+    std::vector<uint64_t> GetNrEveNodeIds() const override;
+
+    std::vector<std::tuple<uint16_t, uint16_t, double, double, bool>>
+    GetNrEveSinr(uint64_t eveNodeId) const override;
+
+    void LogNrEve(uint64_t eveNodeId, const std::string& label) override;
+
+    void LogNrEveSinr(uint64_t eveNodeId,
+                    uint16_t cellId,
+                    uint16_t bwpId,
+                    double sinrLin,
+                    double sinrDb,
+                    bool isCtrl) override;
 
     void LogCommandE2Terminator(Ptr<OranCommand> cmd) override;
     void LogCommandLm(std::string lm, Ptr<OranCommand> cmd) override;
@@ -193,6 +195,11 @@ class OranDataRepositorySqlite : public OranDataRepository
         GET_LTE_UE_RSRP_RSRQ,              //!< Get the UE RSRP and RSRQ measurements 
         GET_NR_UE_RSRP_RSRQ,              //!< Get the UE RSRP and RSRQ measurements
 
+        GET_NR_EVE_NODEIDS,     //!< Get all Eve node IDs
+        GET_NR_EVE_SINR,        //!< Get Eve SINR (latest time)
+
+        GET_NR_UE_SINR,          //!< Get the UE SINR measurements
+
         GET_NODE_ALL_POSITIONS,            //!< The location of all nodes E2 nodes
 
         INSERT_LTE_ENB_NODE,               //!< Add an LTE eNB E2 node
@@ -212,6 +219,11 @@ class OranDataRepositorySqlite : public OranDataRepository
         INSERT_LTE_UE_RSRP_RSRQ,           //!< Add LTE UE RSRP and RSRQ
         INSERT_NR_UE_RSRP_RSRQ,           //!< Add NR UE RSRP and RSRQ
 
+        INSERT_NR_UE_SINR,               //!< Add NR UE SINR
+
+        INSERT_NR_EVE,          //!< Insert/ignore Eve row
+        INSERT_NR_EVE_SINR,     //!< Insert Eve SINR row
+
         LOG_CMM_ACTION,                    //!< Log a CM module action
         LOG_E2TERMINATOR_COMMAND,          //!< Log an E2 terminator command from the RIC
         LOG_LM_ACTION,                     //!< Log an LM action
@@ -225,7 +237,7 @@ class OranDataRepositorySqlite : public OranDataRepository
     enum CreateStatementType
     {
         INDEX_LTE_ENB_CELLID = 0, //!< Index for the table with LTE eNB based on Cell IDs
-        INDEX_NR_GNB_CELLID = 0, //!< Index for the table with NR gNB based on Cell IDs
+        INDEX_NR_GNB_CELLID, //!< Index for the table with NR gNB based on Cell IDs
 
         INDEX_LTE_ENB_NODEID,     //!< Index for the table with LTE eNB based on E2 Node IDs
         INDEX_NR_GNB_NODEID,     //!< Index for the table with NR gNB based on E2 Node IDs
@@ -264,6 +276,13 @@ class OranDataRepositorySqlite : public OranDataRepository
 
         TABLE_LTE_UE_RSRP_RSRQ,   //!< Table with LTE UE RSRP and RSRQ Information
         TABLE_NR_UE_RSRP_RSRQ,   //!< Table with NR UE RSRP and RSRQ Information
+
+        TABLE_NR_UE_SINR,
+        INDEX_NR_UE_SINR_NODEID,
+
+        TABLE_NR_EVE,        // optional (list of eves)
+        TABLE_NR_EVE_SINR,   // optional (list of eves SINR)
+
 
         TABLE_NODE,               //!< Table with E2 Node Information
         TABLE_NODE_LOCATION,      //!< Table with Node Locations

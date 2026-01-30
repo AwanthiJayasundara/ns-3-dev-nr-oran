@@ -140,3 +140,52 @@ build_lib_example(
     ${libmobility}
 )
 
+build_lib_example(
+  NAME oran-nr-2-nr-rsrp-handover-simulation-ntn
+  SOURCE_FILES oran-nr-2-nr-rsrp-handover-simulation-ntn.cc
+  LIBRARIES_TO_LINK
+    ${liboran}
+    ${libnetwork}
+    ${libnr}
+    ${libmobility}
+)
+
+build_lib_example(
+  NAME oran-nr-2-nr-rsrp-handover-simulation-tn
+  SOURCE_FILES oran-nr-2-nr-rsrp-handover-simulation-tn.cc
+  LIBRARIES_TO_LINK
+    ${liboran}
+    ${libnetwork}
+    ${libnr}
+    ${libmobility}
+)
+
+build_lib_example(
+  NAME oran-nr-tn-ntn-rsrp-handover
+  SOURCE_FILES oran-nr-tn-ntn-rsrp-handover.cc
+  LIBRARIES_TO_LINK
+    ${liboran}
+    ${libnetwork}
+    ${libnr}
+    ${libmobility}
+)
+
+build_lib_example(
+  NAME oran-nr-tn-ntn-simulation-without-secrecy
+  SOURCE_FILES oran-nr-tn-ntn-simulation-without-secrecy.cc
+  LIBRARIES_TO_LINK
+    ${liboran}
+    ${libnetwork}
+    ${libnr}
+    ${libmobility}
+)
+
+build_lib_example(
+  NAME oran-nr-tn-ntn-simulation-with-secrecy
+  SOURCE_FILES oran-nr-tn-ntn-simulation-with-secrecy.cc
+  LIBRARIES_TO_LINK
+    ${liboran}
+    ${libnetwork}
+    ${libnr}
+    ${libmobility}
+)

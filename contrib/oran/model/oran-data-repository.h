@@ -41,6 +41,8 @@
 
 #include <map>
 #include <tuple>
+#include <vector>
+#include <string>
 
 namespace ns3
 {
@@ -259,6 +261,47 @@ class OranDataRepository : public Object
                                    double rsrq,
                                    bool isServingCell,
                                    uint8_t componentCarrierId) = 0;
+    /**
+     * Store the UE's SINR.
+     *
+     * @param reporterE2NodeId The E2 Node ID of the reporting node.
+     * @param time The time at which this SINR was reported by the node.
+     * @param rnti The RNTI assigned to the UE by the cell.
+     * @param cellId The cell ID of the connected cell.
+     * @param bwpId The BWP ID.
+     * @param sinrLin The SINR value in linear scale.
+     * @param sinrDb The SINR value in dB scale.
+     * @param isCtrl A flag indicating if this SINR is for control or data channels.
+     */
+
+    virtual void SaveNrUeSinr(uint64_t reporterE2NodeId,
+                          Time time,
+                          uint16_t rnti,
+                          uint16_t cellId,
+                          uint16_t bwpId,
+                          double sinrLin,
+                          double sinrDb,
+                          bool isCtrl) = 0;
+
+    // Register an Eve (optional but recommended)
+    virtual void LogNrEve(uint64_t eveNodeId, const std::string& label) = 0;
+
+    // Insert Eve SINR sample
+    virtual void LogNrEveSinr(uint64_t eveNodeId,
+                              uint16_t cellId,
+                              uint16_t bwpId,
+                              double sinrLin,
+                              double sinrDb,
+                              bool isCtrl) = 0;
+
+    // Read Eve SINR records (similar shape to UE SINR)
+    virtual std::vector<std::tuple<uint16_t /*cellId*/, uint16_t /*bwpId*/,
+                                  double /*sinrLin*/, double /*sinrDb*/, bool /*isCtrl*/>>
+    GetNrEveSinr(uint64_t eveNodeId) const = 0;
+
+    // Optional helper: list all Eve IDs
+    virtual std::vector<uint64_t> GetNrEveNodeIds() const = 0;
+
 
     /* Data Access API */
     /**
@@ -384,6 +427,16 @@ class OranDataRepository : public Object
      */
     virtual std::vector<std::tuple<uint16_t, uint16_t, double, double, bool, uint8_t>>
     GetNrUeRsrpRsrq(uint64_t e2NodeId) = 0;
+    /**
+     * Gets the last reported SINR values.
+     *
+     * @param e2NodeId The E2 Node ID.
+     * @return A collection of RNTI, cell ID, BWP ID, SINR linear, SINR dB, and is control
+     * tuples.
+     */
+
+    virtual std::vector<std::tuple<uint16_t, uint16_t, uint16_t, double, double, bool>>
+    GetNrUeSinr(uint64_t e2NodeId) = 0;
 
     /* Logging API */
     /**

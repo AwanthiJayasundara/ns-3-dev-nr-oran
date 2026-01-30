@@ -29,17 +29,17 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavHandoverSimulation");
+NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpHandoverSimulationTn");
 
 /**
- * Example of ORAN-driven NR multi-cell UAV handover with QoS monitoring (5G-LENA).
+ * Example of ORAN-driven NR multi-cell UE handover with QoS monitoring (5G-LENA).
  *
  * Minimum required versions for reproducibility:
  *   - ns-3 version: 3.39 or later
  *   - 5G-LENA version: 2.6 or later
  *
- * The scenario consists of 50 NR UAV UEs moving randomly inside a large 2D area
- * and served by 5 fixed gNB macro cells. Each UAV receives downlink UDP traffic
+ * The scenario consists of 50 NR UE UEs moving randomly inside a large 2D area
+ * and served by 5 fixed gNB macro cells. Each UE receives downlink UDP traffic
  * from a remote host through an NR EPC (NrPointToPointEpcHelper).
  *
  * The NR radio access uses a 3GPP UMa propagation scenario with optional fading
@@ -54,13 +54,13 @@ NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavHandoverSimulation");
  * and the UEs initially attach to the gNB offering the maximum RSRP. X2 interfaces
  * are enabled to support inter-gNB handovers.
  *
- * In ORAN mode, UAV UEs report periodic measurements (location, serving cell info,
+ * In ORAN mode, UE UEs report periodic measurements (location, serving cell info,
  * and application loss metrics) to a Near-RT RIC using E2 node terminators.
  * The Near-RT RIC runs an RSRP-based Logic Module (OranLmNr2NrRsrpHandover) that
  * can decide and trigger NR-to-NR handovers. gNB-side cell load is also reported
  * via NR scheduling callbacks to support conflict mitigation.
  *
- * FlowMonitor is used to compute per-UAV QoS metrics (delay, jitter, throughput,
+ * FlowMonitor is used to compute per-UE QoS metrics (delay, jitter, throughput,
  * and packet delivery ratio) periodically and write them to trace files over time.
  * Additionally, node mobility positions and successful handover events are logged.
  *
@@ -71,25 +71,25 @@ NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavHandoverSimulation");
 const static float GNB_HEIGHT = 25;
 
 // Variables
-uint32_t numUAVs = 50;
-uint32_t numMacroCells = 10;
+uint32_t numUEs = 50;
+uint32_t numGnbs = 5;
 
 // Metrics collection interval
 Time management_interval = Seconds(4);
 
-// UAVs ips vector
+// UEs ips vector
 std::vector<Ipv4Address> user_ip;
 
-// Vectors with the most recent metrics for each UAV
+// Vectors with the most recent metrics for each UE
 std::vector<double> user_delay;
 std::vector<double> user_jitter;
 std::vector<double> user_throughput;
 std::vector<double> user_pdr;
 
-static std::string s_trafficTraceFile = "results/nr/uav-traffic-trace.tr";
-static std::string s_positionTraceFile = "results/nr/uav-position-trace.tr";
-static std::string s_handoverTraceFile = "results/nr/uav-handover-trace.tr";
-static std::string ns3_dir = "results/nr/";
+static std::string s_trafficTraceFile = "results/nr/tn/nr-traffic-trace.tr";
+static std::string s_positionTraceFile = "results/nr/tn/nr-position-trace.tr";
+static std::string s_handoverTraceFile = "results/nr/tn/nr-handover-trace.tr";
+static std::string ns3_dir = "results/nr/tn/";
 
 // Tracing rsrp, rsrq, and sinr rsrq is set to zero for now
 void
@@ -129,11 +129,11 @@ TxTrace(Ptr<const Packet> p, const Address& from, const Address& to)
               << std::endl;
 }
 
-// Helper function that returns the UAV id associated with a specific IP
+// Helper function that returns the UE id associated with a specific IP
 int
 get_user_id_from_ipv4(Ipv4Address ip)
 {
-    for (uint32_t i = 0; i < numUAVs; i++)
+    for (uint32_t i = 0; i < numUEs; i++)
     {
         if (user_ip[i] == ip)
         {
@@ -153,7 +153,7 @@ ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
 
     auto flowStats = flowMon->GetFlowStats();
 
-    // Subnet filter for UAVs
+    // Subnet filter for UEs
     auto ue_network = Ipv4Address("7.0.0.0");
     auto ue_network_mask = Ipv4Mask("255.0.0.0");
 
@@ -222,8 +222,8 @@ ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
     }
 
     std::ofstream qos_vs_time;
-    qos_vs_time.open("results/nr/uav-qos-vs-time.txt", std::ofstream::out | std::ofstream::app);
-    for (uint32_t ue = 0; ue < numUAVs; ++ue)
+    qos_vs_time.open("results/nr/tn/qos-vs-time.txt", std::ofstream::out | std::ofstream::app);
+    for (uint32_t ue = 0; ue < numUEs; ++ue)
     {
         qos_vs_time << Simulator::Now().GetSeconds() << "," << ue << "," << user_delay[ue] << ","
                     << user_jitter[ue] << "," << user_throughput[ue] << "," << user_pdr[ue]
@@ -261,7 +261,7 @@ NotifyHandoverEndOkGnb(std::string context, uint64_t imsi, uint16_t cellid, uint
 }
 
 void
-install_mobility(NodeContainer staticNodes, NodeContainer gnbNodes, NodeContainer uavNodes)
+install_mobility(NodeContainer staticNodes, NodeContainer gnbNodes, NodeContainer ueNodes)
 {
     Ptr<ListPositionAllocator> allocator = CreateObject<ListPositionAllocator>();
     allocator->Add(Vector(0, 0, 0));
@@ -284,27 +284,27 @@ install_mobility(NodeContainer staticNodes, NodeContainer gnbNodes, NodeContaine
     gnbHelper.SetPositionAllocator(gnbPosition);
     gnbHelper.Install(gnbNodes);
 
-    // Install Mobility Model for UAVs
-    //different uavs has different x, y, z initial value inside the boundry
-    //initial placement so make lttle change to bound valuavs so avoids immediate boundary hits at t=0
+    // Install Mobility Model for UEs
+    //different ues has different x, y, z initial value inside the boundry
+    //initial placement so make lttle change to bound values so avoids immediate boundary hits at t=0
     Ptr<RandomBoxPositionAllocator> box = CreateObject<RandomBoxPositionAllocator>();
-    box->SetAttribute("X", StringValue("ns3::UniformRandomVariable[Min=-990|Max=990]"));
-    box->SetAttribute("Y", StringValue("ns3::UniformRandomVariable[Min=-990|Max=990]"));
-    box->SetAttribute("Z", StringValue("ns3::UniformRandomVariable[Min=100.0|Max=200.0]"));
+    box->SetAttribute("X", StringValue("ns3::UniformRandomVariable[Min=-990|Max=990]")); // initial placement region
+    box->SetAttribute("Y", StringValue("ns3::UniformRandomVariable[Min=-990|Max=990]")); // initial placement region
+    box->SetAttribute("Z", StringValue("ns3::UniformRandomVariable[Min=1.5|Max=2.0]"));
 
-    //uav moves the z axis where it initially selected between 100 and 200 m
-    MobilityHelper uavHelper;
-    uavHelper.SetPositionAllocator(box);
-    uavHelper.SetMobilityModel("ns3::RandomDirection2dMobilityModel",
+    //ue moves the z axis where it initially selected between 100 and 200 m
+    MobilityHelper ueHelper;
+    ueHelper.SetPositionAllocator(box);
+    ueHelper.SetMobilityModel("ns3::RandomDirection2dMobilityModel",
                               "Bounds",
                               StringValue("-1000|1000|-1000|1000"),
                               "Speed",
-                              StringValue("ns3::UniformRandomVariable[Min=20.0|Max=30.0]"),
+                              StringValue("ns3::UniformRandomVariable[Min=2.0|Max=10.0]"),
                               //// No pausing (set a Constant>0 if want them to stop sometimes)-hovering
                               //if not use "Pause",  StringValue("ns3::ConstantRandomVariable[Constant=0.0]")
                               "Pause",
                               StringValue("ns3::UniformRandomVariable[Min=1.0|Max=6.0]"));
-    uavHelper.Install(uavNodes);
+    ueHelper.Install(ueNodes);
 }
 
 bool
@@ -361,7 +361,7 @@ main(int argc, char* argv[])
     int32_t remRbId = -1; // kept for compatibility (not used by this REM helper)
     std::string handoverAlgorithm = "ns3::NrNoOpHandoverAlgorithm";
     Time simTime = Seconds(50);
-    std::string dbFileName = "oran-repository-uav.db";
+    std::string dbFileName = "tn-nr-oran-repository.db";
     std::string lateCommandPolicy = "DROP";
 
     // Scheduler CLI knobs (safe defaults to a concrete scheduler)
@@ -382,7 +382,7 @@ main(int argc, char* argv[])
     cmd.AddValue("traffic-trace-file", "Specify the traffic trace file to create", s_trafficTraceFile);
     cmd.AddValue("position-trace-file", "Specify the position trace file to create", s_positionTraceFile);
     cmd.AddValue("handover-trace-file", "Specify the handover trace file to create", s_handoverTraceFile);
-    cmd.AddValue("num-uavs", "Number of UAVs", numUAVs);
+    cmd.AddValue("num-ues", "Number of UEs", numUEs);
     cmd.AddValue("rem-mode", "Generate radio environment map", remMode);
     cmd.AddValue("rem-rb-id", "RB id", remRbId);
     cmd.AddValue("ofdma", "Use OFDMA (1) or TDMA (0)", ofdma);
@@ -426,11 +426,11 @@ main(int argc, char* argv[])
 
     //Config::SetDefault("ns3::NrGnbPhy::TxPower", DoubleValue(43));
 
-    // Create gNB and UAV
-    NodeContainer uavNodes;
+    // Create gNB and UE
+    NodeContainer ueNodes;
     NodeContainer gnbNodes;
-    gnbNodes.Create(numMacroCells);
-    uavNodes.Create(numUAVs);
+    gnbNodes.Create(numGnbs);
+    ueNodes.Create(numUEs);
     
     // Create ChannelHelper API
     Ptr<NrChannelHelper> channelHelper = CreateObject<NrChannelHelper>();
@@ -446,7 +446,7 @@ main(int argc, char* argv[])
     //std::string propChannelCondition = "LOS";
     NS_ABORT_MSG_UNLESS(
         propScenario == "UMa",
-        "Unsupported scenario " << scenario << ". Supported valuavs: UMa, RMa");
+        "Unsupported scenario " << scenario << ". Supported values: UMa, RMa");
     // Configure the factories for the channel creation
     channelHelper->ConfigureFactories(propScenario, "Default");
     channelHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(enableShadowing));
@@ -600,7 +600,7 @@ main(int argc, char* argv[])
     
     //The network interface installed on the node (e.g., 5G modem)
     NetDeviceContainer gnbNrDevs;
-    NetDeviceContainer uavNrDevs; 
+    NetDeviceContainer ueNrDevs; 
 
     Ptr<NrPointToPointEpcHelper> epcHelper = CreateObject<NrPointToPointEpcHelper>();
     nrHelper->SetEpcHelper(epcHelper);
@@ -630,11 +630,11 @@ main(int argc, char* argv[])
         ipv4RoutingHelper.GetStaticRouting(remoteHost->GetObject<Ipv4>());
     remoteHostStaticRouting->AddNetworkRouteTo(Ipv4Address("7.0.0.0"), Ipv4Mask("255.0.0.0"), 1);
 
-    install_mobility(remoteHostContainer, gnbNodes, uavNodes);
+    install_mobility(remoteHostContainer, gnbNodes, ueNodes);
 
     // FDD: install devices with two BWPs (DL, UL)
     gnbNrDevs = nrHelper->InstallGnbDevice(gnbNodes, Bwps);
-    uavNrDevs  = nrHelper->InstallUeDevice(uavNodes, Bwps);
+    ueNrDevs  = nrHelper->InstallUeDevice(ueNodes, Bwps);
 
     static const std::string dlPattern = "DL|DL|DL|DL|DL|DL|DL|DL|DL|UL|";
     static const std::string ulPattern = "UL|UL|UL|UL|UL|UL|UL|UL|UL|DL|";
@@ -658,7 +658,7 @@ main(int argc, char* argv[])
         if (gnb) gnb->UpdateConfig();
     }
 
-    for (auto it = uavNrDevs.Begin(); it != uavNrDevs.End(); ++it)
+    for (auto it = ueNrDevs.Begin(); it != ueNrDevs.End(); ++it)
     {
         Ptr<NrUeNetDevice> ue = DynamicCast<NrUeNetDevice>(*it);
         if (ue) ue->UpdateConfig();
@@ -667,27 +667,27 @@ main(int argc, char* argv[])
 
     //nrHelper->ConfigureFhControl(gnbNrDevs);
 
-    nrHelper->AttachToMaxRsrpGnb(uavNrDevs, gnbNrDevs);
+    nrHelper->AttachToMaxRsrpGnb(ueNrDevs, gnbNrDevs);
 
     nrHelper->AddX2Interface(gnbNodes);
 
-    internet.Install(uavNodes);
+    internet.Install(ueNodes);
     Ipv4InterfaceContainer ueIpIface;
-    ueIpIface = epcHelper->AssignUeIpv4Address(NetDeviceContainer(uavNrDevs));
+    ueIpIface = epcHelper->AssignUeIpv4Address(NetDeviceContainer(ueNrDevs));
 
-    for (uint32_t u = 0; u < uavNodes.GetN(); ++u)
+    for (uint32_t u = 0; u < ueNodes.GetN(); ++u)
     {
-        Ptr<Node> ueNode = uavNodes.Get(u);
+        Ptr<Node> ueNode = ueNodes.Get(u);
         Ptr<Ipv4StaticRouting> ueStaticRouting =
             ipv4RoutingHelper.GetStaticRouting(ueNode->GetObject<Ipv4>());
         ueStaticRouting->SetDefaultRoute(epcHelper->GetUeDefaultGatewayAddress(), 1);
     }
     NS_LOG_UNCOND(std::string("Test"));
 
-    // Install and start applications on UAVs and remote host
+    // Install and start applications on UEs and remote host
     uint16_t basePort = 1000;
     ApplicationContainer remoteApps;
-    ApplicationContainer uavApps;
+    ApplicationContainer ueApps;
 
     Ptr<RandomVariableStream> onTimeRv = CreateObject<UniformRandomVariable>();
     onTimeRv->SetAttribute("Min", DoubleValue(0.1));
@@ -696,14 +696,14 @@ main(int argc, char* argv[])
     offTimeRv->SetAttribute("Min", DoubleValue(0.1));
     offTimeRv->SetAttribute("Max", DoubleValue(0.5));
 
-    for (uint16_t i = 0; i < uavNodes.GetN(); i++)
+    for (uint16_t i = 0; i < ueNodes.GetN(); i++)
     {
         uint16_t port = basePort * (i + 1);
 
         PacketSinkHelper dlPacketSinkHelper("ns3::UdpSocketFactory",
                                             InetSocketAddress(Ipv4Address::GetAny(), port));
-        uavApps.Add(dlPacketSinkHelper.Install(uavNodes.Get(i)));
-        uavApps.Get(i)->TraceConnectWithoutContext("RxWithAddresses", MakeCallback(&RxTrace));
+        ueApps.Add(dlPacketSinkHelper.Install(ueNodes.Get(i)));
+        ueApps.Get(i)->TraceConnectWithoutContext("RxWithAddresses", MakeCallback(&RxTrace));
 
         Ptr<OnOffApplication> streamingServer = CreateObject<OnOffApplication>();
         remoteApps.Add(streamingServer);
@@ -720,8 +720,8 @@ main(int argc, char* argv[])
 
     remoteApps.Start(Seconds(2));
     remoteApps.Stop(simTime + Seconds(10));
-    uavApps.Start(Seconds(1));
-    uavApps.Stop(simTime + Seconds(15));
+    ueApps.Start(Seconds(1));
+    ueApps.Stop(simTime + Seconds(15));
 
     // ORAN BEGIN
     if (useOran == true)
@@ -791,7 +791,7 @@ main(int argc, char* argv[])
 
         Simulator::Schedule(Seconds(1), &OranNearRtRic::Start, nearRtRic);
 
-        for (uint32_t idx = 0; idx < uavNodes.GetN(); idx++)
+        for (uint32_t idx = 0; idx < ueNodes.GetN(); idx++)
         {
             Ptr<OranReporterLocation> locationReporter = CreateObject<OranReporterLocation>();
             Ptr<OranReporterNrUeCellInfo> nrUeCellInfoReporter = CreateObject<OranReporterNrUeCellInfo>();
@@ -806,16 +806,16 @@ main(int argc, char* argv[])
             appLossReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
             remoteApps.Get(idx)->TraceConnectWithoutContext("Tx",
                                                             MakeCallback(&ns3::OranReporterAppLoss::AddTx, appLossReporter));
-            uavApps.Get(idx)->TraceConnectWithoutContext("Rx",
+            ueApps.Get(idx)->TraceConnectWithoutContext("Rx",
                                                         MakeCallback(&ns3::OranReporterAppLoss::AddRx, appLossReporter));
           
-            //The UAV’s physical layer (NrUePhy) periodically measures:RSRP (signal strength),
+            //The UE’s physical layer (NrUePhy) periodically measures:RSRP (signal strength),
                                                                     //RSRQ (signal quality),
                                                                     //SINR (interference/noise level).
-            for (uint32_t netDevIdx = 0; netDevIdx < uavNodes.Get(idx)->GetNDevices(); netDevIdx++)
+            for (uint32_t netDevIdx = 0; netDevIdx < ueNodes.Get(idx)->GetNDevices(); netDevIdx++)
             {
                 Ptr<NrUeNetDevice> nrUeDevice =
-                    uavNodes.Get(idx)->GetDevice(netDevIdx)->GetObject<NrUeNetDevice>();
+                    ueNodes.Get(idx)->GetDevice(netDevIdx)->GetObject<NrUeNetDevice>();
                 if (nrUeDevice)
                 {
                     Ptr<NrUePhy> uePhy = nrUeDevice->GetPhy(0);
@@ -840,7 +840,7 @@ main(int argc, char* argv[])
                                          StringValue("ns3::ConstantRandomVariable[Constant=" +
                                                      std::to_string(txDelay) + "]"));
 
-            nrUeTerminator->Attach(uavNodes.Get(idx));
+            nrUeTerminator->Attach(ueNodes.Get(idx));
             Simulator::Schedule(Seconds(2), &OranE2NodeTerminatorNrUe::Activate, nrUeTerminator);
         }
 
@@ -886,7 +886,7 @@ main(int argc, char* argv[])
     hoOutFile.close();
 
     // Start tracing node locations
-    Simulator::Schedule(Seconds(1), &TracePositions, uavNodes);
+    Simulator::Schedule(Seconds(1), &TracePositions, ueNodes);
 
     // Connect to handover trace so we know when a handover is successfully performed
     Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverEndOk",
@@ -895,8 +895,8 @@ main(int argc, char* argv[])
     //             MakeCallback(&NotifyHandoverEndOkUe));
 
     Ptr<OutputStreamWrapper> rsrpRsrqSinrTraceStream =
-        Create<OutputStreamWrapper>(ns3_dir + "uav-rsrp-trace.tr", std::ios::out);
-    for (NetDeviceContainer::Iterator it = uavNrDevs.Begin(); it != uavNrDevs.End(); ++it)
+        Create<OutputStreamWrapper>(ns3_dir + "nr-rsrp-trace.tr", std::ios::out);
+    for (NetDeviceContainer::Iterator it = ueNrDevs.Begin(); it != ueNrDevs.End(); ++it)
     {
         Ptr<NetDevice> device = *it;
         Ptr<NrUeNetDevice> nrUeDevice = device->GetObject<NrUeNetDevice>();
@@ -910,28 +910,28 @@ main(int argc, char* argv[])
     }
 
     // FlowMonitor setup
-    user_ip.resize(numUAVs);
-    user_delay.assign(numUAVs, 0);
-    user_jitter.assign(numUAVs, 0);
-    user_throughput.assign(numUAVs, 0);
-    user_pdr.assign(numUAVs, 100);
+    user_ip.resize(numUEs);
+    user_delay.assign(numUEs, 0);
+    user_jitter.assign(numUEs, 0);
+    user_throughput.assign(numUEs, 0);
+    user_pdr.assign(numUEs, 100);
 
     Ptr<FlowMonitor> flowMonitor;
     FlowMonitorHelper flowHelper;
 
     flowHelper.Install(remoteHost);
-    flowMonitor = flowHelper.Install(uavNodes);
+    flowMonitor = flowHelper.Install(ueNodes);
 
     std::ofstream qos_vs_time;
-    qos_vs_time.open("results/nr/uav-qos-vs-time.txt", std::ofstream::out | std::ofstream::trunc);
+    qos_vs_time.open("results/nr/tn/qos-vs-time.txt", std::ofstream::out | std::ofstream::trunc);
     qos_vs_time << "Time,UE,Delay,Jitter,Throughput,PDR" << std::endl;
     Simulator::Schedule(management_interval, ThroughputMonitor, &flowHelper, flowMonitor);
 
 
     // populate user ip map
-    for (uint32_t i = 0; i < uavNodes.GetN(); i++)
+    for (uint32_t i = 0; i < ueNodes.GetN(); i++)
     {
-        Ptr<Ipv4> remoteIpv4 = uavNodes.Get(i)->GetObject<Ipv4>();
+        Ptr<Ipv4> remoteIpv4 = ueNodes.Get(i)->GetObject<Ipv4>();
         Ipv4Address remoteIpAddr = remoteIpv4->GetAddress(1, 0).GetLocal();
         user_ip[i] = remoteIpAddr;
     }
@@ -949,7 +949,7 @@ main(int argc, char* argv[])
         remHelper->SetAttribute("YRes", UintegerValue(500));
         remHelper->SetAttribute("Z", DoubleValue(1.0));
 
-        Ptr<NetDevice> rrdDevice = uavNrDevs.Get(0); // UAV0 as receiver
+        Ptr<NetDevice> rrdDevice = ueNrDevs.Get(0); // UE0 as receiver
         uint8_t bwpId = 0; // DL BWP
 
         // Create REM at t=10s (no static Install() API in your helper)

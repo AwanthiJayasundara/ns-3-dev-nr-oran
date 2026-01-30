@@ -153,6 +153,7 @@ build_lib(
     model/oran-lm-lte-2-lte-distance-handover.cc
     model/oran-lm-lte-2-lte-rsrp-handover.cc
     model/oran-lm-nr-2-nr-rsrp-handover.cc
+    model/oran-lm-nr-secrecy-aware-handover.cc
     model/oran-cmm.cc
     model/oran-cmm-handover.cc
     model/oran-cmm-noop.cc
@@ -164,6 +165,7 @@ build_lib(
     model/oran-report-apploss.cc
     model/oran-report-lte-ue-rsrp-rsrq.cc
     model/oran-report-nr-ue-rsrp-rsrq.cc
+    model/oran-report-nr-ue-sinr.cc
     model/oran-report-location.cc
     model/oran-report-lte-cell-load.cc
     model/oran-report-nr-cell-load.cc
@@ -173,6 +175,7 @@ build_lib(
     model/oran-reporter-apploss.cc
     model/oran-reporter-lte-ue-rsrp-rsrq.cc
     model/oran-reporter-nr-ue-rsrp-rsrq.cc
+    model/oran-reporter-nr-ue-sinr.cc
     model/oran-reporter-location.cc
     model/oran-reporter-lte-cell-load.cc
     model/oran-reporter-nr-cell-load.cc
@@ -206,6 +209,7 @@ build_lib(
     model/oran-lm-lte-2-lte-distance-handover.h
     model/oran-lm-lte-2-lte-rsrp-handover.h
     model/oran-lm-nr-2-nr-rsrp-handover.h
+    model/oran-lm-nr-secrecy-aware-handover.h
     model/oran-cmm.h
     model/oran-cmm-handover.h
     model/oran-cmm-noop.h
@@ -217,6 +221,7 @@ build_lib(
     model/oran-report-apploss.h
     model/oran-report-lte-ue-rsrp-rsrq.h
     model/oran-report-nr-ue-rsrp-rsrq.h
+    model/oran-report-nr-ue-sinr.h
     model/oran-report-location.h
     model/oran-report-lte-cell-load.h
     model/oran-report-nr-cell-load.h
@@ -226,6 +231,7 @@ build_lib(
     model/oran-reporter-apploss.h
     model/oran-reporter-lte-ue-rsrp-rsrq.h
     model/oran-reporter-nr-ue-rsrp-rsrq.h
+    model/oran-reporter-nr-ue-sinr.h
     model/oran-reporter-location.h
     model/oran-reporter-lte-cell-load.h
     model/oran-reporter-nr-cell-load.h
