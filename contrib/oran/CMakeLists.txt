@@ -137,10 +137,12 @@ if(${OnnxRuntime_FOUND})
   set(oran_onnxruntime_sources
       model/oran-lm-lte-2-lte-onnx-handover.cc
       model/oran-lm-nr-2-nr-onnx-handover.cc
+      model/oran-lm-nr-onnx-secrecy-aware-handover.cc
   )
   set(oran_onnxruntime_headers
       model/oran-lm-lte-2-lte-onnx-handover.h
       model/oran-lm-nr-2-nr-onnx-handover.h
+      model/oran-lm-nr-onnx-secrecy-aware-handover.h
   )
 endif()
 

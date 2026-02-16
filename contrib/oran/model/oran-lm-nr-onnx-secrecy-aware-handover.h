@@ -1,5 +1,5 @@
-#ifndef ORAN_LM_NR_SECRECY_AWARE_HANDOVER_H
-#define ORAN_LM_NR_SECRECY_AWARE_HANDOVER_H
+#ifndef ORAN_LM_NR_ONNX_SECRECY_AWARE_HANDOVER_H
+#define ORAN_LM_NR_ONNX_SECRECY_AWARE_HANDOVER_H
 
 #include "oran-data-repository.h"
 #include "oran-lm.h"
@@ -8,27 +8,20 @@
 #include "ns3/type-id.h"
 #include "ns3/vector.h"
 
+#include <array>
 #include <cstdint>
-#include <vector>
-
+#include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
+
+// ONNX Runtime (ns-O-RAN already uses it in the ONNX LM example)
+#include <onnxruntime_cxx_api.h>
 
 namespace ns3
 {
 
-/**
- * @ingroup oran
- *
- * Secrecy-aware RSRP handover LM:
- * - Selects best cell by RSRP (like OranLmNr2NrRsrpHandover),
- * - BUT issues HO only if secrecy is not in outage:
- *     Cs = [log2(1+gb) - log2(1+ge)]+  >= SecrecyRateThr
- *
- * gb is estimated from serving SINR + RSRP delta (heuristic),
- * ge is modeled by a constant EavSinrDb (simple attacker model).
- */
-class OranLmNrSecrecyAwareHandover : public OranLm
+class OranLmNrOnnxSecrecyAwareHandover : public OranLm
 {
   protected:
     struct UeInfo
@@ -46,23 +39,34 @@ class OranLmNrSecrecyAwareHandover : public OranLm
         Vector position;
     };
 
+    // Previous state per UE for your 9-feature vector
+    struct PrevState
+    {
+        bool hasPrev = false;
+        float ueSinrDb_prev = -100.0f;
+        float secrecy_prev  = 0.0f;
+        float outage_prev   = 0.0f;
+    };
+
   public:
     static TypeId GetTypeId(void);
 
-    OranLmNrSecrecyAwareHandover(void);
-    ~OranLmNrSecrecyAwareHandover(void) override;
+    OranLmNrOnnxSecrecyAwareHandover(void);
+    ~OranLmNrOnnxSecrecyAwareHandover(void) override;
 
     std::vector<Ptr<OranCommand>> Run(void) override;
 
   private:
+    // Data extraction
     std::vector<UeInfo> GetUeInfos(Ptr<OranDataRepository> data) const;
     std::vector<GnbInfo> GetGnbInfos(Ptr<OranDataRepository> data) const;
 
+    // Main HO logic
     std::vector<Ptr<OranCommand>> GetHandoverCommands(Ptr<OranDataRepository> data,
                                                       const std::vector<UeInfo>& ueInfos,
                                                       const std::vector<GnbInfo>& gnbInfos) const;
 
-    // Read serving DlDataSinr (bwpId=0, isCtrl=false) from DB
+    // SINR and Eve
     bool GetServingDlDataSinrLin(Ptr<OranDataRepository> data,
                                  uint64_t ueE2NodeId,
                                  uint16_t servingCellId,
@@ -70,20 +74,31 @@ class OranLmNrSecrecyAwareHandover : public OranLm
                                  double& outSinrLin) const;
 
     bool GetWorstEveSinrLinForCell(Ptr<OranDataRepository> data,
-                                uint16_t cellId,
-                                double& worstSinrLin) const;
+                                   uint16_t cellId,
+                                   double& worstSinrLin) const;
 
-    // NEW: risk map loader (file -> m_cellRisk)
     void LoadRiskMapIfNeeded();
 
-    // NEW: unified leakage getter used by HO logic
     bool GetLeakageSinrLinForCell(Ptr<OranDataRepository> data,
                                   uint16_t cellId,
                                   double& geLin) const;
 
-    // Secrecy math helpers
+    // Secrecy helpers
     static double DbToLin(double db);
     static double SecrecyCapacity(double gbLin, double geLin);
+
+    // ---- ONNX / ML ----
+    void SetOnnxModelPathTn(const std::string& path);
+    void SetOnnxModelPathNtn(const std::string& path);
+
+    bool InferHoProbability(Ort::Session& sess,
+                            const std::array<float, 9>& x,
+                            float& pHo) const;
+
+    Ort::Session* PickSessionForCell(uint16_t servingCellId) const;
+
+
+    static float LinToDbForMl(double xLin);
 
   private:
     // RSRP HO parameters
@@ -97,19 +112,36 @@ class OranLmNrSecrecyAwareHandover : public OranLm
     // Secrecy parameters
     double m_secrecyRateThr;
     double m_eavSinrDb;
-
     bool m_requireSinr;
 
+    // Leakage model
     std::string m_leakageModel;
     std::string m_riskMapFile;
     std::unordered_map<uint16_t, double> m_cellRisk;
-
     bool m_riskMapLoaded;
     double m_riskMinEavSinrDb;
     double m_riskMaxEavSinrDb;
 
+    // ---- ML trigger gate ----
+    bool m_enableMlTrigger;
+    double m_hoProbThr;
+    double m_mlSecrecyTarget;
+
+    // Domain split for TN vs NTN model selection (simple + works well in your setup)
+    uint16_t m_tnCellIdMax;
+
+    // Previous per-UE state (mutable because GetHandoverCommands is const style)
+    mutable std::unordered_map<uint64_t, PrevState> m_prev;
+
+    // ONNX runtime objects
+    Ort::Env m_env;
+    Ort::AllocatorWithDefaultOptions m_allocator;
+    Ort::MemoryInfo m_memoryInfo;
+
+    std::unique_ptr<Ort::Session> m_sessionTn;
+    std::unique_ptr<Ort::Session> m_sessionNtn;
 };
 
 } // namespace ns3
 
-#endif /* ORAN_LM_NR_SECRECY_AWARE_HANDOVER_H */
+#endif // ORAN_LM_NR_ONNX_SECRECY_AWARE_HANDOVER_H

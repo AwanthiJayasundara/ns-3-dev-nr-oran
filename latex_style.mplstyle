@@ -1,0 +1,36 @@
+# Font settings
+font.family: serif
+font.size: 30
+
+# Axes
+axes.titlesize: 30
+axes.labelsize: 30
+axes.linewidth: 1.2
+axes.grid: True
+
+# Ticks
+xtick.labelsize: 18
+ytick.labelsize: 18
+xtick.direction: in
+ytick.direction: in
+xtick.major.size: 6
+ytick.major.size: 6
+xtick.minor.size: 3
+ytick.minor.size: 3
+
+# Legend
+legend.fontsize: 18
+legend.frameon: False
+legend.loc: best
+
+# Line styles
+lines.linewidth: 2
+lines.markersize: 6
+
+# Grid
+grid.linestyle: --
+grid.alpha: 0.6
+
+# TeX rendering
+text.usetex: True
+text.latex.preamble: \usepackage{amsmath} \usepackage{siunitx} \usepackage{bm}

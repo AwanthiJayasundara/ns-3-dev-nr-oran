@@ -189,3 +189,13 @@ build_lib_example(
     ${libnr}
     ${libmobility}
 )
+
+build_lib_example(
+  NAME oran-nr-tn-ntn-simulation-with-secrecy-onnx
+  SOURCE_FILES oran-nr-tn-ntn-simulation-with-secrecy-onnx.cc
+  LIBRARIES_TO_LINK
+    ${liboran}
+    ${libnetwork}
+    ${libnr}
+    ${libmobility}
+)

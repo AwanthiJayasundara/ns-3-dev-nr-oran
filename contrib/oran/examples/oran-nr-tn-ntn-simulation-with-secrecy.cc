@@ -27,9 +27,105 @@
 #include <limits>
 #include <algorithm>
 
+#include <cctype>
+
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("OranNrTnNtnSimulationWithSecrecy");
+
+/**
+ * OranNrTnNtnSimulationWithSecrecy
+ *
+ * End-to-end ns-3 (5G-LENA NR) + ns-O-RAN scenario for evaluating TN–NTN integration
+ * with an optional Physical-Layer Security (PLS) overlay driven by *measured SINR*.
+ *
+ * ---------------------------------------------------------------------------
+ * 1) Topology / Mobility
+ * ---------------------------------------------------------------------------
+ * - Two disjoint service regions:
+ *   (A) TN area centered at (0,0) with bounds [-TN_HALF .. TN_HALF] (meters).
+ *       • TN gNBs are static at fixed coordinates.
+ *       • TN UEs move with RandomDirection2dMobilityModel within TN bounds.
+ *
+ *   (B) NTN area shifted by +AREA_B_OFFSET_X meters on the X-axis, with bounds
+ *       [AREA_B_OFFSET_X-NTN_HALF .. AREA_B_OFFSET_X+NTN_HALF] and Y ∈ [-NTN_HALF .. NTN_HALF].
+ *       • "NTN gNBs" are modeled as mobile aerial gNBs (e.g., UAV-BS) moving inside Area B.
+ *       • NTN UEs move within the Area B bounds (same mobility model).
+ *
+ * - Optional passive eavesdroppers ("EVE") are modeled as additional NR UEs:
+ *   • EVE nodes attach like normal UEs (AttachToMaxRsrpGnb) and *only listen* (no apps),
+ *     providing a practical way to obtain PHY measurements (RSRP/RSRQ/SINR) for leakage risk.
+ *
+ * ---------------------------------------------------------------------------
+ * 2) NR / PHY configuration (high level)
+ * ---------------------------------------------------------------------------
+ * - Example carrier settings:
+ *   • DL center ~ 4.0 GHz, UL center ~ 3.9 GHz, bandwidth ~ 20 MHz
+ *   • Configurable scheduler (TDMA/OFDMA and RR/PF/MR/QoS variants)
+ *   • FDD patterns configured via "Pattern" attributes on gNB PHY
+ * - Channel configured via NrChannelHelper (scenario "UMa" here), optional fading enabled.
+ *
+ * ---------------------------------------------------------------------------
+ * 3) O-RAN control loop (Near-RT RIC + LM)
+ * ---------------------------------------------------------------------------
+ * - When O-RAN is enabled (useOran=true):
+ *   • Near-RT RIC collects periodic measurements through E2 terminators & reporters
+ *   • A Logic Module (LM/xApp) can control handover decisions
+ *   • When LM controls HO, the native HO algorithm is set to NoOp to avoid conflicts.
+ *
+ * - LM options include:
+ *   • No-op / baseline, ONNX LM, Torch LM, and secrecy-aware LM (OranLmNrSecrecyAwareHandover).
+ *
+ * ---------------------------------------------------------------------------
+ * 4) Security overlay (PLS): SINR-based secrecy monitoring
+ * ---------------------------------------------------------------------------
+ * Measurements:
+ * - Legitimate UEs log:
+ *   • RSRP/RSRQ via "ReportUeMeasurements"
+ *   • Downlink SINR via "DlDataSinr" and "DlCtrlSinr"
+ * - Eavesdroppers log the same traces (because they are implemented as NR UEs).
+ *
+ * Data handling:
+ * - This script stores the *latest* SINR sample per {UE,eve} per cell in a map, with a maxAge
+ *   filter (e.g., 1s) so stale values are ignored.
+ *   This avoids the common bug of tracking a "max forever" eaves value that never decreases.
+ *
+ * Secrecy metric (computed every management_interval seconds):
+ *   C_s = [ log2(1 + SINR_UE) - log2(1 + max_e SINR_EVE(e)) ]^+
+ * - Outage is flagged when: C_s < secrecyTargetBitsPerHz
+ *
+ * Notes:
+ * - SINR values from DlDataSinr/DlCtrlSinr callbacks are treated as *linear* (not dB).
+ * - dB conversions are used for logging/inspection only.
+ * - A legacy RSRP→SNR approximation monitor is kept for reference, but SINR-based secrecy is
+ *   the preferred/cleaner PLS metric here.
+ *
+ * ---------------------------------------------------------------------------
+ * 5) KPI logging (QoS + traces)
+ * ---------------------------------------------------------------------------
+ * - FlowMonitor periodically records per-UE throughput, delay, jitter, PDR, PLR.
+ * - Additional traces: traffic TX/RX, UE positions, handover events, UE/EVE RSRP and SINR,
+ *   secrecy-vs-time outputs.
+ *
+ * Output directory (default):
+ *   results/nr/tn-ntn/withsecrecylm/
+ * Main outputs include:
+ *   - nr-traffic-trace.tr
+ *   - nr-position-trace.tr
+ *   - nr-handover-trace.tr
+ *   - nr-rsrp-ue.tr / nr-rsrp-eve.tr
+ *   - nr-sinr-ue.tr / nr-sinr-eve.tr
+ *   - secrecy-sinr-vs-time.txt   (SINR-based secrecy + outage)
+ *   - secrecy-vs-time.txt        (legacy RSRP-based approximation, if enabled)
+ *   - qos-vs-time.txt
+ *
+ * Typical comparisons enabled by toggles:
+ * - TN-only:        --scenario=tn
+ * - NTN-only:       --scenario=ntn
+ * - TN+NTN:         --scenario=tn-ntn
+ * - TN+NTN (RSRP):  --scenario=tn-ntn --use-rsrp-lm=1 --enable-eves=0
+ * - TN+NTN (Secrecy-aware): --scenario=tn-ntn --use-rsrp-lm=1 --enable-eves=1
+ */
 
 // =========================
 //  CONFIG CONSTANTS
@@ -39,26 +135,22 @@ static constexpr double TN_HALF = 1000.0;           // TN bounds: [-1000..1000]
 static constexpr double NTN_HALF = 2000.0;          // NTN bounds: [-2000..2000] around offset
 static constexpr double GNB_HEIGHT_TN = 25.0;
 
-// Output dirs
-static std::string ns3_dir = "results/nr/tn-ntn/withsecrecylm/";
-static std::string s_trafficTraceFile = ns3_dir + "nr-traffic-trace.tr";
-static std::string s_positionTraceFile = ns3_dir + "nr-position-trace.tr";
-static std::string s_handoverTraceFile = ns3_dir + "nr-handover-trace.tr";
-static std::string s_rsrpUeTraceFile   = ns3_dir + "nr-rsrp-ue.tr";
-static std::string s_rsrpEveTraceFile  = ns3_dir + "nr-rsrp-eve.tr";
-static std::string s_secrecyTraceFile  = ns3_dir + "secrecy-vs-time.txt";
-
-// =========================
-// NEW (SINR): trace output files
-// =========================
-static std::string s_sinrUeTraceFile   = ns3_dir + "nr-sinr-ue.tr";
-static std::string s_sinrEveTraceFile  = ns3_dir + "nr-sinr-eve.tr";
-static std::string s_secrecySinrTraceFile = ns3_dir + "secrecy-sinr-vs-time.txt";
+// Output dirs (set at runtime in main() after --scenario parsing)
+static std::string ns3_dir;
+static std::string s_trafficTraceFile;
+static std::string s_positionTraceFile;
+static std::string s_handoverTraceFile;
+// static std::string s_rsrpUeTraceFile;
+//static std::string s_rsrpEveTraceFile;
+//static std::string s_secrecyTraceFile;
+// static std::string s_sinrUeTraceFile;
+static std::string s_sinrEveTraceFile;
+static std::string s_secrecySinrTraceFile;
 
 // =========================
 //  GLOBALS (QoS like your code)
 // =========================
-Time management_interval = Seconds(4);
+Time management_interval = Seconds(2);
 
 std::vector<Ipv4Address> user_ip;
 std::vector<double> user_delay;
@@ -66,6 +158,10 @@ std::vector<double> user_jitter;
 std::vector<double> user_throughput;
 std::vector<double> user_pdr;
 std::vector<double> user_plr;
+
+static std::unordered_map<uint32_t, uint64_t> g_prevTxPackets;
+static std::unordered_map<uint32_t, uint64_t> g_prevRxPackets;
+static std::unordered_map<uint32_t, uint64_t> g_prevRxBytes;
 
 // =========================
 //  GLOBALS (Security overlay)
@@ -76,6 +172,12 @@ static std::vector<double>   g_ueServingRsrpDbm;
 
 static Ptr<OranDataRepository> g_repo;
 static std::vector<uint64_t> g_eveIds; // index -> eve node id
+
+// Channel scenario selection
+std::string channelScenario = "auto";   // auto | UMa | RMa | NTN-Rural | NTN-Urban | ...
+std::string channelCondition = "Default"; // Default | LOS | NLOS | Buildings
+std::string channelModel = "ThreeGpp";    // ThreeGpp | TwoRay | NYU
+
 
 
 // =========================
@@ -157,72 +259,76 @@ int get_user_id_from_ipv4(Ipv4Address ip)
 // =========================
 void ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
 {
-    uint32_t lostPacketSum = 0;
-    double PDR = 0.0, PLR = 0.0, Delay = 0.0, Jitter = 0.0, Throughput = 0.0;
+    flowMon->CheckForLostPackets();
 
-    auto flowStats = flowMon->GetFlowStats();
+    auto statsMap = flowMon->GetFlowStats();
+    Ptr<Ipv4FlowClassifier> classifier =
+        DynamicCast<Ipv4FlowClassifier>(fmhelper->GetClassifier());
 
+    const double intervalSec = management_interval.GetSeconds();
     auto ue_network = Ipv4Address("7.0.0.0");
     auto ue_network_mask = Ipv4Mask("255.0.0.0");
 
-    Ptr<Ipv4FlowClassifier> classing = DynamicCast<Ipv4FlowClassifier>(fmhelper->GetClassifier());
+    std::fill(user_delay.begin(), user_delay.end(), 0.0);
+    std::fill(user_jitter.begin(), user_jitter.end(), 0.0);
+    std::fill(user_throughput.begin(), user_throughput.end(), 0.0);
+    std::fill(user_pdr.begin(), user_pdr.end(), 0.0);
+    std::fill(user_plr.begin(), user_plr.end(), 0.0);
 
-    for (auto stats : flowStats)
+    for (const auto& kv : statsMap)
     {
-        if (Simulator::Now() - stats.second.timeLastTxPacket > management_interval &&
-            Simulator::Now() - stats.second.timeLastRxPacket > management_interval)
-        {
-            continue;
-        }
+        uint32_t flowId = kv.first;
+        const auto& st = kv.second;
 
-        Ipv4FlowClassifier::FiveTuple fiveTuple = classing->FindFlow(stats.first);
-
-        if (!ue_network_mask.IsMatch(ue_network, fiveTuple.destinationAddress))
+        if (st.txPackets == 0 && st.rxPackets == 0)
             continue;
 
-        int rx_packets = stats.second.rxPackets;
-        int tx_packets = stats.second.txPackets;
+        Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow(flowId);
+        if (!ue_network_mask.IsMatch(ue_network, t.destinationAddress))
+            continue;
 
-        PDR = (double)(100 * rx_packets) / (tx_packets > 0 ? tx_packets : 1);
+        uint64_t prevTx = g_prevTxPackets[flowId];
+        uint64_t prevRx = g_prevRxPackets[flowId];
+        uint64_t prevRb = g_prevRxBytes[flowId];
 
-        // OLD (can underflow if rx>tx):
-        // lostPacketSum = (uint32_t)(tx_packets - rx_packets);
+        uint64_t dTx = (st.txPackets >= prevTx) ? (st.txPackets - prevTx) : 0;
+        uint64_t dRx = (st.rxPackets >= prevRx) ? (st.rxPackets - prevRx) : 0;
+        uint64_t dRb = (st.rxBytes   >= prevRb) ? (st.rxBytes   - prevRb) : 0;
 
-        lostPacketSum = (tx_packets >= rx_packets) ? (uint32_t)(tx_packets - rx_packets) : 0;
+        g_prevTxPackets[flowId] = st.txPackets;
+        g_prevRxPackets[flowId] = st.rxPackets;
+        g_prevRxBytes[flowId]   = st.rxBytes;
 
-        PLR = (double)(lostPacketSum * 100) / (tx_packets > 0 ? tx_packets : 1);
+        double thrMbps = (dRb * 8.0) / intervalSec / 1e6;
 
-        Delay = (rx_packets > 0) ? (stats.second.delaySum.GetSeconds()) / (rx_packets) : 0.0;
-        Jitter = (rx_packets > 0) ? (stats.second.jitterSum.GetSeconds() / rx_packets) : 0.0;
+        double pdr = (dTx > 0) ? (100.0 * (double)dRx / (double)dTx) : 0.0;
+        if (pdr > 100.0) pdr = 100.0;
 
-        Throughput = (stats.second.timeLastRxPacket > stats.second.timeFirstTxPacket)
-                         ? (stats.second.rxBytes * 8.0 /
-                            (stats.second.timeLastRxPacket.GetSeconds() -
-                             stats.second.timeFirstTxPacket.GetSeconds()) /
-                            1024 / 1024)
-                         : 0.0;
+        double plr = (dTx > 0) ? (100.0 * (double)(dTx - std::min(dTx, dRx)) / (double)dTx) : 0.0;
 
-        int receiver_id = get_user_id_from_ipv4(fiveTuple.destinationAddress);
-        if (receiver_id != -1)
+        double delay  = (st.rxPackets > 0) ? (st.delaySum.GetSeconds()  / st.rxPackets) : 0.0;
+        double jitter = (st.rxPackets > 0) ? (st.jitterSum.GetSeconds() / st.rxPackets) : 0.0;
+
+        int ueId = get_user_id_from_ipv4(t.destinationAddress);
+        if (ueId >= 0)
         {
-            user_delay[receiver_id] = Delay;
-            user_jitter[receiver_id] = Jitter;
-            user_throughput[receiver_id] = Throughput;
-            user_pdr[receiver_id] = PDR;
-            user_plr[receiver_id] = PLR;
+            user_throughput[ueId] = thrMbps;
+            user_pdr[ueId] = pdr;
+            user_plr[ueId] = plr;
+            user_delay[ueId] = delay;
+            user_jitter[ueId] = jitter;
         }
     }
 
-    std::ofstream qos_vs_time;
-    qos_vs_time.open(ns3_dir + "qos-vs-time.txt", std::ofstream::out | std::ofstream::app);
+    std::ofstream qos_vs_time(ns3_dir + "qos-vs-time2.txt", std::ios::app);
+    double now = Simulator::Now().GetSeconds();
     for (uint32_t ue = 0; ue < user_delay.size(); ++ue)
     {
-        qos_vs_time << Simulator::Now().GetSeconds() << "," << ue << "," << user_delay[ue] << ","
-                    << user_jitter[ue] << "," << user_throughput[ue] << "," << user_pdr[ue] << "," << user_plr[ue]
-                    << std::endl;
+        qos_vs_time << now << "," << ue << "," << user_delay[ue] << ","
+                    << user_jitter[ue] << "," << user_throughput[ue] << ","
+                    << user_pdr[ue] << "," << user_plr[ue] << "\n";
     }
 
-    flowMon->ResetAllStats();
     Simulator::Schedule(management_interval, ThroughputMonitor, fmhelper, flowMon);
 }
 
@@ -250,92 +356,94 @@ void NotifyHandoverEndOkGnb(std::string context, uint64_t imsi, uint16_t cellid,
     hoOutFile << Simulator::Now().GetSeconds() << " " << imsi << " " << cellid << " " << rnti << std::endl;
 }
 
+// void NotifyHandoverStartGnb(std::string context, uint64_t imsi,
+//                             uint16_t sourceCellId, uint16_t targetCellId)
+// {
+//     std::ofstream f(s_handoverTraceFile, std::ios_base::app);
+//     f << Simulator::Now().GetSeconds()
+//       << " START imsi=" << imsi
+//       << " " << sourceCellId << "->" << targetCellId
+//       << std::endl;
+// }
+
+// void NotifyHandoverEndErrorGnb(std::string context, uint64_t imsi,
+//                                uint16_t cellid, uint16_t rnti)
+// {
+//     std::ofstream f(s_handoverTraceFile, std::ios_base::app);
+//     f << Simulator::Now().GetSeconds()
+//       << " ERROR imsi=" << imsi
+//       << " cell=" << cellid
+//       << " rnti=" << rnti
+//       << std::endl;
+// }
+
 // =========================
 //  SECURITY: UE + EVE MEASUREMENT TRACES (RSRP/RSRQ) - unchanged
 // =========================
-static void
-UeMeasTraceCb(uint32_t ueIdx,
-              Ptr<OutputStreamWrapper> stream,
-              uint16_t rnti,
-              uint16_t cellId,
-              double rsrp,
-              double rsrq,
-              bool servingCell,
-              uint8_t componentCarrierId)
-{
-    *stream->GetStream() << Simulator::Now().GetSeconds() << " UE " << ueIdx
-                         << " rnti " << rnti
-                         << " cell " << cellId
-                         << " rsrp " << rsrp
-                         << " rsrq " << rsrq
-                         << " serving " << servingCell
-                         << " cc " << (uint32_t)componentCarrierId
-                         << std::endl;
+// static void
+// UeMeasTraceCb(uint32_t ueIdx,
+//               Ptr<OutputStreamWrapper> stream,
+//               uint16_t rnti,
+//               uint16_t cellId,
+//               double rsrp,
+//               double rsrq,
+//               bool servingCell,
+//               uint8_t componentCarrierId)
+// {
+//     *stream->GetStream() << Simulator::Now().GetSeconds() << " UE " << ueIdx
+//                          << " rnti " << rnti
+//                          << " cell " << cellId
+//                          << " rsrp " << rsrp
+//                          << " rsrq " << rsrq
+//                          << " serving " << servingCell
+//                          << " cc " << (uint32_t)componentCarrierId
+//                          << std::endl;
 
-    if (servingCell && ueIdx < g_ueServingCell.size())
-    {
-        g_ueServingCell[ueIdx] = cellId;
-        g_ueServingRsrpDbm[ueIdx] = rsrp;
+//     if (servingCell && ueIdx < g_ueServingCell.size())
+//     {
+//         g_ueServingCell[ueIdx] = cellId;
+//         g_ueServingRsrpDbm[ueIdx] = rsrp;
 
-        // NEW (SINR): if we already have a recent SINR sample for this serving cell, refresh g_ueServingSinrLin
-        if (ueIdx < g_ueServingSinrLin.size() && ueIdx < g_ueLastSinr.size())
-        {
-            auto it = g_ueLastSinr[ueIdx].find(cellId);
-            if (it != g_ueLastSinr[ueIdx].end())
-            {
-                g_ueServingSinrLin[ueIdx] = it->second.sinrLin;
-            }
-        }
-    }
-}
+//         // NEW (SINR): if we already have a recent SINR sample for this serving cell, refresh g_ueServingSinrLin
+//         if (ueIdx < g_ueServingSinrLin.size() && ueIdx < g_ueLastSinr.size())
+//         {
+//             auto it = g_ueLastSinr[ueIdx].find(cellId);
+//             if (it != g_ueLastSinr[ueIdx].end())
+//             {
+//                 g_ueServingSinrLin[ueIdx] = it->second.sinrLin;
+//             }
+//         }
+//     }
+// }
 
-static void
-EveMeasTraceCb(uint32_t eveIdx,
-               Ptr<OutputStreamWrapper> stream,
-               uint16_t rnti,
-               uint16_t cellId,
-               double rsrp,
-               double rsrq,
-               bool servingCell,
-               uint8_t componentCarrierId)
-{
-    *stream->GetStream() << Simulator::Now().GetSeconds() << " EVE " << eveIdx
-                         << " rnti " << rnti
-                         << " cell " << cellId
-                         << " rsrp " << rsrp
-                         << " rsrq " << rsrq
-                         << " serving " << servingCell
-                         << " cc " << (uint32_t)componentCarrierId
-                         << std::endl;
+// static void
+// EveMeasTraceCb(uint32_t eveIdx,
+//                Ptr<OutputStreamWrapper> stream,
+//                uint16_t rnti,
+//                uint16_t cellId,
+//                double rsrp,
+//                double rsrq,
+//                bool servingCell,
+//                uint8_t componentCarrierId)
+// {
+//     *stream->GetStream() << Simulator::Now().GetSeconds() << " EVE " << eveIdx
+//                          << " rnti " << rnti
+//                          << " cell " << cellId
+//                          << " rsrp " << rsrp
+//                          << " rsrq " << rsrq
+//                          << " serving " << servingCell
+//                          << " cc " << (uint32_t)componentCarrierId
+//                          << std::endl;
 
-    /*
-    // OLD (BUGGY): max forever
-    auto it = g_eveMaxRsrpDbmByCell.find(cellId);
-    if (it == g_eveMaxRsrpDbmByCell.end())
-    {
-        g_eveMaxRsrpDbmByCell[cellId] = rsrp;
-    }
-    else
-    {
-        if (rsrp > it->second)
-        {
-            it->second = rsrp;
-        }
-    }
-    */
-
-    // store latest sample for THIS eaves + THIS cell
-    if (eveIdx < g_eveLast.size())
-    {
-        g_eveLast[eveIdx][cellId] = { rsrp, Simulator::Now() };
-    }
-}
+//     // store latest sample for THIS eaves + THIS cell
+//     if (eveIdx < g_eveLast.size())
+//     {
+//         g_eveLast[eveIdx][cellId] = { rsrp, Simulator::Now() };
+//     }
+// }
 
 // =========================
 // NEW (SINR): DlDataSinr / DlCtrlSinr callbacks
-// signature (from 5G-LENA docs):
-//   void(*DlDataSinrTracedCallback)(uint16_t cellId, uint16_t rnti, double sinr, uint16_t bwpId)
-//   void(*DlCtrlSinrTracedCallback)(uint16_t cellId, uint16_t rnti, double sinr, uint16_t bwpId)
 // =========================
 static inline double SafeLinearToDb(double xLin)
 {
@@ -343,227 +451,162 @@ static inline double SafeLinearToDb(double xLin)
     return 10.0 * std::log10(xLin);
 }
 
-static void
-UeDlDataSinrCb(uint32_t ueIdx,
-               Ptr<OutputStreamWrapper> stream,
-               uint16_t cellId,
-               uint16_t rnti,
-               double sinr,
-               uint16_t bwpId)
+static void UeMeasCb(uint32_t ueIdx, uint16_t rnti, uint16_t cellId,
+                    double rsrp, double rsrq, bool servingCell, uint8_t ccId)
 {
-    // log (linear + dB)
-    *stream->GetStream() << Simulator::Now().GetSeconds()
-                         << " UE " << ueIdx
-                         << " cell " << cellId
-                         << " rnti " << rnti
-                         << " bwp " << bwpId
-                         << " DlDataSinrLin " << sinr
-                         << " DlDataSinrDb " << SafeLinearToDb(sinr)
-                         << std::endl;
+    if (servingCell && ueIdx < g_ueServingCell.size())
+        g_ueServingCell[ueIdx] = cellId;
+}
 
+static void UeDlSinrCb(uint32_t ueIdx, uint16_t cellId, uint16_t rnti,
+                      double sinr, uint16_t bwpId)
+{
     if (ueIdx < g_ueLastSinr.size())
-    {
         g_ueLastSinr[ueIdx][cellId] = { sinr, Simulator::Now() };
-    }
-
-    // keep a serving scalar too (optional)
-    if (ueIdx < g_ueServingCell.size() && ueIdx < g_ueServingSinrLin.size())
-    {
-        if (g_ueServingCell[ueIdx] == cellId)
-        {
-            g_ueServingSinrLin[ueIdx] = sinr;
-        }
-    }
 }
 
-static void
-UeDlCtrlSinrCb(uint32_t ueIdx,
-               Ptr<OutputStreamWrapper> stream,
-               uint16_t cellId,
-               uint16_t rnti,
-               double sinr,
-               uint16_t bwpId)
+static void EveDlSinrCb(uint32_t eveIdx, bool isCtrl,
+                        uint16_t cellId, uint16_t rnti,
+                        double sinr, uint16_t bwpId)
 {
-    // log (linear + dB)
-    *stream->GetStream() << Simulator::Now().GetSeconds()
-                         << " UE " << ueIdx
-                         << " cell " << cellId
-                         << " rnti " << rnti
-                         << " bwp " << bwpId
-                         << " DlCtrlSinrLin " << sinr
-                         << " DlCtrlSinrDb " << SafeLinearToDb(sinr)
-                         << std::endl;
-
-    // you can choose to store CTRL SINR too (some people prefer DATA SINR only).
-    // We'll store it, but note it might differ from DATA SINR.
-    if (ueIdx < g_ueLastSinr.size())
-    {
-        g_ueLastSinr[ueIdx][cellId] = { sinr, Simulator::Now() };
-    }
-
-    if (ueIdx < g_ueServingCell.size() && ueIdx < g_ueServingSinrLin.size())
-    {
-        if (g_ueServingCell[ueIdx] == cellId)
-        {
-            g_ueServingSinrLin[ueIdx] = sinr;
-        }
-    }
-}
-
-static void
-EveDlDataSinrCb(uint32_t eveIdx,
-                Ptr<OutputStreamWrapper> stream,
-                uint16_t cellId,
-                uint16_t rnti,
-                double sinr,
-                uint16_t bwpId)
-{
-    const double sinrDb = SafeLinearToDb(sinr);
-
-    *stream->GetStream() << Simulator::Now().GetSeconds() << " EVE " << eveIdx
-                         << " cell " << cellId << " bwp " << bwpId
-                         << " DlDataSinrLin " << sinr << " DlDataSinrDb " << sinrDb
-                         << std::endl;
-
-    // (for SecrecyMonitorSinr)
     if (eveIdx < g_eveLastSinr.size())
-    {
         g_eveLastSinr[eveIdx][cellId] = { sinr, Simulator::Now() };
-    }
-
-    // NEW: log to DB (separate Eve table)
-    if (g_repo && eveIdx < g_eveIds.size())
-    {
-        g_repo->LogNrEveSinr(g_eveIds[eveIdx], cellId, bwpId, sinr, sinrDb, false);
-    }
-}
-
-static void
-EveDlCtrlSinrCb(uint32_t eveIdx,
-                Ptr<OutputStreamWrapper> stream,
-                uint16_t cellId,
-                uint16_t rnti,
-                double sinr,
-                uint16_t bwpId)
-{
-    const double sinrDb = SafeLinearToDb(sinr);
-
-    *stream->GetStream() << Simulator::Now().GetSeconds() << " EVE " << eveIdx
-                         << " cell " << cellId << " bwp " << bwpId
-                         << " DlCtrlSinrLin " << sinr << " DlCtrlSinrDb " << sinrDb
-                         << std::endl;
-
-    // (for SecrecyMonitorSinr)
-    if (eveIdx < g_eveLastSinr.size())
-    {
-        g_eveLastSinr[eveIdx][cellId] = { sinr, Simulator::Now() };
-    }
 
     if (g_repo && eveIdx < g_eveIds.size())
     {
-        g_repo->LogNrEveSinr(g_eveIds[eveIdx], cellId, bwpId, sinr, sinrDb, true);
+        double sinrDb = SafeLinearToDb(sinr);
+        g_repo->LogNrEveSinr(g_eveIds[eveIdx], cellId, bwpId, sinr, sinrDb, isCtrl);
     }
 }
+
+// static void
+// UeDlDataSinrCb(uint32_t ueIdx,
+//                Ptr<OutputStreamWrapper> stream,
+//                uint16_t cellId,
+//                uint16_t rnti,
+//                double sinr,
+//                uint16_t bwpId)
+// {
+//     *stream->GetStream() << Simulator::Now().GetSeconds()
+//                          << " UE " << ueIdx
+//                          << " cell " << cellId
+//                          << " rnti " << rnti
+//                          << " bwp " << bwpId
+//                          << " DlDataSinrLin " << sinr
+//                          << " DlDataSinrDb " << SafeLinearToDb(sinr)
+//                          << std::endl;
+
+//     if (ueIdx < g_ueLastSinr.size())
+//     {
+//         g_ueLastSinr[ueIdx][cellId] = { sinr, Simulator::Now() };
+//     }
+
+//     if (ueIdx < g_ueServingCell.size() && ueIdx < g_ueServingSinrLin.size())
+//     {
+//         if (g_ueServingCell[ueIdx] == cellId)
+//         {
+//             g_ueServingSinrLin[ueIdx] = sinr;
+//         }
+//     }
+// }
+
+// static void
+// UeDlCtrlSinrCb(uint32_t ueIdx,
+//                Ptr<OutputStreamWrapper> stream,
+//                uint16_t cellId,
+//                uint16_t rnti,
+//                double sinr,
+//                uint16_t bwpId)
+// {
+//     *stream->GetStream() << Simulator::Now().GetSeconds()
+//                          << " UE " << ueIdx
+//                          << " cell " << cellId
+//                          << " rnti " << rnti
+//                          << " bwp " << bwpId
+//                          << " DlCtrlSinrLin " << sinr
+//                          << " DlCtrlSinrDb " << SafeLinearToDb(sinr)
+//                          << std::endl;
+
+//     if (ueIdx < g_ueLastSinr.size())
+//     {
+//         g_ueLastSinr[ueIdx][cellId] = { sinr, Simulator::Now() };
+//     }
+
+//     if (ueIdx < g_ueServingCell.size() && ueIdx < g_ueServingSinrLin.size())
+//     {
+//         if (g_ueServingCell[ueIdx] == cellId)
+//         {
+//             g_ueServingSinrLin[ueIdx] = sinr;
+//         }
+//     }
+// }
+
+// static void
+// EveDlDataSinrCb(uint32_t eveIdx,
+//                 Ptr<OutputStreamWrapper> stream,
+//                 uint16_t cellId,
+//                 uint16_t rnti,
+//                 double sinr,
+//                 uint16_t bwpId)
+// {
+//     const double sinrDb = SafeLinearToDb(sinr);
+
+//     *stream->GetStream() << Simulator::Now().GetSeconds() << " EVE " << eveIdx
+//                          << " cell " << cellId << " bwp " << bwpId
+//                          << " DlDataSinrLin " << sinr << " DlDataSinrDb " << sinrDb
+//                          << std::endl;
+
+//     if (eveIdx < g_eveLastSinr.size())
+//     {
+//         g_eveLastSinr[eveIdx][cellId] = { sinr, Simulator::Now() };
+//     }
+
+//     if (g_repo && eveIdx < g_eveIds.size())
+//     {
+//         g_repo->LogNrEveSinr(g_eveIds[eveIdx], cellId, bwpId, sinr, sinrDb, false);
+//     }
+// }
+
+// static void
+// EveDlCtrlSinrCb(uint32_t eveIdx,
+//                 Ptr<OutputStreamWrapper> stream,
+//                 uint16_t cellId,
+//                 uint16_t rnti,
+//                 double sinr,
+//                 uint16_t bwpId)
+// {
+//     const double sinrDb = SafeLinearToDb(sinr);
+
+//     *stream->GetStream() << Simulator::Now().GetSeconds() << " EVE " << eveIdx
+//                          << " cell " << cellId << " bwp " << bwpId
+//                          << " DlCtrlSinrLin " << sinr << " DlCtrlSinrDb " << sinrDb
+//                          << std::endl;
+
+//     if (eveIdx < g_eveLastSinr.size())
+//     {
+//         g_eveLastSinr[eveIdx][cellId] = { sinr, Simulator::Now() };
+//     }
+
+//     if (g_repo && eveIdx < g_eveIds.size())
+//     {
+//         g_repo->LogNrEveSinr(g_eveIds[eveIdx], cellId, bwpId, sinr, sinrDb, true);
+//     }
+// }
 
 // =========================
 //  SECURITY: periodic secrecy computation
 // =========================
-static double DbToLinear(double x_db) { return std::pow(10.0, x_db / 10.0); }
+//static double DbToLinear(double x_db) { return std::pow(10.0, x_db / 10.0); }
 static double Log2(double x) { return std::log(x) / std::log(2.0); }
 
 // ---------------------------------------------------------
-// OLD (RSRP-based "SNR approx") secrecy monitor - unchanged
-// (kept for reference; you can still run it if you want)
-// ---------------------------------------------------------
-void SecrecyMonitor(double bandwidthHz, double noiseFigureDb, double secrecyTargetBitsPerHz)
-{
-    const double noiseFloorDbm = -174.0 + 10.0 * std::log10(bandwidthHz) + noiseFigureDb;
-
-    std::ofstream out(s_secrecyTraceFile, std::ios_base::app);
-
-    for (uint32_t u = 0; u < g_ueServingCell.size(); ++u)
-    {
-        uint16_t cellId = g_ueServingCell[u];
-        double ueRsrpDbm = g_ueServingRsrpDbm[u];
-
-        if (cellId == 0 || ueRsrpDbm <= -200.0)
-            continue;
-
-        double snrUeDb = ueRsrpDbm - noiseFloorDbm;
-        double seUe = Log2(1.0 + DbToLinear(snrUeDb));
-
-        /*
-        // OLD: read "max forever" eaves
-        double eveRsrpDbm = -1e9;
-        auto it = g_eveMaxRsrpDbmByCell.find(cellId);
-        if (it != g_eveMaxRsrpDbmByCell.end())
-        {
-            eveRsrpDbm = it->second;
-        }
-        */
-
-        // compute worst eaves "now" using recent samples
-        double eveRsrpDbm = -1e9;
-        Time maxAge = Seconds(1.0); // ignore too-old samples
-
-        for (uint32_t e = 0; e < g_eveLast.size(); ++e)
-        {
-            auto it2 = g_eveLast[e].find(cellId);
-            if (it2 == g_eveLast[e].end())
-                continue;
-
-            if (Simulator::Now() - it2->second.t > maxAge)
-                continue;
-
-            eveRsrpDbm = std::max(eveRsrpDbm, it2->second.rsrpDbm);
-        }
-
-        double seEve = 0.0;
-        if (eveRsrpDbm > -200.0)
-        {
-            double snrEveDb = eveRsrpDbm - noiseFloorDbm;
-            seEve = Log2(1.0 + DbToLinear(snrEveDb));
-        }
-
-        double secrecy = std::max(seUe - seEve, 0.0);
-
-        bool covered = (snrUeDb > -5.0);
-        bool outage = (secrecy < secrecyTargetBitsPerHz);
-
-        out << Simulator::Now().GetSeconds()
-            << ",UE," << u
-            << ",cell," << cellId
-            << ",rsrpUeDbm," << ueRsrpDbm
-            << ",rsrpEveDbm," << eveRsrpDbm
-            << ",seUe," << seUe
-            << ",seEve," << seEve
-            << ",secrecy," << secrecy
-            << ",covered," << covered
-            << ",outage," << outage
-            << std::endl;
-    }
-
-    out.close();
-
-    Simulator::Schedule(management_interval,
-                        &SecrecyMonitor,
-                        bandwidthHz,
-                        noiseFigureDb,
-                        secrecyTargetBitsPerHz);
-}
-
-// ---------------------------------------------------------
-// NEW (SINR-based) secrecy monitor (this is what you asked for)
-// Uses:
-//   - UE DlDataSinr or DlCtrlSinr traces (NrUePhy)
-//   - Eve DlDataSinr / DlCtrlSinr traces (same, since eaves are UEs)
-// Secrecy = log2(1+SINR_UE) - log2(1+SINR_EVE_best)
+// NEW (SINR-based) secrecy monitor
 // ---------------------------------------------------------
 void SecrecyMonitorSinr(double secrecyTargetBitsPerHz)
 {
     std::ofstream out(s_secrecySinrTraceFile, std::ios_base::app);
 
-    Time maxAge = Seconds(1.0); // ignore too-old SINR samples
+    Time maxAge = Seconds(1.0);
 
     for (uint32_t u = 0; u < g_ueServingCell.size(); ++u)
     {
@@ -571,7 +614,6 @@ void SecrecyMonitorSinr(double secrecyTargetBitsPerHz)
         if (cellId == 0)
             continue;
 
-        // Get UE SINR for its serving cell
         double ueSinrLin = 0.0;
         bool haveUeSinr = false;
 
@@ -588,7 +630,6 @@ void SecrecyMonitorSinr(double secrecyTargetBitsPerHz)
             }
         }
 
-        // fallback: if you prefer using the scalar
         if (!haveUeSinr && u < g_ueServingSinrLin.size())
         {
             if (g_ueServingSinrLin[u] > 0.0)
@@ -603,7 +644,6 @@ void SecrecyMonitorSinr(double secrecyTargetBitsPerHz)
 
         double seUe = Log2(1.0 + std::max(ueSinrLin, 0.0));
 
-        // Worst eavesdropper SINR "now" for same cell
         double eveSinrLin = 0.0;
         bool haveEveSinr = false;
 
@@ -646,7 +686,7 @@ void SecrecyMonitorSinr(double secrecyTargetBitsPerHz)
 }
 
 // =========================
-//  MOBILITY INSTALL (unchanged from your version)
+//  MOBILITY INSTALL (unchanged)
 // =========================
 void InstallMobilityTnNtn(NodeContainer staticNodes,
                           NodeContainer tnGnbs,
@@ -658,21 +698,78 @@ void InstallMobilityTnNtn(NodeContainer staticNodes,
                           bool enableNtn)
 {
     {
-        Ptr<ListPositionAllocator> allocator = CreateObject<ListPositionAllocator>();
-        allocator->Add(Vector(0, 0, 0));
-        MobilityHelper h;
-        h.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-        h.SetPositionAllocator(allocator);
-        h.Install(staticNodes);
-    }
+        const double minDist = 400.0;  // meters
+        const double z = GNB_HEIGHT_TN;
 
-    {
+        auto Dist2 = [](const Vector& a, const Vector& b) {
+            const double dx = a.x - b.x;
+            const double dy = a.y - b.y;
+            return dx*dx + dy*dy;
+        };
+
+        auto FarEnough = [&](const Vector& cand, const std::vector<Vector>& placed) {
+            const double minD2 = minDist * minDist;
+            for (const auto& p : placed)
+            {
+                if (Dist2(cand, p) < minD2)
+                    return false;
+            }
+            return true;
+        };
+
         Ptr<ListPositionAllocator> gnbPosition = CreateObject<ListPositionAllocator>();
-        gnbPosition->Add(Vector(0, 0, GNB_HEIGHT_TN));
-        gnbPosition->Add(Vector(500, 500, GNB_HEIGHT_TN));
-        gnbPosition->Add(Vector(-500, 500, GNB_HEIGHT_TN));
-        gnbPosition->Add(Vector(500, -500, GNB_HEIGHT_TN));
-        gnbPosition->Add(Vector(-500, -500, GNB_HEIGHT_TN));
+        std::vector<Vector> placed;
+        placed.reserve(tnGnbs.GetN());
+
+        auto AddFixed = [&](double x, double y) {
+            Vector v(x, y, z);
+            gnbPosition->Add(v);
+            placed.push_back(v);
+        };
+
+        // --- First 5: your fixed TN gNBs (only add as many as exist)
+        if (tnGnbs.GetN() >= 1) AddFixed(0,    0);
+        if (tnGnbs.GetN() >= 2) AddFixed(500,  500);
+        if (tnGnbs.GetN() >= 3) AddFixed(-500, 500);
+        if (tnGnbs.GetN() >= 4) AddFixed(500,  -500);
+        if (tnGnbs.GetN() >= 5) AddFixed(-500, -500);
+
+        uint32_t fixedCount = std::min<uint32_t>(tnGnbs.GetN(), 5);
+
+        // --- Remaining: random TN gNBs in [-TN_HALF, TN_HALF] x [-TN_HALF, TN_HALF]
+        Ptr<UniformRandomVariable> ux = CreateObject<UniformRandomVariable>();
+        Ptr<UniformRandomVariable> uy = CreateObject<UniformRandomVariable>();
+
+        // Optional (recommended): keep a small margin from the border to reduce rejections
+        const double margin = 0.0; // e.g., margin = minDist/2.0;
+
+        ux->SetAttribute("Min", DoubleValue(-TN_HALF + margin));
+        ux->SetAttribute("Max", DoubleValue( TN_HALF - margin));
+        uy->SetAttribute("Min", DoubleValue(-TN_HALF + margin));
+        uy->SetAttribute("Max", DoubleValue( TN_HALF - margin));
+
+        const uint32_t maxAttempts = 20000;
+
+        for (uint32_t i = fixedCount; i < tnGnbs.GetN(); ++i)
+        {
+            bool ok = false;
+            for (uint32_t a = 0; a < maxAttempts; ++a)
+            {
+                Vector cand(ux->GetValue(), uy->GetValue(), z);
+                if (FarEnough(cand, placed))
+                {
+                    gnbPosition->Add(cand);
+                    placed.push_back(cand);
+                    ok = true;
+                    break;
+                }
+            }
+
+            NS_ABORT_MSG_IF(!ok,
+                "Could not place TN gNB " << i
+                << " with minDist=" << minDist << "m. "
+                << "Try reducing minDist or increasing TN area (TN_HALF).");
+        }
 
         MobilityHelper gnbHelper;
         gnbHelper.SetMobilityModel("ns3::ConstantPositionMobilityModel");
@@ -693,7 +790,7 @@ void InstallMobilityTnNtn(NodeContainer staticNodes,
         gnbHelper.SetPositionAllocator(gnbBox);
         gnbHelper.SetMobilityModel("ns3::RandomDirection2dMobilityModel",
                                    "Bounds", RectangleValue(Rectangle(xMin, xMax, -NTN_HALF, NTN_HALF)),
-                                   "Speed",  StringValue(UniformRv(20.0, 30.0)),
+                                   "Speed",  StringValue(UniformRv(10.0, 15.0)),
                                    "Pause",  StringValue(UniformRv(0.5, 2.0)));
         gnbHelper.Install(ntnGnbs);
     }
@@ -764,17 +861,31 @@ int main(int argc, char* argv[])
     bool useTorch = false;
     bool useRsrp = true;
 
+    // ------------------------------------------------------------------
+    // NEW: Scenario selector
+    //   --scenario=tn     => TN-only
+    //   --scenario=ntn    => NTN-only
+    //   --scenario=tn-ntn => TN+NTN (default)
+    //
+    // IMPORTANT: we do NOT remove your old flags; we override them safely
+    // based on scenario after parsing.
+    // ------------------------------------------------------------------
+    std::string scenario = "ntn";  // NEW
+
     bool enableNtn = true;
+    // NEW: enableTn flag (TN can be disabled for NTN-only runs)
+    bool enableTn = false;
+
     bool enableEves = true;
     uint32_t numUesA = 50;
     uint32_t numUesB = 50;
-    uint32_t numTnGnbs = 5;
-    uint32_t numNtnGnbs = 5;
+    uint32_t numTnGnbs = 10;
+    uint32_t numNtnGnbs = 10;
 
     uint32_t nEveA = 3;
     uint32_t nEveB = 3;
 
-    double lmQueryInterval = 4;
+    double lmQueryInterval = 2;
     double maxWaitTime = 0.010;
     double txDelay = 0.1;
     bool remMode = false;
@@ -784,10 +895,16 @@ int main(int argc, char* argv[])
     std::string dbFileName = "tn-ntn-oran-lm-with-secrecy.db";
     std::string lateCommandPolicy = "DROP";
 
-    bool ofdma = false;
-    std::string schedKind = "RR";
+    bool ofdma = true;
+    std::string schedKind = "PF";
 
     double secrecyTargetBitsPerHz = 0.10;
+
+    std::string leakageModel = "oracle"; // "oracle" | "riskmap" | "hybrid" | "fixed"
+
+    std::string riskMapFile = "";
+    double riskMinEavSinrDb = -15.0;
+    double riskMaxEavSinrDb = 5.0;
 
     CommandLine cmd;
     cmd.AddValue("verbose", "Enable printing SQL queries results", verbose);
@@ -795,7 +912,11 @@ int main(int argc, char* argv[])
     cmd.AddValue("use-onnx-lm", "Use ONNX LM", useOnnx);
     cmd.AddValue("use-torch-lm", "Use Torch LM", useTorch);
     cmd.AddValue("use-rsrp-lm", "Use RSRP LM", useRsrp);
-    cmd.AddValue("enable-ntn", "Enable NTN gNBs (TN-only vs TN+NTN)", enableNtn);
+
+    // NEW
+    //cmd.AddValue("scenario", "Scenario: tn | ntn | tn-ntn", scenario);
+
+    //cmd.AddValue("enable-ntn", "Enable NTN gNBs (TN-only vs TN+NTN)", enableNtn);
     cmd.AddValue("enable-eves", "Enable eavesdroppers + secrecy logging", enableEves);
 
     cmd.AddValue("num-ues-a", "UEs in Area A (TN)", numUesA);
@@ -817,7 +938,122 @@ int main(int argc, char* argv[])
 
     cmd.AddValue("secrecy-target", "Secrecy target (bits/s/Hz)", secrecyTargetBitsPerHz);
 
+    cmd.AddValue("channel-scenario","Channel scenario: auto | UMa | RMa | UMi | NTN-Rural | NTN-Urban | NTN-Suburban | NTN-DenseUrban",channelScenario);
+    cmd.AddValue("channel-condition", "Channel condition: Default | LOS | NLOS | Buildings", channelCondition);
+    cmd.AddValue("channel-model", "Channel model: ThreeGpp | TwoRay | NYU", channelModel);
+
+    cmd.AddValue("leakage-model", "oracle|riskmap|hybrid|fixed", leakageModel);
+
+    cmd.AddValue("riskmap-file", "Path to risk map file: 'cellId riskScore'", riskMapFile);
+    cmd.AddValue("risk-min-eav-sinr-db", "RiskScore=0 Eve SINR (dB)", riskMinEavSinrDb);
+    cmd.AddValue("risk-max-eav-sinr-db", "RiskScore=1 Eve SINR (dB)", riskMaxEavSinrDb);
+
+
     cmd.Parse(argc, argv);
+
+    // ------------------------------------------------------------------
+    // NEW: apply scenario overrides *after* parsing.
+    // We do NOT delete anything: only override flags/counts.
+    // ------------------------------------------------------------------
+    std::string scenarioLower = scenario;
+    std::transform(scenarioLower.begin(), scenarioLower.end(), scenarioLower.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+
+    if (scenarioLower == "tn")
+    {
+        enableTn = true;
+        enableNtn = false; // overrides your --enable-ntn
+        // Force B-side node counts to zero (so they are not created/added)
+    }
+    else if (scenarioLower == "ntn")
+    {
+        enableTn = false;
+        enableNtn = true; // ensures B-side is active
+        // Force A-side node counts to zero
+    }
+    else if (scenarioLower == "tn-ntn")
+    {
+        enableTn = true;
+        enableNtn = true;
+        // keep your counts as provided
+    }
+    else
+    {
+        NS_ABORT_MSG("Unknown --scenario value. Use: tn | ntn | tn-ntn");
+    }
+
+    std::string propScenario;
+
+    if (channelScenario != "auto")
+    {
+        propScenario = channelScenario;
+    }
+    else
+    {
+        if (scenarioLower == "tn")
+        {
+            propScenario = "UMa";
+        }
+        else if (scenarioLower == "ntn")
+        {
+            // Option A: rural terrestrial macro
+            propScenario = "RMa";
+
+            // Option B (often better “NTN flavored”): uncomment instead
+            // propScenario = "NTN-Rural";
+        }
+        else // tn-ntn
+        {
+            // Single channel model must be shared. Pick one:
+            propScenario = "UMa";      // common choice if your TN narrative is “urban”
+            // propScenario = "RMa";   // alternative if you want “rural-ish everywhere”
+        }
+    }
+
+
+    // ------------------------------------------------------------------
+    // NEW: update output directory per scenario (so you can run separately
+    // without overwriting).
+    // ------------------------------------------------------------------
+
+    // Build a folder name for UE counts
+    std::string uesFolder;
+    if (numUesA == numUesB)
+    {
+        uesFolder = std::to_string(numUesA) + "_ues";           // "50_ues"
+    }
+    else
+    {
+        uesFolder = std::to_string(numUesA) + "A_" +
+                    std::to_string(numUesB) + "B_ues";          // e.g., "50A_40B_ues"
+    }
+
+    {
+        std::string tag = scenarioLower;
+        if (tag == "tn-ntn") tag = "tn-ntn"; // optional aliases
+
+        // Make directory ABSOLUTE to avoid "build/" vs demonstrated directory confusion
+        auto outDir = std::filesystem::absolute(
+            std::filesystem::path("results") / "nr" / "tn-ntn" / "withsecrecylm" / tag / uesFolder
+        );
+
+        ns3_dir = outDir.string() + "/";
+
+        s_trafficTraceFile      = ns3_dir + "nr-traffic-trace2.tr";
+        s_positionTraceFile     = ns3_dir + "nr-position-trace2.tr";
+        s_handoverTraceFile     = ns3_dir + "nr-handover-trace2.tr";
+        // s_rsrpUeTraceFile       = ns3_dir + "nr-rsrp-ue.tr";
+        // s_rsrpEveTraceFile      = ns3_dir + "nr-rsrp-eve.tr";
+        // s_secrecyTraceFile      = ns3_dir + "secrecy-vs-time.tr";
+        // s_sinrUeTraceFile       = ns3_dir + "nr-sinr-ue.tr";
+        // s_sinrEveTraceFile      = ns3_dir + "nr-sinr-eve.tr";
+        s_secrecySinrTraceFile  = ns3_dir + "secrecy-sinr-vs-time2.txt";
+
+        NS_LOG_UNCOND("CWD      = " << std::filesystem::current_path());
+        NS_LOG_UNCOND("scenario = " << scenarioLower);
+        NS_LOG_UNCOND("ns3_dir  = " << ns3_dir);
+    }
+
 
     NS_ABORT_MSG_IF(useOran == false && (useOnnx || useTorch || useRsrp),
                     "Cannot use LM without enabling O-RAN.");
@@ -827,29 +1063,44 @@ int main(int argc, char* argv[])
 
     std::filesystem::create_directories(ns3_dir);
 
+    auto TouchOrAbort = [](const std::string& p) {
+    std::ofstream f(p, std::ios::trunc);
+    NS_ABORT_MSG_IF(!f.is_open(), "Cannot open file for writing: " << p);
+    };
+
+    TouchOrAbort(s_trafficTraceFile);
+    TouchOrAbort(s_positionTraceFile);
+    TouchOrAbort(s_handoverTraceFile);
+    // TouchOrAbort(s_rsrpUeTraceFile);
+    // TouchOrAbort(s_rsrpEveTraceFile);
+    // TouchOrAbort(s_sinrUeTraceFile);
+    // TouchOrAbort(s_sinrEveTraceFile);
+    //TouchOrAbort(s_secrecyTraceFile);
+    TouchOrAbort(s_secrecySinrTraceFile);
+    TouchOrAbort(ns3_dir + "qos-vs-time2.txt");
+
+
     { std::ofstream f(s_trafficTraceFile, std::ios_base::trunc); }
     { std::ofstream f(s_positionTraceFile, std::ios_base::trunc); }
     { std::ofstream f(s_handoverTraceFile, std::ios_base::trunc); }
-    { std::ofstream f(s_rsrpUeTraceFile, std::ios_base::trunc); }
-    { std::ofstream f(s_rsrpEveTraceFile, std::ios_base::trunc); }
+    // { std::ofstream f(s_rsrpUeTraceFile, std::ios_base::trunc); }
+    // { std::ofstream f(s_rsrpEveTraceFile, std::ios_base::trunc); }
 
-    // NEW (SINR): truncate SINR trace files
-    { std::ofstream f(s_sinrUeTraceFile, std::ios_base::trunc); }
-    { std::ofstream f(s_sinrEveTraceFile, std::ios_base::trunc); }
+    // { std::ofstream f(s_sinrUeTraceFile, std::ios_base::trunc); }
+    // { std::ofstream f(s_sinrEveTraceFile, std::ios_base::trunc); }
 
-    {
-        std::ofstream f(s_secrecyTraceFile, std::ios_base::trunc);
-        f << "time,type,id,cell,rsrpUeDbm,rsrpEveDbm,seUe,seEve,secrecy,covered,outage\n";
-    }
+    // {
+    //     std::ofstream f(s_secrecyTraceFile, std::ios_base::trunc);
+    //     f << "time,type,id,cell,rsrpUeDbm,rsrpEveDbm,seUe,seEve,secrecy,covered,outage\n";
+    // }
 
-    // NEW (SINR): separate secrecy file for SINR-based secrecy
     {
         std::ofstream f(s_secrecySinrTraceFile, std::ios_base::trunc);
         f << "time,type,id,cell,ueSinrLin,ueSinrDb,eveSinrLin,eveSinrDb,seUe,seEve,secrecy,outage\n";
     }
 
     {
-        std::ofstream f(ns3_dir + "qos-vs-time.txt", std::ios_base::trunc);
+        std::ofstream f(ns3_dir + "qos-vs-time2.txt", std::ios_base::trunc);
         f << "Time,UE,Delay,Jitter,Throughput,PDR,PLR\n";
     }
 
@@ -862,14 +1113,26 @@ int main(int argc, char* argv[])
     NodeContainer allGnbsActive;
     NodeContainer remoteHostContainer;
 
+    // These Create() calls now reflect scenario overrides (counts may be 0)
     tnGnbNodes.Create(numTnGnbs);
     ntnGnbNodes.Create(numNtnGnbs);
 
     ueAreaA.Create(numUesA);
     ueAreaB.Create(numUesB);
 
-    ueNodes.Add(ueAreaA);
-    ueNodes.Add(ueAreaB);
+    // OLD (always added both) - keep but comment
+    // ueNodes.Add(ueAreaA);
+    // ueNodes.Add(ueAreaB);
+
+    // NEW: add only active areas
+    if (enableTn)
+    {
+        ueNodes.Add(ueAreaA);
+    }
+    if (enableNtn)
+    {
+        ueNodes.Add(ueAreaB);
+    }
 
     remoteHostContainer.Create(1);
     Ptr<Node> remoteHost = remoteHostContainer.Get(0);
@@ -877,21 +1140,43 @@ int main(int argc, char* argv[])
     NodeContainer eveA, eveB, eveNodes;
     if (enableEves)
     {
+        // These Create() counts were already scenario-adjusted (nEveA or nEveB may be 0)
         eveA.Create(nEveA);
         eveB.Create(nEveB);
-        eveNodes.Add(eveA);
-        eveNodes.Add(eveB);
 
-        // init per-eaves storage (must be AFTER eaves exist)
+        // OLD (always add both) - keep but comment
+        // eveNodes.Add(eveA);
+        // eveNodes.Add(eveB);
+
+        // NEW: add only active areas
+        if (enableTn)
+        {
+            eveNodes.Add(eveA);
+        }
+        if (enableNtn)
+        {
+            eveNodes.Add(eveB);
+        }
+
         g_eveLast.clear();
         g_eveLast.resize(eveNodes.GetN());
 
-        // NEW (SINR): init eaves SINR maps too
         g_eveLastSinr.clear();
         g_eveLastSinr.resize(eveNodes.GetN());
     }
 
-    allGnbsActive.Add(tnGnbNodes);
+    // OLD (always add TN; add NTN if enableNtn) - keep but comment
+    // allGnbsActive.Add(tnGnbNodes);
+    // if (enableNtn)
+    // {
+    //     allGnbsActive.Add(ntnGnbNodes);
+    // }
+
+    // NEW: add only enabled domains
+    if (enableTn)
+    {
+        allGnbsActive.Add(tnGnbNodes);
+    }
     if (enableNtn)
     {
         allGnbsActive.Add(ntnGnbNodes);
@@ -914,10 +1199,14 @@ int main(int argc, char* argv[])
     // =========================
     Ptr<NrChannelHelper> channelHelper = CreateObject<NrChannelHelper>();
 
-    std::string propScenario = "UMa";
+    //std::string propScenario = "UMa";
     bool enableShadowing = false;
+    channelHelper->ConfigureFactories(propScenario, channelCondition, channelModel);
+    NS_LOG_UNCOND("Channel: scenario=" << propScenario
+               << " condition=" << channelCondition
+               << " model=" << channelModel);
 
-    channelHelper->ConfigureFactories(propScenario, "Default");
+    //channelHelper->ConfigureFactories(propScenario, "Default");
     channelHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(enableShadowing));
     channelHelper->SetChannelConditionModelAttribute("UpdatePeriod", TimeValue(MilliSeconds(10)));
 
@@ -1030,7 +1319,7 @@ int main(int argc, char* argv[])
     internet.Install(remoteHostContainer);
 
     PointToPointHelper p2ph;
-    p2ph.SetDeviceAttribute("DataRate", DataRateValue(DataRate("100Gb/s")));
+    p2ph.SetDeviceAttribute("DataRate", DataRateValue(DataRate("10Gb/s")));
     p2ph.SetDeviceAttribute("Mtu", UintegerValue(65000));
     p2ph.SetChannelAttribute("Delay", TimeValue(MilliSeconds(0)));
 
@@ -1076,7 +1365,6 @@ int main(int argc, char* argv[])
         gnbPhyUl->SetAttribute("Pattern", StringValue(ulPattern));
     }
 
-    // Update configs (kept as you had)
     for (auto it = gnbNrDevs.Begin(); it != gnbNrDevs.End(); ++it)
     {
         Ptr<NrGnbNetDevice> gnb = DynamicCast<NrGnbNetDevice>(*it);
@@ -1093,21 +1381,34 @@ int main(int argc, char* argv[])
         if (ue) ue->UpdateConfig();
     }
 
-    // X2 among ACTIVE gNB nodes (unchanged)
-    nrHelper->AddX2Interface(allGnbsActive);
+    // ---------------------------------------------------------
+    // X2 interface
+    // OLD (single call):
+    // nrHelper->AddX2Interface(allGnbsActive);
+    //
+    // NEW: do X2 per-domain (safe for separated TN/NTN runs and safe if later you
+    //      decide to configure TN and NTN with different BWPs)
+    // ---------------------------------------------------------
+    // nrHelper->AddX2Interface(allGnbsActive); // OLD - keep but comment
+    if (enableTn && tnGnbNodes.GetN() > 0)
+    {
+        nrHelper->AddX2Interface(tnGnbNodes);
+    }
+    if (enableNtn && ntnGnbNodes.GetN() > 0)
+    {
+        nrHelper->AddX2Interface(ntnGnbNodes);
+    }
 
-    // Install IPv4 stack on UEs *BEFORE* AttachToMaxRsrpGnb()
-    // because Attach activates QoS flows and asserts ueIpv4/ueIpv6 exists.
+    // =========================================================
+    // Install IPv4 stack on UEs BEFORE AttachToMaxRsrpGnb()
     // =========================================================
     internet.Install(ueNodes);
 
     if (enableEves && eveNodes.GetN() > 0)
     {
-        // Eaves also call AttachToMaxRsrpGnb(), so they also need IPv4 installed
         internet.Install(eveNodes);
     }
 
-    // Assign UE IPs NOW (before attach is OK, and safer)
     Ipv4InterfaceContainer ueIpIface = epcHelper->AssignUeIpv4Address(NetDeviceContainer(ueNrDevs));
 
     Ipv4InterfaceContainer eveIpIface;
@@ -1142,7 +1443,7 @@ int main(int argc, char* argv[])
     }
 
     // =========================
-    // Apps (your code, unchanged except it now uses ueIpIface already created)
+    // Apps
     // =========================
     uint16_t basePort = 1000;
     ApplicationContainer remoteApps;
@@ -1168,8 +1469,9 @@ int main(int argc, char* argv[])
         remoteApps.Add(streamingServer);
         streamingServer->SetAttribute("Remote",
             AddressValue(InetSocketAddress(ueIpIface.GetAddress(i), port)));
-        streamingServer->SetAttribute("DataRate", DataRateValue(DataRate("3000000bps")));
+        streamingServer->SetAttribute("DataRate", DataRateValue(DataRate("200000bps")));///////// changed from 1000000bps to 200000bps to increase outage probability and better see secrecy effects
         streamingServer->SetAttribute("PacketSize", UintegerValue(1500));
+
         streamingServer->SetAttribute("OnTime", PointerValue(onTimeRv));
         streamingServer->SetAttribute("OffTime", PointerValue(offTimeRv));
 
@@ -1182,6 +1484,8 @@ int main(int argc, char* argv[])
     ueApps.Start(Seconds(1));
     ueApps.Stop(simTime + Seconds(15));
 
+    // =========================
+    // O-RAN
     // =========================
     if (useOran == true)
     {
@@ -1207,30 +1511,32 @@ int main(int argc, char* argv[])
             NS_ABORT_MSG_IF(!TypeId::LookupByNameFailSafe("ns3::OranLmNr2NrTorchHandover", &defaultLmTid),
                             "Torch LM not found.");
         }
-        //OranLmNrSecrecyAwareHandover or OranLmNr2NrRsrpHandover
         else if (useRsrp == true)
         {
             defaultLmTid = TypeId::LookupByName("ns3::OranLmNrSecrecyAwareHandover");
         }
-        ////
+
         ObjectFactory defaultLmFactory;
         defaultLmFactory.SetTypeId(defaultLmTid);
         defaultLm = defaultLmFactory.Create<OranLm>();
 
+        defaultLm->SetAttribute("LeakageModel", StringValue(leakageModel));
+        defaultLm->SetAttribute("RiskMapFile", StringValue(riskMapFile));
+        defaultLm->SetAttribute("RiskMinEavSinrDb", DoubleValue(riskMinEavSinrDb));
+        defaultLm->SetAttribute("RiskMaxEavSinrDb", DoubleValue(riskMaxEavSinrDb));
+
+
         dataRepository->SetAttribute("DatabaseFile", StringValue(dbFileName));
-        ////
-        g_repo = dataRepository;          // make DB accessible in callbacks
+
+        g_repo = dataRepository;
 
         g_eveIds.clear();
         for (uint32_t i = 0; i < eveNodes.GetN(); ++i)
         {
-            uint64_t eveId = eveNodes.Get(i)->GetId();  // stable ns-3 node id
+            uint64_t eveId = eveNodes.Get(i)->GetId();
             g_eveIds.push_back(eveId);
-
-            // optional: register Eve in DB
             g_repo->LogNrEve(eveId, "EVE_" + std::to_string(i));
         }
-        ////
 
         defaultLm->SetAttribute("Verbose", BooleanValue(verbose));
         defaultLm->SetAttribute("NearRtRic", PointerValue(nearRtRic));
@@ -1288,12 +1594,12 @@ int main(int argc, char* argv[])
                         MakeCallback(&ns3::OranReporterNrUeRsrpRsrq::ReportRsrpRsrq, rsrpRsrqReporter));
 
                     uePhy->TraceConnectWithoutContext(
-                    "DlDataSinr",
-                    MakeCallback(&ns3::OranReporterNrUeSinr::ReportDlDataSinr, sinrReporter));
+                        "DlDataSinr",
+                        MakeCallback(&ns3::OranReporterNrUeSinr::ReportDlDataSinr, sinrReporter));
 
                     uePhy->TraceConnectWithoutContext(
-                    "DlCtrlSinr",
-                    MakeCallback(&ns3::OranReporterNrUeSinr::ReportDlCtrlSinr, sinrReporter));
+                        "DlCtrlSinr",
+                        MakeCallback(&ns3::OranReporterNrUeSinr::ReportDlCtrlSinr, sinrReporter));
                 }
             }
 
@@ -1352,8 +1658,15 @@ int main(int argc, char* argv[])
     // =========================
     // Connect handover trace
     // =========================
+    // Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverStart",
+    //             MakeCallback(&NotifyHandoverStartGnb));
+
     Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverEndOk",
                     MakeCallback(&NotifyHandoverEndOkGnb));
+
+    // Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverEndError",
+    //                 MakeCallback(&NotifyHandoverEndErrorGnb));
+
 
     // =========================
     // SECURITY TRACES + Secrecy monitor scheduling
@@ -1361,73 +1674,95 @@ int main(int argc, char* argv[])
     g_ueServingCell.assign(ueNodes.GetN(), 0);
     g_ueServingRsrpDbm.assign(ueNodes.GetN(), -300.0);
 
-    // NEW (SINR): initialize UE SINR containers
     g_ueLastSinr.clear();
     g_ueLastSinr.resize(ueNodes.GetN());
     g_ueServingSinrLin.assign(ueNodes.GetN(), 0.0);
 
-    Ptr<OutputStreamWrapper> ueMeasStream  = Create<OutputStreamWrapper>(s_rsrpUeTraceFile, std::ios::out);
-    Ptr<OutputStreamWrapper> eveMeasStream = Create<OutputStreamWrapper>(s_rsrpEveTraceFile, std::ios::out);
+    // Ptr<OutputStreamWrapper> ueMeasStream  = Create<OutputStreamWrapper>(s_rsrpUeTraceFile, std::ios::out);
+    // Ptr<OutputStreamWrapper> eveMeasStream = Create<OutputStreamWrapper>(s_rsrpEveTraceFile, std::ios::out);
 
-    // NEW (SINR): streams
-    Ptr<OutputStreamWrapper> ueSinrStream  = Create<OutputStreamWrapper>(s_sinrUeTraceFile, std::ios::out);
-    Ptr<OutputStreamWrapper> eveSinrStream = Create<OutputStreamWrapper>(s_sinrEveTraceFile, std::ios::out);
+    // Ptr<OutputStreamWrapper> ueSinrStream  = Create<OutputStreamWrapper>(s_sinrUeTraceFile, std::ios::out);
+    // Ptr<OutputStreamWrapper> eveSinrStream = Create<OutputStreamWrapper>(s_sinrEveTraceFile, std::ios::out);
 
+    // for (uint32_t i = 0; i < ueNrDevs.GetN(); ++i)
+    // {
+    //     Ptr<NrUeNetDevice> d = ueNrDevs.Get(i)->GetObject<NrUeNetDevice>();
+    //     if (!d) continue;
+    //     Ptr<NrUePhy> phy = d->GetPhy(0);
+    //     if (!phy) continue;
+
+    //     // phy->TraceConnectWithoutContext("ReportUeMeasurements",
+    //     //     MakeBoundCallback(&UeMeasTraceCb, i, ueMeasStream));
+
+    //     phy->TraceConnectWithoutContext("DlDataSinr",
+    //         MakeBoundCallback(&UeDlDataSinrCb, i, ueSinrStream));
+
+    //     phy->TraceConnectWithoutContext("DlCtrlSinr",
+    //         MakeBoundCallback(&UeDlCtrlSinrCb, i, ueSinrStream));
+    // }
+
+    // if (enableEves && eveNrDevs.GetN() > 0)
+    // {
+    //     for (uint32_t i = 0; i < eveNrDevs.GetN(); ++i)
+    //     {
+    //         Ptr<NrUeNetDevice> d = eveNrDevs.Get(i)->GetObject<NrUeNetDevice>();
+    //         if (!d) continue;
+    //         Ptr<NrUePhy> phy = d->GetPhy(0);
+    //         if (!phy) continue;
+
+    //         // phy->TraceConnectWithoutContext("ReportUeMeasurements",
+    //         //     MakeBoundCallback(&EveMeasTraceCb, i, eveMeasStream));
+
+    //         // phy->TraceConnectWithoutContext("DlDataSinr",
+    //         //     MakeBoundCallback(&EveDlDataSinrCb, i, eveSinrStream));
+
+    //         // phy->TraceConnectWithoutContext("DlCtrlSinr",
+    //         //     MakeBoundCallback(&EveDlCtrlSinrCb, i, eveSinrStream));
+    //     }
+
+    //     Simulator::Schedule(management_interval,
+    //                         &SecrecyMonitorSinr,
+    //                         secrecyTargetBitsPerHz);
+    // }
+
+    // UE connects (needed so g_ueServingCell + g_ueLastSinr get updated)
     for (uint32_t i = 0; i < ueNrDevs.GetN(); ++i)
     {
-        Ptr<NrUeNetDevice> d = ueNrDevs.Get(i)->GetObject<NrUeNetDevice>();
+        auto d = ueNrDevs.Get(i)->GetObject<NrUeNetDevice>();
         if (!d) continue;
-        Ptr<NrUePhy> phy = d->GetPhy(0);
+        auto phy = d->GetPhy(0);
         if (!phy) continue;
 
-        // RSRP/RSRQ trace (unchanged)
         phy->TraceConnectWithoutContext("ReportUeMeasurements",
-            MakeBoundCallback(&UeMeasTraceCb, i, ueMeasStream));
+            MakeBoundCallback(&UeMeasCb, i));
 
-        // NEW (SINR): connect SINR traces
         phy->TraceConnectWithoutContext("DlDataSinr",
-            MakeBoundCallback(&UeDlDataSinrCb, i, ueSinrStream));
-        
-        phy->TraceConnectWithoutContext("DlCtrlSinr",
-            MakeBoundCallback(&UeDlCtrlSinrCb, i, ueSinrStream));
+            MakeBoundCallback(&UeDlSinrCb, i));
 
+        phy->TraceConnectWithoutContext("DlCtrlSinr",
+            MakeBoundCallback(&UeDlSinrCb, i));
     }
 
+    // EVE connects (needed so g_eveLastSinr updates)
     if (enableEves && eveNrDevs.GetN() > 0)
     {
         for (uint32_t i = 0; i < eveNrDevs.GetN(); ++i)
         {
-            Ptr<NrUeNetDevice> d = eveNrDevs.Get(i)->GetObject<NrUeNetDevice>();
+            auto d = eveNrDevs.Get(i)->GetObject<NrUeNetDevice>();
             if (!d) continue;
-            Ptr<NrUePhy> phy = d->GetPhy(0);
+            auto phy = d->GetPhy(0);
             if (!phy) continue;
 
-            // RSRP/RSRQ trace (unchanged)
-            phy->TraceConnectWithoutContext("ReportUeMeasurements",
-                MakeBoundCallback(&EveMeasTraceCb, i, eveMeasStream));
-
-            // NEW (SINR): connect SINR traces for eaves too
             phy->TraceConnectWithoutContext("DlDataSinr",
-                MakeBoundCallback(&EveDlDataSinrCb, i, eveSinrStream));
+                MakeBoundCallback(&EveDlSinrCb, i, false));
 
             phy->TraceConnectWithoutContext("DlCtrlSinr",
-                MakeBoundCallback(&EveDlCtrlSinrCb, i, eveSinrStream));
+                MakeBoundCallback(&EveDlSinrCb, i, true));
         }
 
-        // -------------------------
-        // OLD schedule (RSRP-based) kept, but commented out (SINR is what you want now)
-        // -------------------------
-        // Simulator::Schedule(management_interval,
-        //                     &SecrecyMonitor,
-        //                     bandBw,
-        //                     ueNoiseFigure,
-        //                     secrecyTargetBitsPerHz);
-
-        // NEW schedule (SINR-based)
-        Simulator::Schedule(management_interval,
-                            &SecrecyMonitorSinr,
-                            secrecyTargetBitsPerHz);
+        Simulator::Schedule(management_interval, &SecrecyMonitorSinr, secrecyTargetBitsPerHz);
     }
+
 
     // =========================
     // FlowMonitor + QoS vectors

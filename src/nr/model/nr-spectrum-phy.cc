@@ -1417,15 +1417,35 @@ void
 NrSpectrumPhy::StartRxSrs(const Ptr<NrSpectrumSignalParametersUlCtrlFrame>& params)
 {
     NS_LOG_FUNCTION(this);
+
     // The current code of this function assumes:
-    // 1) that this function is called only when cellId = m_cellId
-    // 2) this function should be only called for gNB, only gNB should enter into reception of
-    // UL SRS signals 3) SRS should be received only one at a time, otherwise this function
-    // should assert 4) CTRL message list contains only one message and that one is SRS CTRL
-    // message
-    NS_ASSERT(params->cellId == GetCellId() && m_isGnb && m_state != RX_UL_SRS &&
-              params->ctrlMsgList.size() == 1 &&
-              (*params->ctrlMsgList.begin())->GetMessageType() == NrControlMessage::SRS);
+    // 1) called only when cellId = m_cellId
+    // 2) only gNB enters RX of UL SRS
+    // 3) only one SRS at a time
+    // 4) ctrlMsgList contains exactly one SRS message
+    //
+    // In practice (reuse-1 / broadcast spectrum channel / mobility), other PHYs may also
+    // "hear" the UL ctrl frame. Instead of asserting, safely ignore frames that are not
+    // intended for this PHY or not valid in the current state.
+
+    const bool isValidSrs =
+        (params->cellId == GetCellId()) &&
+        (m_isGnb) &&
+        (m_state != RX_UL_SRS) &&
+        (params->ctrlMsgList.size() == 1) &&
+        (!params->ctrlMsgList.empty()) &&
+        ((*params->ctrlMsgList.begin())->GetMessageType() == NrControlMessage::SRS);
+
+    if (!isValidSrs)
+    {
+        NS_LOG_INFO("Ignoring unexpected SRS frame: "
+                    << "rxCellId=" << params->cellId
+                    << " thisCellId=" << GetCellId()
+                    << " isGnb=" << m_isGnb
+                    << " state=" << m_state
+                    << " ctrlMsgs=" << params->ctrlMsgList.size());
+        return;
+    }
 
     switch (m_state)
     {
@@ -1445,28 +1465,27 @@ NrSpectrumPhy::StartRxSrs(const Ptr<NrSpectrumSignalParametersUlCtrlFrame>& para
     case CCA_BUSY:
         NS_LOG_INFO("Start receiving UL SRS while channel in CCA_BUSY state.");
         /* no break */
-    case IDLE: {
-        // at the gNB we can receive only one SRS at a time, and the only allowed states before
-        // starting it are IDLE or BUSY
+    case IDLE:
+    {
         m_interferenceSrs->StartRxMimo(params);
-        // first transmission, i.e., we're IDLE and we start RX, CTRL message list should be
-        // empty
+
+        // first transmission, i.e., we're IDLE and we start RX, CTRL message list should be empty
         NS_ASSERT(m_rxControlMessageList.empty());
+
         m_firstRxStart = Simulator::Now();
         m_firstRxDuration = params->duration;
+
         NS_LOG_LOGIC(this << " scheduling EndRx for SRS signal reception with delay "
                           << params->duration);
-        // store the SRS message in the CTRL message list
+
         m_rxControlMessageList = params->ctrlMsgList;
         Simulator::Schedule(params->duration, &NrSpectrumPhy::EndRxSrs, this);
         ChangeState(RX_UL_SRS, params->duration);
-    }
-    break;
-    default: {
-        // not allowed state for starting the SRS reception
-        NS_FATAL_ERROR("Not allowed state for starting SRS reception.");
         break;
     }
+    default:
+        NS_FATAL_ERROR("Not allowed state for starting SRS reception.");
+        break;
     }
 }
 

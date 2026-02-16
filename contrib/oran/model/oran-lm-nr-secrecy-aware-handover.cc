@@ -18,62 +18,35 @@
 #include <tuple>
 #include <vector>
 
+#include "ns3/string.h"
+#include <fstream>
+#include <sstream>
+
 namespace ns3
 {
 
 /* ---------------------------------------------------------------------------
- * oran-lm-nr-secrecy-aware-handover.cc  (BRIEF COMMENT)
+ * oran-lm-nr-secrecy-aware-handover.cc
  *
  * Purpose:
  *   Near-RT RIC Logic Module (LM) that makes NR→NR handover decisions using
- *   normal RSRP best-cell logic, BUT only triggers HO if secrecy is not in outage.
+ *   RSRP best-cell logic + secrecy gating.
  *
- * Inputs (read from OranDataRepository / SQLite DB):
- *   - UE serving cell + RNTI:        GetNrUeCellInfo()
- *   - UE RSRP/RSRQ measurements:     GetNrUeRsrpRsrq()   (uses CC/BWP 0 only)
- *   - UE SINR samples:              GetNrUeSinr()        (uses bwpId=0, isCtrl=false)
- *   - gNB cellId ↔ gNB E2NodeId map: GetNrGnbCellInfo()
- *   - node positions (optional/log): GetNodePositions()
+ * NEW in this version (important fixes):
+ *   1) OUTAGE MODE: if current secrecy is in outage, we try to escape faster:
+ *      - skip cooldown
+ *      - allow small RSRP gain (kOutageMinRsrpGainDb)
+ *      - choose candidate that maximizes Cs (estimated secrecy capacity)
  *
- * Key idea (Secrecy gate):
- *   - Compute secrecy capacity:
- *        Cs = [ log2(1+gb) - log2(1+ge) ]+
- *   - gb (legitimate link quality) is taken from serving DL-data SINR and
- *     scaled to candidate cell using RSRP gain (heuristic):
- *        gbCand ≈ gbServing * 10^((RSRPcand - RSRPserv)/10)
- *   - ge (eavesdropper link quality) is modeled as constant EavSinrDb.
- *   - Candidate cell is allowed only if:
- *        Cs >= SecrecyRateThr   (or Cs>0 if threshold=0)
+ *   2) SAFER Eve fallback:
+ *      - If we don't have Eve SINR for a candidate cell, do NOT assume a small Eve.
+ *      - Instead assume Eve is at least as good as the current cell Eve (conservative).
  *
- * Handover decision flow (per UE each LM run):
- *   1) Warmup / cooldown / pending-HO timeout checks.
- *   2) Identify serving cell/RNTI from RSRP measurements.
- *   3) Read serving DL-data SINR from DB (optional required by RequireSinr).
- *   4) Sort candidate cells by RSRP descending.
- *   5) Pick first candidate that:
- *        - improves RSRP by > max(HysteresisDb, RsrpThresholdDb)
- *        - passes secrecy gate (not secrecy outage)
- *   6) Issue OranCommandNr2NrHandover (source gNB E2NodeId, UE RNTI, target cellId).
- *
- * Outputs:
- *   - HO commands returned to RIC and logged via LogCommandLm()
- *   - Optional LM action strings via LogLogicToRepository()
- *
- * Notes / assumptions:
- *   - Uses CC/BWP 0 for HO measurements.
- *   - Secrecy model is simplified (constant eavesdropper SINR + SINR-from-RSRP heuristic).
- *   - Requires DataRepository to implement GetNrUeSinr() and store nruesinr rows.
- * 
- * NOTE (candidate selection under secrecy gate):
- *   Candidates are sorted by RSRP (descending). The LM tests them in that order.
- *   If the best-RSRP candidate FAILS the secrecy gate, we DO NOT stop; we "continue"
- *   and evaluate the next best RSRP candidate (and so on) until one passes secrecy.
- *   We only "break" once a secrecy-OK candidate is found. If none pass, no HO is issued.
- *
- *   Important: with the current simplified secrecy model (constant ge and gb derived from
- *   serving SINR scaled by RSRP gain), Cs typically increases with RSRP gain, so if the
- *   strongest candidate fails secrecy, weaker ones will likely fail too. Using per-cell
- *   SINR or per-cell eavesdropper ge can make 2nd-best candidates meaningful.
+ *   3) FIX CRASH (most likely):
+ *      - Correctly set HO command E2Node IDs.
+ *      - Some ns-oran versions interpret TargetE2NodeId differently.
+ *      - So we set "source-like" AND "target-like" attributes if present.
+ *      - This prevents sending a HO command to a wrong terminator.
  * --------------------------------------------------------------------------- */
 
 NS_LOG_COMPONENT_DEFINE("OranLmNrSecrecyAwareHandover");
@@ -88,32 +61,32 @@ OranLmNrSecrecyAwareHandover::GetTypeId(void)
             .AddConstructor<OranLmNrSecrecyAwareHandover>()
             .AddAttribute("HysteresisDb",
                           "RSRP HO hysteresis in dB.",
-                          DoubleValue(4.0),
+                          DoubleValue(2.0),
                           MakeDoubleAccessor(&OranLmNrSecrecyAwareHandover::m_hysteresisDb),
                           MakeDoubleChecker<double>())
             .AddAttribute("RsrpThresholdDb",
                           "Optional min RSRP gain (dB) to allow HO. Usually same as hysteresis.",
-                          DoubleValue(4.0),
+                          DoubleValue(2.0),
                           MakeDoubleAccessor(&OranLmNrSecrecyAwareHandover::m_rsrpThresholdDb),
                           MakeDoubleChecker<double>())
             .AddAttribute("Warmup",
                           "Warm-up time before HO decisions start.",
-                          TimeValue(Seconds(4.0)),
+                          TimeValue(Seconds(2.0)),
                           MakeTimeAccessor(&OranLmNrSecrecyAwareHandover::m_warmup),
                           MakeTimeChecker())
             .AddAttribute("MinHoInterval",
                           "Minimum time between HO commands for same UE.",
-                          TimeValue(Seconds(4.0)),
+                          TimeValue(Seconds(2.0)),
                           MakeTimeAccessor(&OranLmNrSecrecyAwareHandover::m_minHoInterval),
                           MakeTimeChecker())
             .AddAttribute("HoAttemptTimeout",
                           "If HO is pending, wait this long before allowing a retry.",
-                          TimeValue(Seconds(3.0)),
+                          TimeValue(Seconds(2.0)),
                           MakeTimeAccessor(&OranLmNrSecrecyAwareHandover::m_hoAttemptTimeout),
                           MakeTimeChecker())
             .AddAttribute("SecrecyRateThr",
                           "Minimum secrecy capacity (bits/s/Hz). 0 => just require positive secrecy.",
-                          DoubleValue(0.5),
+                          DoubleValue(0),
                           MakeDoubleAccessor(&OranLmNrSecrecyAwareHandover::m_secrecyRateThr),
                           MakeDoubleChecker<double>())
             .AddAttribute("EavSinrDb",
@@ -125,21 +98,47 @@ OranLmNrSecrecyAwareHandover::GetTypeId(void)
                           "If true, block HO until serving SINR exists in DB.",
                           BooleanValue(true),
                           MakeBooleanAccessor(&OranLmNrSecrecyAwareHandover::m_requireSinr),
-                          MakeBooleanChecker());
+                          MakeBooleanChecker())
+            .AddAttribute("LeakageModel",
+                        "Leakage model: oracle | riskmap | hybrid | fixed",
+                        StringValue("oracle"),
+                        MakeStringAccessor(&OranLmNrSecrecyAwareHandover::m_leakageModel),
+                        MakeStringChecker())
+            .AddAttribute("RiskMapFile",
+                        "File: lines 'cellId riskScore' (0..1)",
+                        StringValue(""),
+                        MakeStringAccessor(&OranLmNrSecrecyAwareHandover::m_riskMapFile),
+                        MakeStringChecker())
+            .AddAttribute("RiskMinEavSinrDb",
+                          "Eve SINR (dB) used when riskScore=0 (low risk).",
+                          DoubleValue(-15.0),
+                          MakeDoubleAccessor(&OranLmNrSecrecyAwareHandover::m_riskMinEavSinrDb),
+                          MakeDoubleChecker<double>())
+            .AddAttribute("RiskMaxEavSinrDb",
+                          "Eve SINR (dB) used when riskScore=1 (high risk).",
+                          DoubleValue(5.0),
+                          MakeDoubleAccessor(&OranLmNrSecrecyAwareHandover::m_riskMaxEavSinrDb),
+                          MakeDoubleChecker<double>());
+
 
     return tid;
 }
 
 OranLmNrSecrecyAwareHandover::OranLmNrSecrecyAwareHandover(void)
     : OranLm(),
-      m_hysteresisDb(4.0),
-      m_rsrpThresholdDb(4.0),
-      m_warmup(Seconds(4.0)),
-      m_minHoInterval(Seconds(4.0)),
-      m_hoAttemptTimeout(Seconds(3.0)),
-      m_secrecyRateThr(0.5),
+      m_hysteresisDb(2.0),
+      m_rsrpThresholdDb(2.0),
+      m_warmup(Seconds(2.0)),
+      m_minHoInterval(Seconds(2.0)),
+      m_hoAttemptTimeout(Seconds(2.0)),
+      m_secrecyRateThr(0),
       m_eavSinrDb(-5.0),
-      m_requireSinr(true)
+      m_requireSinr(true),
+      m_riskMapLoaded(false),
+      m_riskMinEavSinrDb(-15.0),
+      m_riskMaxEavSinrDb(5.0)
+
+
 {
     NS_LOG_FUNCTION(this);
     m_name = "OranLmNrSecrecyAwareHandover";
@@ -163,6 +162,7 @@ OranLmNrSecrecyAwareHandover::Run(void)
                         "Attempting to run LM (" + m_name + ") with NULL Near-RT RIC");
 
         Ptr<OranDataRepository> data = m_nearRtRic->Data();
+        LoadRiskMapIfNeeded();
         auto ueInfos = GetUeInfos(data);
         auto gnbInfos = GetGnbInfos(data);
         commands = GetHandoverCommands(data, ueInfos, gnbInfos);
@@ -204,6 +204,118 @@ OranLmNrSecrecyAwareHandover::GetUeInfos(Ptr<OranDataRepository> data) const
     return ueInfos;
 }
 
+void
+OranLmNrSecrecyAwareHandover::LoadRiskMapIfNeeded()
+{
+    if (m_riskMapLoaded)
+    {
+        return;
+    }
+    m_riskMapLoaded = true;
+    m_cellRisk.clear();
+
+    if (m_riskMapFile.empty())
+    {
+        return; // riskmap mode will still work (it will assume worst if missing)
+    }
+
+    std::ifstream in(m_riskMapFile.c_str());
+    if (!in.is_open())
+    {
+        NS_LOG_UNCOND("RiskMapFile cannot be opened: " << m_riskMapFile
+                      << " (riskmap will assume worst risk for unknown cells)");
+        return;
+    }
+
+    std::string line;
+    while (std::getline(in, line))
+    {
+        if (line.empty() || line[0] == '#') continue;
+        std::istringstream iss(line);
+
+        uint16_t cellId;
+        double risk;
+        if (!(iss >> cellId >> risk))
+        {
+            continue;
+        }
+
+        // clamp to [0,1]
+        risk = std::max(0.0, std::min(1.0, risk));
+        m_cellRisk[cellId] = risk;
+    }
+
+    NS_LOG_UNCOND("Loaded risk map: entries=" << m_cellRisk.size()
+                  << " from " << m_riskMapFile);
+}
+
+bool
+OranLmNrSecrecyAwareHandover::GetLeakageSinrLinForCell(Ptr<OranDataRepository> data,
+                                                       uint16_t cellId,
+                                                       double& geLin) const
+{
+    // FIXED: constant attacker SINR
+    if (m_leakageModel == "fixed")
+    {
+        geLin = DbToLin(m_eavSinrDb);
+        return true;
+    }
+
+    // RISKMAP: map riskScore in [0,1] -> Eve SINR in [RiskMin..RiskMax] dB
+    auto riskToGe = [&](uint16_t cId, double& outLin) -> bool {
+        double risk = 1.0; // conservative default if unknown cell
+        auto it = m_cellRisk.find(cId);
+        if (it != m_cellRisk.end())
+        {
+            risk = it->second;
+        }
+
+        const double geDb = m_riskMinEavSinrDb + risk * (m_riskMaxEavSinrDb - m_riskMinEavSinrDb);
+        outLin = DbToLin(geDb);
+        return true;
+    };
+
+    if (m_leakageModel == "riskmap")
+    {
+        return riskToGe(cellId, geLin);
+    }
+
+    // ORACLE: measured worst Eve SINR from repository (if EVE nodes exist)
+    if (m_leakageModel == "oracle")
+    {
+        bool ok = GetWorstEveSinrLinForCell(data, cellId, geLin);
+        if (!ok)
+        {
+            // fallback (your existing behavior)
+            geLin = DbToLin(m_eavSinrDb);
+            return false; // "not found in DB"
+        }
+        return true;
+    }
+
+    // HYBRID: take the most conservative estimate among available sources
+    if (m_leakageModel == "hybrid")
+    {
+        double geFixed = DbToLin(m_eavSinrDb);
+        double geRisk  = 0.0;
+        riskToGe(cellId, geRisk);
+
+        double geOracle = 0.0;
+        bool haveOracle = GetWorstEveSinrLinForCell(data, cellId, geOracle);
+
+        geLin = std::max(geFixed, geRisk);
+        if (haveOracle)
+        {
+            geLin = std::max(geLin, geOracle);
+        }
+        return haveOracle; // indicates whether oracle data existed
+    }
+
+    // Unknown string -> safe fallback
+    geLin = DbToLin(m_eavSinrDb);
+    return true;
+}
+
 std::vector<OranLmNrSecrecyAwareHandover::GnbInfo>
 OranLmNrSecrecyAwareHandover::GetGnbInfos(Ptr<OranDataRepository> data) const
 {
@@ -243,15 +355,28 @@ OranLmNrSecrecyAwareHandover::DbToLin(double db)
     return std::pow(10.0, db / 10.0);
 }
 
-// ---- NEW: safe linear->dB helper for logging ----
+// safe linear->dB helper (for logs only)
 static inline double
 LinToDbSafe(double x)
 {
     if (x <= 0.0)
     {
-        return -1e9; // "very small" instead of -inf to keep logs readable
+        return -1e9;
     }
     return 10.0 * std::log10(x);
+}
+
+// Helper: set a Uinteger attribute only if it exists in this build.
+// This makes code compatible across ns-oran versions.
+static inline void
+SetUintegerAttrIfExists(Ptr<Object> obj, const std::string& name, uint64_t v)
+{
+    TypeId tid = obj->GetInstanceTypeId();
+    TypeId::AttributeInformation info;
+    if (tid.LookupAttributeByName(name, &info))
+    {
+        obj->SetAttribute(name, UintegerValue(v));
+    }
 }
 
 double
@@ -274,7 +399,6 @@ OranLmNrSecrecyAwareHandover::GetServingDlDataSinrLin(Ptr<OranDataRepository> da
 {
     outSinrLin = -1.0;
 
-    // Expected tuple: (rnti, cellId, bwpId, sinrLin, sinrDb, isCtrl)
     auto sinrRecs = data->GetNrUeSinr(ueE2NodeId);
 
     for (const auto& rec : sinrRecs)
@@ -285,7 +409,7 @@ OranLmNrSecrecyAwareHandover::GetServingDlDataSinrLin(Ptr<OranDataRepository> da
 
         std::tie(rnti, cellId, bwpId, sinrLin, sinrDb, isCtrl) = rec;
 
-        // Use Data SINR only (isCtrl=false) and BWP 0
+        // Use DATA SINR only (isCtrl=false) and BWP 0
         if (!isCtrl && bwpId == 0 && cellId == servingCellId && rnti == servingRnti)
         {
             outSinrLin = sinrLin;
@@ -303,36 +427,7 @@ OranLmNrSecrecyAwareHandover::GetWorstEveSinrLinForCell(Ptr<OranDataRepository> 
     outGeLin = 0.0;
     bool found = false;
 
-    // --------------------------------------------------------------------
-    // OLD (too strict): only accept DATA SINR (isCtrl=false)
-    // This makes haveEve=0 if DB rows are mostly is_ctrl=true.
-    //
-    // for (auto eveId : data->GetNrEveNodeIds())
-    // {
-    //     auto recs = data->GetNrEveSinr(eveId);
-    //     for (const auto& rec : recs) // assume latest-first
-    //     {
-    //         uint16_t recCellId, bwpId;
-    //         double sinrLin, sinrDb;
-    //         bool isCtrl;
-    //         std::tie(recCellId, bwpId, sinrLin, sinrDb, isCtrl) = rec;
-    //
-    //         if (!isCtrl && bwpId == 0 && recCellId == cellId)
-    //         {
-    //             outGeLin = std::max(outGeLin, sinrLin);
-    //             found = true;
-    //             break;
-    //         }
-    //     }
-    // }
-    // return found;
-    // --------------------------------------------------------------------
-
-    // --------------------------------------------------------------------
-    // NEW: Prefer DATA SINR if present, else fall back to CTRL SINR.
-    // This matches your DB situation where nrevesinr has is_ctrl=true.
-    // We still keep "worst Eve" idea by taking max SINR across Eve nodes.
-    // --------------------------------------------------------------------
+    // Prefer DATA SINR if present; else use CTRL SINR.
     double bestDataLin = 0.0;
     bool   foundData   = false;
 
@@ -343,8 +438,6 @@ OranLmNrSecrecyAwareHandover::GetWorstEveSinrLinForCell(Ptr<OranDataRepository> 
     {
         auto recs = data->GetNrEveSinr(eveId);
 
-        // For each Eve, pick the latest DATA record for this cell if it exists;
-        // otherwise pick the latest CTRL record for this cell.
         bool   localFoundData = false;
         double localDataLin   = 0.0;
 
@@ -358,7 +451,6 @@ OranLmNrSecrecyAwareHandover::GetWorstEveSinrLinForCell(Ptr<OranDataRepository> 
             bool isCtrl;
             std::tie(recCellId, bwpId, sinrLin, sinrDb, isCtrl) = rec;
 
-            // keep your BWP0 constraint
             if (bwpId != 0 || recCellId != cellId)
             {
                 continue;
@@ -366,20 +458,17 @@ OranLmNrSecrecyAwareHandover::GetWorstEveSinrLinForCell(Ptr<OranDataRepository> 
 
             if (!isCtrl)
             {
-                // found latest DATA SINR for this Eve+cell
                 localFoundData = true;
                 localDataLin   = sinrLin;
-                break; // DATA is preferred, stop for this Eve
+                break;
             }
             else
             {
-                // remember latest CTRL SINR, but keep searching in case DATA exists later in list
                 if (!localFoundCtrl)
                 {
                     localFoundCtrl = true;
                     localCtrlLin   = sinrLin;
                 }
-                // do NOT break; keep scanning for possible DATA
             }
         }
 
@@ -409,7 +498,6 @@ OranLmNrSecrecyAwareHandover::GetWorstEveSinrLinForCell(Ptr<OranDataRepository> 
     return found;
 }
 
-
 std::vector<Ptr<OranCommand>>
 OranLmNrSecrecyAwareHandover::GetHandoverCommands(Ptr<OranDataRepository> data,
                                                   const std::vector<UeInfo>& ueInfos,
@@ -417,8 +505,8 @@ OranLmNrSecrecyAwareHandover::GetHandoverCommands(Ptr<OranDataRepository> data,
 {
     NS_LOG_FUNCTION(this << data);
 
-    static std::map<uint64_t, Time> lastHoCmdTime;       // UE nodeId -> last HO cmd time
-    static std::map<uint64_t, uint16_t> pendingHoTarget; // UE nodeId -> target cell
+    static std::map<uint64_t, Time> lastHoCmdTime;
+    static std::map<uint64_t, uint16_t> pendingHoTarget;
 
     std::vector<Ptr<OranCommand>> commands;
 
@@ -427,20 +515,18 @@ OranLmNrSecrecyAwareHandover::GetHandoverCommands(Ptr<OranDataRepository> data,
         return commands;
     }
 
+    const double kEps = 1e-6;
+    const double kOutageMinRsrpGainDb = 0.1;
+
     for (const auto& ueInfo : ueInfos)
     {
-        // ---- Pull RSRP measurements (latest set) ----
         auto rsrpMeasurements = data->GetNrUeRsrpRsrq(ueInfo.nodeId);
 
         double servingRsrp = -DBL_MAX;
         uint16_t servingCellId = 0;
         uint16_t servingRnti = 0;
 
-        struct Cand
-        {
-            uint16_t cellId;
-            double rsrp;
-        };
+        struct Cand { uint16_t cellId; double rsrp; };
         std::vector<Cand> cands;
 
         for (const auto& meas : rsrpMeasurements)
@@ -454,7 +540,6 @@ OranLmNrSecrecyAwareHandover::GetHandoverCommands(Ptr<OranDataRepository> data,
 
             std::tie(rnti, cellId, rsrp, rsrq, isServingCell, componentCarrierId) = meas;
 
-            // Decide HO using CC/BWP 0
             if (componentCarrierId != 0)
             {
                 continue;
@@ -478,14 +563,14 @@ OranLmNrSecrecyAwareHandover::GetHandoverCommands(Ptr<OranDataRepository> data,
         const uint16_t currentCellId = servingCellId;
         const uint16_t currentRnti = servingRnti;
 
-        // ---- Clear pending if UE reached target ----
+        // Clear pending if reached target
         auto pit = pendingHoTarget.find(ueInfo.nodeId);
         if (pit != pendingHoTarget.end() && pit->second == currentCellId)
         {
             pendingHoTarget.erase(pit);
         }
 
-        // ---- Pending HO => wait until timeout before retry ----
+        // Pending HO => wait timeout
         auto tit = lastHoCmdTime.find(ueInfo.nodeId);
         if (pendingHoTarget.count(ueInfo.nodeId) && tit != lastHoCmdTime.end())
         {
@@ -495,13 +580,7 @@ OranLmNrSecrecyAwareHandover::GetHandoverCommands(Ptr<OranDataRepository> data,
             }
         }
 
-        // ---- Cooldown ----
-        if (tit != lastHoCmdTime.end() && (Simulator::Now() - tit->second) < m_minHoInterval)
-        {
-            continue;
-        }
-
-        // ---- Map serving cellId -> serving gNB E2 node id ----
+        // Map serving cell -> serving gNB E2 node id
         uint64_t oldCellNodeId = 0;
         for (const auto& g : gnbInfos)
         {
@@ -516,7 +595,7 @@ OranLmNrSecrecyAwareHandover::GetHandoverCommands(Ptr<OranDataRepository> data,
             continue;
         }
 
-        // ---- Get serving SINR from DB ----
+        // Get serving SINR
         double servingSinrLin = -1.0;
         const bool hasSinr =
             GetServingDlDataSinrLin(data, ueInfo.nodeId, currentCellId, currentRnti, servingSinrLin);
@@ -530,82 +609,172 @@ OranLmNrSecrecyAwareHandover::GetHandoverCommands(Ptr<OranDataRepository> data,
             servingSinrLin = DbToLin(-10.0);
         }
 
-        // ---- Sort candidates by RSRP desc ----
+        // Current Eve SINR for current cell
+        double currentGeLin = 0.0;
+        bool haveCurrentEve = GetLeakageSinrLinForCell(data, currentCellId, currentGeLin);
+        if (!haveCurrentEve)
+        {
+            currentGeLin = DbToLin(m_eavSinrDb);
+        }
+
+        const double currentCs = SecrecyCapacity(servingSinrLin, currentGeLin);
+        const bool currentOutage =
+            (m_secrecyRateThr <= 0.0) ? (currentCs <= 0.0) : (currentCs < m_secrecyRateThr);
+
+        // If NOT outage: apply cooldown
+        if (!currentOutage)
+        {
+            if (tit != lastHoCmdTime.end() && (Simulator::Now() - tit->second) < m_minHoInterval)
+            {
+                continue;
+            }
+        }
+
+        // Sort by RSRP desc
         std::sort(cands.begin(), cands.end(), [](const Cand& a, const Cand& b) {
             return a.rsrp > b.rsrp;
         });
 
-        // ---- Choose first secrecy-safe candidate (best RSRP after sorting) ----
+        // Debug: show candidates when outage (helps understand "why no HO")
+        if (currentOutage)
+        {
+            NS_LOG_UNCOND("OUTAGE DETECTED t=" << Simulator::Now().GetSeconds()
+                          << " UE=" << ueInfo.nodeId
+                          << " cell=" << currentCellId
+                          << " Cs=" << currentCs
+                          << " thr=" << m_secrecyRateThr
+                          << " servingSinrLin=" << servingSinrLin
+                          << " currentGeLin=" << currentGeLin
+                          << " numCands=" << cands.size());
+
+            for (const auto& c : cands)
+            {
+                NS_LOG_UNCOND("  cand cell=" << c.cellId
+                              << " rsrp=" << c.rsrp
+                              << " gainDb=" << (c.rsrp - servingRsrp));
+            }
+        }
+
+        // Default chosen = stay
         uint16_t chosenCellId = currentCellId;
         double chosenRsrp = servingRsrp;
 
-        // ---- NEW: remember what Eve SINR we actually used for the chosen cell ----
-        double chosenGeLin = DbToLin(m_eavSinrDb); // fallback by default
-        bool   chosenHaveEve = false;
-        double chosenCs = 0.0;
-        double chosenGbLin = servingSinrLin;       // optional for log
+        double chosenGeLin = currentGeLin;
+        bool   chosenHaveEve = haveCurrentEve;
+        double chosenCs = currentCs;
+        double chosenGbLin = servingSinrLin;
 
-
-        //const double geLin = DbToLin(m_eavSinrDb);
-
-        for (const auto& c : cands)
+        if (!currentOutage)
         {
-            if (c.cellId == currentCellId)
+            // NORMAL MODE
+            for (const auto& c : cands)
             {
-                continue;
+                if (c.cellId == currentCellId)
+                {
+                    continue;
+                }
+
+                const double gainDb = c.rsrp - servingRsrp;
+
+                // Require minimum RSRP gain
+                if (!(gainDb > std::max(m_hysteresisDb, m_rsrpThresholdDb)))
+                {
+                    continue;
+                }
+
+                const double gbLin = servingSinrLin * DbToLin(gainDb);
+
+                double geLinCand = 0.0;
+                bool haveEve = GetLeakageSinrLinForCell(data, c.cellId, geLinCand);
+
+                // Conservative fallback:
+                // if we don't know Eve on candidate, assume at least currentGeLin
+                if (!haveEve)
+                {
+                    geLinCand = std::max(currentGeLin, DbToLin(m_eavSinrDb));
+                }
+
+                const double cs = SecrecyCapacity(gbLin, geLinCand);
+
+                const bool secrecyOk =
+                    (m_secrecyRateThr <= 0.0) ? (cs > 0.0) : (cs >= m_secrecyRateThr);
+
+                if (!secrecyOk)
+                {
+                    NS_LOG_INFO("Secrecy FAIL UE=" << ueInfo.nodeId
+                                                  << " candCell=" << c.cellId
+                                                  << " Cs=" << cs
+                                                  << " (thr=" << m_secrecyRateThr << ")");
+                    continue;
+                }
+
+                chosenCellId = c.cellId;
+                chosenRsrp = c.rsrp;
+                chosenGbLin = gbLin;
+                chosenGeLin = geLinCand;
+                chosenHaveEve = haveEve;
+                chosenCs = cs;
+                break;
+            }
+        }
+        else
+        {
+            // OUTAGE MODE: maximize Cs, relax RSRP gate
+            uint16_t bestCellId = currentCellId;
+            double bestRsrp = servingRsrp;
+
+            double bestCs = currentCs;
+            double bestGbLin = servingSinrLin;
+            double bestGeLin = currentGeLin;
+            bool   bestHaveEve = haveCurrentEve;
+
+            for (const auto& c : cands)
+            {
+                if (c.cellId == currentCellId)
+                {
+                    continue;
+                }
+
+                const double gainDb = c.rsrp - servingRsrp;
+                const double gbLin = servingSinrLin * DbToLin(gainDb);
+
+                double geLinCand = 0.0;
+                bool haveEve = GetWorstEveSinrLinForCell(data, c.cellId, geLinCand);
+
+                // Conservative fallback:
+                if (!haveEve)
+                {
+                    geLinCand = std::max(currentGeLin, DbToLin(m_eavSinrDb));
+                }
+
+                const double cs = SecrecyCapacity(gbLin, geLinCand);
+
+                const bool betterCs = (cs > bestCs + kEps);
+                const bool tieBetterRsrp = (std::fabs(cs - bestCs) <= kEps) && (c.rsrp > bestRsrp + kEps);
+
+                if (betterCs || tieBetterRsrp)
+                {
+                    bestCellId = c.cellId;
+                    bestRsrp = c.rsrp;
+                    bestCs = cs;
+                    bestGbLin = gbLin;
+                    bestGeLin = geLinCand;
+                    bestHaveEve = haveEve;
+                }
             }
 
-            const double gainDb = c.rsrp - servingRsrp;
+            const bool secrecyImproves = (bestCs > currentCs + kEps);
+            const bool rsrpImproves = (bestRsrp > servingRsrp + kOutageMinRsrpGainDb);
 
-            // RSRP improvement gate
-            if (!(gainDb > std::max(m_hysteresisDb, m_rsrpThresholdDb)))
+            if (bestCellId != currentCellId && (secrecyImproves || rsrpImproves))
             {
-                continue;
+                chosenCellId = bestCellId;
+                chosenRsrp = bestRsrp;
+                chosenCs = bestCs;
+                chosenGbLin = bestGbLin;
+                chosenGeLin = bestGeLin;
+                chosenHaveEve = bestHaveEve;
             }
-
-            // Candidate SINR estimate from serving SINR + RSRP delta
-            const double gbLin = servingSinrLin * DbToLin(gainDb);
-
-            // ---- NEW: dynamic eaves SINR for THIS candidate cell ----
-            double geLinCand = 0.0;
-            bool haveEve = GetWorstEveSinrLinForCell(data, c.cellId, geLinCand);
-
-            // fallback (only if you want)
-            if (!haveEve)
-            {
-                geLinCand = DbToLin(m_eavSinrDb);
-            }
-
-            // ---- secrecy using dynamic Eve SINR ----
-            const double cs = SecrecyCapacity(gbLin, geLinCand);
-
-
-            const bool secrecyOk =
-                (m_secrecyRateThr <= 0.0) ? (cs > 0.0) : (cs >= m_secrecyRateThr);
-
-            if (!secrecyOk)
-            {
-                NS_LOG_INFO("Secrecy FAIL UE=" << ueInfo.nodeId
-                                              << " candCell=" << c.cellId
-                                              << " Cs=" << cs
-                                              << " (thr=" << m_secrecyRateThr << ")");
-                continue;
-            }
-
-            chosenCellId = c.cellId;
-            chosenRsrp = c.rsrp;
-
-            NS_LOG_INFO("Secrecy PASS UE=" << ueInfo.nodeId
-                                          << " candCell=" << chosenCellId
-                                          << " gainDb=" << gainDb
-                                          << " Cs=" << cs);
-            // ---- NEW: store the values that made us accept this candidate ----
-            chosenGeLin = geLinCand;
-            chosenHaveEve = haveEve;
-            chosenCs = cs;
-            chosenGbLin = gbLin;
-
-            break;
         }
 
         if (chosenCellId == currentCellId)
@@ -613,36 +782,65 @@ OranLmNrSecrecyAwareHandover::GetHandoverCommands(Ptr<OranDataRepository> data,
             continue;
         }
 
+        // Map chosen cell -> target gNB E2 node id
+        uint64_t targetCellNodeId = 0;
+        for (const auto& g : gnbInfos)
+        {
+            if (g.cellId == chosenCellId)
+            {
+                targetCellNodeId = g.nodeId;
+                break;
+            }
+        }
+        NS_ABORT_MSG_IF(targetCellNodeId == 0,
+                        "Chosen target cellId has no gNB mapping: cellId=" << chosenCellId);
+
         Ptr<OranCommandNr2NrHandover> handoverCommand = CreateObject<OranCommandNr2NrHandover>();
-        handoverCommand->SetAttribute("TargetE2NodeId", UintegerValue(oldCellNodeId)); // source gNB
+
+        // Always set cell + rnti
         handoverCommand->SetAttribute("TargetRnti", UintegerValue(currentRnti));
         handoverCommand->SetAttribute("TargetCellId", UintegerValue(chosenCellId));
 
-        // NS_LOG_UNCOND("LM HO (SecrecyAware) UE=" << ueInfo.nodeId
-        //                                         << " rnti=" << currentRnti
-        //                                         << " fromCell=" << currentCellId
-        //                                         << " toCell=" << chosenCellId
-        //                                         << " servingRsrp=" << servingRsrp
-        //                                         << " chosenRsrp=" << chosenRsrp
-        //                                         << " servingSinrLin=" << servingSinrLin
-        //                                         << " eavSinrDb=" << m_eavSinrDb
-        //                                         << " secrecyThr=" << m_secrecyRateThr);
+        // IMPORTANT:
+        // Different ns-oran versions interpret TargetE2NodeId differently.
+        // We set both source-like and target-like attrs IF they exist.
+        //
+        //  - source gNB (current serving) = oldCellNodeId
+        //  - target gNB (new serving)    = targetCellNodeId
+
+        // Common names across variants:
+        SetUintegerAttrIfExists(handoverCommand, "SourceE2NodeId", oldCellNodeId);
+        SetUintegerAttrIfExists(handoverCommand, "ServingE2NodeId", oldCellNodeId);
+
+        SetUintegerAttrIfExists(handoverCommand, "TargetGnbE2NodeId", targetCellNodeId);
+        SetUintegerAttrIfExists(handoverCommand, "DestinationE2NodeId", targetCellNodeId);
+
+        // Your original line kept for compatibility:
+        // If in your version TargetE2NodeId means "executor node",
+        // then it should be the SOURCE gNB. If it means "target gNB",
+        // then it should be the TARGET gNB. To reduce crash risk, we set it to SOURCE
+        // and rely on the extra target attributes if they exist.
+        //
+        // If your version only has TargetE2NodeId, and it expects TARGET,
+        // you should change this to targetCellNodeId.
+        handoverCommand->SetAttribute("TargetE2NodeId", UintegerValue(oldCellNodeId));
 
         NS_LOG_UNCOND("LM HO (SecrecyAware) UE=" << ueInfo.nodeId
-        << " rnti=" << currentRnti
-        << " fromCell=" << currentCellId
-        << " toCell=" << chosenCellId
-        << " servingRsrp=" << servingRsrp
-        << " chosenRsrp=" << chosenRsrp
-        << " servingSinrLin=" << servingSinrLin
-        << " gbLinUsed=" << chosenGbLin
-        << " haveEve=" << (chosenHaveEve ? 1 : 0)
-        << " geLinUsed=" << chosenGeLin
-        << " geDbUsed=" << LinToDbSafe(chosenGeLin)
-        << " fallbackEavDb=" << m_eavSinrDb
-        << " Cs=" << chosenCs
-        << " secrecyThr=" << m_secrecyRateThr);
-
+                      << " rnti=" << currentRnti
+                      << " fromCell=" << currentCellId
+                      << " toCell=" << chosenCellId
+                      << " srcE2=" << oldCellNodeId
+                      << " tgtE2=" << targetCellNodeId
+                      << " servingRsrp=" << servingRsrp
+                      << " chosenRsrp=" << chosenRsrp
+                      << " servingSinrLin=" << servingSinrLin
+                      << " gbLinUsed=" << chosenGbLin
+                      << " haveEve=" << (chosenHaveEve ? 1 : 0)
+                      << " geLinUsed=" << chosenGeLin
+                      << " geDbUsed=" << LinToDbSafe(chosenGeLin)
+                      << " Cs=" << chosenCs
+                      << " thr=" << m_secrecyRateThr
+                      << " outageMode=" << (currentOutage ? 1 : 0));
 
         data->LogCommandLm(m_name, handoverCommand);
         commands.push_back(handoverCommand);

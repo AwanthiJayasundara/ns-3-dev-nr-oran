@@ -1,15 +1,3 @@
-// ============================================================================
-//  OranNrTnNtnSimulationWithoutSecrecy  (UPDATED for TN-only / NTN-only runs)
-//  - Adds --scenario=tn | ntn | tn-ntn (default: tn)
-//  - Writes outputs into per-scenario folders:
-//      results/nr/tn-ntn/withoutsecrecylm/tn/
-//      results/nr/tn-ntn/withoutsecrecylm/ntn/
-//      results/nr/tn-ntn/withoutsecrecylm/tn-ntn/
-//  - Does NOT use secrecy-aware LM (still uses OranLmNr2NrRsrpHandover when use-rsrp-lm=1)
-//  - Keeps ALL your existing code; anything that had to change is left in-place
-//    but commented as "OLD" and replaced with "NEW" blocks.
-// ============================================================================
-
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
@@ -39,131 +27,104 @@
 #include <limits>
 #include <algorithm>
 
+#include <cctype>
+
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNrTnNtnSimulationWithoutSecrecy");
+NS_LOG_COMPONENT_DEFINE("OranNrTnNtnSimulationWithSecrecyOnnx");
 
 /**
- * OranNrTnNtnSimulationWithoutSecrecy
+ * OranNrTnNtnSimulationWithSecrecy
  *
- * Baseline ns-3 (5G-LENA NR) + ns-O-RAN TN–NTN integration scenario **without** secrecy-aware control.
- * This file is intended as the reference case to compare against the “with-secrecy” version.
- *
- * ---------------------------------------------------------------------------
- * 1) Scenario goal (what this script represents)
- * ---------------------------------------------------------------------------
- * - Evaluate TN-only vs TN+NTN service continuity and classic KPIs (throughput/delay/jitter/PDR/PLR)
- *   under an O-RAN Near-RT RIC handover control loop driven primarily by RSRP/RSRQ (and optionally SINR).
- *
- * - Even though this baseline is “without secrecy LM”, it can still:
- *   • collect PHY measurements (RSRP/RSRQ and SINR),
- *   • log eavesdropper-like measurements if EVE nodes are enabled,
- *   • compute secrecy offline later (or optionally with the included monitors).
- *   The key distinction: **handover decisions are not optimized for secrecy** (default LM is RSRP-based).
+ * End-to-end ns-3 (5G-LENA NR) + ns-O-RAN scenario for evaluating TN–NTN integration
+ * with an optional Physical-Layer Security (PLS) overlay driven by *measured SINR*.
  *
  * ---------------------------------------------------------------------------
- * 2) Topology / Mobility
+ * 1) Topology / Mobility
  * ---------------------------------------------------------------------------
- * - Two regions:
- *   (A) TN area: centered at (0,0), square bounds [-TN_HALF .. TN_HALF] in X and Y.
- *       • 5 (default) terrestrial gNBs are static at fixed coordinates.
- *       • TN UEs move randomly within TN bounds (RandomDirection2dMobilityModel).
+ * - Two disjoint service regions:
+ *   (A) TN area centered at (0,0) with bounds [-TN_HALF .. TN_HALF] (meters).
+ *       • TN gNBs are static at fixed coordinates.
+ *       • TN UEs move with RandomDirection2dMobilityModel within TN bounds.
  *
- *   (B) NTN area: shifted by +AREA_B_OFFSET_X meters on X, square bounds around the offset.
- *       • “NTN gNBs” are modeled as mobile aerial gNBs (e.g., UAV-BS) within Area B.
- *       • NTN UEs move randomly within Area B bounds.
+ *   (B) NTN area shifted by +AREA_B_OFFSET_X meters on the X-axis, with bounds
+ *       [AREA_B_OFFSET_X-NTN_HALF .. AREA_B_OFFSET_X+NTN_HALF] and Y ∈ [-NTN_HALF .. NTN_HALF].
+ *       • "NTN gNBs" are modeled as mobile aerial gNBs (e.g., UAV-BS) moving inside Area B.
+ *       • NTN UEs move within the Area B bounds (same mobility model).
  *
- * - Optional passive “eavesdroppers” (EVE):
- *   • Implemented as additional NR UEs with no traffic applications.
- *   • They attach like normal UEs to allow collection of PHY traces from their perspective.
- *   • In this baseline, enabling EVEs is primarily for **measurement and comparison**, not for control.
- *
- * ---------------------------------------------------------------------------
- * 3) NR / PHY configuration (high level)
- * ---------------------------------------------------------------------------
- * - Example radio setup:
- *   • DL center frequency ~ 4.0 GHz, UL center frequency ~ 3.9 GHz
- *   • Bandwidth ~ 20 MHz
- *   • Scheduler selectable at runtime (TDMA/OFDMA + RR/PF/MR/QoS variants)
- *   • FDD patterns configured on gNB PHY
- * - Channel configured with NrChannelHelper (scenario "UMa" in this file), optional fading enabled.
+ * - Optional passive eavesdroppers ("EVE") are modeled as additional NR UEs:
+ *   • EVE nodes attach like normal UEs (AttachToMaxRsrpGnb) and *only listen* (no apps),
+ *     providing a practical way to obtain PHY measurements (RSRP/RSRQ/SINR) for leakage risk.
  *
  * ---------------------------------------------------------------------------
- * 4) O-RAN control loop (Near-RT RIC + Logic Module)
+ * 2) NR / PHY configuration (high level)
  * ---------------------------------------------------------------------------
- * - When useOran=true:
- *   • UE and gNB E2 terminators periodically send measurements to the Near-RT RIC
- *   • The default LM in this baseline is RSRP-based:
- *       ns3::OranLmNr2NrRsrpHandover
- *   • To avoid conflicts, the native NR HO algorithm is typically set to NoOp when LM controls HO.
- *
- * Collected O-RAN measurements include:
- * - UE reporters:
- *   • Location (OranReporterLocation)
- *   • Serving cell info (OranReporterNrUeCellInfo)
- *   • RSRP/RSRQ (OranReporterNrUeRsrpRsrq)
- *   • App loss (OranReporterAppLoss) from Tx/Rx traces
- *   • (Optional) SINR is prepared in this file via direct PHY traces; can be added as an ORAN reporter.
- * - gNB reporters:
- *   • Location
- *   • DL scheduling / cell load (OranReporterNrCellLoad)
+ * - Example carrier settings:
+ *   • DL center ~ 4.0 GHz, UL center ~ 3.9 GHz, bandwidth ~ 20 MHz
+ *   • Configurable scheduler (TDMA/OFDMA and RR/PF/MR/QoS variants)
+ *   • FDD patterns configured via "Pattern" attributes on gNB PHY
+ * - Channel configured via NrChannelHelper (scenario "UMa" here), optional fading enabled.
  *
  * ---------------------------------------------------------------------------
- * 5) PHY trace logging (RSRP/RSRQ and SINR)
+ * 3) O-RAN control loop (Near-RT RIC + LM)
  * ---------------------------------------------------------------------------
- * Legitimate UEs:
- * - "ReportUeMeasurements" logs RSRP/RSRQ and also tracks the current serving cell per UE.
- * - "DlDataSinr" / "DlCtrlSinr" log downlink SINR (linear + dB for readability) and store the latest sample
- *   per {UE,cell}, using time stamps for freshness checks.
+ * - When O-RAN is enabled (useOran=true):
+ *   • Near-RT RIC collects periodic measurements through E2 terminators & reporters
+ *   • A Logic Module (LM/xApp) can control handover decisions
+ *   • When LM controls HO, the native HO algorithm is set to NoOp to avoid conflicts.
  *
- * Optional EVEs:
- * - If enabled, EVEs also log RSRP/RSRQ and SINR in the same way, enabling “what an attacker could observe”
- *   comparisons (without affecting handover policy in this baseline).
- *
- * Important implementation detail:
- * - Latest-sample storage + a maxAge filter prevents stale or “max-forever” attacker values that would
- *   artificially inflate worst-case leakage.
+ * - LM options include:
+ *   • No-op / baseline, ONNX LM, Torch LM, and secrecy-aware LM (OranLmNrSecrecyAwareHandover).
  *
  * ---------------------------------------------------------------------------
- * 6) KPI logging (QoS)
+ * 4) Security overlay (PLS): SINR-based secrecy monitoring
  * ---------------------------------------------------------------------------
- * - FlowMonitor is used to compute per-UE:
- *   • Throughput (Mbps), average delay (s), average jitter (s), PDR (%), PLR (%)
- * - Metrics are written periodically to qos-vs-time.txt.
+ * Measurements:
+ * - Legitimate UEs log:
+ *   • RSRP/RSRQ via "ReportUeMeasurements"
+ *   • Downlink SINR via "DlDataSinr" and "DlCtrlSinr"
+ * - Eavesdroppers log the same traces (because they are implemented as NR UEs).
+ *
+ * Data handling:
+ * - This script stores the *latest* SINR sample per {UE,eve} per cell in a map, with a maxAge
+ *   filter (e.g., 1s) so stale values are ignored.
+ *   This avoids the common bug of tracking a "max forever" eaves value that never decreases.
+ *
+ * Secrecy metric (computed every management_interval seconds):
+ *   C_s = [ log2(1 + SINR_UE) - log2(1 + max_e SINR_EVE(e)) ]^+
+ * - Outage is flagged when: C_s < secrecyTargetBitsPerHz
+ *
+ * Notes:
+ * - SINR values from DlDataSinr/DlCtrlSinr callbacks are treated as *linear* (not dB).
+ * - dB conversions are used for logging/inspection only.
+ * - A legacy RSRP→SNR approximation monitor is kept for reference, but SINR-based secrecy is
+ *   the preferred/cleaner PLS metric here.
  *
  * ---------------------------------------------------------------------------
- * 7) Outputs
+ * 5) KPI logging (QoS + traces)
  * ---------------------------------------------------------------------------
- * Output directory (UPDATED):
- *   results/nr/tn-ntn/withoutsecrecylm/<scenario>/
+ * - FlowMonitor periodically records per-UE throughput, delay, jitter, PDR, PLR.
+ * - Additional traces: traffic TX/RX, UE positions, handover events, UE/EVE RSRP and SINR,
+ *   secrecy-vs-time outputs.
  *
- * Main traces:
- * - nr-traffic-trace.tr       : per-UE TX/RX packet sizes over time
- * - nr-position-trace.tr      : UE positions over time
- * - nr-handover-trace.tr      : HO completion events (HandoverEndOk)
- * - nr-rsrp-ue.tr             : UE RSRP/RSRQ measurements
- * - nr-rsrp-eve.tr            : EVE RSRP/RSRQ measurements (if enabled)
- * - nr-sinr-ue.tr             : UE downlink SINR samples
- * - nr-sinr-eve.tr            : EVE downlink SINR samples (if enabled)
- * - qos-vs-time.txt           : FlowMonitor KPIs per UE
+ * Output directory (default):
+ *   results/nr/tn-ntn/withsecrecylm/
+ * Main outputs include:
+ *   - nr-traffic-trace.tr
+ *   - nr-position-trace.tr
+ *   - nr-handover-trace.tr
+ *   - nr-rsrp-ue.tr / nr-rsrp-eve.tr
+ *   - nr-sinr-ue.tr / nr-sinr-eve.tr
+ *   - secrecy-sinr-vs-time.txt   (SINR-based secrecy + outage)
+ *   - secrecy-vs-time.txt        (legacy RSRP-based approximation, if enabled)
+ *   - qos-vs-time.txt
  *
- * ---------------------------------------------------------------------------
- * 8) How to run (examples)
- * ---------------------------------------------------------------------------
- *  TN-only:
- *    ./waf --run "your-program --scenario=tn --enable-eves=0"
- *
- *  NTN-only:
- *    ./waf --run "your-program --scenario=ntn --enable-eves=0"
- *
- *  TN+NTN:
- *    ./waf --run "your-program --scenario=tn-ntn --enable-eves=0"
- *
- *  NOTE:
- *   - This file is “WITHOUT secrecy” in the control sense (LM is not secrecy-aware).
- *   - Secrecy monitor functions are kept (you asked not to remove anything), but we do NOT
- *     schedule them by default in this baseline. If you want them for logging only, you can
- *     uncomment the scheduling block near the bottom.
+ * Typical comparisons enabled by toggles:
+ * - TN-only:        --scenario=tn
+ * - NTN-only:       --scenario=ntn
+ * - TN+NTN:         --scenario=tn-ntn
+ * - TN+NTN (RSRP):  --scenario=tn-ntn --use-rsrp-lm=1 --enable-eves=0
+ * - TN+NTN (Secrecy-aware): --scenario=tn-ntn --use-rsrp-lm=1 --enable-eves=1
  */
 
 // =========================
@@ -174,34 +135,16 @@ static constexpr double TN_HALF = 1000.0;           // TN bounds: [-1000..1000]
 static constexpr double NTN_HALF = 2000.0;          // NTN bounds: [-2000..2000] around offset
 static constexpr double GNB_HEIGHT_TN = 25.0;
 
-// ------------------------------------------------------------------
-// OLD fixed output dir (kept but commented)
-// ------------------------------------------------------------------
-// static std::string ns3_dir = "results/nr/tn-ntn/withoutsecrecylm/";
-// static std::string s_trafficTraceFile = ns3_dir + "nr-traffic-trace2.tr";
-// static std::string s_positionTraceFile = ns3_dir + "nr-position-trace2.tr";
-// static std::string s_handoverTraceFile = ns3_dir + "nr-handover-trace2.tr";
-// static std::string s_rsrpUeTraceFile   = ns3_dir + "nr-rsrp-ue2.tr";
-// static std::string s_rsrpEveTraceFile  = ns3_dir + "nr-rsrp-eve2.tr";
-// static std::string s_secrecyTraceFile  = ns3_dir + "secrecy-vs-time2.txt";
-// static std::string s_sinrUeTraceFile   = ns3_dir + "nr-sinr-ue2.tr";
-// static std::string s_sinrEveTraceFile  = ns3_dir + "nr-sinr-eve2.tr";
-// static std::string s_secrecySinrTraceFile = ns3_dir + "secrecy-sinr-vs-time2.txt";
-
-// ------------------------------------------------------------------
-// NEW dynamic output paths (set in main AFTER --scenario parsing)
-// ------------------------------------------------------------------
+// Output dirs (set at runtime in main() after --scenario parsing)
 static std::string ns3_dir;
 static std::string s_trafficTraceFile;
 static std::string s_positionTraceFile;
 static std::string s_handoverTraceFile;
 // static std::string s_rsrpUeTraceFile;
-// static std::string s_rsrpEveTraceFile;
+//static std::string s_rsrpEveTraceFile;
 //static std::string s_secrecyTraceFile;
-
-// // NEW (SINR): trace output files
 // static std::string s_sinrUeTraceFile;
-// static std::string s_sinrEveTraceFile;
+static std::string s_sinrEveTraceFile;
 static std::string s_secrecySinrTraceFile;
 
 // =========================
@@ -221,7 +164,7 @@ static std::unordered_map<uint32_t, uint64_t> g_prevRxPackets;
 static std::unordered_map<uint32_t, uint64_t> g_prevRxBytes;
 
 // =========================
-//  GLOBALS (Security overlay)  (KEPT, but baseline does not schedule secrecy by default)
+//  GLOBALS (Security overlay)
 // =========================
 // Store each UE's latest serving cell and RSRP (dBm)
 static std::vector<uint16_t> g_ueServingCell;
@@ -239,6 +182,8 @@ std::string channelModel = "ThreeGpp";    // ThreeGpp | TwoRay | NYU
 
 // =========================
 // NEW (SINR): store "latest" SINR samples per UE/eve per cell
+// 5G-LENA NrUePhy DlDataSinr/DlCtrlSinr traced callbacks are:
+//   (uint16_t cellId, uint16_t rnti, double sinr, uint16_t bwpId)
 // =========================
 struct SinrSample
 {
@@ -246,16 +191,29 @@ struct SinrSample
     Time   t = Seconds(0);
 };
 
+// g_ueLastSinr[ueIdx][cellId]  = { last SINR, time }
 static std::vector<std::unordered_map<uint16_t, SinrSample>> g_ueLastSinr;
+
+// g_eveLastSinr[eveIdx][cellId] = { last SINR, time }
 static std::vector<std::unordered_map<uint16_t, SinrSample>> g_eveLastSinr;
+
+// Also keep a "serving SINR" scalar if you want quick access (optional)
 static std::vector<double> g_ueServingSinrLin; // linear
 
+/*
+// OLD (BUGGY): keeps MAX RSRP forever for each cell (never decreases)
+// For each cellId, store the maximum RSRP (dBm) observed by ANY eavesdropper (worst eavesdropper)
+static std::unordered_map<uint16_t, double> g_eveMaxRsrpDbmByCell;
+*/
+
+//  store "latest" sample per eaves per cell, then compute worst eaves “now”
 struct EveSample
 {
     double rsrpDbm = -300.0;
     Time   t = Seconds(0);
 };
 
+// g_eveLast[eveIdx][cellId] = {last rsrp, time}
 static std::vector<std::unordered_map<uint16_t, EveSample>> g_eveLast;
 
 // Helper: string for UniformRandomVariable
@@ -275,6 +233,7 @@ void RxTrace(Ptr<const Packet> p, const Address& from, const Address& to)
     uint16_t ueId = (InetSocketAddress::ConvertFrom(to).GetPort() / 1000);
     std::ofstream rxOutFile(s_trafficTraceFile, std::ios_base::app);
     rxOutFile << Simulator::Now().GetSeconds() << " " << ueId << " RX " << p->GetSize() << std::endl;
+    rxOutFile.flush();
 }
 
 void TxTrace(Ptr<const Packet> p, const Address& from, const Address& to)
@@ -282,6 +241,7 @@ void TxTrace(Ptr<const Packet> p, const Address& from, const Address& to)
     uint16_t ueId = (InetSocketAddress::ConvertFrom(to).GetPort() / 1000);
     std::ofstream txOutFile(s_trafficTraceFile, std::ios_base::app);
     txOutFile << Simulator::Now().GetSeconds() << " " << ueId << " TX " << p->GetSize() << std::endl;
+    txOutFile.flush();
 }
 
 int get_user_id_from_ipv4(Ipv4Address ip)
@@ -370,6 +330,7 @@ void ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
                     << user_jitter[ue] << "," << user_throughput[ue] << ","
                     << user_pdr[ue] << "," << user_plr[ue] << "\n";
     }
+    qos_vs_time.flush();
 
     Simulator::Schedule(management_interval, ThroughputMonitor, fmhelper, flowMon);
 }
@@ -388,6 +349,7 @@ void TracePositions(NodeContainer nodes)
         posOutFile << " " << pos.x << " " << pos.y;
     }
     posOutFile << std::endl;
+    posOutFile.flush();
 
     Simulator::Schedule(Seconds(1), &TracePositions, nodes);
 }
@@ -396,7 +358,29 @@ void NotifyHandoverEndOkGnb(std::string context, uint64_t imsi, uint16_t cellid,
 {
     std::ofstream hoOutFile(s_handoverTraceFile, std::ios_base::app);
     hoOutFile << Simulator::Now().GetSeconds() << " " << imsi << " " << cellid << " " << rnti << std::endl;
+    hoOutFile.flush();
 }
+
+// void NotifyHandoverStartGnb(std::string context, uint64_t imsi,
+//                             uint16_t sourceCellId, uint16_t targetCellId)
+// {
+//     std::ofstream f(s_handoverTraceFile, std::ios_base::app);
+//     f << Simulator::Now().GetSeconds()
+//       << " START imsi=" << imsi
+//       << " " << sourceCellId << "->" << targetCellId
+//       << std::endl;
+// }
+
+// void NotifyHandoverEndErrorGnb(std::string context, uint64_t imsi,
+//                                uint16_t cellid, uint16_t rnti)
+// {
+//     std::ofstream f(s_handoverTraceFile, std::ios_base::app);
+//     f << Simulator::Now().GetSeconds()
+//       << " ERROR imsi=" << imsi
+//       << " cell=" << cellid
+//       << " rnti=" << rnti
+//       << std::endl;
+// }
 
 // =========================
 //  SECURITY: UE + EVE MEASUREMENT TRACES (RSRP/RSRQ) - unchanged
@@ -425,6 +409,7 @@ void NotifyHandoverEndOkGnb(std::string context, uint64_t imsi, uint16_t cellid,
 //         g_ueServingCell[ueIdx] = cellId;
 //         g_ueServingRsrpDbm[ueIdx] = rsrp;
 
+//         // NEW (SINR): if we already have a recent SINR sample for this serving cell, refresh g_ueServingSinrLin
 //         if (ueIdx < g_ueServingSinrLin.size() && ueIdx < g_ueLastSinr.size())
 //         {
 //             auto it = g_ueLastSinr[ueIdx].find(cellId);
@@ -455,6 +440,7 @@ void NotifyHandoverEndOkGnb(std::string context, uint64_t imsi, uint16_t cellid,
 //                          << " cc " << (uint32_t)componentCarrierId
 //                          << std::endl;
 
+//     // store latest sample for THIS eaves + THIS cell
 //     if (eveIdx < g_eveLast.size())
 //     {
 //         g_eveLast[eveIdx][cellId] = { rsrp, Simulator::Now() };
@@ -568,18 +554,21 @@ static void EveDlSinrCb(uint32_t eveIdx, bool isCtrl,
 //                 double sinr,
 //                 uint16_t bwpId)
 // {
-//     *stream->GetStream() << Simulator::Now().GetSeconds()
-//                          << " EVE " << eveIdx
-//                          << " cell " << cellId
-//                          << " rnti " << rnti
-//                          << " bwp " << bwpId
-//                          << " DlDataSinrLin " << sinr
-//                          << " DlDataSinrDb " << SafeLinearToDb(sinr)
+//     const double sinrDb = SafeLinearToDb(sinr);
+
+//     *stream->GetStream() << Simulator::Now().GetSeconds() << " EVE " << eveIdx
+//                          << " cell " << cellId << " bwp " << bwpId
+//                          << " DlDataSinrLin " << sinr << " DlDataSinrDb " << sinrDb
 //                          << std::endl;
 
 //     if (eveIdx < g_eveLastSinr.size())
 //     {
 //         g_eveLastSinr[eveIdx][cellId] = { sinr, Simulator::Now() };
+//     }
+
+//     if (g_repo && eveIdx < g_eveIds.size())
+//     {
+//         g_repo->LogNrEveSinr(g_eveIds[eveIdx], cellId, bwpId, sinr, sinrDb, false);
 //     }
 // }
 
@@ -610,77 +599,14 @@ static void EveDlSinrCb(uint32_t eveIdx, bool isCtrl,
 // }
 
 // =========================
-//  SECURITY: periodic secrecy computation  (KEPT, but baseline does not schedule by default)
+//  SECURITY: periodic secrecy computation
 // =========================
 //static double DbToLinear(double x_db) { return std::pow(10.0, x_db / 10.0); }
 static double Log2(double x) { return std::log(x) / std::log(2.0); }
 
-// void SecrecyMonitor(double bandwidthHz, double noiseFigureDb, double secrecyTargetBitsPerHz)
-// {
-//     const double noiseFloorDbm = -174.0 + 10.0 * std::log10(bandwidthHz) + noiseFigureDb;
-
-//     std::ofstream out(s_secrecyTraceFile, std::ios_base::app);
-
-//     for (uint32_t u = 0; u < g_ueServingCell.size(); ++u)
-//     {
-//         uint16_t cellId = g_ueServingCell[u];
-//         double ueRsrpDbm = g_ueServingRsrpDbm[u];
-
-//         if (cellId == 0 || ueRsrpDbm <= -200.0)
-//             continue;
-
-//         double snrUeDb = ueRsrpDbm - noiseFloorDbm;
-//         double seUe = Log2(1.0 + DbToLinear(snrUeDb));
-
-//         double eveRsrpDbm = -1e9;
-//         Time maxAge = Seconds(1.0);
-
-//         for (uint32_t e = 0; e < g_eveLast.size(); ++e)
-//         {
-//             auto it2 = g_eveLast[e].find(cellId);
-//             if (it2 == g_eveLast[e].end())
-//                 continue;
-
-//             if (Simulator::Now() - it2->second.t > maxAge)
-//                 continue;
-
-//             eveRsrpDbm = std::max(eveRsrpDbm, it2->second.rsrpDbm);
-//         }
-
-//         double seEve = 0.0;
-//         if (eveRsrpDbm > -200.0)
-//         {
-//             double snrEveDb = eveRsrpDbm - noiseFloorDbm;
-//             seEve = Log2(1.0 + DbToLinear(snrEveDb));
-//         }
-
-//         double secrecy = std::max(seUe - seEve, 0.0);
-
-//         bool covered = (snrUeDb > -5.0);
-//         bool outage = (secrecy < secrecyTargetBitsPerHz);
-
-//         out << Simulator::Now().GetSeconds()
-//             << ",UE," << u
-//             << ",cell," << cellId
-//             << ",rsrpUeDbm," << ueRsrpDbm
-//             << ",rsrpEveDbm," << eveRsrpDbm
-//             << ",seUe," << seUe
-//             << ",seEve," << seEve
-//             << ",secrecy," << secrecy
-//             << ",covered," << covered
-//             << ",outage," << outage
-//             << std::endl;
-//     }
-
-//     out.close();
-
-//     Simulator::Schedule(management_interval,
-//                         &SecrecyMonitor,
-//                         bandwidthHz,
-//                         noiseFigureDb,
-//                         secrecyTargetBitsPerHz);
-// }
-
+// ---------------------------------------------------------
+// NEW (SINR-based) secrecy monitor
+// ---------------------------------------------------------
 void SecrecyMonitorSinr(double secrecyTargetBitsPerHz)
 {
     std::ofstream out(s_secrecySinrTraceFile, std::ios_base::app);
@@ -756,7 +682,7 @@ void SecrecyMonitorSinr(double secrecyTargetBitsPerHz)
             << ",outage," << outage
             << std::endl;
     }
-
+    out.flush();
     out.close();
 
     Simulator::Schedule(management_interval,
@@ -765,7 +691,7 @@ void SecrecyMonitorSinr(double secrecyTargetBitsPerHz)
 }
 
 // =========================
-//  MOBILITY INSTALL (unchanged from your version)
+//  MOBILITY INSTALL (unchanged)
 // =========================
 void InstallMobilityTnNtn(NodeContainer staticNodes,
                           NodeContainer tnGnbs,
@@ -775,7 +701,7 @@ void InstallMobilityTnNtn(NodeContainer staticNodes,
                           NodeContainer eveA,
                           NodeContainer eveB,
                           bool enableNtn)
-{   
+{
     {
         const double minDist = 400.0;  // meters
         const double z = GNB_HEIGHT_TN;
@@ -936,19 +862,26 @@ int main(int argc, char* argv[])
 {
     bool verbose = false;
     bool useOran = true;
-    bool useOnnx = false;
+    bool useOnnx = true;
     bool useTorch = false;
-    bool useRsrp = true;
+    bool useRsrp = false;
 
     // ------------------------------------------------------------------
-    // NEW: Scenario selector like your "with secrecy" file
+    // NEW: Scenario selector
+    //   --scenario=tn     => TN-only
+    //   --scenario=ntn    => NTN-only
+    //   --scenario=tn-ntn => TN+NTN (default)
+    //
+    // IMPORTANT: we do NOT remove your old flags; we override them safely
+    // based on scenario after parsing.
     // ------------------------------------------------------------------
-    std::string scenario = "ntn";   // tn | ntn | tn-ntn
+    std::string scenario = "ntn";  // NEW
 
-    bool enableNtn = true;        // kept (but overridden by scenario below)
-    bool enableTn = false;         // NEW
+    bool enableNtn = true;
+    // NEW: enableTn flag (TN can be disabled for NTN-only runs)
+    bool enableTn = false;
+
     bool enableEves = true;
-
     uint32_t numUesA = 75;
     uint32_t numUesB = 75;
     uint32_t numTnGnbs = 10;
@@ -964,14 +897,19 @@ int main(int argc, char* argv[])
     int32_t remRbId = -1;
     std::string handoverAlgorithm = "ns3::NrNoOpHandoverAlgorithm";
     Time simTime = Seconds(25);
-    std::string dbFileName = "tn-ntn-oran-lm-without-secrecy.db";
+    std::string dbFileName = "tn-ntn-oran-lm-with-secrecy.db";
     std::string lateCommandPolicy = "DROP";
 
     bool ofdma = true;
     std::string schedKind = "PF";
 
-    // kept (not used for control)
     double secrecyTargetBitsPerHz = 0.10;
+
+    std::string leakageModel = "oracle"; // "oracle" | "riskmap" | "hybrid" | "fixed"
+
+    std::string riskMapFile = "";
+    double riskMinEavSinrDb = -15.0;
+    double riskMaxEavSinrDb = 5.0;
 
     CommandLine cmd;
     cmd.AddValue("verbose", "Enable printing SQL queries results", verbose);
@@ -980,15 +918,11 @@ int main(int argc, char* argv[])
     cmd.AddValue("use-torch-lm", "Use Torch LM", useTorch);
     cmd.AddValue("use-rsrp-lm", "Use RSRP LM", useRsrp);
 
-    // ------------------------------------------------------------------
-    // NEW: scenario arg (THIS is what you asked)
-    // ------------------------------------------------------------------
+    // NEW
     cmd.AddValue("scenario", "Scenario: tn | ntn | tn-ntn", scenario);
 
-    // kept (but overridden by scenario)
-    cmd.AddValue("enable-ntn", "Enable NTN gNBs (TN-only vs TN+NTN) [OVERRIDDEN by --scenario]", enableNtn);
-
-    cmd.AddValue("enable-eves", "Enable eavesdroppers (measurement only in this baseline)", enableEves);
+    //cmd.AddValue("enable-ntn", "Enable NTN gNBs (TN-only vs TN+NTN)", enableNtn);
+    cmd.AddValue("enable-eves", "Enable eavesdroppers + secrecy logging", enableEves);
 
     cmd.AddValue("num-ues-a", "UEs in Area A (TN)", numUesA);
     cmd.AddValue("num-ues-b", "UEs in Area B (NTN offset)", numUesB);
@@ -1007,18 +941,24 @@ int main(int argc, char* argv[])
     cmd.AddValue("ofdma", "Use OFDMA (1) or TDMA (0)", ofdma);
     cmd.AddValue("sched", "Scheduler kind: RR, PF, MR, Qos", schedKind);
 
-    // kept
-    cmd.AddValue("secrecy-target", "Secrecy target (bits/s/Hz) [kept for logging only]", secrecyTargetBitsPerHz);
+    cmd.AddValue("secrecy-target", "Secrecy target (bits/s/Hz)", secrecyTargetBitsPerHz);
 
-    // NEW channel args
-    cmd.AddValue("channel-scenario", "Channel scenario: auto | UMa | RMa | UMi | NTN-Rural | NTN-Urban | NTN-Suburban | NTN-DenseUrban", channelScenario);
+    cmd.AddValue("channel-scenario","Channel scenario: auto | UMa | RMa | UMi | NTN-Rural | NTN-Urban | NTN-Suburban | NTN-DenseUrban",channelScenario);
     cmd.AddValue("channel-condition", "Channel condition: Default | LOS | NLOS | Buildings", channelCondition);
     cmd.AddValue("channel-model", "Channel model: ThreeGpp | TwoRay | NYU", channelModel);
+
+    cmd.AddValue("leakage-model", "oracle|riskmap|hybrid|fixed", leakageModel);
+
+    cmd.AddValue("riskmap-file", "Path to risk map file: 'cellId riskScore'", riskMapFile);
+    cmd.AddValue("risk-min-eav-sinr-db", "RiskScore=0 Eve SINR (dB)", riskMinEavSinrDb);
+    cmd.AddValue("risk-max-eav-sinr-db", "RiskScore=1 Eve SINR (dB)", riskMaxEavSinrDb);
+
 
     cmd.Parse(argc, argv);
 
     // ------------------------------------------------------------------
-    // NEW: apply scenario overrides AFTER parsing (like your with-secrecy file)
+    // NEW: apply scenario overrides *after* parsing.
+    // We do NOT delete anything: only override flags/counts.
     // ------------------------------------------------------------------
     std::string scenarioLower = scenario;
     std::transform(scenarioLower.begin(), scenarioLower.end(), scenarioLower.begin(),
@@ -1028,79 +968,107 @@ int main(int argc, char* argv[])
     {
         enableTn = true;
         enableNtn = false;
+
+        // Force NTN side to zero (so folder naming + node creation is consistent)
+        numUesB = 0;
+        numNtnGnbs = 0;
+        nEveB = 0;
     }
     else if (scenarioLower == "ntn")
     {
         enableTn = false;
         enableNtn = true;
+
+        // Force TN side to zero
+        numUesA = 0;
+        numTnGnbs = 0;
+        nEveA = 0;
     }
     else if (scenarioLower == "tn-ntn")
     {
         enableTn = true;
         enableNtn = true;
-        // keep user counts
     }
     else
     {
         NS_ABORT_MSG("Unknown --scenario value. Use: tn | ntn | tn-ntn");
     }
 
-    // ------------------------------------------------------------------
-    // NEW: choose propagation scenario if channelScenario=auto
-    // ------------------------------------------------------------------
+
     std::string propScenario;
+
     if (channelScenario != "auto")
     {
         propScenario = channelScenario;
     }
     else
     {
-        if (scenarioLower == "tn") propScenario = "UMa";
-        else if (scenarioLower == "ntn") propScenario = "RMa"; // default choice for rural-ish
-        else propScenario = "UMa";
+        if (scenarioLower == "tn")
+        {
+            propScenario = "UMa";
+        }
+        else if (scenarioLower == "ntn")
+        {
+            // Option A: rural terrestrial macro
+            propScenario = "RMa";
+
+            // Option B (often better “NTN flavored”): uncomment instead
+            // propScenario = "NTN-Rural";
+        }
+        else // tn-ntn
+        {
+            // Single channel model must be shared. Pick one:
+            propScenario = "UMa";      // common choice if your TN narrative is “urban”
+            // propScenario = "RMa";   // alternative if you want “rural-ish everywhere”
+        }
     }
 
-     // Build a folder name for UE counts
+
+    // ------------------------------------------------------------------
+    // NEW: update output directory per scenario (so you can run separately
+    // without overwriting).
+    // ------------------------------------------------------------------
+
+    // Build a folder name for UE counts
     std::string uesFolder;
-    if (numUesA == numUesB)
+    if (scenarioLower == "tn")
     {
         uesFolder = std::to_string(numUesA) + "_ues";           // "50_ues"
     }
-    else
+    else if (scenarioLower == "ntn")
     {
-        uesFolder = std::to_string(numUesA) + "A_" +
-                    std::to_string(numUesB) + "B_ues";          // e.g., "50A_40B_ues"
+        uesFolder = std::to_string(numUesB) + "_ues"; // "50_ues"
     }
-
-    // ------------------------------------------------------------------
-    // NEW: output directory per scenario (so TN and NTN don't overwrite each other)
-    // ------------------------------------------------------------------
+    else // tn-ntn
+    {
+        uesFolder = std::to_string(numUesA) + "a_" + std::to_string(numUesB) + "b_ues"; // "50a_50b_ues"
+    }
     {
         std::string tag = scenarioLower;
         if (tag == "tn-ntn") tag = "tn-ntn"; // optional aliases
 
         // Make directory ABSOLUTE to avoid "build/" vs demonstrated directory confusion
         auto outDir = std::filesystem::absolute(
-            std::filesystem::path("results") / "nr" / "tn-ntn" / "withoutsecrecylm" / tag / uesFolder
+            std::filesystem::path("results") / "nr" / "tn-ntn" / "withsecrecylm" / "onnx" /tag / uesFolder
         );
 
         ns3_dir = outDir.string() + "/";
 
-        // Keep your original file naming (with '2') but now placed per-scenario
-        s_trafficTraceFile        = ns3_dir + "nr-traffic-trace.tr";
-        s_positionTraceFile       = ns3_dir + "nr-position-trace.tr";
-        s_handoverTraceFile       = ns3_dir + "nr-handover-trace.tr";
-        // s_rsrpUeTraceFile         = ns3_dir + "nr-rsrp-ue.tr";
-        // s_rsrpEveTraceFile        = ns3_dir + "nr-rsrp-eve.tr";
-        //s_secrecyTraceFile        = ns3_dir + "secrecy-vs-time.txt";
-        // s_sinrUeTraceFile         = ns3_dir + "nr-sinr-ue.tr";
-        // s_sinrEveTraceFile        = ns3_dir + "nr-sinr-eve.tr";
-        s_secrecySinrTraceFile    = ns3_dir + "secrecy-sinr-vs-time.txt";
+        s_trafficTraceFile      = ns3_dir + "nr-traffic-trace.tr";
+        s_positionTraceFile     = ns3_dir + "nr-position-trace.tr";
+        s_handoverTraceFile     = ns3_dir + "nr-handover-trace.tr";
+        // s_rsrpUeTraceFile       = ns3_dir + "nr-rsrp-ue.tr";
+        // s_rsrpEveTraceFile      = ns3_dir + "nr-rsrp-eve.tr";
+        // s_secrecyTraceFile      = ns3_dir + "secrecy-vs-time.tr";
+        // s_sinrUeTraceFile       = ns3_dir + "nr-sinr-ue.tr";
+        // s_sinrEveTraceFile      = ns3_dir + "nr-sinr-eve.tr";
+        s_secrecySinrTraceFile  = ns3_dir + "secrecy-sinr-vs-time.txt";
 
         NS_LOG_UNCOND("CWD      = " << std::filesystem::current_path());
         NS_LOG_UNCOND("scenario = " << scenarioLower);
         NS_LOG_UNCOND("ns3_dir  = " << ns3_dir);
     }
+
 
     NS_ABORT_MSG_IF(useOran == false && (useOnnx || useTorch || useRsrp),
                     "Cannot use LM without enabling O-RAN.");
@@ -1110,10 +1078,9 @@ int main(int argc, char* argv[])
 
     std::filesystem::create_directories(ns3_dir);
 
-    // safer "touch or abort" (same pattern you used in with-secrecy)
     auto TouchOrAbort = [](const std::string& p) {
-        std::ofstream f(p, std::ios::trunc);
-        NS_ABORT_MSG_IF(!f.is_open(), "Cannot open file for writing: " << p);
+    std::ofstream f(p, std::ios::trunc);
+    NS_ABORT_MSG_IF(!f.is_open(), "Cannot open file for writing: " << p);
     };
 
     TouchOrAbort(s_trafficTraceFile);
@@ -1123,11 +1090,11 @@ int main(int argc, char* argv[])
     // TouchOrAbort(s_rsrpEveTraceFile);
     // TouchOrAbort(s_sinrUeTraceFile);
     // TouchOrAbort(s_sinrEveTraceFile);
-    // TouchOrAbort(s_secrecyTraceFile);
+    //TouchOrAbort(s_secrecyTraceFile);
     TouchOrAbort(s_secrecySinrTraceFile);
     TouchOrAbort(ns3_dir + "qos-vs-time.txt");
 
-    // Your truncation blocks (kept)
+
     { std::ofstream f(s_trafficTraceFile, std::ios_base::trunc); }
     { std::ofstream f(s_positionTraceFile, std::ios_base::trunc); }
     { std::ofstream f(s_handoverTraceFile, std::ios_base::trunc); }
@@ -1141,10 +1108,12 @@ int main(int argc, char* argv[])
     //     std::ofstream f(s_secrecyTraceFile, std::ios_base::trunc);
     //     f << "time,type,id,cell,rsrpUeDbm,rsrpEveDbm,seUe,seEve,secrecy,covered,outage\n";
     // }
+
     {
         std::ofstream f(s_secrecySinrTraceFile, std::ios_base::trunc);
         f << "time,type,id,cell,ueSinrLin,ueSinrDb,eveSinrLin,eveSinrDb,seUe,seEve,secrecy,outage\n";
     }
+
     {
         std::ofstream f(ns3_dir + "qos-vs-time.txt", std::ios_base::trunc);
         f << "Time,UE,Delay,Jitter,Throughput,PDR,PLR\n";
@@ -1159,22 +1128,18 @@ int main(int argc, char* argv[])
     NodeContainer allGnbsActive;
     NodeContainer remoteHostContainer;
 
-    // Create() counts may be 0 (safe)
+    // These Create() calls now reflect scenario overrides (counts may be 0)
     tnGnbNodes.Create(numTnGnbs);
     ntnGnbNodes.Create(numNtnGnbs);
 
     ueAreaA.Create(numUesA);
     ueAreaB.Create(numUesB);
 
-    // ------------------------------------------------------------------
-    // OLD: always add both UE areas
-    // ------------------------------------------------------------------
+    // OLD (always added both) - keep but comment
     // ueNodes.Add(ueAreaA);
     // ueNodes.Add(ueAreaB);
 
-    // ------------------------------------------------------------------
-    // NEW: add only enabled domains
-    // ------------------------------------------------------------------
+    // NEW: add only active areas
     if (enableTn)
     {
         ueNodes.Add(ueAreaA);
@@ -1190,16 +1155,23 @@ int main(int argc, char* argv[])
     NodeContainer eveA, eveB, eveNodes;
     if (enableEves)
     {
+        // These Create() counts were already scenario-adjusted (nEveA or nEveB may be 0)
         eveA.Create(nEveA);
         eveB.Create(nEveB);
 
-        // OLD: always add both
+        // OLD (always add both) - keep but comment
         // eveNodes.Add(eveA);
         // eveNodes.Add(eveB);
 
-        // NEW: add only enabled domains
-        if (enableTn) eveNodes.Add(eveA);
-        if (enableNtn) eveNodes.Add(eveB);
+        // NEW: add only active areas
+        if (enableTn)
+        {
+            eveNodes.Add(eveA);
+        }
+        if (enableNtn)
+        {
+            eveNodes.Add(eveB);
+        }
 
         g_eveLast.clear();
         g_eveLast.resize(eveNodes.GetN());
@@ -1208,13 +1180,22 @@ int main(int argc, char* argv[])
         g_eveLastSinr.resize(eveNodes.GetN());
     }
 
-    // OLD: always add TN, optionally NTN
+    // OLD (always add TN; add NTN if enableNtn) - keep but comment
     // allGnbsActive.Add(tnGnbNodes);
-    // if (enableNtn) { allGnbsActive.Add(ntnGnbNodes); }
+    // if (enableNtn)
+    // {
+    //     allGnbsActive.Add(ntnGnbNodes);
+    // }
 
     // NEW: add only enabled domains
-    if (enableTn)  allGnbsActive.Add(tnGnbNodes);
-    if (enableNtn) allGnbsActive.Add(ntnGnbNodes);
+    if (enableTn)
+    {
+        allGnbsActive.Add(tnGnbNodes);
+    }
+    if (enableNtn)
+    {
+        allGnbsActive.Add(ntnGnbNodes);
+    }
 
     // =========================
     // Mobility
@@ -1233,17 +1214,14 @@ int main(int argc, char* argv[])
     // =========================
     Ptr<NrChannelHelper> channelHelper = CreateObject<NrChannelHelper>();
 
+    //std::string propScenario = "UMa";
     bool enableShadowing = false;
-
-    // OLD (2-arg)
-    // channelHelper->ConfigureFactories(propScenario, "Default");
-
-    // NEW (3-arg like your with-secrecy file)
     channelHelper->ConfigureFactories(propScenario, channelCondition, channelModel);
     NS_LOG_UNCOND("Channel: scenario=" << propScenario
                << " condition=" << channelCondition
                << " model=" << channelModel);
 
+    //channelHelper->ConfigureFactories(propScenario, "Default");
     channelHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(enableShadowing));
     channelHelper->SetChannelConditionModelAttribute("UpdatePeriod", TimeValue(MilliSeconds(10)));
 
@@ -1298,12 +1276,6 @@ int main(int argc, char* argv[])
 
     double txPower = 38;
     double ueTxPower = 23;
-
-    // ------------------------------------------------------------------
-    // Baseline suggestion: if you see HARQ-related crashes with RR/TDMA,
-    // you can set this to false (like you did earlier to avoid SIGABRT).
-    // ------------------------------------------------------------------
-    //free(): invalid next size (fast) error if this true
     bool enableHarqRetx = false;
     nrHelper->SetSchedulerAttribute("EnableHarqReTx", BooleanValue(enableHarqRetx));
     nrHelper->SetGnbPhyAttribute("TxPower", DoubleValue(txPower));
@@ -1424,14 +1396,15 @@ int main(int argc, char* argv[])
         if (ue) ue->UpdateConfig();
     }
 
-    // ------------------------------------------------------------------
-    // OLD: X2 among all active gNBs
-    // ------------------------------------------------------------------
+    // ---------------------------------------------------------
+    // X2 interface
+    // OLD (single call):
     // nrHelper->AddX2Interface(allGnbsActive);
-
-    // ------------------------------------------------------------------
-    // NEW: add X2 per-domain (safe for tn-only / ntn-only and future extensions)
-    // ------------------------------------------------------------------
+    //
+    // NEW: do X2 per-domain (safe for separated TN/NTN runs and safe if later you
+    //      decide to configure TN and NTN with different BWPs)
+    // ---------------------------------------------------------
+    // nrHelper->AddX2Interface(allGnbsActive); // OLD - keep but comment
     if (enableTn && tnGnbNodes.GetN() > 0)
     {
         nrHelper->AddX2Interface(tnGnbNodes);
@@ -1511,8 +1484,9 @@ int main(int argc, char* argv[])
         remoteApps.Add(streamingServer);
         streamingServer->SetAttribute("Remote",
             AddressValue(InetSocketAddress(ueIpIface.GetAddress(i), port)));
-        streamingServer->SetAttribute("DataRate", DataRateValue(DataRate("200000bps")));
+        streamingServer->SetAttribute("DataRate", DataRateValue(DataRate("200000bps")));///////// changed from 1000000bps to 200000bps to increase outage probability and better see secrecy effects
         streamingServer->SetAttribute("PacketSize", UintegerValue(1500));
+
         streamingServer->SetAttribute("OnTime", PointerValue(onTimeRv));
         streamingServer->SetAttribute("OffTime", PointerValue(offTimeRv));
 
@@ -1544,7 +1518,7 @@ int main(int argc, char* argv[])
 
         if (useOnnx == true)
         {
-            NS_ABORT_MSG_IF(!TypeId::LookupByNameFailSafe("ns3::OranLmNr2NrOnnxHandover", &defaultLmTid),
+            NS_ABORT_MSG_IF(!TypeId::LookupByNameFailSafe("ns3::OranLmNrOnnxSecrecyAwareHandover", &defaultLmTid),
                             "ONNX LM not found.");
         }
         else if (useTorch == true)
@@ -1554,12 +1528,51 @@ int main(int argc, char* argv[])
         }
         else if (useRsrp == true)
         {
-            defaultLmTid = TypeId::LookupByName("ns3::OranLmNr2NrRsrpHandover"); // baseline LM
+            defaultLmTid = TypeId::LookupByName("ns3::OranLmNrSecrecyAwareHandover");
         }
 
         ObjectFactory defaultLmFactory;
         defaultLmFactory.SetTypeId(defaultLmTid);
         defaultLm = defaultLmFactory.Create<OranLm>();
+
+        // Enable ML trigger (if you want ML gating)
+        defaultLm->SetAttribute("EnableMlTrigger", BooleanValue(true));
+        defaultLm->SetAttribute("HoProbThr", DoubleValue(0.60));
+        defaultLm->SetAttribute("MlSecrecyTarget", DoubleValue(secrecyTargetBitsPerHz));
+
+        // Pick ONE model based on scenario (since you run separately)
+        if (scenarioLower == "tn")
+        {
+            defaultLm->SetAttribute("EnableMlTrigger", BooleanValue(true));
+            defaultLm->SetAttribute("OnnxModelPathTn", StringValue("model_tn.onnx"));
+
+            // IMPORTANT: disable/unload NTN model so it never tries to load it
+            defaultLm->SetAttribute("OnnxModelPathNtn", StringValue(""));
+
+            defaultLm->SetAttribute("TnCellIdMax", UintegerValue(numTnGnbs));
+        }
+        else if (scenarioLower == "ntn")
+        {
+            defaultLm->SetAttribute("EnableMlTrigger", BooleanValue(true));
+            defaultLm->SetAttribute("OnnxModelPathNtn", StringValue("model_ntn.onnx"));
+
+            // disable TN model
+            defaultLm->SetAttribute("OnnxModelPathTn", StringValue(""));
+
+            defaultLm->SetAttribute("TnCellIdMax", UintegerValue(numNtnGnbs));
+        }
+        else
+        {
+            // tn-ntn run: choose one, or keep ML off unless you implement dual-model logic
+            defaultLm->SetAttribute("EnableMlTrigger", BooleanValue(false));
+        }
+
+
+        defaultLm->SetAttribute("LeakageModel", StringValue(leakageModel));
+        defaultLm->SetAttribute("RiskMapFile", StringValue(riskMapFile));
+        defaultLm->SetAttribute("RiskMinEavSinrDb", DoubleValue(riskMinEavSinrDb));
+        defaultLm->SetAttribute("RiskMaxEavSinrDb", DoubleValue(riskMaxEavSinrDb));
+
 
         dataRepository->SetAttribute("DatabaseFile", StringValue(dbFileName));
 
@@ -1693,11 +1706,18 @@ int main(int argc, char* argv[])
     // =========================
     // Connect handover trace
     // =========================
+    // Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverStart",
+    //             MakeCallback(&NotifyHandoverStartGnb));
+
     Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverEndOk",
                     MakeCallback(&NotifyHandoverEndOkGnb));
 
+    // Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverEndError",
+    //                 MakeCallback(&NotifyHandoverEndErrorGnb));
+
+
     // =========================
-    // PHY TRACES (RSRP + SINR)  (kept)
+    // SECURITY TRACES + Secrecy monitor scheduling
     // =========================
     g_ueServingCell.assign(ueNodes.GetN(), 0);
     g_ueServingRsrpDbm.assign(ueNodes.GetN(), -300.0);
@@ -1719,8 +1739,8 @@ int main(int argc, char* argv[])
     //     Ptr<NrUePhy> phy = d->GetPhy(0);
     //     if (!phy) continue;
 
-    //     phy->TraceConnectWithoutContext("ReportUeMeasurements",
-    //         MakeBoundCallback(&UeMeasTraceCb, i, ueMeasStream));
+    //     // phy->TraceConnectWithoutContext("ReportUeMeasurements",
+    //     //     MakeBoundCallback(&UeMeasTraceCb, i, ueMeasStream));
 
     //     phy->TraceConnectWithoutContext("DlDataSinr",
     //         MakeBoundCallback(&UeDlDataSinrCb, i, ueSinrStream));
@@ -1738,14 +1758,14 @@ int main(int argc, char* argv[])
     //         Ptr<NrUePhy> phy = d->GetPhy(0);
     //         if (!phy) continue;
 
-    //         phy->TraceConnectWithoutContext("ReportUeMeasurements",
-    //             MakeBoundCallback(&EveMeasTraceCb, i, eveMeasStream));
+    //         // phy->TraceConnectWithoutContext("ReportUeMeasurements",
+    //         //     MakeBoundCallback(&EveMeasTraceCb, i, eveMeasStream));
 
-    //         phy->TraceConnectWithoutContext("DlDataSinr",
-    //             MakeBoundCallback(&EveDlDataSinrCb, i, eveSinrStream));
+    //         // phy->TraceConnectWithoutContext("DlDataSinr",
+    //         //     MakeBoundCallback(&EveDlDataSinrCb, i, eveSinrStream));
 
-    //         phy->TraceConnectWithoutContext("DlCtrlSinr",
-    //             MakeBoundCallback(&EveDlCtrlSinrCb, i, eveSinrStream));
+    //         // phy->TraceConnectWithoutContext("DlCtrlSinr",
+    //         //     MakeBoundCallback(&EveDlCtrlSinrCb, i, eveSinrStream));
     //     }
 
     //     Simulator::Schedule(management_interval,

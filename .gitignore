@@ -57,3 +57,4 @@ results/lte/rsrp-qos-vs-time.txt
 results/nr/tn-qos-vs-time.txt
 libtorch/
 onnxruntime-linux-x64-1.14.1/
+.venv/
