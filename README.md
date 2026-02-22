@@ -265,6 +265,146 @@ The command contains:
 - `model/oran-command-nr-2-nr-handover.h`
 ---
 
+## 🔴 Present Work: NR UAV Multi-Cell ORAN + Load-Aware RSRP Handover (TDD, 3GPP UMa)
+
+This repository currently extends the ns-3 **NR (5G-LENA)** + **ns-O-RAN** examples into a **large-scale UAV mobility experiment** where a Near-RT RIC continuously collects measurements and issues **NR→NR handover commands** using a lightweight **policy-based logic module**.
+
+### ✅ Example 02: `oran-nr-2-nr-rsrp-uav-handover-simulation.cc`
+
+**What the scenario does**
+- Deploys multiple **fixed NR gNB macro cells** (e.g., 5) and many **UAV UEs** (e.g., 50–75).
+- UAVs move using `RandomDirection2dMobilityModel` inside a large 2D bounded area with randomized altitude.
+- Downlink UDP traffic is generated from a remote host through **NR EPC** (`NrPointToPointEpcHelper`).
+- Uses **3GPP UMa channel model** (optionally with fast fading) and **Ideal Beamforming** (Quasi-Omni direct path).
+- Uses a **single-carrier TDD setup** (1 band, 1 BWP) with a configurable DL/UL pattern.
+- Enables X2 between gNBs to support inter-cell handover.
+- Collects **QoS KPIs** using FlowMonitor and writes time-series traces:
+  - delay, jitter, throughput (Mbps), packet delivery ratio (PDR), packet loss ratio (PLR)
+- Logs mobility + HO events:
+  - UAV position trace (`position-trace.tr`)
+  - Handover success events (`NrGnbRrc/HandoverEndOk` → `handover-trace.tr`)
+  - RSRP measurements (`rsrp-trace.tr`)
+- Optionally generates a **NR Radio Environment Map (REM)** snapshot.
+
+---
+
+## 🧠 ORAN Near-RT RIC Closed-Loop Control (Current Implementation)
+
+When ORAN is enabled (`--use-oran=1`), the following control loop runs:
+
+1. **UAV UEs and gNBs act as E2 nodes** using NR E2 terminators.
+2. UEs periodically report:
+   - location,
+   - serving cell info (CellId/RNTI),
+   - RSRP/RSRQ measurements (to multiple cells),
+   - application Tx/Rx loss stats (from UDP traces).
+3. gNBs periodically report:
+   - location,
+   - cell-load indicators derived from NR MAC scheduling callbacks (DL scheduling).
+4. A Near-RT RIC queries the repository at `LmQueryInterval` and runs the selected **Logic Module (LM)**.
+5. The LM issues an **NR→NR handover command** (source gNB + UE RNTI + target cellId).
+6. A Conflict Mitigation Module (CMM) applies command scheduling policies.
+
+Repository backend: **SQLite** (`OranDataRepositorySqlite`) for reproducible logging of reports and commands.
+
+---
+
+## ✅ Load-Aware RSRP Handover Logic Module (RSRP-only, No Secrecy)
+
+### LM: `OranLmNr2NrRsrpHandoverWithCellLoad`
+
+This LM implements **RSRP-based HO target selection** with:
+- **hysteresis margin** to reduce ping-pong,
+- **rate limiting / cooldown** between HO commands,
+- **pending-HO timeout handling**,
+- optional **cell capacity gating** (`MaxUesPerCell`),
+- a **minimum acceptable target RSRP** guard with backoff on failure.
+
+### Key Attributes (configurable from the simulation script)
+- `HysteresisDb` (default `2.0` dB): neighbor must exceed `servingRsrp + hysteresis` to be considered.
+- `Warmup` (default `2s`): LM does not issue HOs before warmup ends.
+- `MinHoInterval` (default `2s`): minimum time between HO commands per UE.
+- `HoAttemptTimeout` (default `2s`): pending HO is considered stale after this duration.
+- `MaxUesPerCell` (default `0`):  
+  - **`0` disables the capacity cap** (no load restriction).  
+  - **`>0` enables a hard cap**: candidate target cells at/above capacity are rejected.
+- `TryNextBest` (default `true`): if best cell is full, try the next-best RSRP candidate.
+- `MinAcceptableRsrpDbm` (default `-120 dBm`): rejects HO if the target candidate is too weak.
+- `LowRsrpRecheck` (default `2s`): after a low-RSRP rejection, the UE is blocked from re-evaluation for this time.
+
+---
+
+## 🔁 Handover Decision Logic (Step-by-Step)
+
+Inside `GetHandoverCommands(...)`, the LM follows this per-tick logic:
+
+### 1) Build a live cell-load map (cellId → UE count)
+- The LM counts UEs per cell using *serving-cell* PHY measurements (BWP/CC 0), with a fallback to UE cell info if needed.
+- It also **reserves capacity for pending HO targets**, so multiple HOs in the same tick don’t exceed the cap.
+
+### 2) Apply safety gates per UE
+Before evaluating candidates, the LM skips UEs when:
+- simulation time is still in `Warmup`,
+- the UE is in **low-RSRP backoff** (`lowRsrpBlockUntil`),
+- a previous HO is still pending and not timed out (`pendingHoTarget` + `HoAttemptTimeout`),
+- the UE is still in HO cooldown (`MinHoInterval`).
+
+### 3) Build candidate list from measurements
+- Reads RSRP/RSRQ measurements for the UE.
+- Extracts:
+  - the **serving cell** (CellId/RNTI + serving RSRP),
+  - the **best RSRP per candidate cell** (max across measurements for that cell).
+- Sorts candidates by **descending RSRP**.
+
+### 4) Candidate filtering + target selection
+For each candidate (best-to-worst):
+- **Hysteresis gate:**  
+  candidate must satisfy:  
+  `candRsrp > servingRsrp + HysteresisDb`
+- **Min acceptable RSRP gate:**  
+  if `candRsrp < MinAcceptableRsrpDbm` → reject HO and apply UE backoff for `LowRsrpRecheck`.
+- **Capacity gate (only if enabled):**  
+  if `MaxUesPerCell > 0` and `cellLoad >= MaxUesPerCell` → reject that target.  
+  - if `TryNextBest=true`, continue searching other candidates  
+  - else stop and keep current serving cell
+- First candidate that passes all gates becomes the HO target.
+
+### 5) Emit HO command (only if a valid target exists)
+If a target cell is selected (different from serving cell):
+- Creates `OranCommandNr2NrHandover`:
+  - `TargetE2NodeId` = serving gNB node ID (**source** gNB),
+  - `TargetRnti` = UE RNTI,
+  - `TargetCellId` = chosen target cell ID.
+- Logs the command to the repository and prints a summary log line.
+- Updates internal state:
+  - `lastHoCmdTime[ue] = now`
+  - `pendingHoTarget[ue] = chosenCell`
+  - increments `cellUeCount[chosenCell]` (reserve slot immediately)
+
+### 6) Behavior when `MaxUesPerCell = 0`
+When `MaxUesPerCell` is **0**:
+- **Capacity checks are fully bypassed** (`m_maxUesPerCell > 0` condition is false).
+- Logs print `cap=disabled`.
+- HO decisions become purely **RSRP + hysteresis + min-RSRP + timing gates**.
+
+---
+
+## 📌 Outputs Useful for Debugging/Validation
+- Per-tick load snapshot logs show:
+  - `cell X load=Y (cap=disabled)` OR `cell X load=Y/Z`
+- HO logs:
+  - `LM HO UE=... servingCell->targetCell servingRsrp=... targetRsrp=...`
+- Low-RSRP rejection logs:
+  - `LM HO_FAIL_LOW_RSRP ... recheckAfter=...`
+
+---
+
+## Next Steps (Planned)
+- Extend load awareness beyond a static hard cap into:
+  - dynamic policies (e.g., load balancing objectives),
+  - multi-objective HO (QoS + RSRP + load),
+  - future ML/game-theoretic handover optimizers.
+
 ## 🔴 Present Work
 
 - Looking for a way to add a **maximum cell load capacity threshold**
