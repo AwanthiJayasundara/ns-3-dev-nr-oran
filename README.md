@@ -265,7 +265,28 @@ The command contains:
 - `model/oran-command-nr-2-nr-handover.h`
 ---
 
-## 🔴 Present Work: NR UAV Multi-Cell ORAN + Load-Aware RSRP Handover (TDD, 3GPP UMa)
+## 🔴 Present Work
+
+- Looking for a way to add a **maximum cell load capacity threshold**
+- Adding support to retrieve and track **handover decision failures** (e.g., HO command issued but not successfully completed)
+
+  ## ⚡ LTE vs NR Runtime Comparison (Why NR is Slower)
+
+| Feature / Component | LTE Scenario | NR Scenario | Why NR is Slower |
+|---------------------|-------------|-------------|------------------|
+| Channel / Propagation Model | `Cost231PropagationLossModel` (simple pathloss) | `ThreeGppChannelModel (UMa)` (realistic 3GPP) | 3GPP model computes LOS/NLOS, shadowing, fading behavior → higher CPU cost |
+| PHY Processing | Lightweight LTE PHY | Heavy NR PHY | NR PHY has more detailed signal processing & scheduling operations |
+| Fading | Usually minimal / simplified | ✅ Enabled (`INIT_FADING`) | Fast fading calculations increase per-link computation |
+| Beamforming | ❌ Not used | ✅ Enabled (IdealBeamformingHelper + QuasiOmni) | Beamforming adds gain calculations + channel matrix handling |
+| Carrier/BWP Setup | Single carrier (simpler) | ✅ Dual-band FDD + 2 BWPs (DL + UL) | More BWPs = more PHY instances + more scheduling + mapping operations |
+| Scheduling Complexity | LTE RR scheduler (`RrFfMacScheduler`) | NR OFDMA scheduler (`NrMacSchedulerOfdmaRR`) | NR OFDMA scheduling is heavier due to resource-grid level allocations |
+| Mobility Speed | UE speed: **1–2.5 m/s** | UAV speed: **20–30 m/s** | Higher speed changes channel faster → more frequent recalculations |
+| Channel Update Period | Not explicitly heavy | UpdatePeriod configured (`ThreeGppChannelModel::UpdatePeriod`) | Even with large update period, NR calculations per update are costly |
+| QoS / FlowMonitor Prints | Moderate | High (frequent `std::cout`) | Console printing inside loops slows execution significantly |
+| Simulation Outcome | Faster runtime | Slower runtime | NR is more realistic and detailed → expensive per timestep |
+
+✅ **Summary:** NR simulation runs slower mainly due to **3GPP channel model + fading + beamforming + multi-BWP FDD + OFDMA scheduling**, even if the number of nodes is lower than LTE.
+  
 
 This repository currently extends the ns-3 **NR (5G-LENA)** + **ns-O-RAN** examples into a **large-scale UAV mobility experiment** where a Near-RT RIC continuously collects measurements and issues **NR→NR handover commands** using a lightweight **policy-based logic module**.
 
@@ -404,31 +425,6 @@ When `MaxUesPerCell` is **0**:
   - dynamic policies (e.g., load balancing objectives),
   - multi-objective HO (QoS + RSRP + load),
   - future ML/game-theoretic handover optimizers.
-
-## 🔴 Present Work
-
-- Looking for a way to add a **maximum cell load capacity threshold**
-- Adding support to retrieve and track **handover decision failures** (e.g., HO command issued but not successfully completed)
-
-  ## 📌 Example 02: `oran-nr-2-nr-rsrp-uav-handover-simulation.cc`
-
-  ## ⚡ LTE vs NR Runtime Comparison (Why NR is Slower)
-
-| Feature / Component | LTE Scenario | NR Scenario | Why NR is Slower |
-|---------------------|-------------|-------------|------------------|
-| Channel / Propagation Model | `Cost231PropagationLossModel` (simple pathloss) | `ThreeGppChannelModel (UMa)` (realistic 3GPP) | 3GPP model computes LOS/NLOS, shadowing, fading behavior → higher CPU cost |
-| PHY Processing | Lightweight LTE PHY | Heavy NR PHY | NR PHY has more detailed signal processing & scheduling operations |
-| Fading | Usually minimal / simplified | ✅ Enabled (`INIT_FADING`) | Fast fading calculations increase per-link computation |
-| Beamforming | ❌ Not used | ✅ Enabled (IdealBeamformingHelper + QuasiOmni) | Beamforming adds gain calculations + channel matrix handling |
-| Carrier/BWP Setup | Single carrier (simpler) | ✅ Dual-band FDD + 2 BWPs (DL + UL) | More BWPs = more PHY instances + more scheduling + mapping operations |
-| Scheduling Complexity | LTE RR scheduler (`RrFfMacScheduler`) | NR OFDMA scheduler (`NrMacSchedulerOfdmaRR`) | NR OFDMA scheduling is heavier due to resource-grid level allocations |
-| Mobility Speed | UE speed: **1–2.5 m/s** | UAV speed: **20–30 m/s** | Higher speed changes channel faster → more frequent recalculations |
-| Channel Update Period | Not explicitly heavy | UpdatePeriod configured (`ThreeGppChannelModel::UpdatePeriod`) | Even with large update period, NR calculations per update are costly |
-| QoS / FlowMonitor Prints | Moderate | High (frequent `std::cout`) | Console printing inside loops slows execution significantly |
-| Simulation Outcome | Faster runtime | Slower runtime | NR is more realistic and detailed → expensive per timestep |
-
-✅ **Summary:** NR simulation runs slower mainly due to **3GPP channel model + fading + beamforming + multi-BWP FDD + OFDMA scheduling**, even if the number of nodes is lower than LTE.
-  
 
 
  ## 🔴 ***Below will be implemented in the Future***
