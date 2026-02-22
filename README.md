@@ -309,7 +309,7 @@ Repository backend: **SQLite** (`OranDataRepositorySqlite`) for reproducible log
 
 ---
 
-## ✅ Load-Aware RSRP Handover Logic Module (RSRP-only, No Secrecy)
+## ✅ Load-Aware RSRP Handover Logic Module (RSRP-only)
 
 ### LM: `OranLmNr2NrRsrpHandoverWithCellLoad`
 
@@ -350,7 +350,7 @@ Before evaluating candidates, the LM skips UEs when:
 - the UE is still in HO cooldown (`MinHoInterval`).
 
 ### 3) Build candidate list from measurements
-- Reads RSRP/RSRQ measurements for the UE.
+- Reads RSRP measurements for the UE.
 - Extracts:
   - the **serving cell** (CellId/RNTI + serving RSRP),
   - the **best RSRP per candidate cell** (max across measurements for that cell).
