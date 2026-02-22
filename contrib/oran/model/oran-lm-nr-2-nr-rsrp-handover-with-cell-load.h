@@ -32,7 +32,7 @@ namespace ns3
  *    simulation script (scheduler attributes), not inside this LM.
  * -------------------------------------------------------------------------
  */
-class OranLmNr2NrRsrpHandover : public OranLm
+class OranLmNr2NrRsrpHandoverWithCellLoad : public OranLm
 {
   protected:
     /**
@@ -59,21 +59,21 @@ class OranLmNr2NrRsrpHandover : public OranLm
   public:
     static TypeId GetTypeId(void);
 
-    OranLmNr2NrRsrpHandover(void);
+    OranLmNr2NrRsrpHandoverWithCellLoad(void);
 
-    ~OranLmNr2NrRsrpHandover(void) override;
+    ~OranLmNr2NrRsrpHandoverWithCellLoad(void) override;
 
     std::vector<Ptr<OranCommand>> Run(void) override;
 
   private:
-    std::vector<OranLmNr2NrRsrpHandover::UeInfo> GetUeInfos(Ptr<OranDataRepository> data) const;
+    std::vector<OranLmNr2NrRsrpHandoverWithCellLoad::UeInfo> GetUeInfos(Ptr<OranDataRepository> data) const;
 
-    std::vector<OranLmNr2NrRsrpHandover::GnbInfo> GetGnbInfos(Ptr<OranDataRepository> data) const;
+    std::vector<OranLmNr2NrRsrpHandoverWithCellLoad::GnbInfo> GetGnbInfos(Ptr<OranDataRepository> data) const;
 
     std::vector<Ptr<OranCommand>> GetHandoverCommands(
         Ptr<OranDataRepository> data,
-        std::vector<OranLmNr2NrRsrpHandover::UeInfo> ueInfos,
-        std::vector<OranLmNr2NrRsrpHandover::GnbInfo> gnbInfos) const;
+        std::vector<OranLmNr2NrRsrpHandoverWithCellLoad::UeInfo> ueInfos,
+        std::vector<OranLmNr2NrRsrpHandoverWithCellLoad::GnbInfo> gnbInfos) const;
 
   private:
     /**
@@ -89,8 +89,11 @@ class OranLmNr2NrRsrpHandover : public OranLm
     Time m_minHoInterval;
     Time m_hoAttemptTimeout;
 
-    uint32_t m_maxUesPerCell {10};
+    uint32_t m_maxUesPerCell {0}; // 0 disables the cap
     bool     m_tryNextBest {true};
+
+    double m_minAcceptableRsrpDbm;
+    Time   m_lowRsrpRecheck;
 };
 
 } // namespace ns3

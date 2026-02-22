@@ -1072,6 +1072,10 @@ class NrHelper : public Object
     bool m_snrTest{false};
     bool m_fhEnabled{false};
 
+    uint32_t m_initMaxUesPerCell {0};     // 0 = disable (old behavior)
+    double   m_initMinRsrpDbm {-1e9};     // e.g., -120
+    Time     m_initRetryInterval {Seconds(0)}; // e.g., 3s
+
     Ptr<NrPhyRxTrace> m_phyStats; //!< Pointer to the PhyRx stats
     Ptr<NrMacRxTrace> m_macStats; //!< Pointer to the MacRx stats
 

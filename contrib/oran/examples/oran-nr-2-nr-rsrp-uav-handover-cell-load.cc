@@ -29,7 +29,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavHandoverSimulation");
+NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavHandoverCellLoad");
 
 /**
  * Example of ORAN-driven NR multi-cell UAV handover with QoS monitoring (5G-LENA).
@@ -422,6 +422,8 @@ main(int argc, char* argv[])
     std::string dbFileName = "oran-repository-uav.db";
     std::string lateCommandPolicy = "DROP";
 
+    uint32_t maxUesPerCell = 20; // ORAN LM parameter: maximum number of UEs per cell (for load-aware handover decisions)
+
     // Scheduler CLI knobs (safe defaults to a concrete scheduler)
     bool ofdma = false;            // true=OFDMA, false=TDMA
     std::string schedKind = "RR"; // RR | PF | MR | Qos
@@ -457,7 +459,7 @@ main(int argc, char* argv[])
     // LogComponentEnable("NrGnbRrc", LOG_LEVEL_INFO);
     // LogComponentEnable("NrUeRrc", LOG_LEVEL_INFO);
     // LogComponentEnable("OranE2NodeTerminatorNrGnb", LOG_LEVEL_INFO);
-    LogComponentEnable("OranLmNr2NrRsrpHandover", LOG_LEVEL_INFO);
+    LogComponentEnable("OranLmNr2NrRsrpHandoverWithCellLoad", LOG_LEVEL_INFO);
 
                     //ns3_dir = GetTopLevelSourceDir();
 
@@ -775,8 +777,10 @@ main(int argc, char* argv[])
         if (ue) ue->UpdateConfig();
     }
 
-
     //nrHelper->ConfigureFhControl(gnbNrDevs);
+    nrHelper->SetAttribute("InitMaxUesPerCell", UintegerValue(20));
+    nrHelper->SetAttribute("InitMinRsrpDbm",   DoubleValue(-140.0));
+    nrHelper->SetAttribute("InitRetryInterval", TimeValue(Seconds(1.0)));
 
     nrHelper->AttachToMaxRsrpGnb(uavNrDevs, gnbNrDevs);
 
@@ -863,7 +867,7 @@ main(int argc, char* argv[])
         }
         else if (useRsrp == true)
         {
-            defaultLmTid = TypeId::LookupByName("ns3::OranLmNr2NrRsrpHandover");
+            defaultLmTid = TypeId::LookupByName("ns3::OranLmNr2NrRsrpHandoverWithCellLoad");
         }
 
         if (useTorch)
@@ -875,8 +879,9 @@ main(int argc, char* argv[])
         defaultLmFactory.SetTypeId(defaultLmTid);
         defaultLm = defaultLmFactory.Create<OranLm>();
 
-        defaultLm->SetAttribute("MaxUesPerCell", UintegerValue(10));
-        defaultLm->SetAttribute("TryNextBest", BooleanValue(true)); // or false
+        defaultLm->SetAttribute("MaxUesPerCell", UintegerValue(maxUesPerCell)); //default 10
+        defaultLm->SetAttribute("TryNextBest", BooleanValue(true)); // try next best otherwise keep current
+        defaultLm->SetAttribute("MinAcceptableRsrpDbm", DoubleValue(-120.0)); // default is -120 dbm
 
 
         dataRepository->SetAttribute("DatabaseFile", StringValue(dbFileName));
@@ -905,7 +910,7 @@ main(int argc, char* argv[])
         nearRtRic->SetAttribute("LmQueryLateCommandPolicy", StringValue(lateCommandPolicy));
 
 
-        Simulator::Schedule(Seconds(1), &OranNearRtRic::Start, nearRtRic);
+        Simulator::Schedule(Seconds(2.5), &OranNearRtRic::Start, nearRtRic);
 
         for (uint32_t idx = 0; idx < uavNodes.GetN(); idx++)
         {
@@ -946,7 +951,7 @@ main(int argc, char* argv[])
             nrUeTerminator->SetAttribute("RegistrationIntervalRv",
                                          StringValue("ns3::ConstantRandomVariable[Constant=1]"));
             nrUeTerminator->SetAttribute("SendIntervalRv",
-                                         StringValue("ns3::ConstantRandomVariable[Constant=2]"));// increase to mitigate ping pong handovers
+                                         StringValue("ns3::ConstantRandomVariable[Constant=1]"));// increase to mitigate ping pong handovers
 
             nrUeTerminator->AddReporter(locationReporter);
             nrUeTerminator->AddReporter(nrUeCellInfoReporter);
@@ -979,7 +984,7 @@ main(int argc, char* argv[])
             nrGnbTerminator->SetAttribute("RegistrationIntervalRv",
                                           StringValue("ns3::ConstantRandomVariable[Constant=1]"));
             nrGnbTerminator->SetAttribute("SendIntervalRv",
-                                          StringValue("ns3::ConstantRandomVariable[Constant=2]"));
+                                          StringValue("ns3::ConstantRandomVariable[Constant=1]"));
 
             nrGnbTerminator->AddReporter(locationReporter);
             nrGnbTerminator->AddReporter(nrCellLoadReporter);

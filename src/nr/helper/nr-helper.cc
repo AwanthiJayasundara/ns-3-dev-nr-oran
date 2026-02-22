@@ -50,6 +50,8 @@
 #include "ns3/uniform-planar-array.h"
 
 #include <algorithm>
+#include <numeric>   // iota
+#include <vector>
 
 namespace ns3
 {
@@ -140,7 +142,22 @@ NrHelper::GetTypeId()
                           StringValue("ns3::NrNoOpHandoverAlgorithm"),
                           MakeStringAccessor(&NrHelper::SetHandoverAlgorithmType,
                                              &NrHelper::GetHandoverAlgorithmType),
-                          MakeStringChecker());
+                          MakeStringChecker())
+            .AddAttribute("InitMaxUesPerCell",
+                        "Initial attach: maximum number of UEs allowed per gNB. 0 disables the cap.",
+                        UintegerValue(0),
+                        MakeUintegerAccessor(&NrHelper::m_initMaxUesPerCell),
+                        MakeUintegerChecker<uint32_t>())
+            .AddAttribute("InitMinRsrpDbm",
+                        "Initial attach: minimum RSRP (dBm). If best admissible is below, UE stays unattached.",
+                        DoubleValue(-1e9),
+                        MakeDoubleAccessor(&NrHelper::m_initMinRsrpDbm),
+                        MakeDoubleChecker<double>())
+            .AddAttribute("InitRetryInterval",
+                        "Initial attach: retry interval when blocked by capacity or min RSRP.",
+                        TimeValue(Seconds(0)),
+                        MakeTimeAccessor(&NrHelper::m_initRetryInterval),
+                        MakeTimeChecker());
     return tid;
 }
 
@@ -1028,44 +1045,116 @@ NrHelper::DoHandoverRequest(Ptr<NetDevice> ueDev,
 
 void
 NrHelper::AttachToMaxRsrpGnb(const NetDeviceContainer& ueDevices,
-                             const NetDeviceContainer& enbDevices)
+                             const NetDeviceContainer& gnbDevices)
 {
     NS_LOG_FUNCTION(this);
-    NS_ASSERT_MSG(enbDevices.GetN() > 0, "gNB container should not be empty");
+    NS_ASSERT_MSG(gnbDevices.GetN() > 0, "gNB container should not be empty");
     for (auto i = ueDevices.Begin(); i != ueDevices.End(); i++)
     {
         // Since UE may not be attached to any gNB, it won't be properly configured via MIB
         // so we configure its numerology manually here. All gNBs numerology must match.
         {
             auto ueNetDevCast = DynamicCast<NrUeNetDevice>(*i);
-            auto gnbNetDevCast = DynamicCast<NrGnbNetDevice>(enbDevices.Get(0));
+            auto gnbNetDevCast = DynamicCast<NrGnbNetDevice>(gnbDevices.Get(0));
             ueNetDevCast->GetPhy(0)->SetNumerology(gnbNetDevCast->GetPhy(0)->GetNumerology());
         }
 
         // attach the UE to the highest RSRP gNB (this will change with active panel)
-        Simulator::ScheduleNow([=, this]() { AttachToMaxRsrpGnb(*i, enbDevices); });
+        Simulator::ScheduleNow([=, this]() { AttachToMaxRsrpGnb(*i, gnbDevices); });
     }
 }
 
+// void
+// NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice, const NetDeviceContainer& gnbDevices)
+// {
+//     NS_LOG_FUNCTION(this);
+
+//     NS_ASSERT_MSG(gnbDevices.GetN() > 0, "empty gnb device container");
+
+//     auto nrInitAssoc = m_initialAttachmentFactory.Create<NrInitialAssociation>();
+//     ueDevice->GetObject<NrUeNetDevice>()->SetInitAssoc(nrInitAssoc);
+
+//     nrInitAssoc->SetUeDevice(ueDevice);
+//     nrInitAssoc->SetGnbDevices(gnbDevices);
+//     nrInitAssoc->SetColBeamAngles(m_initialParams.colAngles);
+//     nrInitAssoc->SetRowBeamAngles(m_initialParams.rowAngles);
+//     nrInitAssoc->FindAssociatedGnb();
+//     auto maxRsrpEnbDevice = nrInitAssoc->GetAssociatedGnb();
+//     NS_ASSERT(maxRsrpEnbDevice);
+
+//     AttachToGnb(ueDevice, maxRsrpEnbDevice);
+// }
+
 void
-NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice, const NetDeviceContainer& enbDevices)
+NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
+                             const NetDeviceContainer& gnbDevices)
 {
     NS_LOG_FUNCTION(this);
+    NS_ASSERT_MSG(gnbDevices.GetN() > 0, "empty gnb device container");
 
-    NS_ASSERT_MSG(enbDevices.GetN() > 0, "empty enb device container");
-
+    // Build association helper (same as original)
     auto nrInitAssoc = m_initialAttachmentFactory.Create<NrInitialAssociation>();
     ueDevice->GetObject<NrUeNetDevice>()->SetInitAssoc(nrInitAssoc);
 
     nrInitAssoc->SetUeDevice(ueDevice);
-    nrInitAssoc->SetGnbDevices(enbDevices);
+    nrInitAssoc->SetGnbDevices(gnbDevices);
     nrInitAssoc->SetColBeamAngles(m_initialParams.colAngles);
     nrInitAssoc->SetRowBeamAngles(m_initialParams.rowAngles);
-    nrInitAssoc->FindAssociatedGnb();
-    auto maxRsrpEnbDevice = nrInitAssoc->GetAssociatedGnb();
-    NS_ASSERT(maxRsrpEnbDevice);
 
-    AttachToGnb(ueDevice, maxRsrpEnbDevice);
+    // This populates per-gNB RSRPs internally
+    nrInitAssoc->FindAssociatedGnb();
+
+    // Rank gNB indices by RSRP descending
+    std::vector<uint32_t> idx(gnbDevices.GetN());
+    std::iota(idx.begin(), idx.end(), 0);
+
+    std::sort(idx.begin(), idx.end(),
+              [&](uint32_t a, uint32_t b)
+              {
+                  return nrInitAssoc->GetMaxRsrp(a) > nrInitAssoc->GetMaxRsrp(b);
+              });
+
+    Ptr<NetDevice> chosen = nullptr;
+
+    for (uint32_t k : idx)
+    {
+        double rsrpDbm = nrInitAssoc->GetMaxRsrp(k);
+
+        // Optional min-RSRP gate e.g., -120)
+        if (rsrpDbm < m_initMinRsrpDbm)
+        {
+            // since list is sorted, remaining will be worse
+            break;
+        }
+
+        Ptr<NrGnbNetDevice> gnb = gnbDevices.Get(k)->GetObject<NrGnbNetDevice>();
+        NS_ABORT_IF(gnb == nullptr);
+
+        uint32_t occ = gnb->GetRrc()->GetUeCount();
+
+        // Capacity check only if enabled
+        if (m_initMaxUesPerCell == 0 || occ < m_initMaxUesPerCell)
+        {
+            chosen = gnbDevices.Get(k);
+            break;
+        }
+    }
+
+    if (!chosen)
+    {
+        // All candidates are full OR best RSRP is below min threshold
+        if (m_initRetryInterval > Seconds(0))
+        {
+            Simulator::Schedule(m_initRetryInterval,
+                                [this, ueDevice, gnbDevices]() {
+                                    this->AttachToMaxRsrpGnb(ueDevice, gnbDevices);
+                                });
+        }
+        return; // UE remains unattached for now
+    }
+
+    // Attach to best admissible gNB
+    AttachToGnb(ueDevice, chosen);
 }
 
 void

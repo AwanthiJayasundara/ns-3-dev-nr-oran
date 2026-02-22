@@ -688,7 +688,11 @@ class NrGnbRrc : public Object
      * @return the object TypeId
      */
     static TypeId GetTypeId();
-
+    /**
+     * @brief Get the number of UEs managed by this gNB RRC.
+     * @return the number of UEs
+     */
+    uint32_t GetUeCount() const;
     /**
      * Set the X2 SAP this RRC should interact with
      * @param s the X2 SAP Provider to be used by this RRC entity

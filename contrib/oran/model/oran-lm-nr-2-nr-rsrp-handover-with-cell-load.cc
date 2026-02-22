@@ -1,4 +1,4 @@
-#include "oran-lm-nr-2-nr-rsrp-handover.h"
+#include "oran-lm-nr-2-nr-rsrp-handover-with-cell-load.h"
 
 #include "oran-command-nr-2-nr-handover.h"
 #include "oran-data-repository.h"
@@ -13,21 +13,23 @@
 #include <vector>
 #include <cfloat>
 #include <map>
+#include <string>
+#include <limits>
 
 namespace ns3
 {
 
-NS_LOG_COMPONENT_DEFINE("OranLmNr2NrRsrpHandover");
+NS_LOG_COMPONENT_DEFINE("OranLmNr2NrRsrpHandoverWithCellLoad");
 
-NS_OBJECT_ENSURE_REGISTERED(OranLmNr2NrRsrpHandover);
+NS_OBJECT_ENSURE_REGISTERED(OranLmNr2NrRsrpHandoverWithCellLoad);
 
 TypeId
-OranLmNr2NrRsrpHandover::GetTypeId(void)
+OranLmNr2NrRsrpHandoverWithCellLoad::GetTypeId(void)
 {
     static TypeId tid =
-        TypeId("ns3::OranLmNr2NrRsrpHandover")
+        TypeId("ns3::OranLmNr2NrRsrpHandoverWithCellLoad")
             .SetParent<OranLm>()
-            .AddConstructor<OranLmNr2NrRsrpHandover>()
+            .AddConstructor<OranLmNr2NrRsrpHandoverWithCellLoad>()
 
             // -----------------------------
             // NO-SECRECY knobs (RSRP-only)
@@ -35,61 +37,78 @@ OranLmNr2NrRsrpHandover::GetTypeId(void)
             .AddAttribute("HysteresisDb",
                           "RSRP HO hysteresis margin in dB (RSRP-only LM).",
                           DoubleValue(2.0),
-                          MakeDoubleAccessor(&OranLmNr2NrRsrpHandover::m_rsrpThreshold),
+                          MakeDoubleAccessor(&OranLmNr2NrRsrpHandoverWithCellLoad::m_rsrpThreshold),
                           MakeDoubleChecker<double>())
 
             .AddAttribute("Warmup",
                           "Warm-up time before HO decisions start.",
                           TimeValue(Seconds(2.0)),
-                          MakeTimeAccessor(&OranLmNr2NrRsrpHandover::m_warmup),
+                          MakeTimeAccessor(&OranLmNr2NrRsrpHandoverWithCellLoad::m_warmup),
                           MakeTimeChecker())
 
             .AddAttribute("MinHoInterval",
                           "Minimum time between HO commands for the same UE.",
                           TimeValue(Seconds(2.0)),
-                          MakeTimeAccessor(&OranLmNr2NrRsrpHandover::m_minHoInterval),
+                          MakeTimeAccessor(&OranLmNr2NrRsrpHandoverWithCellLoad::m_minHoInterval),
                           MakeTimeChecker())
 
             .AddAttribute("HoAttemptTimeout",
                           "If HO is pending, wait this long before allowing a retry.",
                           TimeValue(Seconds(2.0)),
-                          MakeTimeAccessor(&OranLmNr2NrRsrpHandover::m_hoAttemptTimeout),
+                          MakeTimeAccessor(&OranLmNr2NrRsrpHandoverWithCellLoad::m_hoAttemptTimeout),
                           MakeTimeChecker())
+
             .AddAttribute("MaxUesPerCell",
-              "Hard cap: if a target cell already serves this many UEs, do not handover to it.",
-              UintegerValue(10),
-              MakeUintegerAccessor(&OranLmNr2NrRsrpHandover::m_maxUesPerCell),
-              MakeUintegerChecker<uint32_t>(1))
+                        "Hard cap: ... 0 disables the cap.",
+                        UintegerValue(0), // or keep 10 if you want cap by default
+                        MakeUintegerAccessor(&OranLmNr2NrRsrpHandoverWithCellLoad::m_maxUesPerCell),
+                        MakeUintegerChecker<uint32_t>(0, std::numeric_limits<uint32_t>::max()))
+
             .AddAttribute("TryNextBest",
                         "If best-RSRP cell is full, try next-best cell; otherwise keep current cell.",
                         BooleanValue(true),
-                        MakeBooleanAccessor(&OranLmNr2NrRsrpHandover::m_tryNextBest),
-                        MakeBooleanChecker());
+                        MakeBooleanAccessor(&OranLmNr2NrRsrpHandoverWithCellLoad::m_tryNextBest),
+                        MakeBooleanChecker())
+            
+            .AddAttribute("MinAcceptableRsrpDbm",
+                        "If the selected HO target RSRP is below this (dBm), do NOT issue HO; log failure and retry later.",
+                        DoubleValue(-120.0),
+                        MakeDoubleAccessor(&OranLmNr2NrRsrpHandoverWithCellLoad::m_minAcceptableRsrpDbm),
+                        MakeDoubleChecker<double>())
+
+            .AddAttribute("LowRsrpRecheck",
+                        "Backoff time after a low-RSRP HO failure before re-evaluating that UE.",
+                        TimeValue(Seconds(2.0)),
+                        MakeTimeAccessor(&OranLmNr2NrRsrpHandoverWithCellLoad::m_lowRsrpRecheck),
+                        MakeTimeChecker());
 
 
     return tid;
 }
 
-OranLmNr2NrRsrpHandover::OranLmNr2NrRsrpHandover(void)
+OranLmNr2NrRsrpHandoverWithCellLoad::OranLmNr2NrRsrpHandoverWithCellLoad(void)
     : OranLm(),
       m_rsrpThreshold(2.0),
       m_warmup(Seconds(2.0)),
       m_minHoInterval(Seconds(2.0)),
       m_hoAttemptTimeout(Seconds(2.0)),
-      m_maxUesPerCell(10),
-      m_tryNextBest(true)
+      m_maxUesPerCell(0),
+      m_tryNextBest(true),
+      m_minAcceptableRsrpDbm(-120.0),
+      m_lowRsrpRecheck(Seconds(2.0))
+
 {
     NS_LOG_FUNCTION(this);
-    m_name = "OranLmNr2NrRsrpHandover";
+    m_name = "OranLmNr2NrRsrpHandoverWithCellLoad";
 }
 
-OranLmNr2NrRsrpHandover::~OranLmNr2NrRsrpHandover(void)
+OranLmNr2NrRsrpHandoverWithCellLoad::~OranLmNr2NrRsrpHandoverWithCellLoad(void)
 {
     NS_LOG_FUNCTION(this);
 }
 
 std::vector<Ptr<OranCommand>>
-OranLmNr2NrRsrpHandover::Run(void)
+OranLmNr2NrRsrpHandoverWithCellLoad::Run(void)
 {
     NS_LOG_FUNCTION(this);
 
@@ -109,8 +128,8 @@ OranLmNr2NrRsrpHandover::Run(void)
     return commands;
 }
 
-std::vector<OranLmNr2NrRsrpHandover::UeInfo>
-OranLmNr2NrRsrpHandover::GetUeInfos(Ptr<OranDataRepository> data) const
+std::vector<OranLmNr2NrRsrpHandoverWithCellLoad::UeInfo>
+OranLmNr2NrRsrpHandoverWithCellLoad::GetUeInfos(Ptr<OranDataRepository> data) const
 {
     NS_LOG_FUNCTION(this << data);
 
@@ -145,8 +164,8 @@ OranLmNr2NrRsrpHandover::GetUeInfos(Ptr<OranDataRepository> data) const
     return ueInfos;
 }
 
-std::vector<OranLmNr2NrRsrpHandover::GnbInfo>
-OranLmNr2NrRsrpHandover::GetGnbInfos(Ptr<OranDataRepository> data) const
+std::vector<OranLmNr2NrRsrpHandoverWithCellLoad::GnbInfo>
+OranLmNr2NrRsrpHandoverWithCellLoad::GetGnbInfos(Ptr<OranDataRepository> data) const
 {
     NS_LOG_FUNCTION(this << data);
 
@@ -182,7 +201,7 @@ OranLmNr2NrRsrpHandover::GetGnbInfos(Ptr<OranDataRepository> data) const
 }
 
 std::vector<Ptr<OranCommand>>
-OranLmNr2NrRsrpHandover::GetHandoverCommands(
+OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
     Ptr<OranDataRepository> data,
     std::vector<UeInfo> ueInfos,
     std::vector<GnbInfo> gnbInfos) const
@@ -191,6 +210,7 @@ OranLmNr2NrRsrpHandover::GetHandoverCommands(
 
     static std::map<uint64_t, Time> lastHoCmdTime;       // UE nodeId -> last HO cmd time
     static std::map<uint64_t, uint16_t> pendingHoTarget; // UE nodeId -> target cell
+    static std::map<uint64_t, Time> lowRsrpBlockUntil; // UE nodeId -> do not evaluate until this time
 
     std::vector<Ptr<OranCommand>> commands;
 
@@ -263,7 +283,14 @@ OranLmNr2NrRsrpHandover::GetHandoverCommands(
     NS_LOG_INFO("---- LM tick t=" << Simulator::Now().GetSeconds() << " ----");
     for (const auto& kv : cellUeCount)
     {
-        NS_LOG_INFO("  cell " << kv.first << " load=" << kv.second << "/" << m_maxUesPerCell);
+        if (m_maxUesPerCell > 0)
+            {
+                NS_LOG_INFO("  cell " << kv.first << " load=" << kv.second << "/" << m_maxUesPerCell);
+            }
+            else
+            {
+                NS_LOG_INFO("  cell " << kv.first << " load=" << kv.second << " (cap=disabled)");
+            }
     }
 
 
@@ -283,6 +310,19 @@ OranLmNr2NrRsrpHandover::GetHandoverCommands(
     {
         // Warmup gate
         if (Simulator::Now() < m_warmup) continue;
+
+        // Low-RSRP backoff gate: if UE is blocked, skip evaluation until time expires
+        auto bit = lowRsrpBlockUntil.find(ueInfo.nodeId);
+        if (bit != lowRsrpBlockUntil.end())
+        {
+            if (Simulator::Now() < bit->second)
+            {
+                // still in backoff window
+                continue;
+            }
+            // backoff expired -> allow evaluation again
+            lowRsrpBlockUntil.erase(bit);
+        }
 
         // If HO pending and not timed out, do not send another
         auto tit = lastHoCmdTime.find(ueInfo.nodeId);
@@ -382,6 +422,7 @@ OranLmNr2NrRsrpHandover::GetHandoverCommands(
         // bool consideredBestOnly = !m_tryNextBest;
         bool anyBeatsHyst = false;
         bool anyBeatsHystAndNotFull = false;
+        bool lowRsrpFailed = false;
 
         for (size_t i = 0; i < cands.size(); ++i)
         {
@@ -398,11 +439,35 @@ OranLmNr2NrRsrpHandover::GetHandoverCommands(
                 continue;
             }
 
+            
             anyBeatsHyst = true;
+
+            if (c.rsrp < m_minAcceptableRsrpDbm)
+            {
+                NS_LOG_UNCOND("LM HO_FAIL_LOW_RSRP UE=" << ueInfo.nodeId
+                            << " currCell=" << currentCellId
+                            << " candCell=" << c.cellId
+                            << " candRsrp=" << c.rsrp
+                            << " < min=" << m_minAcceptableRsrpDbm
+                            << " recheckAfter=" << m_lowRsrpRecheck.GetSeconds() << "s");
+
+                LogLogicToRepository("HO FAIL LOW_RSRP t=" + std::to_string(Simulator::Now().GetSeconds()) +
+                                    " UE=" + std::to_string(ueInfo.nodeId) +
+                                    " currCell=" + std::to_string(currentCellId) +
+                                    " candCell=" + std::to_string(c.cellId) +
+                                    " candRsrp=" + std::to_string(c.rsrp));
+
+                
+                lowRsrpBlockUntil[ueInfo.nodeId] = Simulator::Now() + m_lowRsrpRecheck;
+
+                lowRsrpFailed = true;
+                break; // stop searching candidates this tick
+            }
+            
 
             // capacity gate
             uint32_t load = cellUeCount[c.cellId];
-            if (load >= m_maxUesPerCell)
+            if (m_maxUesPerCell > 0 && load >= m_maxUesPerCell)
             {
                 NS_LOG_INFO("UE " << ueInfo.nodeId << " candidate cell " << c.cellId
                                 << " beats hyst but FULL (" << load << "/" << m_maxUesPerCell << ")");
@@ -424,6 +489,11 @@ OranLmNr2NrRsrpHandover::GetHandoverCommands(
             NS_LOG_INFO("UE " << ueInfo.nodeId << " selected cell " << chosenCell
                             << " (rsrp=" << chosenRsrp << ", load=" << load << ")");
             break;
+        }
+
+        if (lowRsrpFailed)
+        {
+            continue; // skip HO command this tick
         }
 
 
@@ -450,13 +520,26 @@ OranLmNr2NrRsrpHandover::GetHandoverCommands(
         handoverCommand->SetAttribute("TargetRnti", UintegerValue(currentRnti));
         handoverCommand->SetAttribute("TargetCellId", UintegerValue(chosenCell));         // target cell
 
-        NS_LOG_UNCOND("LM HO UE=" << ueInfo.nodeId
-                                 << " rnti=" << currentRnti
-                                 << " " << currentCellId << "->" << chosenCell
-                                 << " servingRsrp=" << servingRsrp
-                                 << " targetRsrp=" << chosenRsrp
-                                 << " hystDb=" << hysteresisDb
-                                 << " targetLoad=" << cellUeCount[chosenCell] << "/" << m_maxUesPerCell);
+        if (m_maxUesPerCell > 0)
+        {
+            NS_LOG_UNCOND("LM HO UE=" << ueInfo.nodeId
+                                    << " rnti=" << currentRnti
+                                    << " " << currentCellId << "->" << chosenCell
+                                    << " servingRsrp=" << servingRsrp
+                                    << " targetRsrp=" << chosenRsrp
+                                    << " hystDb=" << hysteresisDb
+                                    << " targetLoad=" << cellUeCount[chosenCell] << "/" << m_maxUesPerCell);
+        }
+        else
+        {
+            NS_LOG_UNCOND("LM HO UE=" << ueInfo.nodeId
+                                    << " rnti=" << currentRnti
+                                    << " " << currentCellId << "->" << chosenCell
+                                    << " servingRsrp=" << servingRsrp
+                                    << " targetRsrp=" << chosenRsrp
+                                    << " hystDb=" << hysteresisDb
+                                    << " targetLoad=" << cellUeCount[chosenCell] << " (cap=disabled)");
+        }
 
         data->LogCommandLm(m_name, handoverCommand);
         commands.push_back(handoverCommand);

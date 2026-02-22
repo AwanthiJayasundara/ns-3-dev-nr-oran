@@ -79,6 +79,12 @@ GnbRrcMemberNrGnbCmacSapUser::AllocateTemporaryCellRnti()
     return m_rrc->DoAllocateTemporaryCellRnti(m_componentCarrierId);
 }
 
+uint32_t
+NrGnbRrc::GetUeCount() const
+{
+    return m_ueMap.size();
+}
+
 void
 GnbRrcMemberNrGnbCmacSapUser::NotifyLcConfigResult(uint16_t rnti, uint8_t lcid, bool success)
 {

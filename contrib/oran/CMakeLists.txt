@@ -154,6 +154,7 @@ build_lib(
     model/oran-lm-noop.cc
     model/oran-lm-lte-2-lte-distance-handover.cc
     model/oran-lm-lte-2-lte-rsrp-handover.cc
+    model/oran-lm-nr-2-nr-rsrp-handover-with-cell-load.cc
     model/oran-lm-nr-2-nr-rsrp-handover.cc
     model/oran-lm-nr-secrecy-aware-handover.cc
     model/oran-cmm.cc
@@ -210,6 +211,7 @@ build_lib(
     model/oran-lm-noop.h
     model/oran-lm-lte-2-lte-distance-handover.h
     model/oran-lm-lte-2-lte-rsrp-handover.h
+    model/oran-lm-nr-2-nr-rsrp-handover-with-cell-load.h
     model/oran-lm-nr-2-nr-rsrp-handover.h
     model/oran-lm-nr-secrecy-aware-handover.h
     model/oran-cmm.h
