@@ -423,7 +423,7 @@ When `MaxUesPerCell` is **0**:
 ## Next Steps (Planned)
 - Extend load awareness beyond a static hard cap into:
   - dynamic policies (e.g., load balancing objectives),
-  - multi-objective HO (QoS + RSRP + load),
+  - multi-objective HO
   - future ML/game-theoretic handover optimizers.
 
 
