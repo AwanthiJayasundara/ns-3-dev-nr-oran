@@ -23,6 +23,8 @@
 #include "ns3/object.h"
 #include "ns3/packet.h"
 #include "ns3/traced-callback.h"
+// #include "ns3/random-variable-stream.h"
+
 
 #include <map>
 #include <set>
@@ -1291,6 +1293,12 @@ class NrUeRrc : public Object
 
     bool m_leaveConnectedMode; ///< true if UE NAS ask UE RRC to leave connected mode, e.g., after
                                ///< RLF, i.e. T310 has expired
+    // ---- Reconnect backoff after RLF ----
+    // Time m_reconnectDelayMin;
+    // Time m_reconnectDelayMax;
+    // Ptr<UniformRandomVariable> m_reconnectRv;
+    // EventId m_reconnectEvent;
+    // Time m_reconnectUntil; // absolute time when reconnect is allowed
 
     uint16_t m_previousCellId; ///< the cell id of the previous cell UE was attached to
 

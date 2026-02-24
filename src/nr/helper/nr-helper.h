@@ -1075,6 +1075,14 @@ class NrHelper : public Object
     uint32_t m_initMaxUesPerCell {0};     // 0 = disable (old behavior)
     double   m_initMinRsrpDbm {-1e9};     // e.g., -120
     Time     m_initRetryInterval {Seconds(0)}; // e.g., 3s
+    // Initial attach only: strict capacity reservation per cellId (prevents oversubscription at t=0)
+    std::map<uint16_t, uint32_t> m_initReservedPerCell;
+
+    // Refresh reservations from real gNB UE counts once per simulation time
+  void RefreshInitReservations(const NetDeviceContainer& gnbDevices);
+
+  // Last time we refreshed m_initReservedPerCell
+  Time m_initReserveEpoch{Seconds(-1)};
 
     Ptr<NrPhyRxTrace> m_phyStats; //!< Pointer to the PhyRx stats
     Ptr<NrMacRxTrace> m_macStats; //!< Pointer to the MacRx stats

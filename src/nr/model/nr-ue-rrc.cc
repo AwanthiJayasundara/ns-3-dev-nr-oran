@@ -154,6 +154,11 @@ NrUeRrc::NrUeRrc()
       m_numberOfComponentCarriers(nr::MIN_NO_CC)
 {
     NS_LOG_FUNCTION(this);
+    // ---- Reconnect backoff defaults ----
+    // m_reconnectDelayMin = MilliSeconds(500);
+    // m_reconnectDelayMax = Seconds(2.0);
+    // m_reconnectRv = CreateObject<UniformRandomVariable>();
+    // m_reconnectUntil = Seconds(0);
     m_cphySapUser.push_back(new MemberNrUeCphySapUser<NrUeRrc>(this));
     m_cmacSapUser.push_back(new UeMemberNrUeCmacSapUser(this));
     m_cphySapProvider.push_back(nullptr);
@@ -173,6 +178,8 @@ void
 NrUeRrc::DoDispose()
 {
     NS_LOG_FUNCTION(this);
+    // m_reconnectEvent.Cancel();
+    // m_reconnectRv = nullptr;
     for (uint16_t i = 0; i < m_numberOfComponentCarriers; i++)
     {
         delete m_cphySapUser.at(i);
@@ -256,6 +263,16 @@ NrUeRrc::GetTypeId()
                 UintegerValue(2), // see 3GPP 36.331 UE-TimersAndConstants & RLF-TimersAndConstants
                 MakeUintegerAccessor(&NrUeRrc::m_n311),
                 MakeUintegerChecker<uint8_t>(1, 10))
+            // .AddAttribute("ReconnectDelayMin",
+            //     "Minimum delay before re-connecting after RLF.",
+            //     TimeValue(MilliSeconds(500)),
+            //     MakeTimeAccessor(&NrUeRrc::m_reconnectDelayMin),
+            //     MakeTimeChecker())
+            // .AddAttribute("ReconnectDelayMax",
+            //         "Maximum delay before re-connecting after RLF.",
+            //         TimeValue(Seconds(2.0)),
+            //         MakeTimeAccessor(&NrUeRrc::m_reconnectDelayMax),
+            //         MakeTimeChecker())
             .AddTraceSource("MibReceived",
                             "trace fired upon reception of Master Information Block",
                             MakeTraceSourceAccessor(&NrUeRrc::m_mibReceivedTrace),
@@ -847,6 +864,17 @@ NrUeRrc::DoConnect()
 {
     NS_LOG_FUNCTION(this << m_imsi);
 
+    // // ---- Gate reconnect after RLF: delay any reconnect attempts ----
+    // if (m_leaveConnectedMode && Simulator::Now() < m_reconnectUntil)
+    // {
+    //     if (!m_reconnectEvent.IsPending())
+    //     {
+    //         Time wait = m_reconnectUntil - Simulator::Now();
+    //         m_reconnectEvent = Simulator::Schedule(wait, &NrUeRrc::DoConnect, this);
+    //     }
+    //     return;
+    // }
+
     switch (m_state)
     {
     case IDLE_START:
@@ -1391,10 +1419,25 @@ NrUeRrc::EvaluateCellForSelection()
         // and start random access.
         if (!m_connectionPending)
         {
-            NS_LOG_DEBUG("Calling DoConnect in state = " << ToString(m_state));
+            NS_LOG_DEBUG("Calling DoConnect in state = " << ToString(m_state));// DoConnect() will self-delay after RLF due to the new gate
             DoConnect();
         }
         SwitchToState(IDLE_CAMPED_NORMALLY);
+        // if (!m_connectionPending)
+        // {
+        //     if (m_leaveConnectedMode)
+        //     {
+        //         // After RLF, wait a bit before reconnecting (lets gNB remove old UE context)
+        //         Simulator::Schedule(MilliSeconds(500), &NrUeRrc::DoConnect, this);
+        //     }
+        //     else
+        //     {
+        //         // Initial attach (no delay)
+        //         DoConnect();
+        //     }
+        // }
+        // SwitchToState(IDLE_CAMPED_NORMALLY);
+
     }
     else
     {
@@ -3217,6 +3260,14 @@ NrUeRrc::LeaveConnectedMode()
 {
     NS_LOG_FUNCTION(this << m_imsi);
     m_leaveConnectedMode = true;
+    // ---- start reconnect backoff window after RLF ----
+    // m_reconnectEvent.Cancel();
+    // m_connectionPending = false;
+
+    // double d = m_reconnectRv->GetValue(m_reconnectDelayMin.GetSeconds(),
+    //                                 m_reconnectDelayMax.GetSeconds());
+
+    // m_reconnectUntil = Simulator::Now() + Seconds(d);
     m_storedMeasValues.clear();
     ResetRlfParams();
 

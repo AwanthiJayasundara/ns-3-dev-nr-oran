@@ -153,12 +153,12 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetUeInfos(Ptr<OranDataRepository> data) co
             }
             else
             {
-                NS_LOG_INFO("Could not find NR UE location for E2 Node ID = " << ueInfo.nodeId);
+                NS_LOG_UNCOND("Could not find NR UE location for E2 Node ID = " << ueInfo.nodeId);
             }
         }
         else
         {
-            NS_LOG_INFO("Could not find NR UE cell info for E2 Node ID = " << ueInfo.nodeId);
+            NS_LOG_UNCOND("Could not find NR UE cell info for E2 Node ID = " << ueInfo.nodeId);
         }
     }
     return ueInfos;
@@ -189,12 +189,12 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetGnbInfos(Ptr<OranDataRepository> data) c
             }
             else
             {
-                NS_LOG_INFO("Could not find NR gNB location for E2 Node ID = " << gnbInfo.nodeId);
+                NS_LOG_UNCOND("Could not find NR gNB location for E2 Node ID = " << gnbInfo.nodeId);
             }
         }
         else
         {
-            NS_LOG_INFO("Could not find NR gNB cell info for E2 Node ID = " << gnbInfo.nodeId);
+            NS_LOG_UNCOND("Could not find NR gNB cell info for E2 Node ID = " << gnbInfo.nodeId);
         }
     }
     return gnbInfos;
@@ -280,16 +280,16 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
     }
 
     // -------- ADD HERE: per-tick load snapshot --------
-    NS_LOG_INFO("---- LM tick t=" << Simulator::Now().GetSeconds() << " ----");
+    NS_LOG_UNCOND("---- LM tick t=" << Simulator::Now().GetSeconds() << " ----");
     for (const auto& kv : cellUeCount)
     {
         if (m_maxUesPerCell > 0)
             {
-                NS_LOG_INFO("  cell " << kv.first << " load=" << kv.second << "/" << m_maxUesPerCell);
+                NS_LOG_UNCOND("  cell " << kv.first << " load=" << kv.second << "/" << m_maxUesPerCell);
             }
             else
             {
-                NS_LOG_INFO("  cell " << kv.first << " load=" << kv.second << " (cap=disabled)");
+                NS_LOG_UNCOND("  cell " << kv.first << " load=" << kv.second << " (cap=disabled)");
             }
     }
 
@@ -409,7 +409,7 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
         // -------------------------------------------------------
         const double hysteresisDb = m_rsrpThreshold;
 
-        NS_LOG_INFO("UE " << ueInfo.nodeId
+        NS_LOG_UNCOND("UE " << ueInfo.nodeId
                 << " servingCell=" << currentCellId
                 << " servingRsrp=" << servingRsrp
                 << " hystDb=" << hysteresisDb
@@ -469,12 +469,12 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
             uint32_t load = cellUeCount[c.cellId];
             if (m_maxUesPerCell > 0 && load >= m_maxUesPerCell)
             {
-                NS_LOG_INFO("UE " << ueInfo.nodeId << " candidate cell " << c.cellId
+                NS_LOG_UNCOND("UE " << ueInfo.nodeId << " candidate cell " << c.cellId
                                 << " beats hyst but FULL (" << load << "/" << m_maxUesPerCell << ")");
 
                 if (!m_tryNextBest)
                 {
-                    NS_LOG_INFO("UE " << ueInfo.nodeId
+                    NS_LOG_UNCOND("UE " << ueInfo.nodeId
                                     << " TryNextBest=false -> keep current cell " << currentCellId);
                     break; // stop searching
                 }
@@ -486,7 +486,7 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
             chosenCell = c.cellId;
             chosenRsrp = c.rsrp;
 
-            NS_LOG_INFO("UE " << ueInfo.nodeId << " selected cell " << chosenCell
+            NS_LOG_UNCOND("UE " << ueInfo.nodeId << " selected cell " << chosenCell
                             << " (rsrp=" << chosenRsrp << ", load=" << load << ")");
             break;
         }
@@ -502,13 +502,13 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
         {
             if (!anyBeatsHyst)
             {
-                NS_LOG_INFO("UE " << ueInfo.nodeId
+                NS_LOG_UNCOND("UE " << ueInfo.nodeId
                                 << " keep current: no neighbor exceeds serving+hysteresis");
             }
             else if (!anyBeatsHystAndNotFull)
             {
-                NS_LOG_INFO("UE " << ueInfo.nodeId
-                                << " keep current: all candidates that beat hysteresis are FULL");
+                NS_LOG_UNCOND("UE " << ueInfo.nodeId
+                                << " LM HO_FAIL_KEEP_CURRENT : all candidates that beat hysteresis are FULL");
             }
             continue;
         }

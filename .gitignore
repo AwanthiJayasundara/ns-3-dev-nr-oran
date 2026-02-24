@@ -52,9 +52,10 @@ vcpkg/
 .cache/
 oran-repository-lte.db
 oran-repository.db
+oran-repository-uav.db
 oran-repository-nr-tn.db
-results/lte/rsrp-qos-vs-time.txt
-results/nr/tn-qos-vs-time.txt
+results/lte/
+results/nr/
 libtorch/
 onnxruntime-linux-x64-1.14.1/
 .venv/

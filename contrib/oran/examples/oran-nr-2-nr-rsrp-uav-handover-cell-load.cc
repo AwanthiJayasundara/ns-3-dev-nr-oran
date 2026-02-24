@@ -71,8 +71,8 @@ NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavHandoverCellLoad");
 const static float GNB_HEIGHT = 25;
 
 // Variables
-uint32_t numUAVs = 75;
-uint32_t numMacroCells = 5;
+uint32_t numUAVs = 110;
+uint32_t numGnbs = 5;
 
 // Metrics collection interval
 Time management_interval = Seconds(4);
@@ -86,11 +86,20 @@ std::vector<double> user_jitter;
 std::vector<double> user_throughput;
 std::vector<double> user_pdr;
 
-// static std::string s_trafficTraceFile = "results/nr/uav/traffic-trace.tr";
-static std::string s_positionTraceFile = "results/nr/uav/position-trace.tr";
-static std::string s_handoverTraceFile = "results/nr/uav/handover-trace.tr";
-static std::string s_flowStatTraceFile = "results/nr/uav/flow-stats.log";
-static std::string ns3_dir = "results/nr/uav/";
+// // static std::string s_trafficTraceFile;
+static std::string s_positionTraceFile;
+static std::string s_handoverTraceFile;
+static std::string s_flowStatTraceFile;
+static std::string ns3_dir;
+
+// --- RRC/RLF trace output files (option 2 style) ---
+// static Ptr<OutputStreamWrapper> g_rlfStream;
+static Ptr<OutputStreamWrapper> g_phySyncStream;
+static Ptr<OutputStreamWrapper> g_ueStateStream;
+
+// --- ns-3 NS_LOG output redirection (LogComponentEnable -> file via std::clog) ---
+static std::ofstream g_nsLogFile;
+static std::streambuf* g_oldClogBuf = nullptr;
 
 // Tracing rsrp, rsrq, and sinr rsrq is set to zero for now
 void
@@ -106,6 +115,79 @@ TraceRsrpRsrqSinr(Ptr<OutputStreamWrapper> stream,
     *stream->GetStream() << Simulator::Now().GetSeconds() << " " << rnti << " " << cellId << " "
                          << rsrp << " " << rsrq << " " << servingCell << " "
                          << static_cast<uint32_t>(componentCarrierId) << std::endl;
+}
+
+// static void
+// TraceRlf(std::string context, uint64_t imsi, uint16_t cellId, uint16_t rnti)
+// {
+//     std::cout << Simulator::Now().GetSeconds()
+//               << " " << context
+//               << " RLF IMSI=" << imsi << " cell=" << cellId << " rnti=" << rnti << "\n";
+// }
+
+// static void
+// TracePhySync(std::string context, uint64_t imsi, uint16_t rnti, uint16_t cellId, std::string msg, uint8_t count)
+// {
+//     std::cout << Simulator::Now().GetSeconds()
+//               << " " << context
+//               << " PHY_SYNC IMSI=" << imsi
+//               << " cell=" << cellId
+//               << " rnti=" << rnti
+//               << " " << msg
+//               << " count=" << +count   // + to print uint8_t as number
+//               << "\n";
+// }
+
+// static void
+// TraceUeState(std::string context, uint64_t imsi, uint16_t cellId, uint16_t rnti,
+//              NrUeRrc::State oldS, NrUeRrc::State newS)
+// {
+//     std::cout << Simulator::Now().GetSeconds()
+//               << " " << context
+//               << " UE_STATE IMSI=" << imsi
+//               << " cell=" << cellId << " rnti=" << rnti
+//               << " " << oldS << " -> " << newS << "\n";
+// }
+
+// static void
+// TraceRlfToFile(Ptr<OutputStreamWrapper> stream,
+//                std::string context, uint64_t imsi, uint16_t cellId, uint16_t rnti)
+// {
+//     *stream->GetStream() << Simulator::Now().GetSeconds()
+//                          << " " << context
+//                          << " RLF IMSI=" << imsi
+//                          << " cell=" << cellId
+//                          << " rnti=" << rnti
+//                          << "\n";
+// }
+
+static void
+TracePhySyncToFile(Ptr<OutputStreamWrapper> stream,
+                   std::string context, uint64_t imsi, uint16_t rnti, uint16_t cellId,
+                   std::string msg, uint8_t count)
+{
+    *stream->GetStream() << Simulator::Now().GetSeconds()
+                         << " " << context
+                         << " PHY_SYNC IMSI=" << imsi
+                         << " cell=" << cellId
+                         << " rnti=" << rnti
+                         << " " << msg
+                         << " count=" << +count
+                         << "\n";
+}
+
+static void
+TraceUeStateToFile(Ptr<OutputStreamWrapper> stream,
+                   std::string context, uint64_t imsi, uint16_t cellId, uint16_t rnti,
+                   NrUeRrc::State oldS, NrUeRrc::State newS)
+{
+    *stream->GetStream() << Simulator::Now().GetSeconds()
+                         << " " << context
+                         << " UE_STATE IMSI=" << imsi
+                         << " cell=" << cellId
+                         << " rnti=" << rnti
+                         << " " << oldS << " -> " << newS
+                         << "\n";
 }
 
 // // Function that will save the traces of RX'd packets
@@ -212,7 +294,7 @@ ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
     }
 
     std::ofstream qos_vs_time;
-    qos_vs_time.open("results/nr/uav/qos-vs-time.txt", std::ofstream::out | std::ofstream::app);
+    qos_vs_time.open(ns3_dir + "qos-vs-time.txt", std::ofstream::out | std::ofstream::app);
     for (uint32_t ue = 0; ue < numUAVs; ++ue)
     {
         qos_vs_time << Simulator::Now().GetSeconds() << "," << ue << "," << user_delay[ue] << ","
@@ -439,10 +521,8 @@ main(int argc, char* argv[])
     cmd.AddValue("tx-delay", "The E2 terminator's transmission delay", txDelay);
     cmd.AddValue("handover-algorithm", "Specify which handover algorithm to use", handoverAlgorithm);
     cmd.AddValue("db-file", "Specify the DB file to create", dbFileName);
-    //cmd.AddValue("traffic-trace-file", "Specify the traffic trace file to create", s_trafficTraceFile);
-    cmd.AddValue("position-trace-file", "Specify the position trace file to create", s_positionTraceFile);
-    cmd.AddValue("handover-trace-file", "Specify the handover trace file to create", s_handoverTraceFile);
     cmd.AddValue("num-uavs", "Number of UAVs", numUAVs);
+    cmd.AddValue("num-gnbs", "Number of gNBs", numGnbs);
     cmd.AddValue("rem-mode", "Generate radio environment map", remMode);
     cmd.AddValue("rem-rb-id", "RB id", remRbId);
     cmd.AddValue("ofdma", "Use OFDMA (1) or TDMA (0)", ofdma);
@@ -459,12 +539,35 @@ main(int argc, char* argv[])
     // LogComponentEnable("NrGnbRrc", LOG_LEVEL_INFO);
     // LogComponentEnable("NrUeRrc", LOG_LEVEL_INFO);
     // LogComponentEnable("OranE2NodeTerminatorNrGnb", LOG_LEVEL_INFO);
-    LogComponentEnable("OranLmNr2NrRsrpHandoverWithCellLoad", LOG_LEVEL_INFO);
 
-                    //ns3_dir = GetTopLevelSourceDir();
+    std::ostringstream runTag;
+    runTag << "uav" << numUAVs << "_gnb" << numGnbs << "_cellLoad" << maxUesPerCell;
+
+    // Base output folder for this run
+    ns3_dir = "results/nr/uav/" + runTag.str() + "/";
+
+    // Update file paths to be inside ns3_dir
+    s_positionTraceFile = ns3_dir + "position-trace.tr";
+    s_handoverTraceFile = ns3_dir + "handover-trace.tr";
+    s_flowStatTraceFile = ns3_dir + "flow-stats.log";
 
     // Ensure results/nr/ directory exists
     std::filesystem::create_directories(ns3_dir);
+    // ---- Redirect NS_LOG (std::clog) to a file ----
+    g_nsLogFile.open(ns3_dir + "ns3-oran-lm.log", std::ios::out | std::ios::trunc);
+    g_oldClogBuf = std::clog.rdbuf(g_nsLogFile.rdbuf());
+
+    LogComponentEnable("OranLmNr2NrRsrpHandoverWithCellLoad", LOG_LEVEL_INFO);
+
+    // ---- Create trace files ----
+    // g_rlfStream     = Create<OutputStreamWrapper>(ns3_dir + "rrc-rlf.log",     std::ios::out);
+    g_phySyncStream = Create<OutputStreamWrapper>(ns3_dir + "rrc-physync.log", std::ios::out);
+    g_ueStateStream = Create<OutputStreamWrapper>(ns3_dir + "rrc-state.log",   std::ios::out);
+
+    // (optional headers)
+    // *g_rlfStream->GetStream()     << "# time context RLF IMSI cell rnti\n";
+    *g_phySyncStream->GetStream() << "# time context PHY_SYNC IMSI cell rnti msg count\n";
+    *g_ueStateStream->GetStream() << "# time context UE_STATE IMSI cell rnti old->new\n";
 
     // Increase the buffer size to accomodate the application demand
     bool enablePdcpDiscarding = false;
@@ -484,13 +587,15 @@ main(int argc, char* argv[])
     Config::SetDefault("ns3::ThreeGppChannelModel::UpdatePeriod",
                        TimeValue(MilliSeconds(channelUpdatePeriod)));
 
+    // Config::SetDefault("ns3::NrUeRrc::ReconnectDelayMin", TimeValue(Seconds(1.0)));
+    // Config::SetDefault("ns3::NrUeRrc::ReconnectDelayMax", TimeValue(Seconds(5.0)));
 
     //Config::SetDefault("ns3::NrGnbPhy::TxPower", DoubleValue(43));
 
     // Create gNB and UAV
     NodeContainer uavNodes;
     NodeContainer gnbNodes;
-    gnbNodes.Create(numMacroCells);
+    gnbNodes.Create(numGnbs);
     uavNodes.Create(numUAVs);
     
     // Create ChannelHelper API
@@ -750,6 +855,11 @@ main(int argc, char* argv[])
     //     gnbPhyUl->SetAttribute("Pattern", StringValue(ulPattern));
     // }
 
+    // Make RLF more aggressive (more frequent disconnects)
+    // Config::SetDefault("ns3::NrUeRrc::N310", UintegerValue(4));              // default 6
+    // Config::SetDefault("ns3::NrUeRrc::T310", TimeValue(MilliSeconds(500)));  // default 1000ms
+    // Config::SetDefault("ns3::NrUeRrc::N311", UintegerValue(2));              // default 2 (harder recovery)
+
     gnbNrDevs = nrHelper->InstallGnbDevice(gnbNodes, Bwps);
     uavNrDevs = nrHelper->InstallUeDevice(uavNodes, Bwps);
 
@@ -778,10 +888,10 @@ main(int argc, char* argv[])
     }
 
     //nrHelper->ConfigureFhControl(gnbNrDevs);
-    nrHelper->SetAttribute("InitMaxUesPerCell", UintegerValue(20));
-    nrHelper->SetAttribute("InitMinRsrpDbm",   DoubleValue(-140.0));
+    nrHelper->SetAttribute("InitMaxUesPerCell", UintegerValue(maxUesPerCell));
+    nrHelper->SetAttribute("InitMinRsrpDbm",   DoubleValue(-120.0));
     nrHelper->SetAttribute("InitRetryInterval", TimeValue(Seconds(1.0)));
-
+    //initial attach helper
     nrHelper->AttachToMaxRsrpGnb(uavNrDevs, gnbNrDevs);
 
     nrHelper->AddX2Interface(gnbNodes);
@@ -882,7 +992,6 @@ main(int argc, char* argv[])
         defaultLm->SetAttribute("MaxUesPerCell", UintegerValue(maxUesPerCell)); //default 10
         defaultLm->SetAttribute("TryNextBest", BooleanValue(true)); // try next best otherwise keep current
         defaultLm->SetAttribute("MinAcceptableRsrpDbm", DoubleValue(-120.0)); // default is -120 dbm
-
 
         dataRepository->SetAttribute("DatabaseFile", StringValue(dbFileName));
         defaultLm->SetAttribute("Verbose", BooleanValue(verbose));
@@ -1015,6 +1124,15 @@ main(int argc, char* argv[])
     // Config::Connect("/NodeList/*/DeviceList/*/$ns3::NrUeNetDevice/NrUeRrc/HandoverEndOk",
     //             MakeCallback(&NotifyHandoverEndOkUe));
 
+    // Config::Connect("/NodeList/*/DeviceList/*/$ns3::NrUeNetDevice/NrUeRrc/RadioLinkFailure",
+    //                 MakeBoundCallback(&TraceRlfToFile, g_rlfStream));
+
+    Config::Connect("/NodeList/*/DeviceList/*/$ns3::NrUeNetDevice/NrUeRrc/PhySyncDetection",
+                    MakeBoundCallback(&TracePhySyncToFile, g_phySyncStream));
+
+    Config::Connect("/NodeList/*/DeviceList/*/$ns3::NrUeNetDevice/NrUeRrc/StateTransition",
+                    MakeBoundCallback(&TraceUeStateToFile, g_ueStateStream));
+
     Ptr<OutputStreamWrapper> rsrpRsrqSinrTraceStream =
         Create<OutputStreamWrapper>(ns3_dir + "rsrp-trace.tr", std::ios::out);
     for (NetDeviceContainer::Iterator it = uavNrDevs.Begin(); it != uavNrDevs.End(); ++it)
@@ -1044,7 +1162,7 @@ main(int argc, char* argv[])
     flowMonitor = flowHelper.Install(uavNodes);
 
     std::ofstream qos_vs_time;
-    qos_vs_time.open("results/nr/uav/qos-vs-time.txt", std::ofstream::out | std::ofstream::trunc);
+    qos_vs_time.open(ns3_dir + "qos-vs-time.txt", std::ofstream::out | std::ofstream::trunc);
     qos_vs_time << "Time,UE,Delay,Jitter,Throughput,PDR" << std::endl;
     Simulator::Schedule(management_interval, ThroughputMonitor, &flowHelper, flowMonitor);
 
@@ -1090,6 +1208,10 @@ main(int argc, char* argv[])
     // Tell the simulator how long to run
     Simulator::Stop(simTime + Seconds(15));
     Simulator::Run();
+
+    if (g_oldClogBuf) { std::clog.rdbuf(g_oldClogBuf); }
+    if (g_nsLogFile.is_open()) { g_nsLogFile.close(); }
+
     Simulator::Destroy();
     return 0;
 }
