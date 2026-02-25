@@ -71,7 +71,7 @@ NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavHandoverCellLoad");
 const static float GNB_HEIGHT = 25;
 
 // Variables
-uint32_t numUAVs = 110;
+uint32_t numUAVs = 75;
 uint32_t numGnbs = 5;
 
 // Metrics collection interval
@@ -581,6 +581,7 @@ main(int argc, char* argv[])
                        EnumValue(useUdp ? NrGnbRrc::RLC_UM_ALWAYS : NrGnbRrc::RLC_AM_ALWAYS));
 
     Config::SetDefault("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(999999999));//100 * 1024
+    Config::SetDefault("ns3::NrGnbRrc::MaxUesPerCell", UintegerValue(maxUesPerCell));
 
     int channelUpdatePeriod = 100;
     int channelConditionUpdatePeriod = 200;
@@ -890,7 +891,7 @@ main(int argc, char* argv[])
     //nrHelper->ConfigureFhControl(gnbNrDevs);
     nrHelper->SetAttribute("InitMaxUesPerCell", UintegerValue(maxUesPerCell));
     nrHelper->SetAttribute("InitMinRsrpDbm",   DoubleValue(-120.0));
-    nrHelper->SetAttribute("InitRetryInterval", TimeValue(Seconds(1.0)));
+    nrHelper->SetAttribute("InitRetryInterval", TimeValue(Seconds(2.0)));
     //initial attach helper
     nrHelper->AttachToMaxRsrpGnb(uavNrDevs, gnbNrDevs);
 

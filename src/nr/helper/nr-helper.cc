@@ -1134,6 +1134,18 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
     NS_LOG_FUNCTION(this);
     NS_ASSERT_MSG(gnbDevices.GetN() > 0, "empty gnb device container");
 
+    // if UE is already attached/connected, do NOT try again (prevents duplicate attach)
+    Ptr<NrUeNetDevice> ueNd = ueDevice->GetObject<NrUeNetDevice>();
+    if (ueNd && ueNd->GetRrc())
+    {
+        // If UE already has a cell (or is connected), skip any retry attach
+        if (ueNd->GetRrc()->GetCellId() != 0 ||
+            ueNd->GetRrc()->GetState() == NrUeRrc::CONNECTED_NORMALLY)
+        {
+            return;
+        }
+    }
+
     // Rebuild reservations if we are in a new time instant (fixes stale reservations)
     if (m_initMaxUesPerCell > 0)
     {
@@ -1316,6 +1328,17 @@ NrHelper::AttachToGnb(const Ptr<NetDevice>& ueDevice, const Ptr<NetDevice>& gnbD
     Ptr<NrUeNetDevice> ueNetDev = ueDevice->GetObject<NrUeNetDevice>();
 
     NS_ABORT_IF(gnbNetDev == nullptr || ueNetDev == nullptr);
+
+    // hard admission control (prevents any attach path exceeding cap)
+    if (m_initMaxUesPerCell > 0 && gnbNetDev->GetRrc())
+    {
+        uint32_t occ = gnbNetDev->GetRrc()->GetUeCount();
+        if (occ >= m_initMaxUesPerCell)
+        {
+            // Optional: you can schedule a retry here, but AttachToGnb() doesn't know gnbDevices list.
+            return;
+        }
+    }
 
     if (!gnbNetDev->IsCellConfigured())
     {

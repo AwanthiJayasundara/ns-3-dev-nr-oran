@@ -218,47 +218,17 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
     // Build: cellId -> current UE count (and reserve pending)
     // Use UE PHY "servingCell" measurements so it's current.
     // -------------------------------------------------------
-    std::map<uint16_t, uint32_t> cellUeCount;
+    // -------------------------------------------------------
+    // Build REAL load only (no reservations)
+    // -------------------------------------------------------
+    std::map<uint16_t, uint32_t> realLoad;
 
-    // Make sure ALL gNB cells appear in the map (even if load=0)
+    // ensure all cells exist (even zero)
     for (const auto& g : gnbInfos)
     {
-        cellUeCount[g.cellId] += 0;
+        realLoad[g.cellId] = 0;
     }
 
-
-    for (const auto& ueInfo : ueInfos)
-    {
-        uint16_t servingCellId = 0;
-        uint16_t servingRnti = 0;
-
-        auto meas = data->GetNrUeRsrpRsrq(ueInfo.nodeId);
-        for (const auto& m : meas)
-        {
-            uint16_t rnti, cellId, ccId;
-            double rsrp, rsrq;
-            bool isServing;
-            std::tie(rnti, cellId, rsrp, rsrq, isServing, ccId) = m;
-
-            if (ccId != 0) continue;      // only BWP/CC 0
-            if (!isServing) continue;
-
-            servingCellId = cellId;
-            servingRnti = rnti;
-            break;
-        }
-
-        if (servingCellId != 0 && servingRnti != 0)
-        {
-            cellUeCount[servingCellId]++;
-        }
-        else if (ueInfo.cellId != 0) // fallback if no PHY serving found
-        {
-            cellUeCount[ueInfo.cellId]++;
-        }
-    }
-
-    // Cleanup stale pending HOs (so we don't reserve capacity forever)
     for (auto it = pendingHoTarget.begin(); it != pendingHoTarget.end(); )
     {
         auto tit = lastHoCmdTime.find(it->first);
@@ -273,24 +243,84 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
         }
     }
 
-    // Reserve capacity for already-pending HOs (conservative but safe)
-    for (const auto& kv : pendingHoTarget)
+    // count REAL serving UEs
+    for (const auto& ueInfo : ueInfos)
     {
-        cellUeCount[kv.second]++; // reserve one slot
+        uint16_t servingCellId = 0;
+        uint16_t servingRnti   = 0;
+
+        auto meas = data->GetNrUeRsrpRsrq(ueInfo.nodeId);
+        for (const auto& m : meas)
+        {
+            uint16_t rnti, cellId, ccId;
+            double rsrp, rsrq;
+            bool isServing;
+            std::tie(rnti, cellId, rsrp, rsrq, isServing, ccId) = m;
+
+            if (ccId != 0) continue;
+            if (!isServing) continue;
+
+            servingCellId = cellId;
+            servingRnti   = rnti;
+            break;
+        }
+
+        if (servingCellId != 0 && servingRnti != 0)
+        {
+            realLoad[servingCellId]++;
+        }
+        else if (ueInfo.cellId != 0) // fallback
+        {
+            realLoad[ueInfo.cellId]++;
+        }
     }
 
-    // -------- ADD HERE: per-tick load snapshot --------
-    NS_LOG_UNCOND("---- LM tick t=" << Simulator::Now().GetSeconds() << " ----");
-    for (const auto& kv : cellUeCount)
+    // // Cleanup stale pending HOs (so we don't reserve capacity forever)
+    // for (auto it = pendingHoTarget.begin(); it != pendingHoTarget.end(); )
+    // {
+    //     auto tit = lastHoCmdTime.find(it->first);
+    //     if (tit == lastHoCmdTime.end() ||
+    //         (Simulator::Now() - tit->second) >= m_hoAttemptTimeout)
+    //     {
+    //         it = pendingHoTarget.erase(it);
+    //     }
+    //     else
+    //     {
+    //         ++it;
+    //     }
+    // }
+
+    // -------------------------------------------------------
+    // Build EFFECTIVE load for decisions (real + pending reservations)
+    // This is used ONLY for capacity checks, not for printing
+    // -------------------------------------------------------
+    std::map<uint16_t, uint32_t> effectiveLoad = realLoad;
+
+    // Reserve capacity for already-pending HOs (clamp so it never exceeds cap)
+    for (const auto& kv : pendingHoTarget)
     {
+        uint16_t tgt = kv.second;
+
+        if (m_maxUesPerCell == 0)
+        {
+            effectiveLoad[tgt]++;
+        }
+        else
+        {
+            if (effectiveLoad[tgt] < m_maxUesPerCell)
+                effectiveLoad[tgt]++;   // reserve only if space exists
+        }
+    }
+
+    // -------- per-tick REAL load snapshot --------
+    NS_LOG_UNCOND("---- LM tick t=" << Simulator::Now().GetSeconds() << " ----");
+    for (const auto& g : gnbInfos)
+    {
+        uint16_t c = g.cellId;
         if (m_maxUesPerCell > 0)
-            {
-                NS_LOG_UNCOND("  cell " << kv.first << " load=" << kv.second << "/" << m_maxUesPerCell);
-            }
-            else
-            {
-                NS_LOG_UNCOND("  cell " << kv.first << " load=" << kv.second << " (cap=disabled)");
-            }
+            NS_LOG_UNCOND("  cell " << c << " load=" << realLoad[c] << "/" << m_maxUesPerCell);
+        else
+            NS_LOG_UNCOND("  cell " << c << " load=" << realLoad[c] << " (cap=disabled)");
     }
 
 
@@ -379,7 +409,7 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
 
         // Clear pending if UE reached target
         auto pit = pendingHoTarget.find(ueInfo.nodeId);
-        if (pit != pendingHoTarget.end() && pit->second == currentCellId)
+        if (pit != pendingHoTarget.end() && servingCellId != 0 && pit->second == servingCellId)
         {
             pendingHoTarget.erase(pit);
         }
@@ -466,7 +496,7 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
             
 
             // capacity gate
-            uint32_t load = cellUeCount[c.cellId];
+            uint32_t load = effectiveLoad[c.cellId];
             if (m_maxUesPerCell > 0 && load >= m_maxUesPerCell)
             {
                 NS_LOG_UNCOND("UE " << ueInfo.nodeId << " candidate cell " << c.cellId
@@ -520,6 +550,9 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
         handoverCommand->SetAttribute("TargetRnti", UintegerValue(currentRnti));
         handoverCommand->SetAttribute("TargetCellId", UintegerValue(chosenCell));         // target cell
 
+        uint32_t tgtReal = realLoad[chosenCell];
+        uint32_t tgtEff  = effectiveLoad[chosenCell];
+
         if (m_maxUesPerCell > 0)
         {
             NS_LOG_UNCOND("LM HO UE=" << ueInfo.nodeId
@@ -528,7 +561,8 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
                                     << " servingRsrp=" << servingRsrp
                                     << " targetRsrp=" << chosenRsrp
                                     << " hystDb=" << hysteresisDb
-                                    << " targetLoad=" << cellUeCount[chosenCell] << "/" << m_maxUesPerCell);
+                                    << " targetLoadReal=" << tgtReal << "/" << m_maxUesPerCell
+                                    << " targetLoadEff="  << tgtEff  << "/" << m_maxUesPerCell);
         }
         else
         {
@@ -538,7 +572,9 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
                                     << " servingRsrp=" << servingRsrp
                                     << " targetRsrp=" << chosenRsrp
                                     << " hystDb=" << hysteresisDb
-                                    << " targetLoad=" << cellUeCount[chosenCell] << " (cap=disabled)");
+                                    << " targetLoadReal=" << tgtReal
+                                    << " targetLoadEff="  << tgtEff
+                                    << " (cap=disabled)");
         }
 
         data->LogCommandLm(m_name, handoverCommand);
@@ -548,7 +584,15 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
         pendingHoTarget[ueInfo.nodeId] = chosenCell;
 
         // Reserve capacity immediately so multiple HOs in SAME tick don't exceed cap
-        cellUeCount[chosenCell]++;
+        if (m_maxUesPerCell == 0)
+        {
+            effectiveLoad[chosenCell]++;
+        }
+        else
+        {
+            if (effectiveLoad[chosenCell] < m_maxUesPerCell)
+                effectiveLoad[chosenCell]++;
+        }
 
         LogLogicToRepository("HO CMD t=" + std::to_string(Simulator::Now().GetSeconds()) +
                              " UE=" + std::to_string(ueInfo.nodeId) +

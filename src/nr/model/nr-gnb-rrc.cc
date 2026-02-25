@@ -1955,6 +1955,11 @@ NrGnbRrc::GetTypeId()
                           UintegerValue(4),
                           MakeUintegerAccessor(&NrGnbRrc::m_rsrqFilterCoefficient),
                           MakeUintegerChecker<uint8_t>(0))
+            .AddAttribute("MaxUesPerCell",
+                        "Hard cap at gNB RRC: reject HO requests if UE contexts already at/above this value. 0 disables.",
+                        UintegerValue(0),
+                        MakeUintegerAccessor(&NrGnbRrc::m_maxUesPerCell),
+                        MakeUintegerChecker<uint32_t>())
 
             // Trace sources
             .AddTraceSource("NewUeContext",
@@ -2712,6 +2717,23 @@ NrGnbRrc::DoRecvHandoverRequest(NrEpcX2SapUser::HandoverRequestParams req)
     if (!m_admitHandoverRequest || IsMaxSrsReached())
     {
         NS_LOG_INFO("rejecting handover request from cellId " << req.sourceCellId);
+        NrEpcX2Sap::HandoverPreparationFailureParams res;
+        res.oldGnbUeX2apId = req.oldGnbUeX2apId;
+        res.sourceCellId = req.sourceCellId;
+        res.targetCellId = req.targetCellId;
+        res.cause = 0;
+        res.criticalityDiagnostics = 0;
+        m_x2SapProvider->SendHandoverPreparationFailure(res);
+        return;
+    }
+
+    // ---- HARD CAPACITY ADMISSION CONTROL (target gNB) ----
+    if (m_maxUesPerCell > 0 && GetUeCount() >= m_maxUesPerCell)
+    {
+        NS_LOG_INFO("rejecting handover request from cellId " << req.sourceCellId
+                    << " to target cellId " << req.targetCellId
+                    << " because FULL (" << GetUeCount() << "/" << m_maxUesPerCell << ")");
+
         NrEpcX2Sap::HandoverPreparationFailureParams res;
         res.oldGnbUeX2apId = req.oldGnbUeX2apId;
         res.sourceCellId = req.sourceCellId;

@@ -693,6 +693,7 @@ class NrGnbRrc : public Object
      * @return the number of UEs
      */
     uint32_t GetUeCount() const;
+    uint32_t m_maxUesPerCell {0};  // 0 = disabled
     /**
      * Set the X2 SAP this RRC should interact with
      * @param s the X2 SAP Provider to be used by this RRC entity
