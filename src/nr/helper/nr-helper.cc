@@ -53,6 +53,7 @@
 #include <numeric>   // iota
 #include <vector>
 #include <map>
+#include <limits>
 
 namespace ns3
 {
@@ -1136,12 +1137,19 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
 
     // if UE is already attached/connected, do NOT try again (prevents duplicate attach)
     Ptr<NrUeNetDevice> ueNd = ueDevice->GetObject<NrUeNetDevice>();
-    if (ueNd && ueNd->GetRrc())
+    NS_ABORT_IF(ueNd == nullptr);
+
+    if (ueNd->GetRrc())
     {
         // If UE already has a cell (or is connected), skip any retry attach
         if (ueNd->GetRrc()->GetCellId() != 0 ||
             ueNd->GetRrc()->GetState() == NrUeRrc::CONNECTED_NORMALLY)
         {
+            NS_LOG_UNCOND("---- INIT_ATTACH t=" << Simulator::Now().GetSeconds()
+              << " UE(imsi)=" << ueNd->GetImsi()
+              << " SKIP already connected cell=" << ueNd->GetRrc()->GetCellId()
+              << " state=" << ueNd->GetRrc()->GetState());
+
             return;
         }
     }
@@ -1175,6 +1183,46 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
               });
 
     Ptr<NetDevice> chosen = nullptr;
+
+    uint16_t reservedCellId = 0;
+    bool reserved = false;
+
+    uint64_t imsi = ueNd->GetImsi();
+
+    // Ptr<NrUeNetDevice> ueNd = ueDevice->GetObject<NrUeNetDevice>();
+    // NS_ABORT_IF(ueNd == nullptr);
+
+    // best cand
+    uint32_t k0_dbg = idx[0];
+    Ptr<NrGnbNetDevice> g0_dbg = gnbDevices.Get(k0_dbg)->GetObject<NrGnbNetDevice>();
+    uint16_t cell0_dbg = g0_dbg->GetCellId();
+    double rsrp0_dbg = nrInitAssoc->GetMaxRsrp(k0_dbg);
+    uint32_t occ0_dbg = (m_initMaxUesPerCell > 0) ? m_initReservedPerCell[cell0_dbg]
+                                                : (g0_dbg->GetRrc() ? g0_dbg->GetRrc()->GetUeCount() : 0);
+
+    // second cand (if exists)
+    uint16_t cell1_dbg = 0;
+    double rsrp1_dbg = -1e9;
+    uint32_t occ1_dbg = 0;
+    if (idx.size() > 1)
+    {
+        uint32_t k1_dbg = idx[1];
+        Ptr<NrGnbNetDevice> g1_dbg = gnbDevices.Get(k1_dbg)->GetObject<NrGnbNetDevice>();
+        cell1_dbg = g1_dbg->GetCellId();
+        rsrp1_dbg = nrInitAssoc->GetMaxRsrp(k1_dbg);
+        occ1_dbg = (m_initMaxUesPerCell > 0) ? m_initReservedPerCell[cell1_dbg]
+                                            : (g1_dbg->GetRrc() ? g1_dbg->GetRrc()->GetUeCount() : 0);
+    }
+
+    NS_LOG_UNCOND("---- INIT_ATTACH t=" << Simulator::Now().GetSeconds()
+                << " UE(imsi)=" << imsi << " ----");
+    NS_LOG_UNCOND("  cand0 cell=" << cell0_dbg << " occ=" << occ0_dbg << "/" << m_initMaxUesPerCell
+                << " rsrp=" << rsrp0_dbg);
+    if (idx.size() > 1)
+    {
+        NS_LOG_UNCOND("  cand1 cell=" << cell1_dbg << " occ=" << occ1_dbg << "/" << m_initMaxUesPerCell
+                    << " rsrp=" << rsrp1_dbg);
+    }
 
     // for (uint32_t k : idx)
     // {
@@ -1222,6 +1270,8 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
     // If best is below min, no point trying others (sorted)
     if (rsrp0 < m_initMinRsrpDbm)
     {
+        NS_LOG_UNCOND("  INIT_ATTACH_FAIL_LOW_RSRP: best cell=" << cell0_dbg
+                  << " rsrp=" << rsrp0 << " < min=" << m_initMinRsrpDbm);
         goto retry_attach;
     }
 
@@ -1236,6 +1286,8 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
         {
             chosen = gnbDevices.Get(k0);
             m_initReservedPerCell[cell0]++; // reserve immediately (STRICT cap)
+            reservedCellId = cell0;
+            reserved = true;
         }
     }
 
@@ -1258,6 +1310,8 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
             {
                 chosen = gnbDevices.Get(k1);
                 m_initReservedPerCell[cell1]++; // reserve immediately (STRICT cap)
+                reservedCellId = cell1;
+                reserved = true;
             }
         }
     }
@@ -1265,6 +1319,11 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
     if (!chosen)
     {
     retry_attach:
+    NS_LOG_UNCOND("  INIT_ATTACH_FAIL: UE(imsi)=" << ueNd->GetImsi()
+              << " (best cell=" << cell0_dbg << " occ=" << occ0_dbg << "/" << m_initMaxUesPerCell
+              << " rsrp=" << rsrp0_dbg << ")"
+              << " retryIn=" << m_initRetryInterval.GetSeconds() << "s");
+
         // Both top-1 and top-2 failed (full or low RSRP) -> remain unattached
         if (m_initRetryInterval > Seconds(0))
         {
@@ -1278,6 +1337,36 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
 
     // Attach to chosen (best or 2nd-best)
     AttachToGnb(ueDevice, chosen);
+    uint16_t targetCell = chosen->GetObject<NrGnbNetDevice>()->GetCellId();
+    bool attached = (ueNd->GetTargetGnb() && ueNd->GetTargetGnb()->GetCellId() == targetCell);
+
+    if (!attached && reserved && m_initMaxUesPerCell > 0)
+    {
+        auto it = m_initReservedPerCell.find(reservedCellId);
+        if (it != m_initReservedPerCell.end() && it->second > 0)
+        {
+            it->second--; // release reservation
+        }
+
+        // Optional: retry here (because attach failed)
+        if (m_initRetryInterval > Seconds(0))
+        {
+            Simulator::Schedule(m_initRetryInterval,
+                                [this, ueDevice, gnbDevices]() {
+                                    this->AttachToMaxRsrpGnb(ueDevice, gnbDevices);
+                                });
+        }
+    }
+    // print OK only if AttachToGnb really set target
+    if (attached)
+    {
+        NS_LOG_UNCOND("  INIT_ATTACH_OK: UE(imsi)=" << ueNd->GetImsi() << " -> cell=" << targetCell);
+    }
+    else
+    {
+        NS_LOG_UNCOND("  INIT_ATTACH_CALL_DONE_BUT_NOT_ATTACHED: UE(imsi)=" << ueNd->GetImsi()
+                << " targetCell=" << targetCell);
+    }
 
 }
 
@@ -1335,6 +1424,10 @@ NrHelper::AttachToGnb(const Ptr<NetDevice>& ueDevice, const Ptr<NetDevice>& gnbD
         uint32_t occ = gnbNetDev->GetRrc()->GetUeCount();
         if (occ >= m_initMaxUesPerCell)
         {
+            NS_LOG_UNCOND("  INIT_ATTACH_REJECTED_IN_AttachToGnb t=" << Simulator::Now().GetSeconds()
+                << " UE(imsi)=" << ueNetDev->GetImsi()
+                << " cell=" << gnbNetDev->GetCellId()
+                << " occ=" << occ << "/" << m_initMaxUesPerCell);
             // Optional: you can schedule a retry here, but AttachToGnb() doesn't know gnbDevices list.
             return;
         }
