@@ -313,7 +313,7 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
     }
 
     // -------- per-tick REAL load snapshot --------
-    NS_LOG_UNCOND("---- LM tick t=" << Simulator::Now().GetSeconds() << " ----");
+    NS_LOG_UNCOND("---- LOAD at t=" << Simulator::Now().GetSeconds() << " ----");
     for (const auto& g : gnbInfos)
     {
         uint16_t c = g.cellId;

@@ -150,6 +150,16 @@ build_lib_example(
     ${libmobility}
 )
 
+build_lib_example(
+  NAME oran-nr-2-nr-rsrp-uav-ue-handover-cell-load-traffic
+  SOURCE_FILES oran-nr-2-nr-rsrp-uav-ue-handover-cell-load-traffic.cc
+  LIBRARIES_TO_LINK
+    ${liboran}
+    ${libnetwork}
+    ${libnr}
+    ${libmobility}
+)
+
 
 build_lib_example(
   NAME oran-nr-2-nr-rsrp-handover-simulation-ntn
