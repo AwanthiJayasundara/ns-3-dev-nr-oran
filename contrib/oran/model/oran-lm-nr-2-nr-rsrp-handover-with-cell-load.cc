@@ -32,7 +32,7 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetTypeId(void)
             .AddConstructor<OranLmNr2NrRsrpHandoverWithCellLoad>()
 
             // -----------------------------
-            // NO-SECRECY knobs (RSRP-only)
+            //(RSRP-only)
             // -----------------------------
             .AddAttribute("HysteresisDb",
                           "RSRP HO hysteresis margin in dB (RSRP-only LM).",
@@ -57,6 +57,13 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetTypeId(void)
                           TimeValue(Seconds(2.0)),
                           MakeTimeAccessor(&OranLmNr2NrRsrpHandoverWithCellLoad::m_hoAttemptTimeout),
                           MakeTimeChecker())
+            //Always TTT should be less than the when the LM is executed (LM run / query interval) ex: 50ms<2s
+            .AddAttribute("TimeToTrigger",
+                        "Time that a neighbour must continuously stay better than "
+                        "(serving + hysteresis) before issuing a HO.",
+                        TimeValue(MilliSeconds(50)),
+                        MakeTimeAccessor(&OranLmNr2NrRsrpHandoverWithCellLoad::m_timeToTrigger),
+                        MakeTimeChecker())
 
             .AddAttribute("MaxUesPerCell",
                         "Hard cap: ... 0 disables the cap.",
@@ -83,6 +90,7 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetTypeId(void)
                         MakeTimeChecker());
 
 
+
     return tid;
 }
 
@@ -95,7 +103,8 @@ OranLmNr2NrRsrpHandoverWithCellLoad::OranLmNr2NrRsrpHandoverWithCellLoad(void)
       m_maxUesPerCell(0),
       m_tryNextBest(true),
       m_minAcceptableRsrpDbm(-120.0),
-      m_lowRsrpRecheck(Seconds(2.0))
+      m_lowRsrpRecheck(Seconds(2.0)),
+      m_timeToTrigger(MilliSeconds(256))
 
 {
     NS_LOG_FUNCTION(this);
@@ -211,6 +220,7 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
     static std::map<uint64_t, Time> lastHoCmdTime;       // UE nodeId -> last HO cmd time
     static std::map<uint64_t, uint16_t> pendingHoTarget; // UE nodeId -> target cell
     static std::map<uint64_t, Time> lowRsrpBlockUntil; // UE nodeId -> do not evaluate until this time
+    static std::map<uint64_t, std::pair<uint16_t, Time>> tttState;
 
     std::vector<Ptr<OranCommand>> commands;
 
@@ -523,6 +533,7 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
 
         if (lowRsrpFailed)
         {
+            tttState.erase(ueInfo.nodeId);   // reset stopwatch
             continue; // skip HO command this tick
         }
 
@@ -530,6 +541,7 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
         // No feasible target => keep serving cell
         if (chosenCell == currentCellId)
         {
+            tttState.erase(ueInfo.nodeId);
             if (!anyBeatsHyst)
             {
                 NS_LOG_UNCOND("UE " << ueInfo.nodeId
@@ -541,6 +553,39 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
                                 << " LM HO_FAIL_KEEP_CURRENT : all candidates that beat hysteresis are FULL");
             }
             continue;
+        }
+
+        // --------------------
+        // TTT gate (real Time-To-Trigger)
+        // --------------------
+        if (chosenCell != currentCellId)
+        {
+            auto it = tttState.find(ueInfo.nodeId);
+
+            // If new candidate (different from last tick), restart timer
+            if (it == tttState.end() || it->second.first != chosenCell)
+            {
+                tttState[ueInfo.nodeId] = {chosenCell, Simulator::Now()};
+                it = tttState.find(ueInfo.nodeId);
+            }
+
+            Time elapsed = Simulator::Now() - it->second.second;
+
+            if (elapsed < m_timeToTrigger)
+            {
+                NS_LOG_UNCOND("UE " << ueInfo.nodeId
+                            << " TTT_WAIT target=" << chosenCell
+                            << " elapsed=" << elapsed.GetSeconds()
+                            << "s need=" << m_timeToTrigger.GetSeconds() << "s");
+                continue; // do NOT HO yet
+            }
+
+            // elapsed >= TTT -> allow HO
+        }
+        else
+        {
+            // No HO candidate -> clear any running TTT
+            tttState.erase(ueInfo.nodeId);
         }
 
 
@@ -579,6 +624,7 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
 
         data->LogCommandLm(m_name, handoverCommand);
         commands.push_back(handoverCommand);
+        tttState.erase(ueInfo.nodeId);
 
         lastHoCmdTime[ueInfo.nodeId] = Simulator::Now();
         pendingHoTarget[ueInfo.nodeId] = chosenCell;

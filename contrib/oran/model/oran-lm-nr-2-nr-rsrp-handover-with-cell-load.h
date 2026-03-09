@@ -94,6 +94,7 @@ class OranLmNr2NrRsrpHandoverWithCellLoad : public OranLm
 
     double m_minAcceptableRsrpDbm;
     Time   m_lowRsrpRecheck;
+    Time m_timeToTrigger;
 };
 
 } // namespace ns3
