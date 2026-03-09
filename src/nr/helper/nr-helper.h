@@ -1084,6 +1084,8 @@ class NrHelper : public Object
   // Last time we refreshed m_initReservedPerCell
   Time m_initReserveEpoch{Seconds(-1)};
 
+  // uint32_t m_initMaxTryCandidates{2};  // how many best-RSRP candidates to try (default 2)
+
     Ptr<NrPhyRxTrace> m_phyStats; //!< Pointer to the PhyRx stats
     Ptr<NrMacRxTrace> m_macStats; //!< Pointer to the MacRx stats
 
