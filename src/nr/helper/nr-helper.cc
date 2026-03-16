@@ -1265,18 +1265,47 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
         const uint16_t cell = gnb->GetCellId();
         const double rsrp = nrInitAssoc->GetMaxRsrp(k);
 
+        // uint32_t occ = 0;
+        // if (m_initMaxUesPerCell > 0)
+        // {
+        //     auto it = m_initReservedPerCell.find(cell);
+        //     occ = (it == m_initReservedPerCell.end()) ? 0 : it->second;
+
+        //     if (occ >= m_initMaxUesPerCell)
+        //     {
+        //         //anyFull = true;
+        //         NS_LOG_UNCOND("  candOK" << rank << " cell=" << cell
+        //                     << " rsrp=" << rsrp
+        //                     << " occ=" << occ << "/" << m_initMaxUesPerCell
+        //                     << " -> SKIP_FULL");
+        //         continue;
+        //     }
+        // }
+
+        // // cap disabled OR not full
+        // NS_LOG_UNCOND("  candOK" << rank << " cell=" << cell
+        //             << " rsrp=" << rsrp
+        //             << " occ=" << occ << "/" << m_initMaxUesPerCell
+        //             << " -> OK");
+        // notFull.push_back(k);
         uint32_t occ = 0;
-        if (m_initMaxUesPerCell > 0)
+
+        // Per-cell cap takes priority over global cap
+        auto capIt = m_initCellCapMap.find(cell);
+        uint32_t effectiveCap = (capIt != m_initCellCapMap.end())
+                                ? capIt->second
+                                : m_initMaxUesPerCell; // fallback to global
+
+        if (effectiveCap > 0)
         {
             auto it = m_initReservedPerCell.find(cell);
             occ = (it == m_initReservedPerCell.end()) ? 0 : it->second;
 
-            if (occ >= m_initMaxUesPerCell)
+            if (occ >= effectiveCap)
             {
-                //anyFull = true;
                 NS_LOG_UNCOND("  candOK" << rank << " cell=" << cell
                             << " rsrp=" << rsrp
-                            << " occ=" << occ << "/" << m_initMaxUesPerCell
+                            << " occ=" << occ << "/" << effectiveCap
                             << " -> SKIP_FULL");
                 continue;
             }
@@ -1285,7 +1314,7 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
         // cap disabled OR not full
         NS_LOG_UNCOND("  candOK" << rank << " cell=" << cell
                     << " rsrp=" << rsrp
-                    << " occ=" << occ << "/" << m_initMaxUesPerCell
+                    << " occ=" << occ << "/" << effectiveCap
                     << " -> OK");
         notFull.push_back(k);
     }
@@ -1324,21 +1353,25 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
         const double rsrp = nrInitAssoc->GetMaxRsrp(k);
 
         uint32_t occ = 0;
-        if (m_initMaxUesPerCell > 0)
-        {
-            occ = m_initReservedPerCell[cell]; // exists after RefreshInitReservations
-            // reserve immediately (strict cap)
-            m_initReservedPerCell[cell] = occ + 1;
-            reservedCellId = cell;
-            reserved = true;
-        }
+                auto selCapIt = m_initCellCapMap.find(cell);
+                uint32_t selectedCap = (selCapIt != m_initCellCapMap.end())
+                                    ? selCapIt->second
+                                    : m_initMaxUesPerCell;
 
-        chosen = gnbDevices.Get(k);
+                if (selectedCap > 0)
+                {
+                    occ = m_initReservedPerCell[cell];
+                    m_initReservedPerCell[cell] = occ + 1;
+                    reservedCellId = cell;
+                    reserved = true;
+                }
+
+                chosen = gnbDevices.Get(k);
 
         NS_LOG_UNCOND("  SELECT cell=" << cell
-                    << " rsrp=" << rsrp
-                    << " occ(afterReserve)=" << (m_initMaxUesPerCell > 0 ? m_initReservedPerCell[cell] : 0)
-                    << "/" << m_initMaxUesPerCell);
+                            << " rsrp=" << rsrp
+                            << " occ(afterReserve)=" << (selectedCap > 0 ? m_initReservedPerCell[cell] : 0)
+                            << "/" << selectedCap);
     }
 
     // Attach
@@ -1427,15 +1460,22 @@ NrHelper::AttachToGnb(const Ptr<NetDevice>& ueDevice, const Ptr<NetDevice>& gnbD
     // hard admission control (prevents any attach path exceeding cap)
     if (m_initMaxUesPerCell > 0 && gnbNetDev->GetRrc())
     {
-        uint32_t occ = gnbNetDev->GetRrc()->GetUeCount();
-        if (occ >= m_initMaxUesPerCell)
+        auto capIt = m_initCellCapMap.find(gnbNetDev->GetCellId());
+        uint32_t hardCap = (capIt != m_initCellCapMap.end())
+                           ? capIt->second
+                           : m_initMaxUesPerCell;
+
+        if (hardCap > 0 && gnbNetDev->GetRrc())
         {
-            NS_LOG_UNCOND("  INIT_ATTACH_REJECTED_IN_AttachToGnb t=" << Simulator::Now().GetSeconds()
-                << " UE(imsi)=" << ueNetDev->GetImsi()
-                << " cell=" << gnbNetDev->GetCellId()
-                << " occ=" << occ << "/" << m_initMaxUesPerCell);
-            // Optional: you can schedule a retry here, but AttachToGnb() doesn't know gnbDevices list.
-            return;
+            uint32_t occ = gnbNetDev->GetRrc()->GetUeCount();
+            if (occ >= hardCap)
+            {
+                NS_LOG_UNCOND("  INIT_ATTACH_REJECTED_IN_AttachToGnb t=" << Simulator::Now().GetSeconds()
+                    << " UE(imsi)=" << ueNetDev->GetImsi()
+                    << " cell=" << gnbNetDev->GetCellId()
+                    << " occ=" << occ << "/" << hardCap);
+                return;
+            }
         }
     }
 

@@ -180,10 +180,19 @@ build_lib_example(
     ${libmobility}
 )
 
+build_lib_example(
+  NAME oran-nr-2-nr-rsrp-uav-ue-handover-cell-load-tn-ntn
+  SOURCE_FILES oran-nr-2-nr-rsrp-uav-ue-handover-cell-load-tn-ntn.cc
+  LIBRARIES_TO_LINK
+    ${liboran}
+    ${libnetwork}
+    ${libnr}
+    ${libmobility}
+)
 
 build_lib_example(
-  NAME oran-nr-2-nr-rsrp-handover-simulation-ntn
-  SOURCE_FILES oran-nr-2-nr-rsrp-handover-simulation-ntn.cc
+  NAME oran-nr-2-nr-rsrp-uav-ue-handover-cell-load-xr
+  SOURCE_FILES oran-nr-2-nr-rsrp-uav-ue-handover-cell-load-xr.cc
   LIBRARIES_TO_LINK
     ${liboran}
     ${libnetwork}

@@ -629,6 +629,15 @@ class NrHelper : public Object
      *
      */
     void SetGnbBeamManagerTypeId(const TypeId& typeId);
+    /**
+     * @brief Set the TypeId of the beam manager
+     * @param typeId the type of the object
+     *
+     */
+    void SetCellCapacity(uint16_t cellId, uint32_t maxUes)
+    {
+        m_initCellCapMap[cellId] = maxUes;
+    }
 
     /**
      * @brief Set the ErrorModel for UL AMC and UE spectrum at the same time
@@ -1104,6 +1113,8 @@ class NrHelper : public Object
     Ptr<NrMacSchedulingStats> m_macSchedStats; //!<< Pointer to NrMacStatsCalculator
     bool m_useIdealRrc;
     std::vector<OperationBandInfo> m_bands;
+
+    std::map<uint16_t, uint32_t> m_initCellCapMap; // cellId -> maxUes at initial attach
 
     InitialAssocParams
         m_initialParams; //!<< Initial attachment parameters to pass from example to setup

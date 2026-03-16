@@ -6,6 +6,7 @@
 
 #include "ns3/nstime.h"
 #include "ns3/vector.h"
+#include <map>
 
 namespace ns3
 {
@@ -65,6 +66,9 @@ class OranLmNr2NrRsrpHandoverWithCellLoad : public OranLm
 
     std::vector<Ptr<OranCommand>> Run(void) override;
 
+    void SetCellCapacity(uint16_t cellId, uint32_t maxUes);
+
+
   private:
     std::vector<OranLmNr2NrRsrpHandoverWithCellLoad::UeInfo> GetUeInfos(Ptr<OranDataRepository> data) const;
 
@@ -95,6 +99,7 @@ class OranLmNr2NrRsrpHandoverWithCellLoad : public OranLm
     double m_minAcceptableRsrpDbm;
     Time   m_lowRsrpRecheck;
     Time m_timeToTrigger;
+    std::map<uint16_t, uint32_t> m_cellCapacityMap;
 };
 
 } // namespace ns3

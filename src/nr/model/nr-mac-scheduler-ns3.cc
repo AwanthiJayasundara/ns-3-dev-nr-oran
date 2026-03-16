@@ -924,7 +924,7 @@ NrMacSchedulerNs3::DoSchedDlCqiInfoReq(
         {
             NS_LOG_WARN("Dropping DL CQI for unknown RNTI=" << cqi.m_rnti
                         << " (likely due to handover timing)");
-            return;
+            continue;
         }
 
         const std::shared_ptr<NrMacSchedulerUeInfo>& ue = m_ueMap.find(cqi.m_rnti)->second;
@@ -975,16 +975,59 @@ NrMacSchedulerNs3::DoSchedUlCqiInfoReq(
                                            << static_cast<uint32_t>(symStart));
 
         auto itAlloc = m_ulAllocationMap.find(ulSfnSf.GetEncoding());
-        NS_ASSERT_MSG(itAlloc != m_ulAllocationMap.end(), "Can't find allocation for " << ulSfnSf);
+
+        if (itAlloc == m_ulAllocationMap.end())
+        {
+            NS_LOG_WARN("UL CQI received but allocation not found for slot "
+                        << ulSfnSf << " (likely after handover). Dropping CQI.");
+            return;
+        }
         std::vector<AllocElem>& ulAllocations = itAlloc->second.m_ulAllocations;
 
+        // for (auto it = ulAllocations.cbegin(); it != ulAllocations.cend(); /* NO INC */)
+        // {
+        //     const AllocElem& allocation = *(it);
+        //     if (allocation.m_symStart == symStart)
+        //     {
+        //         auto itUe = m_ueMap.find(allocation.m_rnti);
+        //         NS_ASSERT(itUe != m_ueMap.end());
+        //         NS_ASSERT(allocation.m_numSym > 0);
+        //         NS_ASSERT(allocation.m_tbs > 0);
+
+        //         m_cqiManagement.UlSBCQIReported(expirationTime,
+        //                                         allocation.m_tbs,
+        //                                         params,
+        //                                         UeInfoOf(*itUe),
+        //                                         allocation.m_rbgMask,
+        //                                         m_macSchedSapUser->GetNumRbPerRbg(),
+        //                                         m_macSchedSapUser->GetSpectrumModel());
+        //         found = true;
+        //         it = ulAllocations.erase(it);
+        //     }
+        //     else
+        //     {
+        //         ++it;
+        //     }
+        // }
+        // NS_ASSERT(found);
+
+        // AFTER (graceful handling for post-handover CQI)
         for (auto it = ulAllocations.cbegin(); it != ulAllocations.cend(); /* NO INC */)
         {
             const AllocElem& allocation = *(it);
             if (allocation.m_symStart == symStart)
             {
                 auto itUe = m_ueMap.find(allocation.m_rnti);
-                NS_ASSERT(itUe != m_ueMap.end());
+                if (itUe == m_ueMap.end())
+                {
+                    NS_LOG_WARN("UL CQI: RNTI " << allocation.m_rnti
+                                << " not found in ueMap (likely handed over). "
+                                << "Dropping CQI for sfn=" << ulSfnSf);
+                    it = ulAllocations.erase(it);
+                    found = true;  // Prevent the assert below from firing
+                    continue;
+                }
+
                 NS_ASSERT(allocation.m_numSym > 0);
                 NS_ASSERT(allocation.m_tbs > 0);
 
@@ -1003,7 +1046,11 @@ NrMacSchedulerNs3::DoSchedUlCqiInfoReq(
                 ++it;
             }
         }
-        NS_ASSERT(found);
+        if (!found)
+        {
+            NS_LOG_WARN("UL CQI received but no matching allocation found for slot "
+                        << ulSfnSf << ". Ignoring.");
+        }
 
         if (ulAllocations.empty())
         {

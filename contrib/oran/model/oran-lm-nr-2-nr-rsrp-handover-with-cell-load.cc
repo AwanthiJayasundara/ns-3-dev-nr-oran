@@ -61,7 +61,7 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetTypeId(void)
             .AddAttribute("TimeToTrigger",
                         "Time that a neighbour must continuously stay better than "
                         "(serving + hysteresis) before issuing a HO.",
-                        TimeValue(MilliSeconds(50)),
+                        TimeValue(Seconds(2.0)),//MilliSeconds(50)
                         MakeTimeAccessor(&OranLmNr2NrRsrpHandoverWithCellLoad::m_timeToTrigger),
                         MakeTimeChecker())
 
@@ -114,6 +114,13 @@ OranLmNr2NrRsrpHandoverWithCellLoad::OranLmNr2NrRsrpHandoverWithCellLoad(void)
 OranLmNr2NrRsrpHandoverWithCellLoad::~OranLmNr2NrRsrpHandoverWithCellLoad(void)
 {
     NS_LOG_FUNCTION(this);
+}
+/// Update the cell capacity (max UEs) for a given cell ID
+void
+OranLmNr2NrRsrpHandoverWithCellLoad::SetCellCapacity(uint16_t cellId, uint32_t maxUes)
+{
+    NS_LOG_FUNCTION(this << cellId << maxUes);
+    m_cellCapacityMap[cellId] = maxUes;
 }
 
 std::vector<Ptr<OranCommand>>
@@ -222,6 +229,14 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
     static std::map<uint64_t, Time> lowRsrpBlockUntil; // UE nodeId -> do not evaluate until this time
     static std::map<uint64_t, std::pair<uint16_t, Time>> tttState;
 
+    auto GetCellCap = [&](uint16_t cellId) -> uint32_t 
+    {
+        auto it = m_cellCapacityMap.find(cellId);
+        if (it != m_cellCapacityMap.end())
+            return it->second;
+        return m_maxUesPerCell; // fallback to global cap (0 = disabled)
+    };
+
     std::vector<Ptr<OranCommand>> commands;
 
     // -------------------------------------------------------
@@ -307,28 +322,45 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
     std::map<uint16_t, uint32_t> effectiveLoad = realLoad;
 
     // Reserve capacity for already-pending HOs (clamp so it never exceeds cap)
+    // for (const auto& kv : pendingHoTarget)
+    // {
+    //     uint16_t tgt = kv.second;
+
+    //     if (m_maxUesPerCell == 0)
+    //     {
+    //         effectiveLoad[tgt]++;
+    //     }
+    //     else
+    //     {
+    //         if (effectiveLoad[tgt] < m_maxUesPerCell)
+    //             effectiveLoad[tgt]++;   // reserve only if space exists
+    //     }
+    // }
     for (const auto& kv : pendingHoTarget)
     {
         uint16_t tgt = kv.second;
-
-        if (m_maxUesPerCell == 0)
-        {
+        uint32_t cap = GetCellCap(tgt);    // TN cell -> 20, NTN cell -> 15
+        if (cap == 0 || effectiveLoad[tgt] < cap)
             effectiveLoad[tgt]++;
-        }
-        else
-        {
-            if (effectiveLoad[tgt] < m_maxUesPerCell)
-                effectiveLoad[tgt]++;   // reserve only if space exists
-        }
     }
 
     // -------- per-tick REAL load snapshot --------
     NS_LOG_UNCOND("---- LOAD at t=" << Simulator::Now().GetSeconds() << " ----");
+    // for (const auto& g : gnbInfos)
+    // {
+    //     uint16_t c = g.cellId;
+    //     if (m_maxUesPerCell > 0)
+    //         NS_LOG_UNCOND("  cell " << c << " load=" << realLoad[c] << "/" << m_maxUesPerCell);
+    //     else
+    //         NS_LOG_UNCOND("  cell " << c << " load=" << realLoad[c] << " (cap=disabled)");
+    // }
     for (const auto& g : gnbInfos)
     {
-        uint16_t c = g.cellId;
-        if (m_maxUesPerCell > 0)
-            NS_LOG_UNCOND("  cell " << c << " load=" << realLoad[c] << "/" << m_maxUesPerCell);
+        uint16_t c   = g.cellId;
+        uint32_t cap = GetCellCap(c);      // correct cap per cell
+        if (cap > 0)
+            NS_LOG_UNCOND("  cell " << c << " load=" << realLoad[c] << "/" << cap);
+            // now prints "cell 3 load=12/15" correctly for NTN cell
         else
             NS_LOG_UNCOND("  cell " << c << " load=" << realLoad[c] << " (cap=disabled)");
     }
@@ -507,10 +539,11 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
 
             // capacity gate
             uint32_t load = effectiveLoad[c.cellId];
-            if (m_maxUesPerCell > 0 && load >= m_maxUesPerCell)
+            uint32_t cap  = GetCellCap(c.cellId);
+            if (cap > 0 && load >= cap)
             {
                 NS_LOG_UNCOND("UE " << ueInfo.nodeId << " candidate cell " << c.cellId
-                                << " beats hyst but FULL (" << load << "/" << m_maxUesPerCell << ")");
+                                << " beats hyst but FULL (" << load << "/" << cap << ")");
 
                 if (!m_tryNextBest)
                 {
@@ -598,45 +631,79 @@ OranLmNr2NrRsrpHandoverWithCellLoad::GetHandoverCommands(
         uint32_t tgtReal = realLoad[chosenCell];
         uint32_t tgtEff  = effectiveLoad[chosenCell];
 
-        if (m_maxUesPerCell > 0)
-        {
-            NS_LOG_UNCOND("LM HO UE=" << ueInfo.nodeId
-                                    << " rnti=" << currentRnti
-                                    << " " << currentCellId << "->" << chosenCell
-                                    << " servingRsrp=" << servingRsrp
-                                    << " targetRsrp=" << chosenRsrp
-                                    << " hystDb=" << hysteresisDb
-                                    << " targetLoadReal=" << tgtReal << "/" << m_maxUesPerCell
-                                    << " targetLoadEff="  << tgtEff  << "/" << m_maxUesPerCell);
-        }
-        else
-        {
-            NS_LOG_UNCOND("LM HO UE=" << ueInfo.nodeId
-                                    << " rnti=" << currentRnti
-                                    << " " << currentCellId << "->" << chosenCell
-                                    << " servingRsrp=" << servingRsrp
-                                    << " targetRsrp=" << chosenRsrp
-                                    << " hystDb=" << hysteresisDb
-                                    << " targetLoadReal=" << tgtReal
-                                    << " targetLoadEff="  << tgtEff
-                                    << " (cap=disabled)");
-        }
+        // if (m_maxUesPerCell > 0)
+        // {
+        //     NS_LOG_UNCOND("LM HO UE=" << ueInfo.nodeId
+        //                             << " rnti=" << currentRnti
+        //                             << " " << currentCellId << "->" << chosenCell
+        //                             << " servingRsrp=" << servingRsrp
+        //                             << " targetRsrp=" << chosenRsrp
+        //                             << " hystDb=" << hysteresisDb
+        //                             << " targetLoadReal=" << tgtReal << "/" << m_maxUesPerCell
+        //                             << " targetLoadEff="  << tgtEff  << "/" << m_maxUesPerCell);
+        // }
+        // else
+        // {
+        //     NS_LOG_UNCOND("LM HO UE=" << ueInfo.nodeId
+        //                             << " rnti=" << currentRnti
+        //                             << " " << currentCellId << "->" << chosenCell
+        //                             << " servingRsrp=" << servingRsrp
+        //                             << " targetRsrp=" << chosenRsrp
+        //                             << " hystDb=" << hysteresisDb
+        //                             << " targetLoadReal=" << tgtReal
+        //                             << " targetLoadEff="  << tgtEff
+        //                             << " (cap=disabled)");
+        // }
 
-        data->LogCommandLm(m_name, handoverCommand);
-        commands.push_back(handoverCommand);
-        tttState.erase(ueInfo.nodeId);
+        // data->LogCommandLm(m_name, handoverCommand);
+        // commands.push_back(handoverCommand);
+        // tttState.erase(ueInfo.nodeId);
 
-        lastHoCmdTime[ueInfo.nodeId] = Simulator::Now();
-        pendingHoTarget[ueInfo.nodeId] = chosenCell;
+        // lastHoCmdTime[ueInfo.nodeId] = Simulator::Now();
+        // pendingHoTarget[ueInfo.nodeId] = chosenCell;
 
-        // Reserve capacity immediately so multiple HOs in SAME tick don't exceed cap
-        if (m_maxUesPerCell == 0)
+        // // Reserve capacity immediately so multiple HOs in SAME tick don't exceed cap
+        // if (m_maxUesPerCell == 0)
+        // {
+        //     effectiveLoad[chosenCell]++;
+        // }
+        // else
+        // {
+        //     if (effectiveLoad[chosenCell] < m_maxUesPerCell)
+        //         effectiveLoad[chosenCell]++;
+        // }
+
         {
-            effectiveLoad[chosenCell]++;
-        }
-        else
-        {
-            if (effectiveLoad[chosenCell] < m_maxUesPerCell)
+        uint32_t cap = GetCellCap(chosenCell);
+            if (cap > 0)
+                NS_LOG_UNCOND("LM HO UE=" << ueInfo.nodeId
+                                        << " rnti=" << currentRnti
+                                        << " " << currentCellId << "->" << chosenCell
+                                        << " servingRsrp=" << servingRsrp
+                                        << " targetRsrp=" << chosenRsrp
+                                        << " hystDb=" << hysteresisDb
+                                        << " targetLoadReal=" << tgtReal << "/" << cap
+                                        << " targetLoadEff="  << tgtEff  << "/" << cap);
+            else
+                NS_LOG_UNCOND("LM HO UE=" << ueInfo.nodeId
+                                        << " rnti=" << currentRnti
+                                        << " " << currentCellId << "->" << chosenCell
+                                        << " servingRsrp=" << servingRsrp
+                                        << " targetRsrp=" << chosenRsrp
+                                        << " hystDb=" << hysteresisDb
+                                        << " targetLoadReal=" << tgtReal
+                                        << " targetLoadEff="  << tgtEff
+                                        << " (cap=disabled)");
+
+            data->LogCommandLm(m_name, handoverCommand);
+            commands.push_back(handoverCommand);
+            tttState.erase(ueInfo.nodeId);
+
+            lastHoCmdTime[ueInfo.nodeId] = Simulator::Now();
+            pendingHoTarget[ueInfo.nodeId] = chosenCell;
+
+            // Reserve capacity immediately so multiple HOs in SAME tick don't exceed cap
+            if (cap == 0 || effectiveLoad[chosenCell] < cap)
                 effectiveLoad[chosenCell]++;
         }
 
