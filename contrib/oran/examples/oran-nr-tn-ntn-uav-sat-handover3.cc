@@ -152,7 +152,7 @@ static uint32_t g_gridNy = 12;
 
 static double g_heatNormMax = 5.0;
 static std::string g_uavPredictorOnnxPath =
-    "results/nr/tn-ntn/ml_uav_predictor/uav_underserved_heatmap_gru_ir8.onnx";
+    "results/nr/tn-ntn/ml_uav_predictor_compare/uav_underserved_heatmap_gru_ir8.onnx";
 /////
 const static float TN_GNB_HEIGHT = 25;
 
