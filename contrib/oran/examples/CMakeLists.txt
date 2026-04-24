@@ -211,6 +211,66 @@ build_lib_example(
 )
 
 build_lib_example(
+  NAME oran-nr-2-nr-rsrp-handover-lm-with-uav-mobility-lm
+  SOURCE_FILES oran-nr-2-nr-rsrp-handover-lm-with-uav-mobility-lm.cc
+  LIBRARIES_TO_LINK
+    ${liboran}
+    ${libnetwork}
+    ${libnr}
+    ${libmobility}
+)
+
+build_lib_example(
+  NAME oran-nr-tn-ntn-hybrid-xr
+  SOURCE_FILES oran-nr-tn-ntn-hybrid-xr.cc
+  LIBRARIES_TO_LINK
+    ${liboran}
+    ${libnetwork}
+    ${libnr}
+    ${libmobility}
+)
+
+build_lib_example(
+  NAME oran-nr-tn-ntn-uav-sat-handover
+  SOURCE_FILES oran-nr-tn-ntn-uav-sat-handover.cc
+  LIBRARIES_TO_LINK
+    ${liboran}
+    ${libnetwork}
+    ${libnr}
+    ${libmobility}
+)
+
+build_lib_example(
+  NAME oran-nr-tn-ntn-uav-sat-handover2
+  SOURCE_FILES oran-nr-tn-ntn-uav-sat-handover2.cc
+  LIBRARIES_TO_LINK
+    ${liboran}
+    ${libnetwork}
+    ${libnr}
+    ${libmobility}
+)
+
+build_lib_example(
+  NAME oran-nr-tn-ntn-uav-sat-handover3
+  SOURCE_FILES oran-nr-tn-ntn-uav-sat-handover3.cc
+  LIBRARIES_TO_LINK
+    ${liboran}
+    ${libnetwork}
+    ${libnr}
+    ${libmobility}
+)
+
+build_lib_example(
+  NAME oran-nr-tn-ntn-uav-sat-handover4
+  SOURCE_FILES oran-nr-tn-ntn-uav-sat-handover4.cc
+  LIBRARIES_TO_LINK
+    ${liboran}
+    ${libnetwork}
+    ${libnr}
+    ${libmobility}
+)
+
+build_lib_example(
   NAME oran-nr-tn-ntn-rsrp-handover
   SOURCE_FILES oran-nr-tn-ntn-rsrp-handover.cc
   LIBRARIES_TO_LINK

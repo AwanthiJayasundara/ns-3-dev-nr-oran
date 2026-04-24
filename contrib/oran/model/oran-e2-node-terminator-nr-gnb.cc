@@ -146,14 +146,21 @@ OranE2NodeTerminatorNrGnb::ReceiveCommand(Ptr<OranCommand> command)
 Ptr<NrGnbNetDevice>
 OranE2NodeTerminatorNrGnb::GetNetDevice() const
 {
-    NS_LOG_FUNCTION(this);
+    NS_ABORT_MSG_IF(GetNode() == nullptr, "Node is null");
 
-    Ptr<NrGnbNetDevice> nrGnbNetDev =
-        GetNode()->GetDevice(GetNetDeviceIndex())->GetObject<NrGnbNetDevice>();
+    for (uint32_t i = 0; i < GetNode()->GetNDevices(); ++i)
+    {
+        Ptr<NrGnbNetDevice> nrGnbNetDev =
+            DynamicCast<NrGnbNetDevice>(GetNode()->GetDevice(i));
 
-    NS_ABORT_MSG_IF(nrGnbNetDev == nullptr, "Unable to find appropriate network device");
+        if (nrGnbNetDev != nullptr)
+        {
+            return nrGnbNetDev;
+        }
+    }
 
-    return nrGnbNetDev;
+    NS_ABORT_MSG("Unable to find appropriate network device");
+    return nullptr;
 }
 
 } // namespace ns3

@@ -1,5 +1,5 @@
-#ifndef ORAN_LM_NR_2_NR_RSRP_HANDOVER_H
-#define ORAN_LM_NR_2_NR_RSRP_HANDOVER_H
+#ifndef ORAN_LM_NR_2_NR_RSRP_HANDOVER_WITH_CELL_LOAD_H
+#define ORAN_LM_NR_2_NR_RSRP_HANDOVER_WITH_CELL_LOAD_H
 
 #include "oran-data-repository.h"
 #include "oran-lm.h"

@@ -32,6 +32,23 @@ NS_LOG_COMPONENT_DEFINE("NrNoBackhaulEpcHelper");
 
 NS_OBJECT_ENSURE_REGISTERED(NrNoBackhaulEpcHelper);
 
+namespace
+{
+Ptr<NetDevice>
+FindNrGnbNetDevice(Ptr<Node> node)
+{
+    for (uint32_t i = 0; i < node->GetNDevices(); ++i)
+    {
+        Ptr<NetDevice> dev = node->GetDevice(i);
+        if (dev && dev->GetObject<NrGnbNetDevice>())
+        {
+            return dev;
+        }
+    }
+    return nullptr;
+}
+} // anonymous namespace
+
 NrNoBackhaulEpcHelper::NrNoBackhaulEpcHelper()
     : m_gtpuUdpPort(2152), // fixed by the standard
       m_s11LinkDataRate(DataRate("10Gb/s")),
@@ -368,13 +385,13 @@ NrNoBackhaulEpcHelper::AddX2Interface(Ptr<Node> gnb1, Ptr<Node> gnb2)
 {
     NS_LOG_FUNCTION(this << gnb1 << gnb2);
 
-    // Create a point to point link between the two eNBs with
-    // the corresponding new NetDevices on each side
+    // Create a point-to-point X2 link between the two gNB nodes
     PointToPointHelper p2ph;
     p2ph.SetDeviceAttribute("DataRate", DataRateValue(m_x2LinkDataRate));
     p2ph.SetDeviceAttribute("Mtu", UintegerValue(m_x2LinkMtu));
     p2ph.SetChannelAttribute("Delay", TimeValue(m_x2LinkDelay));
     NetDeviceContainer gnbDevices = p2ph.Install(gnb1, gnb2);
+
     NS_LOG_LOGIC("number of Ipv4 ifaces of the gNB #1 after installing p2p dev: "
                  << gnb1->GetObject<Ipv4>()->GetNInterfaces());
     NS_LOG_LOGIC("number of Ipv4 ifaces of the gNB #2 after installing p2p dev: "
@@ -387,6 +404,7 @@ NrNoBackhaulEpcHelper::AddX2Interface(Ptr<Node> gnb1, Ptr<Node> gnb2)
 
     m_x2Ipv4AddressHelper.NewNetwork();
     Ipv4InterfaceContainer gnbIpIfaces = m_x2Ipv4AddressHelper.Assign(gnbDevices);
+
     NS_LOG_LOGIC("number of Ipv4 ifaces of the gNB #1 after assigning Ipv4 addr to X2 dev: "
                  << gnb1->GetObject<Ipv4>()->GetNInterfaces());
     NS_LOG_LOGIC("number of Ipv4 ifaces of the gNB #2 after assigning Ipv4 addr to X2 dev: "
@@ -395,14 +413,25 @@ NrNoBackhaulEpcHelper::AddX2Interface(Ptr<Node> gnb1, Ptr<Node> gnb2)
     Ipv4Address gnb1X2Address = gnbIpIfaces.GetAddress(0);
     Ipv4Address gnb2X2Address = gnbIpIfaces.GetAddress(1);
 
-    // Add X2 interface to both eNBs' X2 entities
+    // Get the X2 entities aggregated on the nodes
     Ptr<NrEpcX2> gnb1X2 = gnb1->GetObject<NrEpcX2>();
     Ptr<NrEpcX2> gnb2X2 = gnb2->GetObject<NrEpcX2>();
 
-    Ptr<NetDevice> gnb1NrDev = gnb1->GetDevice(0);
-    Ptr<NetDevice> gnb2NrDev = gnb2->GetDevice(0);
+    NS_ABORT_MSG_IF(!gnb1X2, "Missing NrEpcX2 object on first gNB node");
+    NS_ABORT_MSG_IF(!gnb2X2, "Missing NrEpcX2 object on second gNB node");
 
-    DoAddX2Interface(gnb1X2, gnb1NrDev, gnb1X2Address, gnb2X2, gnb2NrDev, gnb2X2Address);
+    // IMPORTANT FIX:
+    // do not assume the NrGnbNetDevice is at device index 0
+    Ptr<NetDevice> gnb1NrDev = FindNrGnbNetDevice(gnb1);
+    Ptr<NetDevice> gnb2NrDev = FindNrGnbNetDevice(gnb2);
+
+    NS_ABORT_MSG_IF(!gnb1NrDev,
+                    "Unable to find NrGnbNetDevice on first gNB node " << gnb1->GetId());
+    NS_ABORT_MSG_IF(!gnb2NrDev,
+                    "Unable to find NrGnbNetDevice on second gNB node " << gnb2->GetId());
+
+    DoAddX2Interface(gnb1X2, gnb1NrDev, gnb1X2Address,
+                     gnb2X2, gnb2NrDev, gnb2X2Address);
 }
 
 void

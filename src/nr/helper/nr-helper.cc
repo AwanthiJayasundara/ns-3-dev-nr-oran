@@ -1101,7 +1101,7 @@ NrHelper::AttachToMaxRsrpGnb(const NetDeviceContainer& ueDevices,
     // This allows you to call AttachToMaxRsrpGnb(uavDevs, gnbDevs);
     // then AttachToMaxRsrpGnb(groundDevs, gnbDevs);
     // at the SAME time instant without losing reservations from the first batch.
-    if (m_initMaxUesPerCell > 0)
+    if (m_initMaxUesPerCell > 0 || !m_initCellCapMap.empty())
     {
         RefreshInitReservations(gnbDevices);
     }
@@ -1172,7 +1172,7 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
     }
 
     // Strict-cap reservations snapshot (only updates once per time instant)
-    if (m_initMaxUesPerCell > 0)
+    if (m_initMaxUesPerCell > 0 || !m_initCellCapMap.empty())
     {
         RefreshInitReservations(gnbDevices);
     }
@@ -1292,9 +1292,20 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
 
         // Per-cell cap takes priority over global cap
         auto capIt = m_initCellCapMap.find(cell);
-        uint32_t effectiveCap = (capIt != m_initCellCapMap.end())
+        bool hasPerCellCap = (capIt != m_initCellCapMap.end());
+
+        uint32_t effectiveCap = hasPerCellCap
                                 ? capIt->second
-                                : m_initMaxUesPerCell; // fallback to global
+                                : m_initMaxUesPerCell;
+
+        // NEW: explicit per-cell cap = 0 means BLOCKED
+        if (hasPerCellCap && effectiveCap == 0)
+        {
+            NS_LOG_UNCOND("  candOK" << rank << " cell=" << cell
+                        << " rsrp=" << rsrp
+                        << " -> SKIP_BLOCKED_BACKHAUL");
+            continue;
+        }
 
         if (effectiveCap > 0)
         {
@@ -1383,7 +1394,7 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
     if (!attached)
     {
         // release reservation if attach didn't actually happen
-        if (reserved && m_initMaxUesPerCell > 0)
+        if (reserved)
         {
             auto it = m_initReservedPerCell.find(reservedCellId);
             if (it != m_initReservedPerCell.end() && it->second > 0)
@@ -1458,14 +1469,27 @@ NrHelper::AttachToGnb(const Ptr<NetDevice>& ueDevice, const Ptr<NetDevice>& gnbD
     NS_ABORT_IF(gnbNetDev == nullptr || ueNetDev == nullptr);
 
     // hard admission control (prevents any attach path exceeding cap)
-    if (m_initMaxUesPerCell > 0 && gnbNetDev->GetRrc())
+    if (gnbNetDev->GetRrc())
     {
         auto capIt = m_initCellCapMap.find(gnbNetDev->GetCellId());
-        uint32_t hardCap = (capIt != m_initCellCapMap.end())
-                           ? capIt->second
-                           : m_initMaxUesPerCell;
+        bool hasPerCellCap = (capIt != m_initCellCapMap.end());
 
-        if (hardCap > 0 && gnbNetDev->GetRrc())
+        uint32_t hardCap = hasPerCellCap
+                        ? capIt->second
+                        : m_initMaxUesPerCell;
+
+        // Explicit per-cell cap = 0 means BLOCKED
+        if (hasPerCellCap && hardCap == 0)
+        {
+            NS_LOG_UNCOND("  INIT_ATTACH_REJECTED_IN_AttachToGnb t=" << Simulator::Now().GetSeconds()
+                << " UE(imsi)=" << ueNetDev->GetImsi()
+                << " cell=" << gnbNetDev->GetCellId()
+                << " -> BLOCKED_BACKHAUL");
+            return;
+        }
+
+        // Positive cap means enforce admission
+        if (hardCap > 0)
         {
             uint32_t occ = gnbNetDev->GetRrc()->GetUeCount();
             if (occ >= hardCap)

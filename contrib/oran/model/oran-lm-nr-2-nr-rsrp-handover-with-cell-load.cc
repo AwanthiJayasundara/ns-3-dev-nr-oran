@@ -104,7 +104,7 @@ OranLmNr2NrRsrpHandoverWithCellLoad::OranLmNr2NrRsrpHandoverWithCellLoad(void)
       m_tryNextBest(true),
       m_minAcceptableRsrpDbm(-120.0),
       m_lowRsrpRecheck(Seconds(2.0)),
-      m_timeToTrigger(MilliSeconds(256))
+      m_timeToTrigger(Seconds(2.0))
 
 {
     NS_LOG_FUNCTION(this);

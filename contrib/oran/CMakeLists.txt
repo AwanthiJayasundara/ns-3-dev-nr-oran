@@ -137,11 +137,13 @@ if(${OnnxRuntime_FOUND})
   set(oran_onnxruntime_sources
       model/oran-lm-lte-2-lte-onnx-handover.cc
       model/oran-lm-nr-2-nr-onnx-handover.cc
+      # model/oran-lm-nr-2-nr-onnx-handover-with-tn-ntn.cc
       model/oran-lm-nr-onnx-secrecy-aware-handover.cc
   )
   set(oran_onnxruntime_headers
       model/oran-lm-lte-2-lte-onnx-handover.h
       model/oran-lm-nr-2-nr-onnx-handover.h
+      # model/oran-lm-nr-2-nr-onnx-handover-with-tn-ntn.h
       model/oran-lm-nr-onnx-secrecy-aware-handover.h
   )
 endif()
@@ -155,6 +157,7 @@ build_lib(
     model/oran-lm-lte-2-lte-distance-handover.cc
     model/oran-lm-lte-2-lte-rsrp-handover.cc
     model/oran-lm-nr-2-nr-rsrp-handover-with-cell-load.cc
+    model/oran-lm-nr-2-nr-rsrp-handover-with-tn-ntn.cc
     model/oran-lm-nr-2-nr-rsrp-handover.cc
     model/oran-lm-nr-secrecy-aware-handover.cc
     model/oran-cmm.cc
@@ -212,6 +215,7 @@ build_lib(
     model/oran-lm-lte-2-lte-distance-handover.h
     model/oran-lm-lte-2-lte-rsrp-handover.h
     model/oran-lm-nr-2-nr-rsrp-handover-with-cell-load.h
+    model/oran-lm-nr-2-nr-rsrp-handover-with-tn-ntn.h
     model/oran-lm-nr-2-nr-rsrp-handover.h
     model/oran-lm-nr-secrecy-aware-handover.h
     model/oran-cmm.h
