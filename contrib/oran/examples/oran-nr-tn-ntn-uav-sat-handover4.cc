@@ -815,9 +815,12 @@ main(int argc, char* argv[])
     Time simTime = Seconds(40);
     std::string dbFileName = "oran-repository-tn.db";
     std::string lateCommandPolicy = "DROP";
+    
 
     
     double groundAttachDelay = 6.0; // seconds
+    Time tLateAttach = Seconds(groundAttachDelay);
+    Time tS2Qos = tLateAttach + Seconds(2.0);
     // Scheduler CLI knobs (safe defaults to a concrete scheduler)
     bool ofdma = true;            // true=OFDMA, false=TDMA
     //In this scenario, BWPs already separate the main service types (voice, UES1 DL, UES1 UL).
@@ -1301,7 +1304,7 @@ main(int argc, char* argv[])
     nrHelper->AttachToMaxRsrpGnb(groundNrDevsS1, allGnbNrDevs);
 
     // S2 late attach
-    Time tLateAttach = Seconds(groundAttachDelay);
+    
     Simulator::Schedule(tLateAttach, [nrHelper, groundNrDevsS2, allGnbNrDevs]() {
         nrHelper->AttachToMaxRsrpGnb(groundNrDevsS2, allGnbNrDevs);
     });
@@ -1481,7 +1484,6 @@ main(int argc, char* argv[])
         gdl.localPortEnd   = port;
         voiceRule->Add(gdl);
 
-        Time tS2Qos = tLateAttach + Seconds(2.0);
 
         Simulator::Schedule(tS2Qos,
             [nrHelper, gUeDev, voiceFlow, voiceRule]() {
