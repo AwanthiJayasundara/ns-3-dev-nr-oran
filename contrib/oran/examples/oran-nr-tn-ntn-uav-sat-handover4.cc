@@ -1481,7 +1481,9 @@ main(int argc, char* argv[])
         gdl.localPortEnd   = port;
         voiceRule->Add(gdl);
 
-        Simulator::Schedule(tLateAttach,
+        Time tS2Qos = tLateAttach + Seconds(2.0);
+
+        Simulator::Schedule(tS2Qos,
             [nrHelper, gUeDev, voiceFlow, voiceRule]() {
                 nrHelper->ActivateDedicatedQosFlow(gUeDev, voiceFlow, voiceRule);
             });
@@ -1499,7 +1501,7 @@ main(int argc, char* argv[])
     }
 
     ueAppsS2.Start(Seconds(1));
-    groundRemoteAppsS2.Start(tLateAttach + Seconds(0.5));
+    groundRemoteAppsS2.Start(tS2Qos + Seconds(0.5));;
 
     groundRemoteAppsS2.Stop(simTime + Seconds(10));
     ueAppsS2.Stop(simTime + Seconds(15));
@@ -1722,7 +1724,7 @@ main(int argc, char* argv[])
             nrUeTerminator->Attach(groundUeNodesS2.Get(idx));
 
             // Activate E2 only after the UE is attached (small guard offset)
-            Simulator::Schedule(tLateAttach + Seconds(1.0),
+            Simulator::Schedule(tLateAttach + Seconds(2.5),
                                 &OranE2NodeTerminatorNrUe::Activate,
                                 nrUeTerminator);
         }
