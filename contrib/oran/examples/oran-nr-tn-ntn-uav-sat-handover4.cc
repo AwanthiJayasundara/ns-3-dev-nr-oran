@@ -140,6 +140,7 @@ uint32_t maxUesPerCellTn  = 20;
 
 // Metrics collection interval
 Time management_interval = Seconds(2);
+static double g_mobilityUpdateMs = 100.0;
 
 // UES1 ips vector
 std::vector<Ipv4Address> user_ip;
@@ -649,12 +650,12 @@ install_mobility_geocentric(NodeContainer staticNodes,
 
         SelectNewGeoWaypoint(st.get(), eastRv, northRv);
 
-        Simulator::Schedule(MilliSeconds(10),
+        Simulator::Schedule(MilliSeconds(g_mobilityUpdateMs),
                             &MoveGeoNodeRandomWaypoint,
                             st.get(),
                             eastRv,
                             northRv,
-                            10.0);
+                            g_mobilityUpdateMs);
 
         g_geoStates.push_back(std::move(st));
     }
@@ -688,12 +689,12 @@ install_mobility_geocentric(NodeContainer staticNodes,
 
         SelectNewGeoWaypoint(st.get(), eastRv, northRv);
 
-        Simulator::Schedule(MilliSeconds(10),
+        Simulator::Schedule(MilliSeconds(g_mobilityUpdateMs),
                             &MoveGeoNodeRandomWaypoint,
                             st.get(),
                             eastRv,
                             northRv,
-                            10.0);
+                            g_mobilityUpdateMs);
 
         g_geoStates.push_back(std::move(st));
     }
@@ -807,8 +808,18 @@ main(int argc, char* argv[])
     bool useTorch = false;
     bool useRsrp = true; // use the RSRP-driven ORAN LM
     double lmQueryInterval = 2; // Mitigate the ping pong handovers
+    double e2SendInterval = 2.0;
     double maxWaitTime = 0.010;
     double txDelay = 0.1;
+    bool enableFlowMonitor = false;
+    bool enableRsrpTrace = false;
+    bool enableFhTrace = false;
+    bool enablePositionTrace = true;
+    bool enableOranInfoLog = true;
+    bool enablePdcpDiscarding = true;
+    uint32_t discardTimerMs = 100;
+    uint32_t reorderingTimerMs = 100;
+    uint32_t maxRlcTxBufferSize = 10 * 1024 * 1024;
     bool remMode = false; // [0]: REM disabled; [1]: generate REM
     int32_t remRbId = -1; // kept for compatibility (not used by this REM helper)
     std::string handoverAlgorithm = "ns3::NrNoOpHandoverAlgorithm";
@@ -844,6 +855,7 @@ main(int argc, char* argv[])
     cmd.AddValue("use-rsrp-lm", "Use the RSRP-based LM", useRsrp);
     cmd.AddValue("sim-time", "The duration for which traffic should flow", simTime);
     cmd.AddValue("lm-query-interval", "The LM query interval", lmQueryInterval);
+    cmd.AddValue("e2-send-interval", "Interval between E2 report transmissions in seconds", e2SendInterval);
     cmd.AddValue("tx-delay", "The E2 terminator's transmission delay", txDelay);
     cmd.AddValue("handover-algorithm", "Specify which handover algorithm to use", handoverAlgorithm);
     cmd.AddValue("db-file", "Specify the DB file to create", dbFileName);
@@ -856,6 +868,16 @@ main(int argc, char* argv[])
     cmd.AddValue("num-ground-ues", "Number of ground UEs", numGroundUesS2);
     cmd.AddValue("ground-attach-delay", "Delay before attaching ground UEs (s)", groundAttachDelay);
     cmd.AddValue("max-ues-tn",  "Max UEs per TN cell",  maxUesPerCellTn);
+    cmd.AddValue("mobility-update-ms", "Waypoint mobility update period in milliseconds", g_mobilityUpdateMs);
+    cmd.AddValue("enable-flow-monitor", "Enable FlowMonitor and periodic QoS files", enableFlowMonitor);
+    cmd.AddValue("enable-rsrp-trace", "Enable per-UE RSRP trace file", enableRsrpTrace);
+    cmd.AddValue("enable-fh-trace", "Enable fronthaul/air-RB trace files", enableFhTrace);
+    cmd.AddValue("enable-position-trace", "Enable periodic UE position trace files", enablePositionTrace);
+    cmd.AddValue("enable-oran-info-log", "Enable verbose INFO logging for ORAN LM and NrHelper", enableOranInfoLog);
+    cmd.AddValue("enable-pdcp-discarding", "Enable PDCP discarding for bounded UDP/XR queues", enablePdcpDiscarding);
+    cmd.AddValue("pdcp-discard-timer-ms", "PDCP discard timer in milliseconds", discardTimerMs);
+    cmd.AddValue("rlc-reordering-timer-ms", "RLC UM reordering timer in milliseconds", reorderingTimerMs);
+    cmd.AddValue("rlc-max-tx-buffer-size", "Maximum RLC UM TX buffer size in bytes", maxRlcTxBufferSize);
     cmd.Parse(argc, argv);
 
     NS_ABORT_MSG_IF(useOran == false && (useOnnx || useTorch || useRsrp),
@@ -896,13 +918,13 @@ main(int argc, char* argv[])
     // g_uncondFile.open(ns3_dir + "init-attach.log", std::ios::out | std::ios::trunc);
     // g_oldCoutBuf = std::cout.rdbuf(g_uncondFile.rdbuf());
 
-    LogComponentEnable("OranLmNr2NrRsrpHandoverWithCellLoad", LOG_LEVEL_INFO);
-    LogComponentEnable("NrHelper", LOG_LEVEL_INFO);
+    if (enableOranInfoLog)
+    {
+        LogComponentEnable("OranLmNr2NrRsrpHandoverWithCellLoad", LOG_LEVEL_INFO);
+        LogComponentEnable("NrHelper", LOG_LEVEL_INFO);
+    }
 
-    // Increase the buffer size to accomodate the application demand
-    bool enablePdcpDiscarding = false;
-    uint32_t discardTimerMs = 0;
-    uint32_t reorderingTimerMs = 100;
+    // Bound UDP/XR queue growth under overload. Unbounded RLC queues can consume RAM for days.
     Config::SetDefault("ns3::NrRlcUm::EnablePdcpDiscarding", BooleanValue(enablePdcpDiscarding));
     Config::SetDefault("ns3::NrRlcUm::DiscardTimerMs", UintegerValue(discardTimerMs));
     Config::SetDefault("ns3::NrRlcUm::ReorderingTimer", TimeValue(MilliSeconds(reorderingTimerMs)));
@@ -910,7 +932,7 @@ main(int argc, char* argv[])
     Config::SetDefault("ns3::NrGnbRrc::QosFlowToRlcMapping",
                        EnumValue(useUdp ? NrGnbRrc::RLC_UM_ALWAYS : NrGnbRrc::RLC_AM_ALWAYS));
 
-    Config::SetDefault("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(999999999));//100 * 1024
+    Config::SetDefault("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(maxRlcTxBufferSize));
     //Config::SetDefault("ns3::NrGnbRrc::MaxUesPerCell", UintegerValue(maxUesPerCell));
 
     int channelUpdatePeriod = 100;
@@ -1214,18 +1236,21 @@ main(int argc, char* argv[])
 
     nrHelper->ConfigureFhControl(allGnbNrDevs);
 
-    for (auto it = allGnbNrDevs.Begin(); it != allGnbNrDevs.End(); ++it)
+    if (enableFhTrace)
     {
-        Ptr<NrGnbNetDevice> gnb = DynamicCast<NrGnbNetDevice>(*it);
-        NS_ABORT_MSG_IF(!gnb, "Device is not NrGnbNetDevice");
+        for (auto it = allGnbNrDevs.Begin(); it != allGnbNrDevs.End(); ++it)
+        {
+            Ptr<NrGnbNetDevice> gnb = DynamicCast<NrGnbNetDevice>(*it);
+            NS_ABORT_MSG_IF(!gnb, "Device is not NrGnbNetDevice");
 
-        gnb->GetNrFhControl()->TraceConnectWithoutContext(
-            "RequiredFhDlThroughput",
-            MakeCallback(&ReportFhTrace));
+            gnb->GetNrFhControl()->TraceConnectWithoutContext(
+                "RequiredFhDlThroughput",
+                MakeCallback(&ReportFhTrace));
 
-        gnb->GetNrFhControl()->TraceConnectWithoutContext(
-            "UsedAirRbs",
-            MakeCallback(&ReportAiTrace));
+            gnb->GetNrFhControl()->TraceConnectWithoutContext(
+                "UsedAirRbs",
+                MakeCallback(&ReportAiTrace));
+        }
     }
 
     // -------- Role map: IMSI -> UES1/UES2 --------
@@ -1650,7 +1675,8 @@ main(int argc, char* argv[])
             nrUeTerminator->SetAttribute("RegistrationIntervalRv",
                                          StringValue("ns3::ConstantRandomVariable[Constant=1]"));
             nrUeTerminator->SetAttribute("SendIntervalRv",
-                                         StringValue("ns3::ConstantRandomVariable[Constant=1]"));// increase to mitigate ping pong handovers
+                                         StringValue("ns3::ConstantRandomVariable[Constant=" +
+                                                     std::to_string(e2SendInterval) + "]"));
 
             nrUeTerminator->AddReporter(locationReporter);
             nrUeTerminator->AddReporter(nrUeCellInfoReporter);
@@ -1710,7 +1736,8 @@ main(int argc, char* argv[])
             nrUeTerminator->SetAttribute("RegistrationIntervalRv",
                                         StringValue("ns3::ConstantRandomVariable[Constant=1]"));
             nrUeTerminator->SetAttribute("SendIntervalRv",
-                                        StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+                                        StringValue("ns3::ConstantRandomVariable[Constant=" +
+                                                    std::to_string(e2SendInterval) + "]"));
 
             nrUeTerminator->AddReporter(locationReporter);
             nrUeTerminator->AddReporter(nrUeCellInfoReporter);
@@ -1751,7 +1778,8 @@ main(int argc, char* argv[])
             nrGnbTerminator->SetAttribute("RegistrationIntervalRv",
                                         StringValue("ns3::ConstantRandomVariable[Constant=1]"));
             nrGnbTerminator->SetAttribute("SendIntervalRv",
-                                        StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+                                        StringValue("ns3::ConstantRandomVariable[Constant=" +
+                                                    std::to_string(e2SendInterval) + "]"));
 
             nrGnbTerminator->AddReporter(locationReporter);
             nrGnbTerminator->AddReporter(nrCellLoadReporter);
@@ -1778,51 +1806,57 @@ main(int argc, char* argv[])
     std::ofstream hoOutFile(s_handoverTraceFile, std::ios_base::trunc);
     hoOutFile.close();
 
-    // Start tracing node locations
-    Simulator::Schedule(Seconds(1), &TraceUeS1Positions, groundUeNodesS1);
+    if (enablePositionTrace)
+    {
+        // Start tracing node locations
+        Simulator::Schedule(Seconds(1), &TraceUeS1Positions, groundUeNodesS1);
 
-    /* Start tracing UE Set 2 only when they actually start */
-    Simulator::Schedule(tLateAttach, &TraceUeS2Positions, groundUeNodesS2);
+        /* Start tracing UE Set 2 only when they actually start */
+        Simulator::Schedule(tLateAttach, &TraceUeS2Positions, groundUeNodesS2);
+    }
 
     // Connect to handover trace so we know when a handover is successfully performed
     Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverEndOk",
                     MakeCallback(&NotifyHandoverEndOkGnb));
 
-    for (NetDeviceContainer::Iterator it = groundNrDevsS1.Begin(); it != groundNrDevsS1.End(); ++it)
+    if (enableRsrpTrace)
     {
-        Ptr<NetDevice> device = *it;
-        Ptr<NrUeNetDevice> nrUeDevice = device->GetObject<NrUeNetDevice>();
-
-        if (nrUeDevice)
+        for (NetDeviceContainer::Iterator it = groundNrDevsS1.Begin(); it != groundNrDevsS1.End(); ++it)
         {
-            for (uint32_t b = 0; b < ueNumBwps; ++b)
+            Ptr<NetDevice> device = *it;
+            Ptr<NrUeNetDevice> nrUeDevice = device->GetObject<NrUeNetDevice>();
+
+            if (nrUeDevice)
             {
-                Ptr<NrUePhy> uePhy = nrUeDevice->GetPhy(b);
-                if (uePhy)
+                for (uint32_t b = 0; b < ueNumBwps; ++b)
                 {
-                    uePhy->TraceConnectWithoutContext(
-                        "ReportUeMeasurements",
-                        MakeBoundCallback(&TraceRsrpRsrqSinr, rsrpRsrqSinrTraceStream));
+                    Ptr<NrUePhy> uePhy = nrUeDevice->GetPhy(b);
+                    if (uePhy)
+                    {
+                        uePhy->TraceConnectWithoutContext(
+                            "ReportUeMeasurements",
+                            MakeBoundCallback(&TraceRsrpRsrqSinr, rsrpRsrqSinrTraceStream));
+                    }
                 }
             }
         }
-    }
 
-    for (NetDeviceContainer::Iterator it = groundNrDevsS2.Begin(); it != groundNrDevsS2.End(); ++it)
-    {
-        Ptr<NetDevice> device = *it;
-        Ptr<NrUeNetDevice> nrUeDevice = device->GetObject<NrUeNetDevice>();
-
-        if (nrUeDevice)
+        for (NetDeviceContainer::Iterator it = groundNrDevsS2.Begin(); it != groundNrDevsS2.End(); ++it)
         {
-            for (uint32_t b = 0; b < ueNumBwps; ++b)
+            Ptr<NetDevice> device = *it;
+            Ptr<NrUeNetDevice> nrUeDevice = device->GetObject<NrUeNetDevice>();
+
+            if (nrUeDevice)
             {
-                Ptr<NrUePhy> uePhy = nrUeDevice->GetPhy(b);
-                if (uePhy)
+                for (uint32_t b = 0; b < ueNumBwps; ++b)
                 {
-                    uePhy->TraceConnectWithoutContext(
-                        "ReportUeMeasurements",
-                        MakeBoundCallback(&TraceRsrpRsrqSinr, rsrpRsrqSinrTraceStream));
+                    Ptr<NrUePhy> uePhy = nrUeDevice->GetPhy(b);
+                    if (uePhy)
+                    {
+                        uePhy->TraceConnectWithoutContext(
+                            "ReportUeMeasurements",
+                            MakeBoundCallback(&TraceRsrpRsrqSinr, rsrpRsrqSinrTraceStream));
+                    }
                 }
             }
         }
@@ -1849,19 +1883,23 @@ main(int argc, char* argv[])
     // allUes.Add(groundUeNodesS2);
     // flowMonitor = flowHelper.Install(allUes);
     FlowMonitorHelper flowHelper;
+    Ptr<FlowMonitor> flowMonitor;
 
-    NodeContainer nodesToMonitor;
-    nodesToMonitor.Add(remoteHostContainer);   // include remote host
-    nodesToMonitor.Add(groundUeNodesS1);
-    nodesToMonitor.Add(groundUeNodesS2);
+    if (enableFlowMonitor)
+    {
+        NodeContainer nodesToMonitor;
+        nodesToMonitor.Add(remoteHostContainer);   // include remote host
+        nodesToMonitor.Add(groundUeNodesS1);
+        nodesToMonitor.Add(groundUeNodesS2);
 
-    Ptr<FlowMonitor> flowMonitor = flowHelper.Install(nodesToMonitor);
+        flowMonitor = flowHelper.Install(nodesToMonitor);
 
-    std::ofstream qos_vs_time;
-    qos_vs_time.open(ns3_dir + "qos-vs-time.txt", std::ofstream::out | std::ofstream::trunc);
-    qos_vs_time << "Time,UE,Dir,Delay,Jitter,Throughput,PDR" << std::endl;
-    g_prevFlowStats.clear();
-    Simulator::Schedule(Seconds(4.0), ThroughputMonitor, &flowHelper, flowMonitor);
+        std::ofstream qos_vs_time;
+        qos_vs_time.open(ns3_dir + "qos-vs-time.txt", std::ofstream::out | std::ofstream::trunc);
+        qos_vs_time << "Time,UE,Dir,Delay,Jitter,Throughput,PDR" << std::endl;
+        g_prevFlowStats.clear();
+        Simulator::Schedule(Seconds(4.0), ThroughputMonitor, &flowHelper, flowMonitor);
+    }
 
 
     // populate user ip map
@@ -1908,14 +1946,20 @@ main(int argc, char* argv[])
                             bwpId);
     }
 
-    std::ofstream flowOutFile(s_flowStatTraceFile, std::ios_base::trunc);
-    flowOutFile << "Time,Role,IMSI\n";
-    flowOutFile.close();
+    if (enableFlowMonitor)
+    {
+        std::ofstream flowOutFile(s_flowStatTraceFile, std::ios_base::trunc);
+        flowOutFile << "Time,Role,IMSI\n";
+        flowOutFile.close();
+    }
 
     // Tell the simulator how long to run
     Simulator::Stop(simTime + Seconds(15));
     Simulator::Run();
-    WriteFlowReportToFile(flowMonitor, &flowHelper, ns3_dir + "final-flow-report.txt");
+    if (enableFlowMonitor)
+    {
+        WriteFlowReportToFile(flowMonitor, &flowHelper, ns3_dir + "final-flow-report.txt");
+    }
 
     if (g_oldClogBuf) { std::clog.rdbuf(g_oldClogBuf); }
     if (g_nsLogFile.is_open()) { g_nsLogFile.close(); }

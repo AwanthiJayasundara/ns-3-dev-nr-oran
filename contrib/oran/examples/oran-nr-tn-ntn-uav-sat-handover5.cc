@@ -1,3 +1,4 @@
+
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
@@ -55,111 +56,18 @@
 #include <algorithm>
 #include <complex>
 #include <iomanip>
-#include <deque>
-#include <array>
-#include <onnxruntime_cxx_api.h>
+#include <limits>
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNrTnNtnUavSatHandover3");
+NS_LOG_COMPONENT_DEFINE("OranNrTnNtnUavSatHandover5");
 
-/**
- * Example of ORAN-driven NR multi-cell UES1 handover with QoS monitoring (5G-LENA).
- *
- * Minimum required versions for reproducibility:
- *   - ns-3 version: 3.39 or later
- *   - 5G-LENA version: 2.6 or later
- *
- * The scenario consists of X NR UES1 UEs (moving randomly) and Y NR ground UEs (static) inside a large 2D area
- * and served by Z fixed gNB macro cells. Each UES1 receives downlink UDP traffic
- * from a remote host through an NR EPC (NrPointToPointEpcHelper). 
- *
- * The NR radio access uses a 3GPP UMa propagation scenario with optional fading
- * enabled, and an Ideal Beamforming helper (Quasi-Omni direct path beamforming).
-
- * A concrete NR scheduler is selected at runtime (OFDMA/TDMA with RR/PF/MR/QoS),
- * and the UEs initially attach to the gNB offering the maximum RSRP. X2 interfaces
- * are enabled to support inter-gNB handovers.
- *
- * In ORAN mode, UES1 UEs report periodic measurements (location, serving cell info,
- * and application loss metrics) to a Near-RT RIC using E2 node terminators.
- * The Near-RT RIC runs an RSRP-based Logic Module (OranLmNr2NrRsrpHandover) that
- * can decide and trigger NR-to-NR handovers. gNB-side cell load is also reported
- * via NR scheduling callbacks to support conflict mitigation.
- *
- * FlowMonitor is used to compute per-UES1 QoS metrics (delay, jitter, throughput,
- * and packet delivery ratio) periodically and write them to trace files over time.
- * Additionally, node mobility positions and successful handover events are logged.
- *
- * Two set of ue traffic added (No HO> we can change if want) and connect
- * with RIC too so load-aware handover decisions can be made based on the total number of 
- * UEs (UES1 + UE2) connected to each gNB. 
- * 
- * Cell load capacity is set so no intial attachement or handover will be triggered for a 
- * gNB that has already reached the maximum number of UEs. 
- * 
- * NR can split the spectrum into Bandwidth Parts (BWPs) and configure each one differently.
- * FDM (Frequency Division Multiplexing) Split the total spectrum into different frequency 
- * pieces Each piece can serve a different purpose
- * keep everything in one BWP because video can dominate resources voice packets may get delayed
- * uplink-heavy traffic may suffer if DL traffic takes most capacity
- * scheduler becomes less efficient
- * ////////////////////////////
- * This scenario combines:
- *   (1) application-level traffic models (video / voice-like generators), and
- *   (2) radio-level traffic steering (different QoS flows mapped to different BWPs).
- * 
- * UES1 downlink (remoteHost -> UES1):
- *   Uses TrafficGenerator3gppGenericVideo, so packets are generated according
- *   to a video-like traffic model instead of a generic OnOff source.
- *   This is still simulated UDP traffic, but its timing/rate behavior is meant
- *   to resemble video service traffic more closely.
- *
- * UES1 uplink (UES1 -> remoteHost):
- *   Also uses TrafficGenerator3gppGenericVideo, but with a lower data rate/FPS
- *   than downlink. This represents lighter video-like uplink traffic from the UES1.
- * 
- * ofdm = true and schedKind="RR" are set by default to use OFDMA with Round Robin scheduling,
- * for fh control in 7.2x split : https://cttc-lena.gitlab.io/nr/manual/nr-module.html#fronthaul-control
- *
- *   RequiredFhDlThroughput reports the required DL fronthaul throughput per BWP.
- *   UsedAirRbs reports how many DL air-interface RBs were actually used per BWP.
- *   These traces help compare fronthaul demand versus actual radio resource use.
- * 
- * In this scenario, when 5G-LENA Fronthaul Control is enabled, the fronthaul model 
- * assumes functional split 7.2x.
- * after this PDR is much less
- */
-
-
-/////
-static std::deque<std::vector<float>> g_heatHistory;
-
-static std::unique_ptr<Ort::Env> g_uavPredEnv;
-static std::unique_ptr<Ort::Session> g_uavPredSession;
-static std::unique_ptr<Ort::SessionOptions> g_uavPredSessOpts;
-static std::unique_ptr<Ort::AllocatorWithDefaultOptions> g_uavPredAllocator;
-
-static bool g_enablePredictiveUav = true;
-static uint32_t g_heatLookback = 4;
-
-static double g_gridEastMin = -3000.0;
-static double g_gridEastMax = 3000.0;
-static double g_gridNorthMin = -1500.0;
-static double g_gridNorthMax = 1500.0;
-static uint32_t g_gridNx = 24;
-static uint32_t g_gridNy = 12;
-
-static double g_heatNormMax = 5.0;
-static std::string g_uavPredictorOnnxPath =
-    "results/nr/tn-ntn/ml_uav_predictor_compare/uav_underserved_heatmap_gru_ir8.onnx";
-/////
 const static float TN_GNB_HEIGHT = 25;
 
 
 // Variables
-uint32_t numGroundUesS1 = 120; // UES1 
-uint32_t numGroundUesS2 = 120; // UES2
+uint32_t numGroundUesS1 = 50; // UES1 
+uint32_t numGroundUesS2 = 50; // UES2
 
 uint32_t numTnGnbs = 8;
 uint32_t numNtnGnbs = 6; // e.g., uav gnbs for ntn area
@@ -177,12 +85,11 @@ static const double UE_AREA_HALF_W_M  = 3000.0;
 static const double UE_AREA_HALF_H_M  = 1500.0;
 
 //uint32_t maxUesPerCell = 20; // ORAN LM parameter: maximum number of UEs per cell (for load-aware handover decisions)
-uint32_t maxUesPerCellTn  = 20;
-uint32_t maxUesPerCellNtn = 10;
+uint32_t maxUesPerCellTn  = 8;
+uint32_t maxUesPerCellNtn = 4;
 
 // Metrics collection interval
 Time management_interval = Seconds(2);
-static double g_mobilityUpdateMs = 200.0;
 
 // UES1 ips vector
 std::vector<Ipv4Address> user_ip;
@@ -222,10 +129,14 @@ static std::string ns3_dir;
 // static std::ofstream g_fhTraceFile;
 // static std::ofstream g_airTraceFile;
 
-static std::string s_satBackhaulTraceFile;
-
 static std::map<uint16_t, double> g_backhaulDlSnrDb;
 static std::map<uint16_t, double> g_backhaulUlSnrDb;
+static std::map<uint16_t, uint32_t> g_effectiveNtnCapacity;
+
+static std::string s_satBackhaulTraceFile;
+static std::string s_controlAociTraceFile;
+static std::ofstream g_controlAociTrace;
+static uint64_t g_uavCmdCounter = 0;
 
 static std::set<uint16_t> g_ntnCellIds;
 static std::map<std::pair<uint16_t,uint16_t>, double> g_latestRsrp;
@@ -253,9 +164,6 @@ LookupRoleFromImsi(uint64_t imsi)
     return (it == g_imsiRole.end()) ? "UNK" : it->second.c_str();
 }
 
-
-////////
-
 // static std::ofstream g_uncondFile;
 // static std::streambuf* g_oldCoutBuf = nullptr;
 
@@ -272,35 +180,6 @@ TraceRsrpRsrqSinr(Ptr<OutputStreamWrapper> stream,
     g_latestRsrp[{rnti,cellId}] = rsrp;
 }
 
-// void
-// ReportFhTrace(const SfnSf& sfn, uint16_t physCellId, uint16_t bwpId, uint64_t reqFh)
-// {
-//     if (!g_fhTraceFile.is_open())
-//     {
-//         g_fhTraceFile.open(ns3_dir + "fh-trace.txt", std::ios::out | std::ios::trunc);
-//         g_fhTraceFile << "Time,CellId,BwpId,RequiredFhDlThroughput\n";
-//     }
-
-//     g_fhTraceFile << Simulator::Now().GetSeconds() << ","
-//                   << physCellId << ","
-//                   << bwpId << ","
-//                   << reqFh << "\n";
-// }
-
-// void
-// ReportAiTrace(const SfnSf& sfn, uint16_t physCellId, uint16_t bwpId, uint32_t airRbs)
-// {
-//     if (!g_airTraceFile.is_open())
-//     {
-//         g_airTraceFile.open(ns3_dir + "air-rbs-trace.txt", std::ios::out | std::ios::trunc);
-//         g_airTraceFile << "Time,CellId,BwpId,UsedAirRbs\n";
-//     }
-
-//     g_airTraceFile << Simulator::Now().GetSeconds() << ","
-//                    << physCellId << ","
-//                    << bwpId << ","
-//                    << airRbs << "\n";
-// }
 
 // Helper function that returns the UES1 id associated with a specific IP
 int
@@ -695,6 +574,71 @@ LocalToGeo(double eastM, double northM, double altM, double g_refLatDeg, double 
     return Vector(latDeg, lonDeg, altM);
 }
 
+static std::unordered_map<uint32_t, LocalPoint2d> g_prevNodeLocal;
+static std::unordered_map<uint32_t, LocalPoint2d> g_nodeVelocityMps;
+static std::unordered_map<uint32_t, double> g_prevNodeTime;
+
+static LocalPoint2d
+GetCurrentOrPredictedLocalPoint(Ptr<Node> node,
+                                double horizonSec,
+                                bool usePrediction)
+{
+    LocalPoint2d cur;
+
+    auto mob = DynamicCast<GeocentricConstantPositionMobilityModel>(
+        node->GetObject<MobilityModel>());
+
+    if (!mob)
+    {
+        return cur;
+    }
+
+    cur = GeoToLocal(mob->GetGeographicPosition(), g_refLat, g_refLon);
+
+    uint32_t nodeId = node->GetId();
+    double now = Simulator::Now().GetSeconds();
+
+    auto itPrev = g_prevNodeLocal.find(nodeId);
+    auto itTime = g_prevNodeTime.find(nodeId);
+
+    if (itPrev != g_prevNodeLocal.end() && itTime != g_prevNodeTime.end())
+    {
+        double dt = now - itTime->second;
+
+        if (dt > 1e-6)
+        {
+            LocalPoint2d vel;
+            vel.eastM = (cur.eastM - itPrev->second.eastM) / dt;
+            vel.northM = (cur.northM - itPrev->second.northM) / dt;
+
+            g_nodeVelocityMps[nodeId] = vel;
+        }
+    }
+
+    g_prevNodeLocal[nodeId] = cur;
+    g_prevNodeTime[nodeId] = now;
+
+    if (!usePrediction)
+    {
+        return cur;
+    }
+
+    auto itVel = g_nodeVelocityMps.find(nodeId);
+    if (itVel != g_nodeVelocityMps.end())
+    {
+        cur.eastM += itVel->second.eastM * horizonSec;
+        cur.northM += itVel->second.northM * horizonSec;
+    }
+
+    cur.eastM = std::max(-UE_AREA_HALF_W_M,
+                         std::min(UE_AREA_HALF_W_M, cur.eastM));
+
+    cur.northM = std::max(-UE_AREA_HALF_H_M,
+                          std::min(UE_AREA_HALF_H_M, cur.northM));
+
+    return cur;
+}
+
 // Controlled mover: move to assigned target, then hover there.
 // No random re-targeting here.
 static void
@@ -866,27 +810,134 @@ SetUavTargetToCurrentPosition(GeoWaypointState* st)
     st->hasTarget = true;
 }
 
+struct UavTargetCommand
+{
+    uint64_t cmdId = 0;
+    uint32_t uavIdx = 0;
+    double targetEastM = 0.0;
+    double targetNorthM = 0.0;
+    double decisionTime = 0.0;
+    double expirySec = 0.5;
+    std::string mode;
+    std::string reason;
+};
+
+static void
+ExecuteUavTargetCommand(UavTargetCommand cmd)
+{
+    double now = Simulator::Now().GetSeconds();
+    double commandAge = now - cmd.decisionTime;
+
+    bool stale = (commandAge > cmd.expirySec);
+    bool applied = false;
+
+    if (!stale && cmd.uavIdx < g_uavStates.size())
+    {
+        GeoWaypointState* st = g_uavStates[cmd.uavIdx];
+
+        st->targetEastM = cmd.targetEastM;
+        st->targetNorthM = cmd.targetNorthM;
+        st->hasTarget = true;
+
+        applied = true;
+    }
+
+    if (g_controlAociTrace.is_open())
+    {
+        g_controlAociTrace << std::fixed << std::setprecision(6)
+                           << now << ","
+                           << cmd.cmdId << ","
+                           << "UAV_MOVE" << ","
+                           << cmd.uavIdx << ","
+                           << cmd.decisionTime << ","
+                           << now << ","
+                           << commandAge << ","
+                           << cmd.expirySec << ","
+                           << (stale ? 1 : 0) << ","
+                           << (applied ? 1 : 0) << ","
+                           << cmd.targetEastM << ","
+                           << cmd.targetNorthM << ","
+                           << cmd.mode << ","
+                           << cmd.reason << "\n";
+    }
+}
+
+static void
+IssueUavTargetCommand(uint32_t uavIdx,
+                      double targetEastM,
+                      double targetNorthM,
+                      double commandDelaySec,
+                      double commandExpirySec,
+                      const std::string& mode,
+                      const std::string& reason)
+{
+    UavTargetCommand cmd;
+    cmd.cmdId = ++g_uavCmdCounter;
+    cmd.uavIdx = uavIdx;
+    cmd.targetEastM = targetEastM;
+    cmd.targetNorthM = targetNorthM;
+    cmd.decisionTime = Simulator::Now().GetSeconds();
+    cmd.expirySec = commandExpirySec;
+    cmd.mode = mode;
+    cmd.reason = reason;
+
+    Simulator::Schedule(Seconds(commandDelaySec),
+                        &ExecuteUavTargetCommand,
+                        cmd);
+}
+
 static void
 UpdateUavTargetsFromUnderservedUes(NodeContainer groundUeNodesS1,
                                    NodeContainer groundUeNodesS2,
                                    NetDeviceContainer ntnGnbNrDevs,
                                    double rsrpThreshDbm,
-                                   double controlPeriodSec)
+                                   double controlPeriodSec,
+                                   double commandDelaySec,
+                                   double commandExpirySec,
+                                   std::string controlMode)
 {
+    auto scheduleNext = [&]() {
+        Simulator::Schedule(Seconds(controlPeriodSec),
+                            &UpdateUavTargetsFromUnderservedUes,
+                            groundUeNodesS1,
+                            groundUeNodesS2,
+                            ntnGnbNrDevs,
+                            rsrpThreshDbm,
+                            controlPeriodSec,
+                            commandDelaySec,
+                            commandExpirySec,
+                            controlMode);
+    };
+
+    // ------------------------------------------------------------
+    // Mode 1: static UAVs
+    // UAVs keep their initial positions. No RIC UAV movement command.
+    // ------------------------------------------------------------
+    if (controlMode == "static")
+    {
+        scheduleNext();
+        return;
+    }
+
     std::vector<LocalPoint2d> underservedPts;
 
-    // 1) collect underserved UEs
+    bool useLinearPrediction = (controlMode == "predict-linear");
+
+    // The prediction horizon should reflect when the command becomes useful.
+    // Here: command delay + one control period.
+    double predictionHorizonSec = commandDelaySec + controlPeriodSec;
+
+    // ------------------------------------------------------------
+    // 1) Collect underserved UEs
+    // ------------------------------------------------------------
     for (uint32_t i = 0; i < groundUeNodesS1.GetN(); ++i)
     {
         if (IsUeUnderserved(groundUeNodesS1.Get(i), rsrpThreshDbm))
         {
-            auto mob = DynamicCast<GeocentricConstantPositionMobilityModel>(
-                groundUeNodesS1.Get(i)->GetObject<MobilityModel>());
-            if (mob)
-            {
-                underservedPts.push_back(
-                    GeoToLocal(mob->GetGeographicPosition(), g_refLat, g_refLon));
-            }
+            underservedPts.push_back(
+                GetCurrentOrPredictedLocalPoint(groundUeNodesS1.Get(i),
+                                                predictionHorizonSec,
+                                                useLinearPrediction));
         }
     }
 
@@ -894,28 +945,38 @@ UpdateUavTargetsFromUnderservedUes(NodeContainer groundUeNodesS1,
     {
         if (IsUeUnderserved(groundUeNodesS2.Get(i), rsrpThreshDbm))
         {
-            auto mob = DynamicCast<GeocentricConstantPositionMobilityModel>(
-                groundUeNodesS2.Get(i)->GetObject<MobilityModel>());
-            if (mob)
-            {
-                underservedPts.push_back(
-                    GeoToLocal(mob->GetGeographicPosition(), g_refLat, g_refLon));
-            }
+            underservedPts.push_back(
+                GetCurrentOrPredictedLocalPoint(groundUeNodesS2.Get(i),
+                                                predictionHorizonSec,
+                                                useLinearPrediction));
         }
     }
 
-    // 2) build available-UAV list
+    // ------------------------------------------------------------
+    // 2) Build available-UAV list
+    // ------------------------------------------------------------
     std::vector<uint32_t> availableUavs;
+
     for (uint32_t i = 0; i < ntnGnbNrDevs.GetN(); ++i)
     {
-        Ptr<NrGnbNetDevice> gnb = DynamicCast<NrGnbNetDevice>(ntnGnbNrDevs.Get(i));
+        Ptr<NrGnbNetDevice> gnb =
+            DynamicCast<NrGnbNetDevice>(ntnGnbNrDevs.Get(i));
+
         if (!gnb || !gnb->GetRrc())
         {
             continue;
         }
 
         uint32_t load = gnb->GetRrc()->GetUeCount();
-        uint32_t cap  = maxUesPerCellNtn;
+
+        uint16_t cellId = gnb->GetCellId();
+        uint32_t cap = maxUesPerCellNtn;
+
+        auto capIt = g_effectiveNtnCapacity.find(cellId);
+        if (capIt != g_effectiveNtnCapacity.end())
+        {
+            cap = capIt->second;
+        }
 
         if (load < cap)
         {
@@ -923,30 +984,28 @@ UpdateUavTargetsFromUnderservedUes(NodeContainer groundUeNodesS1,
         }
         else
         {
-            // Full UAV: hover where it is
+            // Full UAV remains where it is.
             SetUavTargetToCurrentPosition(g_uavStates[i]);
         }
     }
 
-    // Nothing to do
     if (underservedPts.empty() || availableUavs.empty())
     {
-        Simulator::Schedule(Seconds(controlPeriodSec),
-                            &UpdateUavTargetsFromUnderservedUes,
-                            groundUeNodesS1,
-                            groundUeNodesS2,
-                            ntnGnbNrDevs,
-                            rsrpThreshDbm,
-                            controlPeriodSec);
+        scheduleNext();
         return;
     }
 
+    // ------------------------------------------------------------
+    // 3) Cluster underserved UEs
+    // ------------------------------------------------------------
     uint32_t k = std::min<uint32_t>(availableUavs.size(), underservedPts.size());
     std::vector<LocalPoint2d> centroids = RunKMeans(underservedPts, k, 10);
 
-    // 3) assign each available UAV to one centroid (greedy nearest)
     std::vector<bool> centroidUsed(centroids.size(), false);
 
+    // ------------------------------------------------------------
+    // 4) Assign UAVs to centroids and issue delayed commands
+    // ------------------------------------------------------------
     for (uint32_t a = 0; a < availableUavs.size(); ++a)
     {
         uint32_t uavIdx = availableUavs[a];
@@ -978,10 +1037,21 @@ UpdateUavTargetsFromUnderservedUes(NodeContainer groundUeNodesS1,
 
         if (bestCentroid >= 0)
         {
-            st->targetEastM = centroids[bestCentroid].eastM;
-            st->targetNorthM = centroids[bestCentroid].northM;
-            st->hasTarget = true;
             centroidUsed[bestCentroid] = true;
+
+            // current = ideal controller with zero command delay
+            // delayed = current-state decision, delayed execution
+            // predict-linear = future-position decision, delayed execution
+            double effectiveCommandDelaySec =
+                (controlMode == "current") ? 0.0 : commandDelaySec;
+
+            IssueUavTargetCommand(uavIdx,
+                                  centroids[bestCentroid].eastM,
+                                  centroids[bestCentroid].northM,
+                                  effectiveCommandDelaySec,
+                                  commandExpirySec,
+                                  controlMode,
+                                  "underserved_centroid");
         }
         else
         {
@@ -989,13 +1059,7 @@ UpdateUavTargetsFromUnderservedUes(NodeContainer groundUeNodesS1,
         }
     }
 
-    Simulator::Schedule(Seconds(controlPeriodSec),
-                        &UpdateUavTargetsFromUnderservedUes,
-                        groundUeNodesS1,
-                        groundUeNodesS2,
-                        ntnGnbNrDevs,
-                        rsrpThreshDbm,
-                        controlPeriodSec);
+    scheduleNext();
 }
 ///
 
@@ -1072,10 +1136,10 @@ install_mobility_geocentric(NodeContainer staticNodes,
         g_uavStates.push_back(st.get());
         g_geoStates.push_back(std::move(st));
 
-        Simulator::Schedule(MilliSeconds(g_mobilityUpdateMs),
+        Simulator::Schedule(MilliSeconds(10),
                             &MoveGeoNodeToAssignedTarget,
                             g_uavStates.back(),
-                            g_mobilityUpdateMs);
+                            10.0);
     }
 
     for (uint32_t i = 0; i < groundUeNodesS1.GetN(); ++i)
@@ -1107,12 +1171,12 @@ install_mobility_geocentric(NodeContainer staticNodes,
 
         SelectNewGeoWaypoint(st.get(), eastRv, northRv);
 
-        Simulator::Schedule(MilliSeconds(g_mobilityUpdateMs),
+        Simulator::Schedule(MilliSeconds(10),
                             &MoveGeoNodeRandomWaypoint,
                             st.get(),
                             eastRv,
                             northRv,
-                            g_mobilityUpdateMs);
+                            10.0);
 
         g_geoStates.push_back(std::move(st));
     }
@@ -1146,315 +1210,17 @@ install_mobility_geocentric(NodeContainer staticNodes,
 
         SelectNewGeoWaypoint(st.get(), eastRv, northRv);
 
-        Simulator::Schedule(MilliSeconds(g_mobilityUpdateMs),
+        Simulator::Schedule(MilliSeconds(10),
                             &MoveGeoNodeRandomWaypoint,
                             st.get(),
                             eastRv,
                             northRv,
-                            g_mobilityUpdateMs);
+                            10.0);
 
         g_geoStates.push_back(std::move(st));
     }
 }
-
-
-///////
-static void
-LoadUavHeatmapPredictor(const std::string& modelPath)
-{
-    g_uavPredEnv = std::make_unique<Ort::Env>(ORT_LOGGING_LEVEL_WARNING, "uav-heatmap-predictor");
-    g_uavPredSessOpts = std::make_unique<Ort::SessionOptions>();
-    g_uavPredSessOpts->SetIntraOpNumThreads(1);
-    g_uavPredSessOpts->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_BASIC);
-
-    g_uavPredSession = std::make_unique<Ort::Session>(
-        *g_uavPredEnv,
-        modelPath.c_str(),
-        *g_uavPredSessOpts);
-
-    g_uavPredAllocator = std::make_unique<Ort::AllocatorWithDefaultOptions>();
-}
-
-static std::vector<float>
-BuildCurrentHeatmap(NodeContainer groundUeNodesS1,
-                    NodeContainer groundUeNodesS2,
-                    double rsrpThreshDbm)
-{
-    std::vector<float> heat(g_gridNx * g_gridNy, 0.0f);
-
-    auto addNodeToHeatIfUnderserved = [&](Ptr<Node> node)
-    {
-        if (!IsUeUnderserved(node, rsrpThreshDbm))
-        {
-            return;
-        }
-
-        auto mob = DynamicCast<GeocentricConstantPositionMobilityModel>(
-            node->GetObject<MobilityModel>());
-        if (!mob)
-        {
-            return;
-        }
-
-        LocalPoint2d p = GeoToLocal(mob->GetGeographicPosition(), g_refLat, g_refLon);
-
-        if (p.eastM < g_gridEastMin || p.eastM >= g_gridEastMax ||
-            p.northM < g_gridNorthMin || p.northM >= g_gridNorthMax)
-        {
-            return;
-        }
-
-        double xNorm = (p.eastM - g_gridEastMin) / (g_gridEastMax - g_gridEastMin);
-        double yNorm = (p.northM - g_gridNorthMin) / (g_gridNorthMax - g_gridNorthMin);
-
-        uint32_t ix = std::min<uint32_t>(g_gridNx - 1,
-                                         static_cast<uint32_t>(xNorm * g_gridNx));
-        uint32_t iy = std::min<uint32_t>(g_gridNy - 1,
-                                         static_cast<uint32_t>(yNorm * g_gridNy));
-
-        heat[iy * g_gridNx + ix] += 1.0f;
-    };
-
-    for (uint32_t i = 0; i < groundUeNodesS1.GetN(); ++i)
-    {
-        addNodeToHeatIfUnderserved(groundUeNodesS1.Get(i));
-    }
-
-    for (uint32_t i = 0; i < groundUeNodesS2.GetN(); ++i)
-    {
-        addNodeToHeatIfUnderserved(groundUeNodesS2.Get(i));
-    }
-
-    for (auto& v : heat)
-    {
-        v = static_cast<float>(v / std::max(1.0, g_heatNormMax));
-    }
-
-    return heat;
-}
-
-static std::vector<float>
-PredictNextHeatmap()
-{
-    NS_ABORT_MSG_IF(!g_uavPredSession, "UAV predictor ONNX session is not loaded.");
-    NS_ABORT_MSG_IF(g_heatHistory.size() < g_heatLookback, "Not enough heatmap history.");
-
-    std::vector<float> input;
-    input.reserve(g_heatLookback * g_gridNy * g_gridNx);
-
-    for (const auto& hm : g_heatHistory)
-    {
-        input.insert(input.end(), hm.begin(), hm.end());
-    }
-
-    std::array<int64_t, 4> inputShape = {
-        1,
-        static_cast<int64_t>(g_heatLookback),
-        static_cast<int64_t>(g_gridNy),
-        static_cast<int64_t>(g_gridNx)
-    };
-
-    Ort::MemoryInfo memInfo = Ort::MemoryInfo::CreateCpu(
-        OrtArenaAllocator, OrtMemTypeDefault);
-
-    Ort::Value inputTensor = Ort::Value::CreateTensor<float>(
-        memInfo,
-        input.data(),
-        input.size(),
-        inputShape.data(),
-        inputShape.size());
-
-    auto inputName = g_uavPredSession->GetInputNameAllocated(0, *g_uavPredAllocator);
-    auto outputName = g_uavPredSession->GetOutputNameAllocated(0, *g_uavPredAllocator);
-
-    std::array<const char*, 1> inputNames{inputName.get()};
-    std::array<const char*, 1> outputNames{outputName.get()};
-
-    auto output = g_uavPredSession->Run(
-        Ort::RunOptions{nullptr},
-        inputNames.data(),
-        &inputTensor,
-        1,
-        outputNames.data(),
-        1);
-
-    const float* outData = output[0].GetTensorData<float>();
-    size_t outCount = output[0].GetTensorTypeAndShapeInfo().GetElementCount();
-
-    return std::vector<float>(outData, outData + outCount);
-}
-//Convert predicted heatmap to hotspot points
-static std::vector<LocalPoint2d>
-ExtractTopKHotspots(const std::vector<float>& predHeat, uint32_t k)
-{
-    struct CellScore
-    {
-        uint32_t idx;
-        float score;
-    };
-
-    std::vector<CellScore> scores;
-    scores.reserve(predHeat.size());
-
-    for (uint32_t i = 0; i < predHeat.size(); ++i)
-    {
-        scores.push_back({i, predHeat[i]});
-    }
-
-    std::sort(scores.begin(), scores.end(), [](const auto& a, const auto& b) {
-        return a.score > b.score;
-    });
-
-    std::vector<LocalPoint2d> hotspots;
-    k = std::min<uint32_t>(k, scores.size());
-
-    double cellW = (g_gridEastMax - g_gridEastMin) / g_gridNx;
-    double cellH = (g_gridNorthMax - g_gridNorthMin) / g_gridNy;
-
-    for (uint32_t n = 0; n < k; ++n)
-    {
-        uint32_t idx = scores[n].idx;
-        uint32_t iy = idx / g_gridNx;
-        uint32_t ix = idx % g_gridNx;
-
-        LocalPoint2d p;
-        p.eastM = g_gridEastMin + (ix + 0.5) * cellW;
-        p.northM = g_gridNorthMin + (iy + 0.5) * cellH;
-        hotspots.push_back(p);
-    }
-
-    return hotspots;
-}
-
-static void
-UpdateUavTargetsPredictive(NodeContainer groundUeNodesS1,
-                           NodeContainer groundUeNodesS2,
-                           NetDeviceContainer ntnGnbNrDevs,
-                           double rsrpThreshDbm,
-                           double controlPeriodSec)
-{
-    // 1) build current heatmap
-    std::vector<float> currentHeat =
-    BuildCurrentHeatmap(groundUeNodesS1, groundUeNodesS2, rsrpThreshDbm);
-
-    g_heatHistory.push_back(currentHeat);
-    while (g_heatHistory.size() > g_heatLookback)
-    {
-        g_heatHistory.pop_front();
-    }
-
-    // 2) not enough history yet -> do nothing or use old K-means
-    if (g_heatHistory.size() < g_heatLookback)
-    {
-            Simulator::Schedule(Seconds(controlPeriodSec),
-                                &UpdateUavTargetsPredictive,
-                                groundUeNodesS1,
-                                groundUeNodesS2,
-                                ntnGnbNrDevs,
-                                rsrpThreshDbm,
-                                controlPeriodSec);
-        return;
-    }
-
-    // 3) collect available UAVs
-    std::vector<uint32_t> availableUavs;
-    for (uint32_t i = 0; i < ntnGnbNrDevs.GetN(); ++i)
-    {
-        Ptr<NrGnbNetDevice> gnb = DynamicCast<NrGnbNetDevice>(ntnGnbNrDevs.Get(i));
-        if (!gnb || !gnb->GetRrc())
-        {
-            continue;
-        }
-
-        uint32_t load = gnb->GetRrc()->GetUeCount();
-        uint32_t cap = maxUesPerCellNtn;
-
-        if (load < cap)
-        {
-            availableUavs.push_back(i);
-        }
-        else
-        {
-            SetUavTargetToCurrentPosition(g_uavStates[i]);
-        }
-    }
-
-    if (availableUavs.empty())
-    {
-        Simulator::Schedule(Seconds(controlPeriodSec),
-                            &UpdateUavTargetsPredictive,
-                            groundUeNodesS1,
-                            groundUeNodesS2,
-                            ntnGnbNrDevs,
-                            rsrpThreshDbm,
-                            controlPeriodSec);
-        return;
-    }
-
-    // 4) predict next heatmap
-    std::vector<float> predHeat = PredictNextHeatmap();
-
-    // 5) choose hotspot targets
-    uint32_t k = std::min<uint32_t>(availableUavs.size(), predHeat.size());
-    std::vector<LocalPoint2d> hotspots = ExtractTopKHotspots(predHeat, k);
-
-    // 6) greedy nearest assignment
-    std::vector<bool> hotspotUsed(hotspots.size(), false);
-
-    for (uint32_t a = 0; a < availableUavs.size(); ++a)
-    {
-        uint32_t uavIdx = availableUavs[a];
-        GeoWaypointState* st = g_uavStates[uavIdx];
-
-        Vector geo = st->mob->GetGeographicPosition();
-        LocalPoint2d cur = GeoToLocal(geo, st->centerLatDeg, st->centerLonDeg);
-
-        double bestDist = std::numeric_limits<double>::max();
-        int32_t bestHotspot = -1;
-
-        for (uint32_t h = 0; h < hotspots.size(); ++h)
-        {
-            if (hotspotUsed[h])
-            {
-                continue;
-            }
-
-            double dx = hotspots[h].eastM - cur.eastM;
-            double dy = hotspots[h].northM - cur.northM;
-            double d2 = dx * dx + dy * dy;
-
-            if (d2 < bestDist)
-            {
-                bestDist = d2;
-                bestHotspot = static_cast<int32_t>(h);
-            }
-        }
-
-        if (bestHotspot >= 0)
-        {
-            st->targetEastM = hotspots[bestHotspot].eastM;
-            st->targetNorthM = hotspots[bestHotspot].northM;
-            st->hasTarget = true;
-            hotspotUsed[bestHotspot] = true;
-        }
-        else
-        {
-            SetUavTargetToCurrentPosition(st);
-        }
-    }
-
-        Simulator::Schedule(Seconds(controlPeriodSec),
-                            &UpdateUavTargetsPredictive,
-                            groundUeNodesS1,
-                            groundUeNodesS2,
-                            ntnGnbNrDevs,
-                            rsrpThreshDbm,
-                            controlPeriodSec);
-}
-
-// ============================================================
-// Satellite backhaul monitor helpers
-// ============================================================
+///
 
 Ptr<SpectrumValue>
 CreateTxPowerSpectralDensity(double fcHz, double pwrDbm, double bwHz, double rbWidthHz)
@@ -1629,20 +1395,45 @@ struct SatBackhaulContext
 {
     std::vector<UavSatBackhaulCell> cells;
 
-    SatNtnLink feederDl; // SAT -> GW
-    SatNtnLink feederUl; // GW -> SAT
+    SatNtnLink feederDl;
+    SatNtnLink feederUl;
 
     Ptr<GeocentricConstantPositionMobilityModel> satMob;
     Ptr<GeocentricConstantPositionMobilityModel> gwMob;
 
     std::ofstream* file = nullptr;
     double logPeriodMs = 500.0;
+
     double minAcceptableBackhaulSnrDb = 0.0;
+    double goodBackhaulSnrDb = 12.0;
+
     uint32_t healthyNtnCapacity = 10;
 
-    // NEW: also update initial-attach capacities inside NrHelper
     Ptr<NrHelper> initAttachNrHelper = nullptr;
 };
+
+static uint32_t
+MapBackhaulSnrToCapacity(double snrDb,
+                         double badSnrDb,
+                         double goodSnrDb,
+                         uint32_t maxCap)
+{
+    if (snrDb <= badSnrDb)
+    {
+        return 0;
+    }
+
+    if (snrDb >= goodSnrDb)
+    {
+        return maxCap;
+    }
+
+    double ratio = (snrDb - badSnrDb) / (goodSnrDb - badSnrDb);
+
+    uint32_t cap = static_cast<uint32_t>(std::round(ratio * maxCap));
+
+    return std::max<uint32_t>(1, std::min<uint32_t>(maxCap, cap));
+}
 
 static void
 ApplySatelliteBackhaulState(SatBackhaulContext* ctx, bool writeLog)
@@ -1663,10 +1454,15 @@ ApplySatelliteBackhaulState(SatBackhaulContext* ctx, bool writeLog)
         g_backhaulDlSnrDb[cell.cellId] = backhaulDlSnrDb;
         g_backhaulUlSnrDb[cell.cellId] = backhaulUlSnrDb;
 
-        bool backhaulHealthy =
-            (std::min(backhaulDlSnrDb, backhaulUlSnrDb) >= ctx->minAcceptableBackhaulSnrDb);
+        double bottleneckSnrDb = std::min(backhaulDlSnrDb, backhaulUlSnrDb);
 
-        uint32_t newCap = backhaulHealthy ? ctx->healthyNtnCapacity : 0;
+        uint32_t newCap = MapBackhaulSnrToCapacity(bottleneckSnrDb,
+                                                ctx->minAcceptableBackhaulSnrDb,
+                                                ctx->goodBackhaulSnrDb,
+                                                ctx->healthyNtnCapacity);
+
+        bool backhaulHealthy = (newCap > 0);
+        g_effectiveNtnCapacity[cell.cellId] = newCap;
 
         // 1) update xApp / HO side
         if (g_rsrpLm)
@@ -1685,16 +1481,17 @@ ApplySatelliteBackhaulState(SatBackhaulContext* ctx, bool writeLog)
         if (writeLog && ctx->file && ctx->file->is_open())
         {
             (*ctx->file) << std::fixed << std::setprecision(6)
-                         << t << ","
-                         << cell.cellId << ","
-                         << serviceDlSnrDb << ","
-                         << serviceUlSnrDb << ","
-                         << feederDlSnrDb << ","
-                         << feederUlSnrDb << ","
-                         << backhaulDlSnrDb << ","
-                         << backhaulUlSnrDb << ","
-                         << (backhaulHealthy ? 1 : 0)
-                         << "\n";
+                        << t << ","
+                        << cell.cellId << ","
+                        << serviceDlSnrDb << ","
+                        << serviceUlSnrDb << ","
+                        << feederDlSnrDb << ","
+                        << feederUlSnrDb << ","
+                        << backhaulDlSnrDb << ","
+                        << backhaulUlSnrDb << ","
+                        << (backhaulHealthy ? 1 : 0) << ","
+                        << newCap
+                        << "\n";
         }
     }
 }
@@ -1816,18 +1613,8 @@ main(int argc, char* argv[])
     bool useTorch = false;
     bool useRsrp = true; // use the RSRP-driven ORAN LM
     double lmQueryInterval = 2; // Mitigate the ping pong handovers
-    double e2SendInterval = 2.0;
     double maxWaitTime = 0.010;
     double txDelay = 0.1;
-    bool enableFlowMonitor = false;
-    bool enableRsrpTrace = false;
-    bool enablePositionTrace = true;
-    bool enableOranInfoLog = true;
-    bool enablePdcpDiscarding = true;
-    uint32_t discardTimerMs = 100;
-    uint32_t reorderingTimerMs = 100;
-    uint32_t maxRlcTxBufferSize = 10 * 1024 * 1024;
-    double stopTailSeconds = 0.0;
     bool remMode = false; // [0]: REM disabled; [1]: generate REM
     int32_t remRbId = -1; // kept for compatibility (not used by this REM helper)
     std::string handoverAlgorithm = "ns3::NrNoOpHandoverAlgorithm";
@@ -1838,6 +1625,14 @@ main(int argc, char* argv[])
     bool enableSatBackhaulMonitor = true;
     double satBackhaulLogStepMs = 500.0;
     double satBackhaulMinSnrDb = 0.0;
+
+    double satBackhaulGoodSnrDb = 12.0;
+
+    double uavCommandDelaySec = 0.240;
+    double uavCommandExpirySec = 0.500;
+
+    std::string uavControlMode = "delayed";
+    // valid modes: static | current | delayed | predict-linear
 
     std::string satBackhaulScenario = "NTN-Suburban";
     double satBackhaulFrequencyHz = 20e9;
@@ -1880,7 +1675,6 @@ main(int argc, char* argv[])
     cmd.AddValue("use-rsrp-lm", "Use the RSRP-based LM", useRsrp);
     cmd.AddValue("sim-time", "The duration for which traffic should flow", simTime);
     cmd.AddValue("lm-query-interval", "The LM query interval", lmQueryInterval);
-    cmd.AddValue("e2-send-interval", "Interval between E2 report transmissions in seconds", e2SendInterval);
     cmd.AddValue("tx-delay", "The E2 terminator's transmission delay", txDelay);
     cmd.AddValue("handover-algorithm", "Specify which handover algorithm to use", handoverAlgorithm);
     cmd.AddValue("db-file", "Specify the DB file to create", dbFileName);
@@ -1904,20 +1698,31 @@ main(int argc, char* argv[])
     cmd.AddValue("sat-backhaul-min-snr-db",
                  "Minimum acceptable backhaul SNR (dB) for allowing NTN HO",
                  satBackhaulMinSnrDb);
+    cmd.AddValue("sat-backhaul-good-snr-db",
+             "Backhaul SNR (dB) where NTN capacity becomes full",
+             satBackhaulGoodSnrDb);
+
+    cmd.AddValue("uav-command-delay-sec",
+                "Delay from RIC/xApp UAV decision to UAV command execution",
+                uavCommandDelaySec);
+
+    cmd.AddValue("uav-command-expiry-sec",
+                "Drop UAV command if command age exceeds this threshold",
+                uavCommandExpirySec);
+
+    cmd.AddValue("uav-control-mode",
+                "UAV control mode: static | current | delayed | predict-linear",
+                uavControlMode);             
     cmd.AddValue("sat-backhaul-scenario",
                  "Satellite backhaul scenario: NTN-DenseUrban | NTN-Urban | NTN-Suburban | NTN-Rural",
                  satBackhaulScenario);
-    cmd.AddValue("mobility-update-ms", "Waypoint mobility update period in milliseconds", g_mobilityUpdateMs);
-    cmd.AddValue("enable-flow-monitor", "Enable FlowMonitor and periodic QoS files", enableFlowMonitor);
-    cmd.AddValue("enable-rsrp-trace", "Enable per-UE RSRP trace file", enableRsrpTrace);
-    cmd.AddValue("enable-position-trace", "Enable periodic UE/UAV position trace files", enablePositionTrace);
-    cmd.AddValue("enable-oran-info-log", "Enable verbose INFO logging for ORAN LM and NrHelper", enableOranInfoLog);
-    cmd.AddValue("enable-pdcp-discarding", "Enable PDCP discarding for bounded UDP/XR queues", enablePdcpDiscarding);
-    cmd.AddValue("pdcp-discard-timer-ms", "PDCP discard timer in milliseconds", discardTimerMs);
-    cmd.AddValue("rlc-reordering-timer-ms", "RLC UM reordering timer in milliseconds", reorderingTimerMs);
-    cmd.AddValue("rlc-max-tx-buffer-size", "Maximum RLC UM TX buffer size in bytes", maxRlcTxBufferSize);
-    cmd.AddValue("stop-tail", "Extra simulation seconds after sim-time for app/drain events", stopTailSeconds);
     cmd.Parse(argc, argv);
+
+    NS_ABORT_MSG_IF(uavControlMode != "static" &&
+                uavControlMode != "current" &&
+                uavControlMode != "delayed" &&
+                uavControlMode != "predict-linear",
+                "Invalid --uav-control-mode. Use: static | current | delayed | predict-linear");
 
     NS_ABORT_MSG_IF(useOran == false && (useOnnx || useTorch || useRsrp),
                     "Cannot use ML LM or RSRP LM without enabling O-RAN.");
@@ -1926,10 +1731,22 @@ main(int argc, char* argv[])
                     "Cannot use non-noop handover algorithm with ML/RSRP LM (avoid conflicts).");
 
     std::ostringstream runTag;
-    runTag << "ueS1_" << numGroundUesS1 << "_ueS2_" << numGroundUesS2 << "_tnGnb_" << numTnGnbs << "_ntnGnb_" << numNtnGnbs << "_tnCap_" << maxUesPerCellTn << "_ntnCap_" << maxUesPerCellNtn << "_hyst_" << hysteresisDb;
+    runTag << "ueS1_" << numGroundUesS1
+       << "_ueS2_" << numGroundUesS2
+       << "_tnGnb_" << numTnGnbs
+       << "_ntnGnb_" << numNtnGnbs
+       << "_tnCap_" << maxUesPerCellTn
+       << "_ntnCap_" << maxUesPerCellNtn
+       << "_hyst_" << hysteresisDb
+       << "_uavCtrl_" << uavControlMode
+       << "_cmdDelayMs_" << static_cast<uint32_t>(uavCommandDelaySec * 1000.0)
+       << "_cmdExpMs_" << static_cast<uint32_t>(uavCommandExpirySec * 1000.0)
+       << "_bhMinSnr_" << static_cast<int32_t>(satBackhaulMinSnrDb)
+       << "_bhGoodSnr_" << static_cast<int32_t>(satBackhaulGoodSnrDb);
+
 
     // Base output folder for this run
-    ns3_dir = "results/nr/tn-ntn/ml_uav_final/" + runTag.str() + "/";
+    ns3_dir = "results/nr/tn-ntn/" + runTag.str() + "/";
 
     // Update file paths to be inside ns3_dir
     s_ueS1PositionTraceFile = ns3_dir + "ues1-position-trace.tr";
@@ -1938,15 +1755,10 @@ main(int argc, char* argv[])
     s_handoverTraceFile = ns3_dir + "handover-trace.tr";
     s_flowStatTraceFile = ns3_dir + "flow-stats.log";
     s_satBackhaulTraceFile = ns3_dir + "sat-backhaul-trace.txt";
+    s_controlAociTraceFile = ns3_dir + "control-aoci-trace.csv";
 
     // Ensure results/nr/ directory exists
     std::filesystem::create_directories(ns3_dir);
-
-    if (g_enablePredictiveUav)
-    {
-        LoadUavHeatmapPredictor(g_uavPredictorOnnxPath);
-        g_heatNormMax = 5.0;  // max per-cell heatmap count used during training
-    }
 
     Ptr<OutputStreamWrapper> rsrpRsrqSinrTraceStream =
     Create<OutputStreamWrapper>(ns3_dir + "rsrp-trace.tr", std::ios::out);
@@ -1961,13 +1773,13 @@ main(int argc, char* argv[])
     // g_uncondFile.open(ns3_dir + "init-attach.log", std::ios::out | std::ios::trunc);
     // g_oldCoutBuf = std::cout.rdbuf(g_uncondFile.rdbuf());
 
-    if (enableOranInfoLog)
-    {
-        LogComponentEnable("OranLmNr2NrRsrpHandoverWithTnNtn", LOG_LEVEL_INFO);
-        LogComponentEnable("NrHelper", LOG_LEVEL_INFO);
-    }
+    LogComponentEnable("OranLmNr2NrRsrpHandoverWithTnNtn", LOG_LEVEL_INFO);
+    LogComponentEnable("NrHelper", LOG_LEVEL_INFO);
 
-    // Bound UDP/XR queue growth under overload. Unbounded RLC queues can consume RAM for days.
+    // Increase the buffer size to accomodate the application demand
+    bool enablePdcpDiscarding = false;
+    uint32_t discardTimerMs = 0;
+    uint32_t reorderingTimerMs = 100;
     Config::SetDefault("ns3::NrRlcUm::EnablePdcpDiscarding", BooleanValue(enablePdcpDiscarding));
     Config::SetDefault("ns3::NrRlcUm::DiscardTimerMs", UintegerValue(discardTimerMs));
     Config::SetDefault("ns3::NrRlcUm::ReorderingTimer", TimeValue(MilliSeconds(reorderingTimerMs)));
@@ -1975,7 +1787,7 @@ main(int argc, char* argv[])
     Config::SetDefault("ns3::NrGnbRrc::QosFlowToRlcMapping",
                        EnumValue(useUdp ? NrGnbRrc::RLC_UM_ALWAYS : NrGnbRrc::RLC_AM_ALWAYS));
 
-    Config::SetDefault("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(maxRlcTxBufferSize));
+    Config::SetDefault("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(999999999));//100 * 1024
     //Config::SetDefault("ns3::NrGnbRrc::MaxUesPerCell", UintegerValue(maxUesPerCell));
 
     int channelUpdatePeriod = 100;
@@ -2358,13 +2170,16 @@ main(int argc, char* argv[])
     double underservedRsrpThreshDbm = -120.0;
 
     // Start after measurements and initial attach have had a little time to appear
-    Simulator::Schedule(Seconds(7),
-                        &UpdateUavTargetsPredictive,
+    Simulator::Schedule(Seconds(7.0),
+                        &UpdateUavTargetsFromUnderservedUes,
                         groundUeNodesS1,
                         groundUeNodesS2,
                         ntnGnbNrDevs,
                         underservedRsrpThreshDbm,
-                        uavControlPeriodSec);
+                        uavControlPeriodSec,
+                        uavCommandDelaySec,
+                        uavCommandExpirySec,
+                        uavControlMode);
 
     allGnbNrDevs.Add(tnGnbNrDevs);
     allGnbNrDevs.Add(ntnGnbNrDevs);
@@ -2433,7 +2248,7 @@ main(int argc, char* argv[])
                     << "ServiceDlSnrDb,ServiceUlSnrDb,"
                     << "FeederDlSnrDb,FeederUlSnrDb,"
                     << "BackhaulDlSnrDb,BackhaulUlSnrDb,"
-                    << "BackhaulHealthy\n";
+                    << "BackhaulHealthy,EffectiveNtnCapacity\n";
 
         ObjectFactory propFactory;
         ObjectFactory condFactory;
@@ -2515,6 +2330,7 @@ main(int argc, char* argv[])
         satBackhaulCtx->file = &satBackhaulOut;
         satBackhaulCtx->logPeriodMs = satBackhaulLogStepMs;
         satBackhaulCtx->minAcceptableBackhaulSnrDb = satBackhaulMinSnrDb;
+        satBackhaulCtx->goodBackhaulSnrDb = satBackhaulGoodSnrDb;
         satBackhaulCtx->healthyNtnCapacity = maxUesPerCellNtn;
 
         // Feeder DL: SAT -> GW
@@ -3079,8 +2895,7 @@ main(int argc, char* argv[])
             nrUeTerminator->SetAttribute("RegistrationIntervalRv",
                                          StringValue("ns3::ConstantRandomVariable[Constant=1]"));
             nrUeTerminator->SetAttribute("SendIntervalRv",
-                                         StringValue("ns3::ConstantRandomVariable[Constant=" +
-                                                     std::to_string(e2SendInterval) + "]"));
+                                         StringValue("ns3::ConstantRandomVariable[Constant=1]"));// increase to mitigate ping pong handovers
 
             nrUeTerminator->AddReporter(locationReporter);
             nrUeTerminator->AddReporter(nrUeCellInfoReporter);
@@ -3140,8 +2955,7 @@ main(int argc, char* argv[])
             nrUeTerminator->SetAttribute("RegistrationIntervalRv",
                                         StringValue("ns3::ConstantRandomVariable[Constant=1]"));
             nrUeTerminator->SetAttribute("SendIntervalRv",
-                                        StringValue("ns3::ConstantRandomVariable[Constant=" +
-                                                    std::to_string(e2SendInterval) + "]"));
+                                        StringValue("ns3::ConstantRandomVariable[Constant=1]"));
 
             nrUeTerminator->AddReporter(locationReporter);
             nrUeTerminator->AddReporter(nrUeCellInfoReporter);
@@ -3182,8 +2996,7 @@ main(int argc, char* argv[])
             nrGnbTerminator->SetAttribute("RegistrationIntervalRv",
                                         StringValue("ns3::ConstantRandomVariable[Constant=1]"));
             nrGnbTerminator->SetAttribute("SendIntervalRv",
-                                        StringValue("ns3::ConstantRandomVariable[Constant=" +
-                                                    std::to_string(e2SendInterval) + "]"));
+                                        StringValue("ns3::ConstantRandomVariable[Constant=1]"));
 
             nrGnbTerminator->AddReporter(locationReporter);
             nrGnbTerminator->AddReporter(nrCellLoadReporter);
@@ -3217,8 +3030,7 @@ main(int argc, char* argv[])
             nrGnbTerminator->SetAttribute("RegistrationIntervalRv",
                                         StringValue("ns3::ConstantRandomVariable[Constant=1]"));
             nrGnbTerminator->SetAttribute("SendIntervalRv",
-                                        StringValue("ns3::ConstantRandomVariable[Constant=" +
-                                                    std::to_string(e2SendInterval) + "]"));
+                                        StringValue("ns3::ConstantRandomVariable[Constant=1]"));
 
             nrGnbTerminator->AddReporter(locationReporter);
             nrGnbTerminator->AddReporter(nrCellLoadReporter);
@@ -3255,58 +3067,52 @@ main(int argc, char* argv[])
     std::ofstream hoOutFile(s_handoverTraceFile, std::ios_base::trunc);
     hoOutFile.close();
 
-    if (enablePositionTrace)
-    {
-        // Start tracing node locations
-        Simulator::Schedule(Seconds(1), &TraceUeS1Positions, groundUeNodesS1);
-        Simulator::Schedule(Seconds(1), &TraceUavPositions, ntnGnbNodes);
+    // Start tracing node locations
+    Simulator::Schedule(Seconds(1), &TraceUeS1Positions, groundUeNodesS1);
+    Simulator::Schedule(Seconds(1), &TraceUavPositions, ntnGnbNodes);
 
-        /* Start tracing UE Set 2 only when they actually start */
-        Simulator::Schedule(tLateAttach, &TraceUeS2Positions, groundUeNodesS2);
-    }
+    /* Start tracing UE Set 2 only when they actually start */
+    Simulator::Schedule(tLateAttach, &TraceUeS2Positions, groundUeNodesS2);
 
     // Connect to handover trace so we know when a handover is successfully performed
     Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverEndOk",
                     MakeCallback(&NotifyHandoverEndOkGnb));
 
-    if (enableRsrpTrace)
+    for (NetDeviceContainer::Iterator it = groundNrDevsS1.Begin(); it != groundNrDevsS1.End(); ++it)
     {
-        for (NetDeviceContainer::Iterator it = groundNrDevsS1.Begin(); it != groundNrDevsS1.End(); ++it)
-        {
-            Ptr<NetDevice> device = *it;
-            Ptr<NrUeNetDevice> nrUeDevice = device->GetObject<NrUeNetDevice>();
+        Ptr<NetDevice> device = *it;
+        Ptr<NrUeNetDevice> nrUeDevice = device->GetObject<NrUeNetDevice>();
 
-            if (nrUeDevice)
+        if (nrUeDevice)
+        {
+            for (uint32_t b = 0; b < ueNumBwps; ++b)
             {
-                for (uint32_t b = 0; b < ueNumBwps; ++b)
+                Ptr<NrUePhy> uePhy = nrUeDevice->GetPhy(b);
+                if (uePhy)
                 {
-                    Ptr<NrUePhy> uePhy = nrUeDevice->GetPhy(b);
-                    if (uePhy)
-                    {
-                        uePhy->TraceConnectWithoutContext(
-                            "ReportUeMeasurements",
-                            MakeBoundCallback(&TraceRsrpRsrqSinr, rsrpRsrqSinrTraceStream));
-                    }
+                    uePhy->TraceConnectWithoutContext(
+                        "ReportUeMeasurements",
+                        MakeBoundCallback(&TraceRsrpRsrqSinr, rsrpRsrqSinrTraceStream));
                 }
             }
         }
+    }
 
-        for (NetDeviceContainer::Iterator it = groundNrDevsS2.Begin(); it != groundNrDevsS2.End(); ++it)
+    for (NetDeviceContainer::Iterator it = groundNrDevsS2.Begin(); it != groundNrDevsS2.End(); ++it)
+    {
+        Ptr<NetDevice> device = *it;
+        Ptr<NrUeNetDevice> nrUeDevice = device->GetObject<NrUeNetDevice>();
+
+        if (nrUeDevice)
         {
-            Ptr<NetDevice> device = *it;
-            Ptr<NrUeNetDevice> nrUeDevice = device->GetObject<NrUeNetDevice>();
-
-            if (nrUeDevice)
+            for (uint32_t b = 0; b < ueNumBwps; ++b)
             {
-                for (uint32_t b = 0; b < ueNumBwps; ++b)
+                Ptr<NrUePhy> uePhy = nrUeDevice->GetPhy(b);
+                if (uePhy)
                 {
-                    Ptr<NrUePhy> uePhy = nrUeDevice->GetPhy(b);
-                    if (uePhy)
-                    {
-                        uePhy->TraceConnectWithoutContext(
-                            "ReportUeMeasurements",
-                            MakeBoundCallback(&TraceRsrpRsrqSinr, rsrpRsrqSinrTraceStream));
-                    }
+                    uePhy->TraceConnectWithoutContext(
+                        "ReportUeMeasurements",
+                        MakeBoundCallback(&TraceRsrpRsrqSinr, rsrpRsrqSinrTraceStream));
                 }
             }
         }
@@ -3333,23 +3139,19 @@ main(int argc, char* argv[])
     // allUes.Add(groundUeNodesS2);
     // flowMonitor = flowHelper.Install(allUes);
     FlowMonitorHelper flowHelper;
-    Ptr<FlowMonitor> flowMonitor;
 
-    if (enableFlowMonitor)
-    {
-        NodeContainer nodesToMonitor;
-        nodesToMonitor.Add(remoteHostContainer);   // include remote host
-        nodesToMonitor.Add(groundUeNodesS1);
-        nodesToMonitor.Add(groundUeNodesS2);
+    NodeContainer nodesToMonitor;
+    nodesToMonitor.Add(remoteHostContainer);   // include remote host
+    nodesToMonitor.Add(groundUeNodesS1);
+    nodesToMonitor.Add(groundUeNodesS2);
 
-        flowMonitor = flowHelper.Install(nodesToMonitor);
+    Ptr<FlowMonitor> flowMonitor = flowHelper.Install(nodesToMonitor);
 
-        std::ofstream qos_vs_time;
-        qos_vs_time.open(ns3_dir + "qos-vs-time.txt", std::ofstream::out | std::ofstream::trunc);
-        qos_vs_time << "Time,UE,Dir,Delay,Jitter,Throughput,PDR" << std::endl;
-        g_prevFlowStats.clear();
-        Simulator::Schedule(Seconds(4.0), ThroughputMonitor, &flowHelper, flowMonitor);
-    }
+    std::ofstream qos_vs_time;
+    qos_vs_time.open(ns3_dir + "qos-vs-time.txt", std::ofstream::out | std::ofstream::trunc);
+    qos_vs_time << "Time,UE,Dir,Delay,Jitter,Throughput,PDR" << std::endl;
+    g_prevFlowStats.clear();
+    Simulator::Schedule(Seconds(4.0), ThroughputMonitor, &flowHelper, flowMonitor);
 
 
     // populate user ip map
@@ -3401,11 +3203,25 @@ main(int argc, char* argv[])
     // flowOutFile.close();
 
     // Tell the simulator how long to run
-    Simulator::Stop(simTime + Seconds(stopTailSeconds));
+    // Open control AoCI trace BEFORE the simulation starts
+    g_controlAociTrace.open(s_controlAociTraceFile, std::ios::out | std::ios::trunc);
+
+    NS_ABORT_MSG_IF(!g_controlAociTrace.is_open(),
+                    "Could not create " << s_controlAociTraceFile);
+
+    g_controlAociTrace
+        << "Time,CmdId,CommandType,UavIdx,DecisionTime,ExecutionTime,"
+        << "CommandAge,Expiry,Stale,Applied,TargetEast,TargetNorth,"
+        << "Mode,Reason\n";
+
+    // Tell the simulator how long to run
+    Simulator::Stop(simTime + Seconds(15));
     Simulator::Run();
-    if (enableFlowMonitor)
+
+    WriteFlowReportToFile(flowMonitor, &flowHelper, ns3_dir + "final-flow-report.txt");
+    if (g_controlAociTrace.is_open())
     {
-        WriteFlowReportToFile(flowMonitor, &flowHelper, ns3_dir + "final-flow-report.txt");
+        g_controlAociTrace.close();
     }
 
     if (g_oldClogBuf) { std::clog.rdbuf(g_oldClogBuf); }

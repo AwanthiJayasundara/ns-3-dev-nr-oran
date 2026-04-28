@@ -60,80 +60,12 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("OranNrTnNtnUavSatHandover2");
 
-/**
- * Example of ORAN-driven NR multi-cell UES1 handover with QoS monitoring (5G-LENA).
- *
- * Minimum required versions for reproducibility:
- *   - ns-3 version: 3.39 or later
- *   - 5G-LENA version: 2.6 or later
- *
- * The scenario consists of X NR UES1 UEs (moving randomly) and Y NR ground UEs (static) inside a large 2D area
- * and served by Z fixed gNB macro cells. Each UES1 receives downlink UDP traffic
- * from a remote host through an NR EPC (NrPointToPointEpcHelper). 
- *
- * The NR radio access uses a 3GPP UMa propagation scenario with optional fading
- * enabled, and an Ideal Beamforming helper (Quasi-Omni direct path beamforming).
-
- * A concrete NR scheduler is selected at runtime (OFDMA/TDMA with RR/PF/MR/QoS),
- * and the UEs initially attach to the gNB offering the maximum RSRP. X2 interfaces
- * are enabled to support inter-gNB handovers.
- *
- * In ORAN mode, UES1 UEs report periodic measurements (location, serving cell info,
- * and application loss metrics) to a Near-RT RIC using E2 node terminators.
- * The Near-RT RIC runs an RSRP-based Logic Module (OranLmNr2NrRsrpHandover) that
- * can decide and trigger NR-to-NR handovers. gNB-side cell load is also reported
- * via NR scheduling callbacks to support conflict mitigation.
- *
- * FlowMonitor is used to compute per-UES1 QoS metrics (delay, jitter, throughput,
- * and packet delivery ratio) periodically and write them to trace files over time.
- * Additionally, node mobility positions and successful handover events are logged.
- *
- * Two set of ue traffic added (No HO> we can change if want) and connect
- * with RIC too so load-aware handover decisions can be made based on the total number of 
- * UEs (UES1 + UE2) connected to each gNB. 
- * 
- * Cell load capacity is set so no intial attachement or handover will be triggered for a 
- * gNB that has already reached the maximum number of UEs. 
- * 
- * NR can split the spectrum into Bandwidth Parts (BWPs) and configure each one differently.
- * FDM (Frequency Division Multiplexing) Split the total spectrum into different frequency 
- * pieces Each piece can serve a different purpose
- * keep everything in one BWP because video can dominate resources voice packets may get delayed
- * uplink-heavy traffic may suffer if DL traffic takes most capacity
- * scheduler becomes less efficient
- * ////////////////////////////
- * This scenario combines:
- *   (1) application-level traffic models (video / voice-like generators), and
- *   (2) radio-level traffic steering (different QoS flows mapped to different BWPs).
- * 
- * UES1 downlink (remoteHost -> UES1):
- *   Uses TrafficGenerator3gppGenericVideo, so packets are generated according
- *   to a video-like traffic model instead of a generic OnOff source.
- *   This is still simulated UDP traffic, but its timing/rate behavior is meant
- *   to resemble video service traffic more closely.
- *
- * UES1 uplink (UES1 -> remoteHost):
- *   Also uses TrafficGenerator3gppGenericVideo, but with a lower data rate/FPS
- *   than downlink. This represents lighter video-like uplink traffic from the UES1.
- * 
- * ofdm = true and schedKind="RR" are set by default to use OFDMA with Round Robin scheduling,
- * for fh control in 7.2x split : https://cttc-lena.gitlab.io/nr/manual/nr-module.html#fronthaul-control
- *
- *   RequiredFhDlThroughput reports the required DL fronthaul throughput per BWP.
- *   UsedAirRbs reports how many DL air-interface RBs were actually used per BWP.
- *   These traces help compare fronthaul demand versus actual radio resource use.
- * 
- * In this scenario, when 5G-LENA Fronthaul Control is enabled, the fronthaul model 
- * assumes functional split 7.2x.
- * after this PDR is much less
- */
-
 const static float TN_GNB_HEIGHT = 25;
 
 
 // Variables
-uint32_t numGroundUesS1 = 120; // UES1 
-uint32_t numGroundUesS2 = 120; // UES2
+uint32_t numGroundUesS1 = 115; // UES1 
+uint32_t numGroundUesS2 = 115; // UES2
 
 uint32_t numTnGnbs = 8;
 uint32_t numNtnGnbs = 6; // e.g., uav gnbs for ntn area
@@ -156,6 +88,7 @@ uint32_t maxUesPerCellNtn = 10;
 
 // Metrics collection interval
 Time management_interval = Seconds(2);
+static double g_mobilityUpdateMs = 200.0;
 
 // UES1 ips vector
 std::vector<Ipv4Address> user_ip;
@@ -242,35 +175,6 @@ TraceRsrpRsrqSinr(Ptr<OutputStreamWrapper> stream,
     g_latestRsrp[{rnti,cellId}] = rsrp;
 }
 
-// void
-// ReportFhTrace(const SfnSf& sfn, uint16_t physCellId, uint16_t bwpId, uint64_t reqFh)
-// {
-//     if (!g_fhTraceFile.is_open())
-//     {
-//         g_fhTraceFile.open(ns3_dir + "fh-trace.txt", std::ios::out | std::ios::trunc);
-//         g_fhTraceFile << "Time,CellId,BwpId,RequiredFhDlThroughput\n";
-//     }
-
-//     g_fhTraceFile << Simulator::Now().GetSeconds() << ","
-//                   << physCellId << ","
-//                   << bwpId << ","
-//                   << reqFh << "\n";
-// }
-
-// void
-// ReportAiTrace(const SfnSf& sfn, uint16_t physCellId, uint16_t bwpId, uint32_t airRbs)
-// {
-//     if (!g_airTraceFile.is_open())
-//     {
-//         g_airTraceFile.open(ns3_dir + "air-rbs-trace.txt", std::ios::out | std::ios::trunc);
-//         g_airTraceFile << "Time,CellId,BwpId,UsedAirRbs\n";
-//     }
-
-//     g_airTraceFile << Simulator::Now().GetSeconds() << ","
-//                    << physCellId << ","
-//                    << bwpId << ","
-//                    << airRbs << "\n";
-// }
 
 // Helper function that returns the UES1 id associated with a specific IP
 int
@@ -1042,10 +946,10 @@ install_mobility_geocentric(NodeContainer staticNodes,
         g_uavStates.push_back(st.get());
         g_geoStates.push_back(std::move(st));
 
-        Simulator::Schedule(MilliSeconds(10),
+        Simulator::Schedule(MilliSeconds(g_mobilityUpdateMs),
                             &MoveGeoNodeToAssignedTarget,
                             g_uavStates.back(),
-                            10.0);
+                            g_mobilityUpdateMs);
     }
 
     for (uint32_t i = 0; i < groundUeNodesS1.GetN(); ++i)
@@ -1077,12 +981,12 @@ install_mobility_geocentric(NodeContainer staticNodes,
 
         SelectNewGeoWaypoint(st.get(), eastRv, northRv);
 
-        Simulator::Schedule(MilliSeconds(10),
+        Simulator::Schedule(MilliSeconds(g_mobilityUpdateMs),
                             &MoveGeoNodeRandomWaypoint,
                             st.get(),
                             eastRv,
                             northRv,
-                            10.0);
+                            g_mobilityUpdateMs);
 
         g_geoStates.push_back(std::move(st));
     }
@@ -1116,177 +1020,17 @@ install_mobility_geocentric(NodeContainer staticNodes,
 
         SelectNewGeoWaypoint(st.get(), eastRv, northRv);
 
-        Simulator::Schedule(MilliSeconds(10),
+        Simulator::Schedule(MilliSeconds(g_mobilityUpdateMs),
                             &MoveGeoNodeRandomWaypoint,
                             st.get(),
                             eastRv,
                             northRv,
-                            10.0);
+                            g_mobilityUpdateMs);
 
         g_geoStates.push_back(std::move(st));
     }
 }
 ///
-
-// void install_mobility(NodeContainer staticNodes,
-//                       NodeContainer tnGnbNodes,
-//                       NodeContainer ntnGnbNodes,
-//                       NodeContainer groundUeNodesS1,
-//                       NodeContainer groundUeNodesS2)
-// {
-//     // --------------------------------------------------
-//     // 0) Remote host / static node
-//     // --------------------------------------------------
-//     Ptr<ListPositionAllocator> allocator = CreateObject<ListPositionAllocator>();
-//     allocator->Add(Vector(0, 0, 0));
-
-//     MobilityHelper staticNodesHelper;
-//     staticNodesHelper.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-//     staticNodesHelper.SetPositionAllocator(allocator);
-//     staticNodesHelper.Install(staticNodes);
-
-//     // ==================================================
-//     // 1) TN gNBs: fixed terrestrial gNBs in TN area
-//     //    TN area: x = [0,1000], y = [-1000,1000]
-//     // ==================================================
-//     Ptr<ListPositionAllocator> tnGnbPosition = CreateObject<ListPositionAllocator>();
-
-//     const double TN_X_MIN = 0.0;
-//     const double TN_X_MAX = 2000.0;
-//     const double TN_Y_MIN = -1000.0;
-//     const double TN_Y_MAX = 1000.0;
-//     const double TN_Z     = TN_GNB_HEIGHT;
-
-//     const double minDist = 200.0;
-//     const uint32_t maxAttempts = 20000;
-
-//     Ptr<UniformRandomVariable> tnUx = CreateObject<UniformRandomVariable>();
-//     Ptr<UniformRandomVariable> tnUy = CreateObject<UniformRandomVariable>();
-//     tnUx->SetAttribute("Min", DoubleValue(TN_X_MIN));
-//     tnUx->SetAttribute("Max", DoubleValue(TN_X_MAX));
-//     tnUy->SetAttribute("Min", DoubleValue(TN_Y_MIN));
-//     tnUy->SetAttribute("Max", DoubleValue(TN_Y_MAX));
-
-//     std::vector<Vector> tnPlaced;
-//     tnPlaced.reserve(tnGnbNodes.GetN());
-
-//     auto TnFarEnough = [&](const Vector& cand) -> bool
-//     {
-//         for (const auto& p : tnPlaced)
-//         {
-//             const double dx = cand.x - p.x;
-//             const double dy = cand.y - p.y;
-//             const double d  = std::sqrt(dx * dx + dy * dy);
-//             if (d < minDist)
-//             {
-//                 return false;
-//             }
-//         }
-//         return true;
-//     };
-
-//     for (uint32_t i = 0; i < tnGnbNodes.GetN(); ++i)
-//     {
-//         bool ok = false;
-//         for (uint32_t a = 0; a < maxAttempts; ++a)
-//         {
-//             Vector cand(tnUx->GetValue(), tnUy->GetValue(), TN_Z);
-//             if (TnFarEnough(cand))
-//             {
-//                 tnGnbPosition->Add(cand);
-//                 tnPlaced.push_back(cand);
-//                 ok = true;
-//                 break;
-//             }
-//         }
-
-//         NS_ABORT_MSG_IF(!ok,
-//                         "Could not place TN gNB " << i
-//                         << " in TN area with minDist=" << minDist);
-//     }
-
-//     MobilityHelper tnGnbHelper;
-//     tnGnbHelper.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-//     tnGnbHelper.SetPositionAllocator(tnGnbPosition);
-//     tnGnbHelper.Install(tnGnbNodes);
-
-//     // ==================================================
-//     // 2) NTN/UAV gNBs: moving aerial gNBs in separate area
-//     //    NTN area: x = [2000,6000], y = [-1000,1000]
-//     //    initial altitude z = [100,200]
-//     // ==================================================
-//     Ptr<RandomBoxPositionAllocator> ntnGnbPosition = CreateObject<RandomBoxPositionAllocator>();
-//     ntnGnbPosition->SetAttribute("X",
-//         StringValue("ns3::UniformRandomVariable[Min=2100.0|Max=9900.0]"));
-//     ntnGnbPosition->SetAttribute("Y",
-//         StringValue("ns3::UniformRandomVariable[Min=-900.0|Max=900.0]"));
-//     ntnGnbPosition->SetAttribute("Z",
-//         StringValue("ns3::UniformRandomVariable[Min=100.0|Max=200.0]")); // UAV altitude between 100 and 200 meters
-
-//     MobilityHelper ntnGnbHelper;
-//     ntnGnbHelper.SetPositionAllocator(ntnGnbPosition);
-//     ntnGnbHelper.SetMobilityModel("ns3::RandomDirection2dMobilityModel",
-//                                   "Bounds",
-//                                   StringValue("2000|10000|-1000|1000"),
-//                                   "Speed",
-//                                   StringValue("ns3::UniformRandomVariable[Min=8.0|Max=16.0]"),
-//                                   "Pause",
-//                                   StringValue("ns3::UniformRandomVariable[Min=0.5|Max=2.0]"));
-//     ntnGnbHelper.Install(ntnGnbNodes);
-
-//     // ==================================================
-//     // 3) UE Set 1: moving across whole TN+NTN area
-//     //    whole area: x = [0,6000], y = [-1000,1000]
-//     // ==================================================
-//     Ptr<RandomBoxPositionAllocator> boxS1 = CreateObject<RandomBoxPositionAllocator>();
-//     boxS1->SetAttribute("X",
-//         StringValue("ns3::UniformRandomVariable[Min=100.0|Max=9900.0]"));
-//     boxS1->SetAttribute("Y",
-//         StringValue("ns3::UniformRandomVariable[Min=-900.0|Max=900.0]"));
-//     boxS1->SetAttribute("Z",
-//         StringValue("ns3::ConstantRandomVariable[Constant=1.5]"));
-
-//     MobilityHelper ueS1Helper;
-//     ueS1Helper.SetPositionAllocator(boxS1);
-//     ueS1Helper.SetMobilityModel("ns3::RandomDirection2dMobilityModel",
-//                                 "Bounds",
-//                                 StringValue("0|10000|-1000|1000"),
-//                                 "Speed",
-//                                 StringValue("ns3::UniformRandomVariable[Min=2.0|Max=10.0]"),
-//                                 "Pause",
-//                                 StringValue("ns3::UniformRandomVariable[Min=1.0|Max=6.0]"));
-//     ueS1Helper.Install(groundUeNodesS1);
-
-//     // ==================================================
-//     // 4) UE Set 2: static across whole TN+NTN area
-//     // ==================================================
-//     Ptr<RandomBoxPositionAllocator> boxS2 = CreateObject<RandomBoxPositionAllocator>();
-//     boxS2->SetAttribute("X",
-//         StringValue("ns3::UniformRandomVariable[Min=100.0|Max=9900.0]"));
-//     boxS2->SetAttribute("Y",
-//         StringValue("ns3::UniformRandomVariable[Min=-900.0|Max=900.0]"));
-//     boxS2->SetAttribute("Z",
-//         StringValue("ns3::ConstantRandomVariable[Constant=1.5]"));
-
-//     // MobilityHelper ueS2Helper;
-//     // ueS2Helper.SetPositionAllocator(boxS2);
-//     // ueS2Helper.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-//     // ueS2Helper.Install(groundUeNodesS2);
-//     MobilityHelper ueS2Helper;
-//     ueS2Helper.SetPositionAllocator(boxS2);
-//     ueS2Helper.SetMobilityModel("ns3::RandomDirection2dMobilityModel",
-//                                 "Bounds",
-//                                 StringValue("0|10000|-1000|1000"),
-//                                 "Speed",
-//                                 StringValue("ns3::UniformRandomVariable[Min=2.0|Max=10.0]"),
-//                                 "Pause",
-//                                 StringValue("ns3::UniformRandomVariable[Min=1.0|Max=6.0]"));
-//     ueS2Helper.Install(groundUeNodesS2);
-// }
-
-// ============================================================
-// Satellite backhaul monitor helpers
-// ============================================================
 
 Ptr<SpectrumValue>
 CreateTxPowerSpectralDensity(double fcHz, double pwrDbm, double bwHz, double rbWidthHz)
@@ -1648,8 +1392,17 @@ main(int argc, char* argv[])
     bool useTorch = false;
     bool useRsrp = true; // use the RSRP-driven ORAN LM
     double lmQueryInterval = 2; // Mitigate the ping pong handovers
+    double e2SendInterval = 2.0;
     double maxWaitTime = 0.010;
     double txDelay = 0.1;
+    bool enableFlowMonitor = false;
+    bool enableRsrpTrace = false;
+    bool enablePositionTrace = true;
+    bool enableOranInfoLog = false;
+    bool enablePdcpDiscarding = true;
+    uint32_t discardTimerMs = 100;
+    uint32_t reorderingTimerMs = 100;
+    uint32_t maxRlcTxBufferSize = 10 * 1024 * 1024;
     bool remMode = false; // [0]: REM disabled; [1]: generate REM
     int32_t remRbId = -1; // kept for compatibility (not used by this REM helper)
     std::string handoverAlgorithm = "ns3::NrNoOpHandoverAlgorithm";
@@ -1702,6 +1455,7 @@ main(int argc, char* argv[])
     cmd.AddValue("use-rsrp-lm", "Use the RSRP-based LM", useRsrp);
     cmd.AddValue("sim-time", "The duration for which traffic should flow", simTime);
     cmd.AddValue("lm-query-interval", "The LM query interval", lmQueryInterval);
+    cmd.AddValue("e2-send-interval", "Interval between E2 report transmissions in seconds", e2SendInterval);
     cmd.AddValue("tx-delay", "The E2 terminator's transmission delay", txDelay);
     cmd.AddValue("handover-algorithm", "Specify which handover algorithm to use", handoverAlgorithm);
     cmd.AddValue("db-file", "Specify the DB file to create", dbFileName);
@@ -1728,6 +1482,15 @@ main(int argc, char* argv[])
     cmd.AddValue("sat-backhaul-scenario",
                  "Satellite backhaul scenario: NTN-DenseUrban | NTN-Urban | NTN-Suburban | NTN-Rural",
                  satBackhaulScenario);
+    cmd.AddValue("mobility-update-ms", "Waypoint mobility update period in milliseconds", g_mobilityUpdateMs);
+    cmd.AddValue("enable-flow-monitor", "Enable FlowMonitor and periodic QoS files", enableFlowMonitor);
+    cmd.AddValue("enable-rsrp-trace", "Enable per-UE RSRP trace file", enableRsrpTrace);
+    cmd.AddValue("enable-position-trace", "Enable periodic UE/UAV position trace files", enablePositionTrace);
+    cmd.AddValue("enable-oran-info-log", "Enable verbose INFO logging for ORAN LM and NrHelper", enableOranInfoLog);
+    cmd.AddValue("enable-pdcp-discarding", "Enable PDCP discarding for bounded UDP/XR queues", enablePdcpDiscarding);
+    cmd.AddValue("pdcp-discard-timer-ms", "PDCP discard timer in milliseconds", discardTimerMs);
+    cmd.AddValue("rlc-reordering-timer-ms", "RLC UM reordering timer in milliseconds", reorderingTimerMs);
+    cmd.AddValue("rlc-max-tx-buffer-size", "Maximum RLC UM TX buffer size in bytes", maxRlcTxBufferSize);
     cmd.Parse(argc, argv);
 
     NS_ABORT_MSG_IF(useOran == false && (useOnnx || useTorch || useRsrp),
@@ -1766,13 +1529,13 @@ main(int argc, char* argv[])
     // g_uncondFile.open(ns3_dir + "init-attach.log", std::ios::out | std::ios::trunc);
     // g_oldCoutBuf = std::cout.rdbuf(g_uncondFile.rdbuf());
 
-    LogComponentEnable("OranLmNr2NrRsrpHandoverWithTnNtn", LOG_LEVEL_INFO);
-    LogComponentEnable("NrHelper", LOG_LEVEL_INFO);
+    if (enableOranInfoLog)
+    {
+        LogComponentEnable("OranLmNr2NrRsrpHandoverWithTnNtn", LOG_LEVEL_INFO);
+        LogComponentEnable("NrHelper", LOG_LEVEL_INFO);
+    }
 
-    // Increase the buffer size to accomodate the application demand
-    bool enablePdcpDiscarding = false;
-    uint32_t discardTimerMs = 0;
-    uint32_t reorderingTimerMs = 100;
+    // Bound UDP/XR queue growth under overload. Unbounded RLC queues can consume RAM for days.
     Config::SetDefault("ns3::NrRlcUm::EnablePdcpDiscarding", BooleanValue(enablePdcpDiscarding));
     Config::SetDefault("ns3::NrRlcUm::DiscardTimerMs", UintegerValue(discardTimerMs));
     Config::SetDefault("ns3::NrRlcUm::ReorderingTimer", TimeValue(MilliSeconds(reorderingTimerMs)));
@@ -1780,7 +1543,7 @@ main(int argc, char* argv[])
     Config::SetDefault("ns3::NrGnbRrc::QosFlowToRlcMapping",
                        EnumValue(useUdp ? NrGnbRrc::RLC_UM_ALWAYS : NrGnbRrc::RLC_AM_ALWAYS));
 
-    Config::SetDefault("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(999999999));//100 * 1024
+    Config::SetDefault("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(maxRlcTxBufferSize));
     //Config::SetDefault("ns3::NrGnbRrc::MaxUesPerCell", UintegerValue(maxUesPerCell));
 
     int channelUpdatePeriod = 100;
@@ -2884,7 +2647,8 @@ main(int argc, char* argv[])
             nrUeTerminator->SetAttribute("RegistrationIntervalRv",
                                          StringValue("ns3::ConstantRandomVariable[Constant=1]"));
             nrUeTerminator->SetAttribute("SendIntervalRv",
-                                         StringValue("ns3::ConstantRandomVariable[Constant=1]"));// increase to mitigate ping pong handovers
+                                         StringValue("ns3::ConstantRandomVariable[Constant=" +
+                                                     std::to_string(e2SendInterval) + "]"));
 
             nrUeTerminator->AddReporter(locationReporter);
             nrUeTerminator->AddReporter(nrUeCellInfoReporter);
@@ -2944,7 +2708,8 @@ main(int argc, char* argv[])
             nrUeTerminator->SetAttribute("RegistrationIntervalRv",
                                         StringValue("ns3::ConstantRandomVariable[Constant=1]"));
             nrUeTerminator->SetAttribute("SendIntervalRv",
-                                        StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+                                        StringValue("ns3::ConstantRandomVariable[Constant=" +
+                                                    std::to_string(e2SendInterval) + "]"));
 
             nrUeTerminator->AddReporter(locationReporter);
             nrUeTerminator->AddReporter(nrUeCellInfoReporter);
@@ -2985,7 +2750,8 @@ main(int argc, char* argv[])
             nrGnbTerminator->SetAttribute("RegistrationIntervalRv",
                                         StringValue("ns3::ConstantRandomVariable[Constant=1]"));
             nrGnbTerminator->SetAttribute("SendIntervalRv",
-                                        StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+                                        StringValue("ns3::ConstantRandomVariable[Constant=" +
+                                                    std::to_string(e2SendInterval) + "]"));
 
             nrGnbTerminator->AddReporter(locationReporter);
             nrGnbTerminator->AddReporter(nrCellLoadReporter);
@@ -3019,7 +2785,8 @@ main(int argc, char* argv[])
             nrGnbTerminator->SetAttribute("RegistrationIntervalRv",
                                         StringValue("ns3::ConstantRandomVariable[Constant=1]"));
             nrGnbTerminator->SetAttribute("SendIntervalRv",
-                                        StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+                                        StringValue("ns3::ConstantRandomVariable[Constant=" +
+                                                    std::to_string(e2SendInterval) + "]"));
 
             nrGnbTerminator->AddReporter(locationReporter);
             nrGnbTerminator->AddReporter(nrCellLoadReporter);
@@ -3056,52 +2823,58 @@ main(int argc, char* argv[])
     std::ofstream hoOutFile(s_handoverTraceFile, std::ios_base::trunc);
     hoOutFile.close();
 
-    // Start tracing node locations
-    Simulator::Schedule(Seconds(1), &TraceUeS1Positions, groundUeNodesS1);
-    Simulator::Schedule(Seconds(1), &TraceUavPositions, ntnGnbNodes);
+    if (enablePositionTrace)
+    {
+        // Start tracing node locations
+        Simulator::Schedule(Seconds(1), &TraceUeS1Positions, groundUeNodesS1);
+        Simulator::Schedule(Seconds(1), &TraceUavPositions, ntnGnbNodes);
 
-    /* Start tracing UE Set 2 only when they actually start */
-    Simulator::Schedule(tLateAttach, &TraceUeS2Positions, groundUeNodesS2);
+        /* Start tracing UE Set 2 only when they actually start */
+        Simulator::Schedule(tLateAttach, &TraceUeS2Positions, groundUeNodesS2);
+    }
 
     // Connect to handover trace so we know when a handover is successfully performed
     Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverEndOk",
                     MakeCallback(&NotifyHandoverEndOkGnb));
 
-    for (NetDeviceContainer::Iterator it = groundNrDevsS1.Begin(); it != groundNrDevsS1.End(); ++it)
+    if (enableRsrpTrace)
     {
-        Ptr<NetDevice> device = *it;
-        Ptr<NrUeNetDevice> nrUeDevice = device->GetObject<NrUeNetDevice>();
-
-        if (nrUeDevice)
+        for (NetDeviceContainer::Iterator it = groundNrDevsS1.Begin(); it != groundNrDevsS1.End(); ++it)
         {
-            for (uint32_t b = 0; b < ueNumBwps; ++b)
+            Ptr<NetDevice> device = *it;
+            Ptr<NrUeNetDevice> nrUeDevice = device->GetObject<NrUeNetDevice>();
+
+            if (nrUeDevice)
             {
-                Ptr<NrUePhy> uePhy = nrUeDevice->GetPhy(b);
-                if (uePhy)
+                for (uint32_t b = 0; b < ueNumBwps; ++b)
                 {
-                    uePhy->TraceConnectWithoutContext(
-                        "ReportUeMeasurements",
-                        MakeBoundCallback(&TraceRsrpRsrqSinr, rsrpRsrqSinrTraceStream));
+                    Ptr<NrUePhy> uePhy = nrUeDevice->GetPhy(b);
+                    if (uePhy)
+                    {
+                        uePhy->TraceConnectWithoutContext(
+                            "ReportUeMeasurements",
+                            MakeBoundCallback(&TraceRsrpRsrqSinr, rsrpRsrqSinrTraceStream));
+                    }
                 }
             }
         }
-    }
 
-    for (NetDeviceContainer::Iterator it = groundNrDevsS2.Begin(); it != groundNrDevsS2.End(); ++it)
-    {
-        Ptr<NetDevice> device = *it;
-        Ptr<NrUeNetDevice> nrUeDevice = device->GetObject<NrUeNetDevice>();
-
-        if (nrUeDevice)
+        for (NetDeviceContainer::Iterator it = groundNrDevsS2.Begin(); it != groundNrDevsS2.End(); ++it)
         {
-            for (uint32_t b = 0; b < ueNumBwps; ++b)
+            Ptr<NetDevice> device = *it;
+            Ptr<NrUeNetDevice> nrUeDevice = device->GetObject<NrUeNetDevice>();
+
+            if (nrUeDevice)
             {
-                Ptr<NrUePhy> uePhy = nrUeDevice->GetPhy(b);
-                if (uePhy)
+                for (uint32_t b = 0; b < ueNumBwps; ++b)
                 {
-                    uePhy->TraceConnectWithoutContext(
-                        "ReportUeMeasurements",
-                        MakeBoundCallback(&TraceRsrpRsrqSinr, rsrpRsrqSinrTraceStream));
+                    Ptr<NrUePhy> uePhy = nrUeDevice->GetPhy(b);
+                    if (uePhy)
+                    {
+                        uePhy->TraceConnectWithoutContext(
+                            "ReportUeMeasurements",
+                            MakeBoundCallback(&TraceRsrpRsrqSinr, rsrpRsrqSinrTraceStream));
+                    }
                 }
             }
         }
@@ -3128,19 +2901,23 @@ main(int argc, char* argv[])
     // allUes.Add(groundUeNodesS2);
     // flowMonitor = flowHelper.Install(allUes);
     FlowMonitorHelper flowHelper;
+    Ptr<FlowMonitor> flowMonitor;
 
-    NodeContainer nodesToMonitor;
-    nodesToMonitor.Add(remoteHostContainer);   // include remote host
-    nodesToMonitor.Add(groundUeNodesS1);
-    nodesToMonitor.Add(groundUeNodesS2);
+    if (enableFlowMonitor)
+    {
+        NodeContainer nodesToMonitor;
+        nodesToMonitor.Add(remoteHostContainer);   // include remote host
+        nodesToMonitor.Add(groundUeNodesS1);
+        nodesToMonitor.Add(groundUeNodesS2);
 
-    Ptr<FlowMonitor> flowMonitor = flowHelper.Install(nodesToMonitor);
+        flowMonitor = flowHelper.Install(nodesToMonitor);
 
-    std::ofstream qos_vs_time;
-    qos_vs_time.open(ns3_dir + "qos-vs-time.txt", std::ofstream::out | std::ofstream::trunc);
-    qos_vs_time << "Time,UE,Dir,Delay,Jitter,Throughput,PDR" << std::endl;
-    g_prevFlowStats.clear();
-    Simulator::Schedule(Seconds(4.0), ThroughputMonitor, &flowHelper, flowMonitor);
+        std::ofstream qos_vs_time;
+        qos_vs_time.open(ns3_dir + "qos-vs-time.txt", std::ofstream::out | std::ofstream::trunc);
+        qos_vs_time << "Time,UE,Dir,Delay,Jitter,Throughput,PDR" << std::endl;
+        g_prevFlowStats.clear();
+        Simulator::Schedule(Seconds(4.0), ThroughputMonitor, &flowHelper, flowMonitor);
+    }
 
 
     // populate user ip map
@@ -3194,7 +2971,10 @@ main(int argc, char* argv[])
     // Tell the simulator how long to run
     Simulator::Stop(simTime + Seconds(15));
     Simulator::Run();
-    WriteFlowReportToFile(flowMonitor, &flowHelper, ns3_dir + "final-flow-report.txt");
+    if (enableFlowMonitor)
+    {
+        WriteFlowReportToFile(flowMonitor, &flowHelper, ns3_dir + "final-flow-report.txt");
+    }
 
     if (g_oldClogBuf) { std::clog.rdbuf(g_oldClogBuf); }
     if (g_nsLogFile.is_open()) { g_nsLogFile.close(); }

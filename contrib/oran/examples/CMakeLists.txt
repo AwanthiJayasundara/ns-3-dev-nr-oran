@@ -27,11 +27,27 @@
 # cause risk of injury or damage to property. The software developed by NIST
 # employees is not subject to copyright protection within the United States.
 
+# Extra AI libraries required by ORAN examples.
+# The ORAN library contains Torch/ONNXRuntime-based logic, so example
+# executables also need these libraries at final link time.
+set(oran_ai_libraries)
+
+if(Torch_FOUND)
+  list(APPEND oran_ai_libraries ${torch_libraries})
+endif()
+
+if(OnnxRuntime_FOUND)
+  list(APPEND oran_ai_libraries ${onnxruntime_libraries})
+endif()
+
+list(REMOVE_DUPLICATES oran_ai_libraries)
+
 build_lib_example(
   NAME oran-data-repository-example
   SOURCE_FILES oran-data-repository-example.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
 )
 
 build_lib_example(
@@ -39,6 +55,7 @@ build_lib_example(
   SOURCE_FILES oran-keep-alive-example.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libmobility}
 )
 
@@ -47,6 +64,7 @@ build_lib_example(
   SOURCE_FILES oran-lte-2-lte-distance-handover-example.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${liblte}
     ${libmobility}
@@ -57,6 +75,7 @@ build_lib_example(
   SOURCE_FILES oran-lte-2-lte-distance-handover-helper-example.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${liblte}
     ${libmobility}
@@ -67,6 +86,7 @@ build_lib_example(
   SOURCE_FILES oran-lte-2-lte-distance-handover-lm-processing-delay-example.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${liblte}
     ${libmobility}
@@ -77,6 +97,7 @@ build_lib_example(
   SOURCE_FILES oran-lte-2-lte-distance-handover-lm-query-trigger-example.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${liblte}
     ${libmobility}
@@ -87,6 +108,7 @@ build_lib_example(
   SOURCE_FILES oran-random-walk-example.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libmobility}
 )
 
@@ -95,6 +117,7 @@ build_lib_example(
   SOURCE_FILES oran-multiple-net-devices-example.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libmobility}
     ${libnetwork}
     ${liblte}
@@ -105,6 +128,7 @@ build_lib_example(
   SOURCE_FILES oran-lte-2-lte-ml-handover-example.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${liblte}
     ${libmobility}
@@ -115,6 +139,7 @@ build_lib_example(
   SOURCE_FILES oran-lte-2-lte-rsrp-handover-lm-example.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${liblte}
     ${libmobility}
@@ -125,6 +150,7 @@ build_lib_example(
   SOURCE_FILES oran-lte-2-lte-rsrp-ue-handover-simulation.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${liblte}
     ${libmobility}
@@ -135,6 +161,7 @@ build_lib_example(
   SOURCE_FILES oran-nr-2-nr-rsrp-uav-handover-simulation.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${libnr}
     ${libmobility}
@@ -145,6 +172,7 @@ build_lib_example(
   SOURCE_FILES oran-nr-2-nr-rsrp-uav-handover-cell-load.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${libnr}
     ${libmobility}
@@ -155,6 +183,7 @@ build_lib_example(
   SOURCE_FILES oran-nr-2-nr-rsrp-uav-ue-handover-cell-load-traffic.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${libnr}
     ${libmobility}
@@ -165,6 +194,7 @@ build_lib_example(
   SOURCE_FILES oran-nr-2-nr-rsrp-uav-ue-handover-cell-load-qos.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${libnr}
     ${libmobility}
@@ -175,6 +205,7 @@ build_lib_example(
   SOURCE_FILES oran-nr-2-nr-rsrp-uav-ue-handover-cell-load-fh.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${libnr}
     ${libmobility}
@@ -185,6 +216,7 @@ build_lib_example(
   SOURCE_FILES oran-nr-2-nr-rsrp-uav-ue-handover-cell-load-tn-ntn.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${libnr}
     ${libmobility}
@@ -195,6 +227,7 @@ build_lib_example(
   SOURCE_FILES oran-nr-2-nr-rsrp-uav-ue-handover-cell-load-xr.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${libnr}
     ${libmobility}
@@ -205,6 +238,7 @@ build_lib_example(
   SOURCE_FILES oran-nr-2-nr-rsrp-handover-simulation-tn.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${libnr}
     ${libmobility}
@@ -215,6 +249,7 @@ build_lib_example(
   SOURCE_FILES oran-nr-2-nr-rsrp-handover-lm-with-uav-mobility-lm.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${libnr}
     ${libmobility}
@@ -225,6 +260,7 @@ build_lib_example(
   SOURCE_FILES oran-nr-tn-ntn-hybrid-xr.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${libnr}
     ${libmobility}
@@ -235,6 +271,7 @@ build_lib_example(
   SOURCE_FILES oran-nr-tn-ntn-uav-sat-handover.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${libnr}
     ${libmobility}
@@ -245,6 +282,7 @@ build_lib_example(
   SOURCE_FILES oran-nr-tn-ntn-uav-sat-handover2.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${libnr}
     ${libmobility}
@@ -255,6 +293,7 @@ build_lib_example(
   SOURCE_FILES oran-nr-tn-ntn-uav-sat-handover3.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${libnr}
     ${libmobility}
@@ -265,6 +304,18 @@ build_lib_example(
   SOURCE_FILES oran-nr-tn-ntn-uav-sat-handover4.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
+    ${libnetwork}
+    ${libnr}
+    ${libmobility}
+)
+
+build_lib_example(
+  NAME oran-nr-tn-ntn-uav-sat-handover5
+  SOURCE_FILES oran-nr-tn-ntn-uav-sat-handover5.cc
+  LIBRARIES_TO_LINK
+    ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${libnr}
     ${libmobility}
@@ -275,6 +326,7 @@ build_lib_example(
   SOURCE_FILES oran-nr-tn-ntn-rsrp-handover.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${libnr}
     ${libmobility}
@@ -285,6 +337,7 @@ build_lib_example(
   SOURCE_FILES oran-nr-tn-ntn-simulation-without-secrecy.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${libnr}
     ${libmobility}
@@ -295,6 +348,7 @@ build_lib_example(
   SOURCE_FILES oran-nr-tn-ntn-simulation-with-secrecy.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${libnr}
     ${libmobility}
@@ -305,6 +359,7 @@ build_lib_example(
   SOURCE_FILES oran-nr-tn-ntn-simulation-with-secrecy-onnx.cc
   LIBRARIES_TO_LINK
     ${liboran}
+    ${oran_ai_libraries}
     ${libnetwork}
     ${libnr}
     ${libmobility}

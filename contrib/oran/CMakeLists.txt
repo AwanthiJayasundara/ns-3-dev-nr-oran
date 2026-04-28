@@ -278,4 +278,3 @@ build_lib(
 )
 
 target_compile_definitions(${liboran} PUBLIC ENABLE_ORAN)
-
