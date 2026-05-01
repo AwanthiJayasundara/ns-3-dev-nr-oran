@@ -183,6 +183,7 @@ uint32_t maxUesPerCellNtn = 10;
 // Metrics collection interval
 Time management_interval = Seconds(2);
 static double g_mobilityUpdateMs = 200.0;
+static double g_positionTraceIntervalSec = 1.0;
 
 // UES1 ips vector
 std::vector<Ipv4Address> user_ip;
@@ -451,7 +452,7 @@ void TraceUeS1Positions(NodeContainer ues)
           << "\n";
     }
 
-    Simulator::Schedule(Seconds(1), &TraceUeS1Positions, ues);
+    Simulator::Schedule(Seconds(g_positionTraceIntervalSec), &TraceUeS1Positions, ues);
 }
 
 void TraceUeS2Positions(NodeContainer ues)
@@ -473,7 +474,7 @@ void TraceUeS2Positions(NodeContainer ues)
           << "\n";
     }
 
-    Simulator::Schedule(Seconds(1), &TraceUeS2Positions, ues);
+    Simulator::Schedule(Seconds(g_positionTraceIntervalSec), &TraceUeS2Positions, ues);
 }
 
 void TraceUavPositions(NodeContainer uavs)
@@ -495,7 +496,7 @@ void TraceUavPositions(NodeContainer uavs)
           << "\n";
     }
 
-    Simulator::Schedule(Seconds(1), &TraceUavPositions, uavs);
+    Simulator::Schedule(Seconds(g_positionTraceIntervalSec), &TraceUavPositions, uavs);
 }
 
 void
@@ -1823,11 +1824,15 @@ main(int argc, char* argv[])
     bool enableRsrpTrace = false;
     bool enablePositionTrace = true;
     bool enableOranInfoLog = true;
+    bool enableNrHelperInfoLog = false;
     bool enablePdcpDiscarding = true;
     uint32_t discardTimerMs = 100;
     uint32_t reorderingTimerMs = 100;
     uint32_t maxRlcTxBufferSize = 10 * 1024 * 1024;
     double stopTailSeconds = 0.0;
+    bool enableFading = true;
+    double initMinRsrpDbm = -120.0;
+    double initRetryIntervalSec = 2.0;
     bool remMode = false; // [0]: REM disabled; [1]: generate REM
     int32_t remRbId = -1; // kept for compatibility (not used by this REM helper)
     std::string handoverAlgorithm = "ns3::NrNoOpHandoverAlgorithm";
@@ -1908,15 +1913,20 @@ main(int argc, char* argv[])
                  "Satellite backhaul scenario: NTN-DenseUrban | NTN-Urban | NTN-Suburban | NTN-Rural",
                  satBackhaulScenario);
     cmd.AddValue("mobility-update-ms", "Waypoint mobility update period in milliseconds", g_mobilityUpdateMs);
+    cmd.AddValue("position-trace-interval", "UE/UAV position trace interval in seconds", g_positionTraceIntervalSec);
     cmd.AddValue("enable-flow-monitor", "Enable FlowMonitor and periodic QoS files", enableFlowMonitor);
     cmd.AddValue("enable-rsrp-trace", "Enable per-UE RSRP trace file", enableRsrpTrace);
     cmd.AddValue("enable-position-trace", "Enable periodic UE/UAV position trace files", enablePositionTrace);
-    cmd.AddValue("enable-oran-info-log", "Enable verbose INFO logging for ORAN LM and NrHelper", enableOranInfoLog);
+    cmd.AddValue("enable-oran-info-log", "Enable verbose INFO logging for the ORAN LM", enableOranInfoLog);
+    cmd.AddValue("enable-nr-helper-info-log", "Enable verbose NrHelper INFO logging", enableNrHelperInfoLog);
     cmd.AddValue("enable-pdcp-discarding", "Enable PDCP discarding for bounded UDP/XR queues", enablePdcpDiscarding);
     cmd.AddValue("pdcp-discard-timer-ms", "PDCP discard timer in milliseconds", discardTimerMs);
     cmd.AddValue("rlc-reordering-timer-ms", "RLC UM reordering timer in milliseconds", reorderingTimerMs);
     cmd.AddValue("rlc-max-tx-buffer-size", "Maximum RLC UM TX buffer size in bytes", maxRlcTxBufferSize);
     cmd.AddValue("stop-tail", "Extra simulation seconds after sim-time for app/drain events", stopTailSeconds);
+    cmd.AddValue("enable-fading", "Enable fast fading channel component", enableFading);
+    cmd.AddValue("init-min-rsrp", "Minimum RSRP for initial attach in dBm", initMinRsrpDbm);
+    cmd.AddValue("init-retry-interval", "Initial attach retry interval in seconds", initRetryIntervalSec);
     cmd.Parse(argc, argv);
 
     NS_ABORT_MSG_IF(useOran == false && (useOnnx || useTorch || useRsrp),
@@ -1964,6 +1974,9 @@ main(int argc, char* argv[])
     if (enableOranInfoLog)
     {
         LogComponentEnable("OranLmNr2NrRsrpHandoverWithTnNtn", LOG_LEVEL_INFO);
+    }
+    if (enableNrHelperInfoLog)
+    {
         LogComponentEnable("NrHelper", LOG_LEVEL_INFO);
     }
 
@@ -2180,7 +2193,6 @@ main(int argc, char* argv[])
     BandwidthPartInfoPtrVector allBwps;
 
     // ---- TDD + FDD setup ----
-    bool enableFading = true;
     uint8_t bandMask = NrChannelHelper::INIT_PROPAGATION |
                     (enableFading ? NrChannelHelper::INIT_FADING : 0);
 
@@ -2703,8 +2715,8 @@ main(int argc, char* argv[])
 
     // Set global fallback to 0
     nrHelper->SetAttribute("InitMaxUesPerCell", UintegerValue(0));
-    nrHelper->SetAttribute("InitMinRsrpDbm",    DoubleValue(-120.0));
-    nrHelper->SetAttribute("InitRetryInterval", TimeValue(Seconds(2.0)));
+    nrHelper->SetAttribute("InitMinRsrpDbm",    DoubleValue(initMinRsrpDbm));
+    nrHelper->SetAttribute("InitRetryInterval", TimeValue(Seconds(initRetryIntervalSec)));
 
     // ------------------------------------------------------------
     // INITIAL backhaul-aware preload for attach/retry-attach
@@ -3258,8 +3270,8 @@ main(int argc, char* argv[])
     if (enablePositionTrace)
     {
         // Start tracing node locations
-        Simulator::Schedule(Seconds(1), &TraceUeS1Positions, groundUeNodesS1);
-        Simulator::Schedule(Seconds(1), &TraceUavPositions, ntnGnbNodes);
+        Simulator::Schedule(Seconds(g_positionTraceIntervalSec), &TraceUeS1Positions, groundUeNodesS1);
+        Simulator::Schedule(Seconds(g_positionTraceIntervalSec), &TraceUavPositions, ntnGnbNodes);
 
         /* Start tracing UE Set 2 only when they actually start */
         Simulator::Schedule(tLateAttach, &TraceUeS2Positions, groundUeNodesS2);
