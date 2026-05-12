@@ -290,7 +290,7 @@ The command contains:
 
 This repository currently extends the ns-3 **NR (5G-LENA)** + **ns-O-RAN** examples into a **large-scale UAV mobility experiment** where a Near-RT RIC continuously collects measurements and issues **NR→NR handover commands** using a lightweight **policy-based logic module**.
 
-### ✅ Example 02: `oran-nr-2-nr-rsrp-uav-handover-simulation.cc`
+### ✅ Example 02: `oran-nr-uav-rsrp-handover-example.cc`
 
 **What the scenario does**
 - Deploys multiple **fixed NR gNB macro cells** (e.g., 5) and many **UAV UEs** (e.g., 50–75).
@@ -458,6 +458,5 @@ Currently using ns3::RandomDirection2dMobilityModel for testing purposes with st
 
 ### Architecture
 <img width="1121" height="804" alt="Screenshot from 2026-01-21 12-27-03" src="https://github.com/user-attachments/assets/1a95fdbb-1238-4624-a13a-7863cca40451" />
-
 
 

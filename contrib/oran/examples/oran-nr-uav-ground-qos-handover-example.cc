@@ -10,12 +10,7 @@
 #include "ns3/nr-radio-environment-map-helper.h"
 
 #include "ns3/nr-gnb-net-device.h" 
-#include "ns3/nr-ue-net-device.h"   
-
-#include "ns3/packet-sink-helper.h"
-#include "ns3/traffic-generator-helper.h"
-#include "ns3/traffic-generator-3gpp-generic-video.h"
-#include "ns3/traffic-generator-ngmn-voip.h"
+#include "ns3/nr-ue-net-device.h"    
 
 // NS-3 headers
 #include "ns3/flow-monitor-module.h"
@@ -35,10 +30,10 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavUeHandoverCellLoadFh");
+NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavUeHandoverCellLoadQos");
 
 /**
- * Example of ORAN-driven NR multi-cell UAV handover with QoS monitoring (5G-LENA).
+ * Usage example of the ORAN NR models for QoS-aware UAV and ground UE handover.
  *
  * Minimum required versions for reproducibility:
  *   - ns-3 version: 3.39 or later
@@ -78,37 +73,12 @@ NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavUeHandoverCellLoadFh");
  * keep everything in one BWP because video can dominate resources voice packets may get delayed
  * uplink-heavy traffic may suffer if DL traffic takes most capacity
  * scheduler becomes less efficient
- * ////////////////////////////
- * This scenario combines:
- *   (1) application-level traffic models (video / voice-like generators), and
- *   (2) radio-level traffic steering (different QoS flows mapped to different BWPs).
- * 
- * UAV downlink (remoteHost -> UAV):
- *   Uses TrafficGenerator3gppGenericVideo, so packets are generated according
- *   to a video-like traffic model instead of a generic OnOff source.
- *   This is still simulated UDP traffic, but its timing/rate behavior is meant
- *   to resemble video service traffic more closely.
- *
- * UAV uplink (UAV -> remoteHost):
- *   Also uses TrafficGenerator3gppGenericVideo, but with a lower data rate/FPS
- *   than downlink. This represents lighter video-like uplink traffic from the UAV.
- * 
- * ofdm = true and schedKind="RR" are set by default to use OFDMA with Round Robin scheduling,
- * for fh control in 7.2x split : https://cttc-lena.gitlab.io/nr/manual/nr-module.html#fronthaul-control
- *
- *   RequiredFhDlThroughput reports the required DL fronthaul throughput per BWP.
- *   UsedAirRbs reports how many DL air-interface RBs were actually used per BWP.
- *   These traces help compare fronthaul demand versus actual radio resource use.
- * 
- * In this scenario, when 5G-LENA Fronthaul Control is enabled, the fronthaul model 
- * assumes functional split 7.2x.
- * after this PDR is much less
  */
 
 const static float GNB_HEIGHT = 25;
 
 // Variables
-uint32_t numUAVs = 22;
+uint32_t numUAVs = 24;
 uint32_t numGnbs = 5;
 uint32_t numGroundUes = 20;   // ground UEs in addition to UAVs
 
@@ -136,9 +106,6 @@ static std::string s_positionTraceFile;
 static std::string s_handoverTraceFile;
 static std::string s_flowStatTraceFile;
 static std::string ns3_dir;
-//fh control trace files
-static std::ofstream g_fhTraceFile;
-static std::ofstream g_airTraceFile;
 
 // --- ns-3 NS_LOG output redirection (LogComponentEnable -> file via std::clog) ---
 static std::ofstream g_nsLogFile;
@@ -178,36 +145,6 @@ TraceRsrpRsrqSinr(Ptr<OutputStreamWrapper> stream,
     *stream->GetStream() << Simulator::Now().GetSeconds() << " " << rnti << " " << cellId << " "
                          << rsrp << " " << rsrq << " " << servingCell << " "
                          << static_cast<uint32_t>(componentCarrierId) << std::endl;
-}
-
-void
-ReportFhTrace(const SfnSf& sfn, uint16_t physCellId, uint16_t bwpId, uint64_t reqFh)
-{
-    if (!g_fhTraceFile.is_open())
-    {
-        g_fhTraceFile.open(ns3_dir + "fh-trace.txt", std::ios::out | std::ios::trunc);
-        g_fhTraceFile << "Time,CellId,BwpId,RequiredFhDlThroughput\n";
-    }
-
-    g_fhTraceFile << Simulator::Now().GetSeconds() << ","
-                  << physCellId << ","
-                  << bwpId << ","
-                  << reqFh << "\n";
-}
-
-void
-ReportAiTrace(const SfnSf& sfn, uint16_t physCellId, uint16_t bwpId, uint32_t airRbs)
-{
-    if (!g_airTraceFile.is_open())
-    {
-        g_airTraceFile.open(ns3_dir + "air-rbs-trace.txt", std::ios::out | std::ios::trunc);
-        g_airTraceFile << "Time,CellId,BwpId,UsedAirRbs\n";
-    }
-
-    g_airTraceFile << Simulator::Now().GetSeconds() << ","
-                   << physCellId << ","
-                   << bwpId << ","
-                   << airRbs << "\n";
 }
 
 // Helper function that returns the UAV id associated with a specific IP
@@ -616,16 +553,8 @@ main(int argc, char* argv[])
     double groundAttachDelay = 6.0; // seconds
     ///£
     // Scheduler CLI knobs (safe defaults to a concrete scheduler)
-    bool ofdma = true;            // true=OFDMA, false=TDMA
-    //In this scenario, BWPs already separate the main service types (voice, UAV DL, UAV UL).
-    // Therefore, QoS scheduling is less critical than in a mixed-traffic single-BWP setup.
-    // QoS scheduler becomes more useful when multiple traffic classes compete within the same BWP.
-    std::string schedKind = "PF"; // RR | PF | MR | Qos
-    // UAV UL is configured lighter than UAV DL: 1 Mbps / 30 fps vs 5 Mbps / 60 fps
-    double uavDlVideoRateMbps = 2.0;
-    uint16_t uavDlVideoFps = 30;
-    double uavUlVideoRateMbps = 0.5;
-    uint16_t uavUlVideoFps = 15;
+    bool ofdma = false;            // true=OFDMA, false=TDMA
+    std::string schedKind = "RR"; // RR | PF | MR | Qos
 
     CommandLine cmd;
     cmd.AddValue("verbose", "Enable printing SQL queries results", verbose);
@@ -786,9 +715,6 @@ main(int argc, char* argv[])
 
     std::string errorModel = "ns3::NrEesmIrT2";
 
-    nrHelper->SetDlErrorModel(errorModel);
-    nrHelper->SetUlErrorModel(errorModel);
-
     // Both DL and UL AMC will have the same model behind.
     nrHelper->SetGnbDlAmcAttribute("AmcModel", EnumValue(NrAmc::ErrorModel));
     nrHelper->SetGnbUlAmcAttribute("AmcModel", EnumValue(NrAmc::ErrorModel));
@@ -821,11 +747,6 @@ main(int argc, char* argv[])
     nrHelper->SetGnbPhyAttribute("NoiseFigure", DoubleValue(gnbNoiseFigure));
     // Noise figure for the UE
     nrHelper->SetUePhyAttribute("NoiseFigure", DoubleValue(ueNoiseFigure));
-
-    nrHelper->EnableFhControl();
-    nrHelper->SetFhControlAttribute("FhControlMethod", StringValue("OptimizeRBs"));
-    nrHelper->SetFhControlAttribute("FhCapacity", UintegerValue(2000));   // Mbps, example
-    nrHelper->SetFhControlAttribute("OverheadDyn", UintegerValue(32));    // or 100 if you want heavier overhead
 
 
     // ---- TDD single-carrier setup (ONE band, ONE BWP) ----
@@ -952,23 +873,6 @@ main(int argc, char* argv[])
     uavNrDevs    = nrHelper->InstallUeDevice(uavNodes, allBwps);
     groundNrDevs = nrHelper->InstallUeDevice(groundUeNodes, allBwps);
     ////////////////////////////////////////////////////////////
-
-    nrHelper->ConfigureFhControl(gnbNrDevs);
-
-    for (auto it = gnbNrDevs.Begin(); it != gnbNrDevs.End(); ++it)
-    {
-        Ptr<NrGnbNetDevice> gnb = DynamicCast<NrGnbNetDevice>(*it);
-        NS_ABORT_MSG_IF(!gnb, "Device is not NrGnbNetDevice");
-
-        gnb->GetNrFhControl()->TraceConnectWithoutContext(
-            "RequiredFhDlThroughput",
-            MakeCallback(&ReportFhTrace));
-
-        gnb->GetNrFhControl()->TraceConnectWithoutContext(
-            "UsedAirRbs",
-            MakeCallback(&ReportAiTrace));
-    }
-
 
     // gnbNrDevs = nrHelper->InstallGnbDevice(gnbNodes, Bwps);
     // uavNrDevs = nrHelper->InstallUeDevice(uavNodes, Bwps);
@@ -1130,70 +1034,64 @@ main(int argc, char* argv[])
     // remoteHost IP address on the PGW-remoteHost point-to-point link
     Ipv4Address remoteHostIp = internetIpIfaces.GetAddress(1);
 
+    Ptr<RandomVariableStream> onTimeRv = CreateObject<UniformRandomVariable>();
+    onTimeRv->SetAttribute("Min", DoubleValue(0.1));
+    onTimeRv->SetAttribute("Max", DoubleValue(0.5));
+
+    Ptr<RandomVariableStream> offTimeRv = CreateObject<UniformRandomVariable>();
+    offTimeRv->SetAttribute("Min", DoubleValue(0.1));
+    offTimeRv->SetAttribute("Max", DoubleValue(0.5));
+
     for (uint32_t i = 0; i < uavNodes.GetN(); ++i)
     {
         // -----------------------
         // DL (remoteHost -> UAV)
-        // UAV UL uses the same Generic Video traffic model as DL, but with lower rate and frame rate
-        // (1 Mbps, 30 fps) to represent a lighter uplink stream than the downlink video (5 Mbps, 60 fps).
         // -----------------------
         uint16_t dlPort = 10000 + i;
 
-        // Receiver at UAV stays the same
         PacketSinkHelper dlSink("ns3::UdpSocketFactory",
                                 InetSocketAddress(Ipv4Address::GetAny(), dlPort));
         uavApps.Add(dlSink.Install(uavNodes.Get(i)));
 
-        // Sender at remote host: Generic Video traffic generator
-        TrafficGeneratorHelper videoHelper("ns3::UdpSocketFactory",
-                                        InetSocketAddress(ueIpIface.GetAddress(i), dlPort),
-                                        TrafficGenerator3gppGenericVideo::GetTypeId());
+        Ptr<OnOffApplication> dlSrc = CreateObject<OnOffApplication>();
+        dlSrc->SetAttribute("Protocol", StringValue("ns3::UdpSocketFactory"));
+        dlSrc->SetAttribute("Remote",
+            AddressValue(InetSocketAddress(ueIpIface.GetAddress(i), dlPort)));
+        dlSrc->SetAttribute("DataRate", DataRateValue(DataRate("500kbps")));
+        dlSrc->SetAttribute("PacketSize", UintegerValue(1500));
+        dlSrc->SetAttribute("OnTime", PointerValue(onTimeRv));
+        dlSrc->SetAttribute("OffTime", PointerValue(offTimeRv));
 
-        ApplicationContainer dlVideoApps = videoHelper.Install(remoteHost);
-
-        Ptr<TrafficGenerator3gppGenericVideo> dlVideoApp =
-            DynamicCast<TrafficGenerator3gppGenericVideo>(dlVideoApps.Get(0));
-
-        NS_ABORT_MSG_IF(!dlVideoApp, "Could not cast to TrafficGenerator3gppGenericVideo");
-
-        dlVideoApp->SetAttribute("DataRate", DoubleValue(uavDlVideoRateMbps)); // Mbps
-        dlVideoApp->SetAttribute("Fps", UintegerValue(uavDlVideoFps));
-
-        remoteApps.Add(dlVideoApps);
+        remoteHost->AddApplication(dlSrc);
+        remoteApps.Add(dlSrc);
 
         // -----------------------
         // UL (UAV -> remoteHost)
-        // Use Generic Video instead of OnOff
         // -----------------------
         uint16_t ulPort = 12000 + i;
 
-        // UL sink on remote host stays the same
+        // UL sink on remote host
         PacketSinkHelper ulSink("ns3::UdpSocketFactory",
                                 InetSocketAddress(Ipv4Address::GetAny(), ulPort));
         remoteUlSinks.Add(ulSink.Install(remoteHost));
 
-        // UL sender on UAV: Generic Video traffic generator
-        TrafficGeneratorHelper ulVideoHelper("ns3::UdpSocketFactory",
-                                            InetSocketAddress(remoteHostIp, ulPort),
-                                            TrafficGenerator3gppGenericVideo::GetTypeId());
+        // UL sender on UAV
+        Ptr<OnOffApplication> ulSrc = CreateObject<OnOffApplication>();
+        ulSrc->SetAttribute("Protocol", StringValue("ns3::UdpSocketFactory"));
+        ulSrc->SetAttribute("Remote",
+            AddressValue(InetSocketAddress(remoteHostIp, ulPort)));
+        ulSrc->SetAttribute("DataRate", DataRateValue(DataRate("150kbps")));
+        ulSrc->SetAttribute("PacketSize", UintegerValue(300));
+        ulSrc->SetAttribute("OnTime", PointerValue(onTimeRv));
+        ulSrc->SetAttribute("OffTime", PointerValue(offTimeRv));
 
-        ApplicationContainer ulVideoApps = ulVideoHelper.Install(uavNodes.Get(i));
-
-        Ptr<TrafficGenerator3gppGenericVideo> ulVideoApp =
-            DynamicCast<TrafficGenerator3gppGenericVideo>(ulVideoApps.Get(0));
-
-        NS_ABORT_MSG_IF(!ulVideoApp, "Could not cast UL app to TrafficGenerator3gppGenericVideo");
-
-        // Pick lighter UL traffic than DL
-        ulVideoApp->SetAttribute("DataRate", DoubleValue(uavUlVideoRateMbps));   // Mbps
-        ulVideoApp->SetAttribute("Fps", UintegerValue(uavUlVideoFps));
-
-        uavUlApps.Add(ulVideoApps);
+        uavNodes.Get(i)->AddApplication(ulSrc);
+        uavUlApps.Add(ulSrc);
 
         // ----------------------------------------------------
         // (E2) QoS FLOW ACTIVATION (this is what maps to BWPs)
         //   - DL uses GBR_CONV_VIDEO -> BWP1 (FDD-DL)
-        //   - UL uses GBR_LIVE_UL_71 -> BWP2 (FDD-UL)
+        //   - UL uses GBR_GAMING     -> BWP2 (FDD-UL)
         // ----------------------------------------------------
         Ptr<NetDevice> ueDev = uavNrDevs.Get(i);
 
@@ -1233,7 +1131,7 @@ main(int argc, char* argv[])
         ulpf.direction       = NrQosRule::UPLINK;
         gamingRule->Add(ulpf);
 
-        // Activate QoS flows for UAV traffic classification and BWP routing
+        //must happen BEFORE AttachToMaxRsrpGnb(...)
         nrHelper->ActivateDedicatedQosFlow(uavNrDevs.Get(i), videoFlow,  videoRule);
         nrHelper->ActivateDedicatedQosFlow(uavNrDevs.Get(i), gamingFlow, gamingRule);
     }
@@ -1282,13 +1180,17 @@ main(int argc, char* argv[])
                                 InetSocketAddress(Ipv4Address::GetAny(), port));
         groundApps.Add(dlSink.Install(groundUeNodes.Get(i)));
 
-        // Sender at remote host: NGMN VoIP traffic generator
-        TrafficGeneratorHelper voiceHelper("ns3::UdpSocketFactory",
-                                        InetSocketAddress(groundIpIface.GetAddress(i), port),
-                                        TrafficGeneratorNgmnVoip::GetTypeId());
+        Ptr<OnOffApplication> src = CreateObject<OnOffApplication>();
+        groundRemoteApps.Add(src);
 
-        ApplicationContainer voiceApps = voiceHelper.Install(remoteHost);
-        groundRemoteApps.Add(voiceApps);
+        src->SetAttribute("Remote",
+            AddressValue(InetSocketAddress(groundIpIface.GetAddress(i), port)));
+        src->SetAttribute("DataRate", DataRateValue(DataRate("300kbps"))); // light load
+        src->SetAttribute("PacketSize", UintegerValue(1000));
+        src->SetAttribute("OnTime", PointerValue(onTimeRv));
+        src->SetAttribute("OffTime", PointerValue(offTimeRv));
+
+        remoteHost->AddApplication(src);
     }
 
     // groundRemoteApps.Start(Seconds(2));
@@ -1622,9 +1524,7 @@ main(int argc, char* argv[])
     if (g_nsLogFile.is_open()) { g_nsLogFile.close(); }
 
     // if (g_oldCoutBuf) { std::cout.rdbuf(g_oldCoutBuf); }
-    // if (g_uncondFile.is_open()) { g_uncondFile.close(); }
-    if (g_fhTraceFile.is_open()) { g_fhTraceFile.close(); }
-    if (g_airTraceFile.is_open()) { g_airTraceFile.close(); }   
+    // if (g_uncondFile.is_open()) { g_uncondFile.close(); }   
 
     Simulator::Destroy();
     return 0;

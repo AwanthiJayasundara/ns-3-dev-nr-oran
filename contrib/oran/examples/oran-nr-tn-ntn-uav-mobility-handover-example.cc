@@ -39,10 +39,10 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavUeHandoverCellLoadXr");
+NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpHandoverLmWithUavMobilityLm");
 
 /**
- * Example of ORAN-driven NR multi-cell UES1 handover with QoS monitoring (5G-LENA).
+ * Usage example of the ORAN NR models for RSRP handover with UAV mobility control.
  *
  * Minimum required versions for reproducibility:
  *   - ns-3 version: 3.39 or later
@@ -69,9 +69,9 @@ NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavUeHandoverCellLoadXr");
  * and packet delivery ratio) periodically and write them to trace files over time.
  * Additionally, node mobility positions and successful handover events are logged.
  *
- * Ground UEs are added with constant position (No HO> we can change if want) and connect
+ * Two set of ue traffic added (No HO> we can change if want) and connect
  * with RIC too so load-aware handover decisions can be made based on the total number of 
- * UEs (UES1 + ground) connected to each gNB. 
+ * UEs (UES1 + UE2) connected to each gNB. 
  * 
  * Cell load capacity is set so no intial attachement or handover will be triggered for a 
  * gNB that has already reached the maximum number of UEs. 

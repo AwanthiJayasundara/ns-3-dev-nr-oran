@@ -31,6 +31,20 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("OranNrTnNtnRsrpHandover");
 
+/**
+ * Usage example of the ORAN NR models for TN/NTN RSRP handover.
+ *
+ * The scenario creates a terrestrial service area and a shifted non-terrestrial
+ * service area. UEs move in each area, attach to NR gNBs, receive downlink UDP
+ * traffic, and periodically report location, serving cell, RSRP, and QoS
+ * measurements to the Near-RT RIC.
+ *
+ * The RIC runs an RSRP-based NR-to-NR Logic Module that can trigger handovers as
+ * UEs move between available cells. FlowMonitor and trace callbacks are used to
+ * record throughput, delay, jitter, packet delivery, UE positions, and handover
+ * events for later analysis.
+ */
+
 // =========================
 //  CONFIG CONSTANTS
 // =========================

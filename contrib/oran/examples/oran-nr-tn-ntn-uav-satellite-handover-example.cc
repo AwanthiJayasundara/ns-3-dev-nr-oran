@@ -17,14 +17,26 @@
 #include "ns3/traffic-generator-3gpp-generic-video.h"
 #include "ns3/traffic-generator-ngmn-voip.h"
 #include "ns3/xr-traffic-mixer-helper.h"
-#include "ns3/oran-lm-nr-2-nr-rsrp-handover-with-cell-load.h"
+#include "ns3/antenna-model.h"
+#include "ns3/channel-condition-model.h"
+#include "ns3/isotropic-antenna-model.h"
+#include "ns3/net-device.h"
+#include "ns3/random-variable-stream.h"
+#include "ns3/spectrum-model.h"
+#include "ns3/spectrum-signal-parameters.h"
+#include "ns3/spectrum-value.h"
+#include "ns3/three-gpp-channel-model.h"
+#include "ns3/three-gpp-propagation-loss-model.h"
+#include "ns3/three-gpp-spectrum-propagation-loss-model.h"
+#include "ns3/uniform-planar-array.h"
+#include "ns3/nr-hybrid-sat-epc-helper.h"
+#include "ns3/oran-lm-nr-2-nr-rsrp-handover-with-tn-ntn.h"
 
 // NS-3 headers
 #include "ns3/flow-monitor-module.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/log.h"
 #include "ns3/system-path.h"
-#include "ns3/nr-point-to-point-epc-helper.h"
 
 #include "ns3/geocentric-constant-position-mobility-model.h"
 #include <memory>
@@ -34,6 +46,7 @@
 #include <cstdio>  
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <list>
 #include <sstream>
 #include <vector>
@@ -41,87 +54,37 @@
 #include <set>
 #include <map>
 #include <algorithm>
+#include <complex>
+#include <iomanip>
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNrTnNtnUavSatHandover4");
+NS_LOG_COMPONENT_DEFINE("OranNrTnNtnUavSatHandover2");
 
 /**
- * Example of ORAN-driven NR multi-cell UES1 handover with QoS monitoring (5G-LENA).
+ * Usage example of the ORAN NR models for UAV-assisted TN/NTN handover.
  *
- * Minimum required versions for reproducibility:
- *   - ns-3 version: 3.39 or later
- *   - 5G-LENA version: 2.6 or later
+ * The scenario consists of terrestrial gNBs, UAV/NTN gNBs, and two ground UE
+ * groups placed around a Dublin reference point. UES1 UEs generate monitored
+ * traffic and can be handed over, while UES2 UEs add background load. UAV gNBs
+ * can be positioned dynamically and use a satellite backhaul model for NTN
+ * service.
  *
- * The scenario consists of X NR UES1 UEs (moving randomly) and Y NR ground UEs (static) inside a large 2D area
- * and served by Z fixed gNB macro cells. Each UES1 receives downlink UDP traffic
- * from a remote host through an NR EPC (NrPointToPointEpcHelper). 
- *
- * The NR radio access uses a 3GPP UMa propagation scenario with optional fading
- * enabled, and an Ideal Beamforming helper (Quasi-Omni direct path beamforming).
-
- * A concrete NR scheduler is selected at runtime (OFDMA/TDMA with RR/PF/MR/QoS),
- * and the UEs initially attach to the gNB offering the maximum RSRP. X2 interfaces
- * are enabled to support inter-gNB handovers.
- *
- * In ORAN mode, UES1 UEs report periodic measurements (location, serving cell info,
- * and application loss metrics) to a Near-RT RIC using E2 node terminators.
- * The Near-RT RIC runs an RSRP-based Logic Module (OranLmNr2NrRsrpHandover) that
- * can decide and trigger NR-to-NR handovers. gNB-side cell load is also reported
- * via NR scheduling callbacks to support conflict mitigation.
- *
- * FlowMonitor is used to compute per-UES1 QoS metrics (delay, jitter, throughput,
- * and packet delivery ratio) periodically and write them to trace files over time.
- * Additionally, node mobility positions and successful handover events are logged.
- *
- * Two set of ue traffic added (No HO> we can change if want) and connect
- * with RIC too so load-aware handover decisions can be made based on the total number of 
- * UEs (UES1 + UE2) connected to each gNB. 
- * 
- * Cell load capacity is set so no intial attachement or handover will be triggered for a 
- * gNB that has already reached the maximum number of UEs. 
- * 
- * NR can split the spectrum into Bandwidth Parts (BWPs) and configure each one differently.
- * FDM (Frequency Division Multiplexing) Split the total spectrum into different frequency 
- * pieces Each piece can serve a different purpose
- * keep everything in one BWP because video can dominate resources voice packets may get delayed
- * uplink-heavy traffic may suffer if DL traffic takes most capacity
- * scheduler becomes less efficient
- * ////////////////////////////
- * This scenario combines:
- *   (1) application-level traffic models (video / voice-like generators), and
- *   (2) radio-level traffic steering (different QoS flows mapped to different BWPs).
- * 
- * UES1 downlink (remoteHost -> UES1):
- *   Uses TrafficGenerator3gppGenericVideo, so packets are generated according
- *   to a video-like traffic model instead of a generic OnOff source.
- *   This is still simulated UDP traffic, but its timing/rate behavior is meant
- *   to resemble video service traffic more closely.
- *
- * UES1 uplink (UES1 -> remoteHost):
- *   Also uses TrafficGenerator3gppGenericVideo, but with a lower data rate/FPS
- *   than downlink. This represents lighter video-like uplink traffic from the UES1.
- * 
- * ofdm = true and schedKind="RR" are set by default to use OFDMA with Round Robin scheduling,
- * for fh control in 7.2x split : https://cttc-lena.gitlab.io/nr/manual/nr-module.html#fronthaul-control
- *
- *   RequiredFhDlThroughput reports the required DL fronthaul throughput per BWP.
- *   UsedAirRbs reports how many DL air-interface RBs were actually used per BWP.
- *   These traces help compare fronthaul demand versus actual radio resource use.
- * 
- * In this scenario, when 5G-LENA Fronthaul Control is enabled, the fronthaul model 
- * assumes functional split 7.2x.
- * after this PDR is much less
+ * UEs and gNBs report position, serving-cell, RSRP, load, and QoS measurements
+ * to the Near-RT RIC. The RIC uses the TN/NTN RSRP handover Logic Module to
+ * select serving cells while respecting different TN and NTN capacity limits,
+ * then records position, flow, handover, and satellite-backhaul traces.
  */
 
 const static float TN_GNB_HEIGHT = 25;
 
 
 // Variables
-uint32_t numGroundUesS1 = 120; // UES1 
-uint32_t numGroundUesS2 = 120; // UES2
+uint32_t numGroundUesS1 = 115; // UES1 
+uint32_t numGroundUesS2 = 115; // UES2
 
 uint32_t numTnGnbs = 8;
+uint32_t numNtnGnbs = 6; // e.g., uav gnbs for ntn area
 
 static const double g_refLat = 53.3498;   // Dublin city centre
 static const double g_refLon = -6.2603;
@@ -129,18 +92,20 @@ static const double g_refLon = -6.2603;
 static const double TN_GNB_HALF_W_M  = 2500.0;
 static const double TN_GNB_HALF_H_M  = 1200.0;
 
-// static const double UAV_AREA_HALF_W_M = 3000.0;
-// static const double UAV_AREA_HALF_H_M = 1500.0;
+static const double UAV_AREA_HALF_W_M = 3000.0;
+static const double UAV_AREA_HALF_H_M = 1500.0;
 
 static const double UE_AREA_HALF_W_M  = 3000.0;
 static const double UE_AREA_HALF_H_M  = 1500.0;
 
 //uint32_t maxUesPerCell = 20; // ORAN LM parameter: maximum number of UEs per cell (for load-aware handover decisions)
 uint32_t maxUesPerCellTn  = 20;
+uint32_t maxUesPerCellNtn = 10;
 
 // Metrics collection interval
 Time management_interval = Seconds(2);
-static double g_mobilityUpdateMs = 100.0;
+static double g_mobilityUpdateMs = 200.0;
+static double g_positionTraceIntervalSec = 1.0;
 
 // UES1 ips vector
 std::vector<Ipv4Address> user_ip;
@@ -172,16 +137,23 @@ static std::map<uint32_t, FlowIntervalSnapshot> g_prevFlowStats;
 // // static std::string s_trafficTraceFile;
 static std::string s_ueS1PositionTraceFile;
 static std::string s_ueS2PositionTraceFile;
+static std::string s_uavPositionTraceFile;
 static std::string s_handoverTraceFile;
 static std::string s_flowStatTraceFile;
 static std::string ns3_dir;
 //fh control trace files
-static std::ofstream g_fhTraceFile;
-static std::ofstream g_airTraceFile;
+// static std::ofstream g_fhTraceFile;
+// static std::ofstream g_airTraceFile;
 
+static std::string s_satBackhaulTraceFile;
+
+static std::map<uint16_t, double> g_backhaulDlSnrDb;
+static std::map<uint16_t, double> g_backhaulUlSnrDb;
+
+static std::set<uint16_t> g_ntnCellIds;
 static std::map<std::pair<uint16_t,uint16_t>, double> g_latestRsrp;
 
-static Ptr<OranLmNr2NrRsrpHandoverWithCellLoad> g_rsrpLm = nullptr;
+static Ptr<OranLmNr2NrRsrpHandoverWithTnNtn> g_rsrpLm = nullptr;
 
 // --- ns-3 NS_LOG output redirection (LogComponentEnable -> file via std::clog) ---
 static std::ofstream g_nsLogFile;
@@ -204,6 +176,30 @@ LookupRoleFromImsi(uint64_t imsi)
     return (it == g_imsiRole.end()) ? "UNK" : it->second.c_str();
 }
 
+static void
+PrintSimulationProgress(Time interval, Time stopTime)
+{
+    const double now = Simulator::Now().GetSeconds();
+    const double stop = stopTime.GetSeconds();
+    const double pct = (stop > 0.0) ? (100.0 * now / stop) : 100.0;
+
+    std::cout << "\r[progress] sim t=" << std::fixed << std::setprecision(2)
+              << now << " / " << stop << " s (" << std::setprecision(1)
+              << std::min(100.0, pct) << "%)" << std::flush;
+
+    if (Simulator::Now() + interval < stopTime)
+    {
+        Simulator::Schedule(interval, &PrintSimulationProgress, interval, stopTime);
+    }
+    else
+    {
+        Simulator::Schedule(stopTime - Simulator::Now(), []() {
+            std::cout << "\r[progress] sim t=" << std::fixed << std::setprecision(2)
+                      << Simulator::Now().GetSeconds() << " s (done)" << std::endl;
+        });
+    }
+}
+
 // static std::ofstream g_uncondFile;
 // static std::streambuf* g_oldCoutBuf = nullptr;
 
@@ -217,52 +213,9 @@ TraceRsrpRsrqSinr(Ptr<OutputStreamWrapper> stream,
                   bool servingCell,
                   uint8_t componentCarrierId)
 {
-    // store latest RSRP for HO analysis
     g_latestRsrp[{rnti,cellId}] = rsrp;
-
-    const char* type = "TN";
-
-    *stream->GetStream()
-        << Simulator::Now().GetSeconds() << " "
-        << rnti << " "
-        << cellId << " "
-        << type << " "
-        << rsrp << " "
-        << rsrq << " "
-        << servingCell << " "
-        << (uint32_t)componentCarrierId
-        << "\n";
 }
 
-void
-ReportFhTrace(const SfnSf& sfn, uint16_t physCellId, uint16_t bwpId, uint64_t reqFh)
-{
-    if (!g_fhTraceFile.is_open())
-    {
-        g_fhTraceFile.open(ns3_dir + "fh-trace.txt", std::ios::out | std::ios::trunc);
-        g_fhTraceFile << "Time,CellId,BwpId,RequiredFhDlThroughput\n";
-    }
-
-    g_fhTraceFile << Simulator::Now().GetSeconds() << ","
-                  << physCellId << ","
-                  << bwpId << ","
-                  << reqFh << "\n";
-}
-
-void
-ReportAiTrace(const SfnSf& sfn, uint16_t physCellId, uint16_t bwpId, uint32_t airRbs)
-{
-    if (!g_airTraceFile.is_open())
-    {
-        g_airTraceFile.open(ns3_dir + "air-rbs-trace.txt", std::ios::out | std::ios::trunc);
-        g_airTraceFile << "Time,CellId,BwpId,UsedAirRbs\n";
-    }
-
-    g_airTraceFile << Simulator::Now().GetSeconds() << ","
-                   << physCellId << ","
-                   << bwpId << ","
-                   << airRbs << "\n";
-}
 
 // Helper function that returns the UES1 id associated with a specific IP
 int
@@ -282,7 +235,7 @@ get_user_id_from_ipv4(Ipv4Address ip)
 void
 ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
 {
-    std::ofstream flowLog(s_flowStatTraceFile, std::ios_base::app);
+    // std::ofstream flowLog(s_flowStatTraceFile, std::ios_base::app);
 
     auto flowStats = flowMon->GetFlowStats();
     auto ue_network = Ipv4Address("7.0.0.0");
@@ -307,8 +260,8 @@ ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
         }
 
         Ipv4Address ueIp = isDl ? fiveTuple.destinationAddress : fiveTuple.sourceAddress;
-        uint64_t imsi = LookupImsiFromIp(ueIp);
-        const char* role = LookupRoleFromImsi(imsi);
+        // uint64_t imsi = LookupImsiFromIp(ueIp);
+        // const char* role = LookupRoleFromImsi(imsi);
 
         // -------- interval deltas --------
         FlowIntervalSnapshot& prev = g_prevFlowStats[flowId];
@@ -345,9 +298,9 @@ ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
                                    intervalSec / 1024.0 / 1024.0)
                                 : 0.0;
 
-        flowLog << Simulator::Now().GetSeconds() << ","
-                << role << ","
-                << imsi << "\n";
+        // flowLog << Simulator::Now().GetSeconds() << ","
+        //         << role << ","
+        //         << imsi << "\n";
 
         int receiver_id = get_user_id_from_ipv4(ueIp);
         if (receiver_id != -1)
@@ -413,7 +366,7 @@ void TraceUeS1Positions(NodeContainer ues)
           << "\n";
     }
 
-    Simulator::Schedule(Seconds(1), &TraceUeS1Positions, ues);
+    Simulator::Schedule(Seconds(g_positionTraceIntervalSec), &TraceUeS1Positions, ues);
 }
 
 void TraceUeS2Positions(NodeContainer ues)
@@ -435,9 +388,30 @@ void TraceUeS2Positions(NodeContainer ues)
           << "\n";
     }
 
-    Simulator::Schedule(Seconds(1), &TraceUeS2Positions, ues);
+    Simulator::Schedule(Seconds(g_positionTraceIntervalSec), &TraceUeS2Positions, ues);
 }
 
+void TraceUavPositions(NodeContainer uavs)
+{
+    std::ofstream f(s_uavPositionTraceFile, std::ios_base::app);
+    double t = Simulator::Now().GetSeconds();
+
+    for (uint32_t i = 0; i < uavs.GetN(); ++i)
+    {
+        auto mob = DynamicCast<GeocentricConstantPositionMobilityModel>(
+            uavs.Get(i)->GetObject<MobilityModel>());
+
+        Vector geo = mob->GetGeographicPosition();
+
+        f << t << " UAV" << i
+          << " " << geo.x
+          << " " << geo.y
+          << " " << geo.z
+          << "\n";
+    }
+
+    Simulator::Schedule(Seconds(g_positionTraceIntervalSec), &TraceUavPositions, uavs);
+}
 
 void
 NotifyHandoverEndOkGnb(std::string context, uint64_t imsi, uint16_t targetCellId, uint16_t rnti)
@@ -458,17 +432,35 @@ NotifyHandoverEndOkGnb(std::string context, uint64_t imsi, uint16_t targetCellId
         }
     }
 
-    const char* type = "TN";
+    double bhDl = -999.0;
+    double bhUl = -999.0;
+
+    auto itd = g_backhaulDlSnrDb.find(targetCellId);
+    if (itd != g_backhaulDlSnrDb.end())
+    {
+        bhDl = itd->second;
+    }
+
+    auto itu = g_backhaulUlSnrDb.find(targetCellId);
+    if (itu != g_backhaulUlSnrDb.end())
+    {
+        bhUl = itu->second;
+    }
+
+    const char* type =
+        g_ntnCellIds.count(targetCellId) ? "NTN" : "TN";
 
     std::ofstream f(s_handoverTraceFile,std::ios_base::app);
 
     f << Simulator::Now().GetSeconds()
-    << " IMSI=" << imsi
-    << " TargetCell=" << targetCellId
-    << " Type=" << type
-    << " TargetRSRP=" << targetRsrp
-    << " ServingRSRP=" << servingRsrp
-    << "\n";
+      << " IMSI=" << imsi
+      << " TargetCell=" << targetCellId
+      << " Type=" << type
+      << " TargetRSRP=" << targetRsrp
+      << " ServingRSRP=" << servingRsrp
+      << " BackhaulDlSnr=" << bhDl
+      << " BackhaulUlSnr=" << bhUl
+      << "\n";
 }
 
 
@@ -584,11 +576,349 @@ RandomGeoFromCenter(double centerLatDeg,
     return Vector(latDeg, lonDeg, altM); // geographic: lat, lon, alt
 }
 
+///
+struct LocalPoint2d
+{
+    double eastM = 0.0;
+    double northM = 0.0;
+};
+
+static std::vector<GeoWaypointState*> g_uavStates;
+
+// Geographic <-> local helpers
+static LocalPoint2d
+GeoToLocal(const Vector& geo, double g_refLatDeg, double g_refLonDeg)
+{
+    double metersPerDegLat = 111320.0;
+    double metersPerDegLon = 111320.0 * std::cos(g_refLatDeg * M_PI / 180.0);
+
+    LocalPoint2d p;
+    p.eastM  = (geo.y - g_refLonDeg) * metersPerDegLon;
+    p.northM = (geo.x - g_refLatDeg) * metersPerDegLat;
+    return p;
+}
+
+static Vector
+LocalToGeo(double eastM, double northM, double altM, double g_refLatDeg, double g_refLonDeg)
+{
+    double metersPerDegLat = 111320.0;
+    double metersPerDegLon = 111320.0 * std::cos(g_refLatDeg * M_PI / 180.0);
+
+    double latDeg = g_refLatDeg + northM / metersPerDegLat;
+    double lonDeg = g_refLonDeg + eastM / metersPerDegLon;
+
+    return Vector(latDeg, lonDeg, altM);
+}
+
+// Controlled mover: move to assigned target, then hover there.
+// No random re-targeting here.
+static void
+MoveGeoNodeToAssignedTarget(GeoWaypointState* st, double stepMs)
+{
+    double dt = stepMs / 1000.0;
+
+    Vector geo = st->mob->GetGeographicPosition();
+    LocalPoint2d cur = GeoToLocal(geo, st->centerLatDeg, st->centerLonDeg);
+
+    // No target yet -> just wait
+    if (!st->hasTarget)
+    {
+        Simulator::Schedule(MilliSeconds(stepMs),
+                            &MoveGeoNodeToAssignedTarget,
+                            st,
+                            stepMs);
+        return;
+    }
+
+    double dEast = st->targetEastM - cur.eastM;
+    double dNorth = st->targetNorthM - cur.northM;
+    double distance = std::sqrt(dEast * dEast + dNorth * dNorth);
+
+    // Already at target -> hover
+    if (distance <= st->reachThresholdM)
+    {
+        Simulator::Schedule(MilliSeconds(stepMs),
+                            &MoveGeoNodeToAssignedTarget,
+                            st,
+                            stepMs);
+        return;
+    }
+
+    double moveDistance = st->speedMps * dt;
+    double stepDistance = std::min(moveDistance, distance);
+
+    double nextEast  = cur.eastM  + stepDistance * (dEast  / distance);
+    double nextNorth = cur.northM + stepDistance * (dNorth / distance);
+
+    nextEast  = std::max(-st->halfWidthM,  std::min(st->halfWidthM,  nextEast));
+    nextNorth = std::max(-st->halfHeightM, std::min(st->halfHeightM, nextNorth));
+
+    Vector nextGeo = LocalToGeo(nextEast,
+                                nextNorth,
+                                st->fixedAltM,
+                                st->centerLatDeg,
+                                st->centerLonDeg);
+
+    st->mob->SetGeographicPosition(nextGeo);
+
+    Simulator::Schedule(MilliSeconds(stepMs),
+                        &MoveGeoNodeToAssignedTarget,
+                        st,
+                        stepMs);
+}
+
+static bool
+IsUeUnderserved(Ptr<Node> ueNode, double rsrpThreshDbm)
+{
+    Ptr<NrUeNetDevice> ueDev = nullptr;
+
+    for (uint32_t i = 0; i < ueNode->GetNDevices(); ++i)
+    {
+        ueDev = DynamicCast<NrUeNetDevice>(ueNode->GetDevice(i));
+        if (ueDev)
+        {
+            break;
+        }
+    }
+
+    if (!ueDev)
+    {
+        return false;
+    }
+
+    Ptr<NrUeRrc> rrc = ueDev->GetRrc();
+    if (!rrc)
+    {
+        return true;
+    }
+
+    if (rrc->GetCellId() == 0 || rrc->GetState() != NrUeRrc::CONNECTED_NORMALLY)
+    {
+        return true;
+    }
+
+    uint16_t servingCell = rrc->GetCellId();
+    uint16_t rnti = rrc->GetRnti();
+
+    auto it = g_latestRsrp.find({rnti, servingCell});
+    if (it == g_latestRsrp.end())
+    {
+        return true;
+    }
+
+    return (it->second < rsrpThreshDbm);
+}
+
+static std::vector<LocalPoint2d>
+RunKMeans(const std::vector<LocalPoint2d>& points, uint32_t k, uint32_t iterations = 10)
+{
+    std::vector<LocalPoint2d> centroids;
+    if (points.empty() || k == 0)
+    {
+        return centroids;
+    }
+
+    k = std::min<uint32_t>(k, points.size());
+    centroids.assign(points.begin(), points.begin() + k);
+
+    std::vector<uint32_t> labels(points.size(), 0);
+
+    for (uint32_t iter = 0; iter < iterations; ++iter)
+    {
+        // Assign
+        for (uint32_t i = 0; i < points.size(); ++i)
+        {
+            double bestDist = std::numeric_limits<double>::max();
+            uint32_t bestId = 0;
+
+            for (uint32_t c = 0; c < centroids.size(); ++c)
+            {
+                double dx = points[i].eastM - centroids[c].eastM;
+                double dy = points[i].northM - centroids[c].northM;
+                double d2 = dx * dx + dy * dy;
+
+                if (d2 < bestDist)
+                {
+                    bestDist = d2;
+                    bestId = c;
+                }
+            }
+            labels[i] = bestId;
+        }
+
+        // Recompute
+        std::vector<double> sumEast(k, 0.0), sumNorth(k, 0.0);
+        std::vector<uint32_t> count(k, 0);
+
+        for (uint32_t i = 0; i < points.size(); ++i)
+        {
+            uint32_t c = labels[i];
+            sumEast[c] += points[i].eastM;
+            sumNorth[c] += points[i].northM;
+            count[c] += 1;
+        }
+
+        for (uint32_t c = 0; c < k; ++c)
+        {
+            if (count[c] > 0)
+            {
+                centroids[c].eastM  = sumEast[c] / count[c];
+                centroids[c].northM = sumNorth[c] / count[c];
+            }
+        }
+    }
+
+    return centroids;
+}
+
+static void
+SetUavTargetToCurrentPosition(GeoWaypointState* st)
+{
+    Vector geo = st->mob->GetGeographicPosition();
+    LocalPoint2d cur = GeoToLocal(geo, st->centerLatDeg, st->centerLonDeg);
+    st->targetEastM = cur.eastM;
+    st->targetNorthM = cur.northM;
+    st->hasTarget = true;
+}
+
+static void
+UpdateUavTargetsFromUnderservedUes(NodeContainer groundUeNodesS1,
+                                   NodeContainer groundUeNodesS2,
+                                   NetDeviceContainer ntnGnbNrDevs,
+                                   double rsrpThreshDbm,
+                                   double controlPeriodSec)
+{
+    std::vector<LocalPoint2d> underservedPts;
+
+    // 1) collect underserved UEs
+    for (uint32_t i = 0; i < groundUeNodesS1.GetN(); ++i)
+    {
+        if (IsUeUnderserved(groundUeNodesS1.Get(i), rsrpThreshDbm))
+        {
+            auto mob = DynamicCast<GeocentricConstantPositionMobilityModel>(
+                groundUeNodesS1.Get(i)->GetObject<MobilityModel>());
+            if (mob)
+            {
+                underservedPts.push_back(
+                    GeoToLocal(mob->GetGeographicPosition(), g_refLat, g_refLon));
+            }
+        }
+    }
+
+    for (uint32_t i = 0; i < groundUeNodesS2.GetN(); ++i)
+    {
+        if (IsUeUnderserved(groundUeNodesS2.Get(i), rsrpThreshDbm))
+        {
+            auto mob = DynamicCast<GeocentricConstantPositionMobilityModel>(
+                groundUeNodesS2.Get(i)->GetObject<MobilityModel>());
+            if (mob)
+            {
+                underservedPts.push_back(
+                    GeoToLocal(mob->GetGeographicPosition(), g_refLat, g_refLon));
+            }
+        }
+    }
+
+    // 2) build available-UAV list
+    std::vector<uint32_t> availableUavs;
+    for (uint32_t i = 0; i < ntnGnbNrDevs.GetN(); ++i)
+    {
+        Ptr<NrGnbNetDevice> gnb = DynamicCast<NrGnbNetDevice>(ntnGnbNrDevs.Get(i));
+        if (!gnb || !gnb->GetRrc())
+        {
+            continue;
+        }
+
+        uint32_t load = gnb->GetRrc()->GetUeCount();
+        uint32_t cap  = maxUesPerCellNtn;
+
+        if (load < cap)
+        {
+            availableUavs.push_back(i);
+        }
+        else
+        {
+            // Full UAV: hover where it is
+            SetUavTargetToCurrentPosition(g_uavStates[i]);
+        }
+    }
+
+    // Nothing to do
+    if (underservedPts.empty() || availableUavs.empty())
+    {
+        Simulator::Schedule(Seconds(controlPeriodSec),
+                            &UpdateUavTargetsFromUnderservedUes,
+                            groundUeNodesS1,
+                            groundUeNodesS2,
+                            ntnGnbNrDevs,
+                            rsrpThreshDbm,
+                            controlPeriodSec);
+        return;
+    }
+
+    uint32_t k = std::min<uint32_t>(availableUavs.size(), underservedPts.size());
+    std::vector<LocalPoint2d> centroids = RunKMeans(underservedPts, k, 10);
+
+    // 3) assign each available UAV to one centroid (greedy nearest)
+    std::vector<bool> centroidUsed(centroids.size(), false);
+
+    for (uint32_t a = 0; a < availableUavs.size(); ++a)
+    {
+        uint32_t uavIdx = availableUavs[a];
+        GeoWaypointState* st = g_uavStates[uavIdx];
+
+        Vector geo = st->mob->GetGeographicPosition();
+        LocalPoint2d cur = GeoToLocal(geo, st->centerLatDeg, st->centerLonDeg);
+
+        double bestDist = std::numeric_limits<double>::max();
+        int32_t bestCentroid = -1;
+
+        for (uint32_t c = 0; c < centroids.size(); ++c)
+        {
+            if (centroidUsed[c])
+            {
+                continue;
+            }
+
+            double dx = centroids[c].eastM - cur.eastM;
+            double dy = centroids[c].northM - cur.northM;
+            double d2 = dx * dx + dy * dy;
+
+            if (d2 < bestDist)
+            {
+                bestDist = d2;
+                bestCentroid = static_cast<int32_t>(c);
+            }
+        }
+
+        if (bestCentroid >= 0)
+        {
+            st->targetEastM = centroids[bestCentroid].eastM;
+            st->targetNorthM = centroids[bestCentroid].northM;
+            st->hasTarget = true;
+            centroidUsed[bestCentroid] = true;
+        }
+        else
+        {
+            SetUavTargetToCurrentPosition(st);
+        }
+    }
+
+    Simulator::Schedule(Seconds(controlPeriodSec),
+                        &UpdateUavTargetsFromUnderservedUes,
+                        groundUeNodesS1,
+                        groundUeNodesS2,
+                        ntnGnbNrDevs,
+                        rsrpThreshDbm,
+                        controlPeriodSec);
+}
+///
 
 ///
 void
 install_mobility_geocentric(NodeContainer staticNodes,
                             NodeContainer tnGnbNodes,
+                            NodeContainer ntnGnbNodes,
                             NodeContainer groundUeNodesS1,
                             NodeContainer groundUeNodesS2)
 {
@@ -619,6 +949,48 @@ install_mobility_geocentric(NodeContainer staticNodes,
                                          tnNorth);
 
         setFixedGeo(tnGnbNodes.Get(i), geo.x, geo.y, geo.z);
+    }
+
+    for (uint32_t i = 0; i < ntnGnbNodes.GetN(); ++i)
+    {
+        Ptr<UniformRandomVariable> eastRv = CreateObject<UniformRandomVariable>();
+        Ptr<UniformRandomVariable> northRv = CreateObject<UniformRandomVariable>();
+
+        double uavAlt = 120.0 + 5.0 * i;
+        Vector initGeo = RandomGeoFromCenter(g_refLat,
+                                             g_refLon,
+                                             uavAlt,
+                                             UAV_AREA_HALF_W_M,
+                                             UAV_AREA_HALF_H_M,
+                                             eastRv,
+                                             northRv);
+
+        auto mob = CreateObject<GeocentricConstantPositionMobilityModel>();
+        mob->SetGeographicPosition(initGeo);
+        mob->SetCoordinateTranslationReferencePoint(Vector(g_refLat, g_refLon, 0.0));
+        ntnGnbNodes.Get(i)->AggregateObject(mob);
+
+        auto st = std::make_unique<GeoWaypointState>();
+        st->mob = mob;
+        st->centerLatDeg = g_refLat;
+        st->centerLonDeg = g_refLon;
+        st->fixedAltM = uavAlt;
+        st->halfWidthM = UAV_AREA_HALF_W_M;
+        st->halfHeightM = UAV_AREA_HALF_H_M;
+        st->speedMps = 10.0;
+
+        LocalPoint2d initLocal = GeoToLocal(initGeo, g_refLat, g_refLon);
+        st->targetEastM = initLocal.eastM;
+        st->targetNorthM = initLocal.northM;
+        st->hasTarget = true;
+
+        g_uavStates.push_back(st.get());
+        g_geoStates.push_back(std::move(st));
+
+        Simulator::Schedule(MilliSeconds(g_mobilityUpdateMs),
+                            &MoveGeoNodeToAssignedTarget,
+                            g_uavStates.back(),
+                            g_mobilityUpdateMs);
     }
 
     for (uint32_t i = 0; i < groundUeNodesS1.GetN(); ++i)
@@ -699,7 +1071,260 @@ install_mobility_geocentric(NodeContainer staticNodes,
         g_geoStates.push_back(std::move(st));
     }
 }
+///
 
+Ptr<SpectrumValue>
+CreateTxPowerSpectralDensity(double fcHz, double pwrDbm, double bwHz, double rbWidthHz)
+{
+    unsigned int numRbs = std::floor(bwHz / rbWidthHz);
+    double f = fcHz - (numRbs * rbWidthHz / 2.0);
+
+    Bands rbs;
+    for (uint32_t numrb = 0; numrb < numRbs; ++numrb)
+    {
+        BandInfo rb;
+        rb.fl = f;
+        f += rbWidthHz / 2.0;
+        rb.fc = f;
+        f += rbWidthHz / 2.0;
+        rb.fh = f;
+        rbs.push_back(rb);
+    }
+
+    Ptr<SpectrumModel> model = Create<SpectrumModel>(rbs);
+    Ptr<SpectrumValue> txPsd = Create<SpectrumValue>(model);
+
+    double powerTxW = std::pow(10.0, (pwrDbm - 30.0) / 10.0);
+    double txPowerDensity = powerTxW / bwHz;
+
+    for (auto it = txPsd->ValuesBegin(); it != txPsd->ValuesEnd(); ++it)
+    {
+        *it = txPowerDensity;
+    }
+
+    return txPsd;
+}
+
+Ptr<SpectrumValue>
+CreateNoisePowerSpectralDensity(double fcHz, double noiseFigureDb, double bwHz, double rbWidthHz)
+{
+    unsigned int numRbs = std::floor(bwHz / rbWidthHz);
+    double f = fcHz - (numRbs * rbWidthHz / 2.0);
+
+    Bands rbs;
+    std::vector<int> rbIds;
+
+    for (uint32_t numrb = 0; numrb < numRbs; ++numrb)
+    {
+        BandInfo rb;
+        rb.fl = f;
+        f += rbWidthHz / 2.0;
+        rb.fc = f;
+        f += rbWidthHz / 2.0;
+        rb.fh = f;
+        rbs.push_back(rb);
+        rbIds.push_back(numrb);
+    }
+
+    Ptr<SpectrumModel> model = Create<SpectrumModel>(rbs);
+    Ptr<SpectrumValue> noisePsd = Create<SpectrumValue>(model);
+
+    const double ktDbmHz = -174.0;
+    double ktWHz = std::pow(10.0, (ktDbmHz - 30.0) / 10.0);
+    double noiseFigureLinear = std::pow(10.0, noiseFigureDb / 10.0);
+    double noisePowerSpectralDensity = ktWHz * noiseFigureLinear;
+
+    for (int rbId : rbIds)
+    {
+        (*noisePsd)[rbId] = noisePowerSpectralDensity;
+    }
+
+    return noisePsd;
+}
+
+static void
+DoBeamforming(Ptr<NetDevice> thisDevice,
+              Ptr<PhasedArrayModel> thisAntenna,
+              Ptr<NetDevice> otherDevice)
+{
+    Vector aPos = thisDevice->GetNode()->GetObject<MobilityModel>()->GetPosition();
+    Vector bPos = otherDevice->GetNode()->GetObject<MobilityModel>()->GetPosition();
+
+    Angles completeAngle(bPos, aPos);
+    double hAngleRadian = completeAngle.GetAzimuth();
+    double vAngleRadian = completeAngle.GetInclination();
+
+    uint64_t totNoArrayElements = thisAntenna->GetNumElems();
+    PhasedArrayModel::ComplexVector antennaWeights(totNoArrayElements);
+
+    double power = 1.0 / std::sqrt(static_cast<double>(totNoArrayElements));
+
+    const double sinV = std::sin(vAngleRadian);
+    const double cosV = std::cos(vAngleRadian);
+    const double sinH = std::sin(hAngleRadian);
+    const double cosH = std::cos(hAngleRadian);
+
+    for (uint64_t ind = 0; ind < totNoArrayElements; ind++)
+    {
+        Vector loc = thisAntenna->GetElementLocation(ind);
+        double phase = -2.0 * M_PI *
+                       (sinV * cosH * loc.x + sinV * sinH * loc.y + cosV * loc.z);
+        antennaWeights[ind] = std::exp(std::complex<double>(0.0, phase)) * power;
+    }
+
+    thisAntenna->SetBeamformingVector(antennaWeights);
+}
+
+struct SatNtnLink
+{
+    Ptr<ThreeGppPropagationLossModel> propagation;
+    Ptr<ThreeGppSpectrumPropagationLossModel> spectrum;
+
+    Ptr<PhasedArrayModel> txAntenna;
+    Ptr<PhasedArrayModel> rxAntenna;
+
+    Ptr<NetDevice> txDev;
+    Ptr<NetDevice> rxDev;
+
+    double frequencyHz = 20e9;
+    double bandwidthHz = 400e6;
+    double rbBandwidthHz = 120e3;
+    double txPowerDbm = 0.0;
+    double rxNoiseFigureDb = 1.2;
+};
+
+static double
+ComputeNtnSnrDb(SatNtnLink& link,
+                Ptr<MobilityModel> txMob,
+                Ptr<MobilityModel> rxMob,
+                bool refreshBeamforming)
+{
+    if (refreshBeamforming)
+    {
+        DoBeamforming(link.txDev, link.txAntenna, link.rxDev);
+        DoBeamforming(link.rxDev, link.rxAntenna, link.txDev);
+    }
+
+    Ptr<SpectrumValue> txPsd = CreateTxPowerSpectralDensity(link.frequencyHz,
+                                                            link.txPowerDbm,
+                                                            link.bandwidthHz,
+                                                            link.rbBandwidthHz);
+    Ptr<SpectrumValue> rxPsd = txPsd->Copy();
+
+    Ptr<SpectrumValue> noisePsd = CreateNoisePowerSpectralDensity(link.frequencyHz,
+                                                                  link.rxNoiseFigureDb,
+                                                                  link.bandwidthHz,
+                                                                  link.rbBandwidthHz);
+
+    double propagationGainDb = link.propagation->CalcRxPower(0.0, txMob, rxMob);
+    double propagationGainLinear = std::pow(10.0, propagationGainDb / 10.0);
+    (*rxPsd) *= propagationGainLinear;
+
+    Ptr<SpectrumSignalParameters> rxSsp = Create<SpectrumSignalParameters>();
+    rxSsp->psd = rxPsd;
+    rxSsp->txAntenna =
+        ConstCast<AntennaModel, const AntennaModel>(link.txAntenna->GetAntennaElement());
+
+    rxSsp = link.spectrum->CalcRxPowerSpectralDensity(rxSsp,
+                                                      txMob,
+                                                      rxMob,
+                                                      link.txAntenna,
+                                                      link.rxAntenna);
+
+    return 10.0 * std::log10(Sum(*rxSsp->psd) / Sum(*noisePsd));
+}
+
+struct UavSatBackhaulCell
+{
+    uint16_t cellId = 0;
+    Ptr<GeocentricConstantPositionMobilityModel> uavMob;
+    SatNtnLink serviceDl; // SAT -> UAV
+    SatNtnLink serviceUl; // UAV -> SAT
+};
+
+struct SatBackhaulContext
+{
+    std::vector<UavSatBackhaulCell> cells;
+
+    SatNtnLink feederDl; // SAT -> GW
+    SatNtnLink feederUl; // GW -> SAT
+
+    Ptr<GeocentricConstantPositionMobilityModel> satMob;
+    Ptr<GeocentricConstantPositionMobilityModel> gwMob;
+
+    std::ofstream* file = nullptr;
+    double logPeriodMs = 500.0;
+    double minAcceptableBackhaulSnrDb = 0.0;
+    uint32_t healthyNtnCapacity = 10;
+
+    // NEW: also update initial-attach capacities inside NrHelper
+    Ptr<NrHelper> initAttachNrHelper = nullptr;
+};
+
+static void
+ApplySatelliteBackhaulState(SatBackhaulContext* ctx, bool writeLog)
+{
+    double t = Simulator::Now().GetSeconds();
+
+    double feederDlSnrDb = ComputeNtnSnrDb(ctx->feederDl, ctx->satMob, ctx->gwMob, true);
+    double feederUlSnrDb = ComputeNtnSnrDb(ctx->feederUl, ctx->gwMob, ctx->satMob, true);
+
+    for (auto& cell : ctx->cells)
+    {
+        double serviceDlSnrDb = ComputeNtnSnrDb(cell.serviceDl, ctx->satMob, cell.uavMob, true);
+        double serviceUlSnrDb = ComputeNtnSnrDb(cell.serviceUl, cell.uavMob, ctx->satMob, true);
+
+        double backhaulDlSnrDb = std::min(serviceDlSnrDb, feederDlSnrDb);
+        double backhaulUlSnrDb = std::min(serviceUlSnrDb, feederUlSnrDb);
+
+        g_backhaulDlSnrDb[cell.cellId] = backhaulDlSnrDb;
+        g_backhaulUlSnrDb[cell.cellId] = backhaulUlSnrDb;
+
+        bool backhaulHealthy =
+            (std::min(backhaulDlSnrDb, backhaulUlSnrDb) >= ctx->minAcceptableBackhaulSnrDb);
+
+        uint32_t newCap = backhaulHealthy ? ctx->healthyNtnCapacity : 0;
+
+        // 1) update xApp / HO side
+        if (g_rsrpLm)
+        {
+            g_rsrpLm->SetCellCapacity(cell.cellId, newCap);
+            g_rsrpLm->SetCellBackhaulDlSnrDb(cell.cellId, backhaulDlSnrDb);
+            g_rsrpLm->SetCellBackhaulUlSnrDb(cell.cellId, backhaulUlSnrDb);
+        }
+
+        // 2) update initial-attach / retry-attach side
+        if (ctx->initAttachNrHelper)
+        {
+            ctx->initAttachNrHelper->SetCellCapacity(cell.cellId, newCap);
+        }
+
+        if (writeLog && ctx->file && ctx->file->is_open())
+        {
+            (*ctx->file) << std::fixed << std::setprecision(6)
+                         << t << ","
+                         << cell.cellId << ","
+                         << serviceDlSnrDb << ","
+                         << serviceUlSnrDb << ","
+                         << feederDlSnrDb << ","
+                         << feederUlSnrDb << ","
+                         << backhaulDlSnrDb << ","
+                         << backhaulUlSnrDb << ","
+                         << (backhaulHealthy ? 1 : 0)
+                         << "\n";
+        }
+    }
+}
+
+static void
+LogSatelliteBackhaul(SatBackhaulContext* ctx)
+{
+    ApplySatelliteBackhaulState(ctx, true);
+
+    Simulator::Schedule(Seconds(ctx->logPeriodMs / 1000.0),
+                        &LogSatelliteBackhaul,
+                        ctx);
+}
 
 bool
 IsTopLevelSourceDir(std::string path)
@@ -813,25 +1438,54 @@ main(int argc, char* argv[])
     double txDelay = 0.1;
     bool enableFlowMonitor = false;
     bool enableRsrpTrace = false;
-    bool enableFhTrace = false;
     bool enablePositionTrace = true;
-    bool enableOranInfoLog = true;
+    bool enableHandoverTrace = true;
+    bool enableOranInfoLog = false;
+    bool enableNrHelperInfoLog = false;
+    bool enableSetupPrints = false;
+    bool enableProgress = true;
+    bool quietTiming = false;
+    bool enableDecisionCsv = true;
+    bool enableOranAppLossReports = true;
+    bool enableOranCellLoadReports = true;
     bool enablePdcpDiscarding = true;
     uint32_t discardTimerMs = 100;
     uint32_t reorderingTimerMs = 100;
     uint32_t maxRlcTxBufferSize = 10 * 1024 * 1024;
+    double stopTailSeconds = 0.0;
+    double progressIntervalSec = 1.0;
+    bool enableFading = true;
+    double initMinRsrpDbm = -120.0;
+    double initRetryIntervalSec = 2.0;
     bool remMode = false; // [0]: REM disabled; [1]: generate REM
     int32_t remRbId = -1; // kept for compatibility (not used by this REM helper)
     std::string handoverAlgorithm = "ns3::NrNoOpHandoverAlgorithm";
     Time simTime = Seconds(40);
-    std::string dbFileName = "oran-repository-tn.db";
+    std::string dbFileName = "oran-repository-tn-ntn.db";
     std::string lateCommandPolicy = "DROP";
-    
 
+    bool enableSatBackhaulMonitor = true;
+    double satBackhaulLogStepMs = 500.0;
+    double satBackhaulMinSnrDb = 0.0;
+
+    std::string satBackhaulScenario = "NTN-Suburban";
+    double satBackhaulFrequencyHz = 20e9;
+    double satBackhaulBandwidthHz = 400e6;
+    double satBackhaulRbBandwidthHz = 120e3;
+
+    double satEirpDensityDbwPerMHz = 40.0;
+    double satAntennaGainDb = 58.5;
+    double uavUtAntennaGainDb = 39.7;
+    double gwAntennaGainDb = 45.0;
+
+    double uavUtTxPowerDbm = 33.0;
+    double gwTxPowerDbm = 46.0;
+
+    double uavUtNoiseFigureDb = 1.2;
+    double gwNoiseFigureDb = 1.2;
+    double satRxNoiseFigureDb = 1.2;
     
     double groundAttachDelay = 6.0; // seconds
-    Time tLateAttach = Seconds(groundAttachDelay);
-    Time tS2Qos = tLateAttach + Seconds(2.0);
     // Scheduler CLI knobs (safe defaults to a concrete scheduler)
     bool ofdma = true;            // true=OFDMA, false=TDMA
     //In this scenario, BWPs already separate the main service types (voice, UES1 DL, UES1 UL).
@@ -861,6 +1515,7 @@ main(int argc, char* argv[])
     cmd.AddValue("db-file", "Specify the DB file to create", dbFileName);
     cmd.AddValue("num-uess1", "Number of UES1", numGroundUesS1);
     cmd.AddValue("num-tn-gnbs", "Number of TN gNBs", numTnGnbs);
+    cmd.AddValue("num-ntn-gnbs", "Number of NTN gNBs", numNtnGnbs);
     cmd.AddValue("rem-mode", "Generate radio environment map", remMode);
     cmd.AddValue("rem-rb-id", "RB id", remRbId);
     cmd.AddValue("ofdma", "Use OFDMA (1) or TDMA (0)", ofdma);
@@ -868,51 +1523,106 @@ main(int argc, char* argv[])
     cmd.AddValue("num-ground-ues", "Number of ground UEs", numGroundUesS2);
     cmd.AddValue("ground-attach-delay", "Delay before attaching ground UEs (s)", groundAttachDelay);
     cmd.AddValue("max-ues-tn",  "Max UEs per TN cell",  maxUesPerCellTn);
+    cmd.AddValue("max-ues-ntn", "Max UEs per NTN cell", maxUesPerCellNtn);
+    cmd.AddValue("enable-sat-backhaul-monitor",
+                 "Enable parallel satellite backhaul monitor for NTN/UAV gNBs",
+                 enableSatBackhaulMonitor);
+    cmd.AddValue("sat-backhaul-log-step-ms",
+                 "Satellite backhaul logging period in ms",
+                 satBackhaulLogStepMs);
+    cmd.AddValue("sat-backhaul-min-snr-db",
+                 "Minimum acceptable backhaul SNR (dB) for allowing NTN HO",
+                 satBackhaulMinSnrDb);
+    cmd.AddValue("sat-backhaul-scenario",
+                 "Satellite backhaul scenario: NTN-DenseUrban | NTN-Urban | NTN-Suburban | NTN-Rural",
+                 satBackhaulScenario);
     cmd.AddValue("mobility-update-ms", "Waypoint mobility update period in milliseconds", g_mobilityUpdateMs);
+    cmd.AddValue("position-trace-interval", "UE/UAV position trace interval in seconds", g_positionTraceIntervalSec);
     cmd.AddValue("enable-flow-monitor", "Enable FlowMonitor and periodic QoS files", enableFlowMonitor);
     cmd.AddValue("enable-rsrp-trace", "Enable per-UE RSRP trace file", enableRsrpTrace);
-    cmd.AddValue("enable-fh-trace", "Enable fronthaul/air-RB trace files", enableFhTrace);
-    cmd.AddValue("enable-position-trace", "Enable periodic UE position trace files", enablePositionTrace);
-    cmd.AddValue("enable-oran-info-log", "Enable verbose INFO logging for ORAN LM and NrHelper", enableOranInfoLog);
+    cmd.AddValue("enable-position-trace", "Enable periodic UE/UAV position trace files", enablePositionTrace);
+    cmd.AddValue("enable-handover-trace", "Enable handover trace file", enableHandoverTrace);
+    cmd.AddValue("enable-oran-info-log", "Enable verbose INFO logging for the ORAN LM", enableOranInfoLog);
+    cmd.AddValue("enable-nr-helper-info-log", "Enable verbose NrHelper INFO logging", enableNrHelperInfoLog);
+    cmd.AddValue("enable-setup-prints", "Enable setup-time console prints", enableSetupPrints);
+    cmd.AddValue("enable-progress", "Print lightweight simulation-time progress to stdout", enableProgress);
+    cmd.AddValue("progress-interval", "Simulation seconds between progress prints", progressIntervalSec);
+    cmd.AddValue("enable-decision-csv", "Write per-candidate handover decision CSV", enableDecisionCsv);
+    cmd.AddValue("enable-oran-app-loss-reports", "Enable O-RAN app-loss reporters", enableOranAppLossReports);
+    cmd.AddValue("enable-oran-cell-load-reports", "Enable O-RAN gNB cell-load reporters", enableOranCellLoadReports);
+    cmd.AddValue("quiet-timing", "Disable optional logs/traces/prints for wall-clock timing runs", quietTiming);
     cmd.AddValue("enable-pdcp-discarding", "Enable PDCP discarding for bounded UDP/XR queues", enablePdcpDiscarding);
     cmd.AddValue("pdcp-discard-timer-ms", "PDCP discard timer in milliseconds", discardTimerMs);
     cmd.AddValue("rlc-reordering-timer-ms", "RLC UM reordering timer in milliseconds", reorderingTimerMs);
     cmd.AddValue("rlc-max-tx-buffer-size", "Maximum RLC UM TX buffer size in bytes", maxRlcTxBufferSize);
+    cmd.AddValue("stop-tail", "Extra simulation seconds after sim-time for app/drain events", stopTailSeconds);
+    cmd.AddValue("enable-fading", "Enable fast fading channel component", enableFading);
+    cmd.AddValue("init-min-rsrp", "Minimum RSRP for initial attach in dBm", initMinRsrpDbm);
+    cmd.AddValue("init-retry-interval", "Initial attach retry interval in seconds", initRetryIntervalSec);
     cmd.Parse(argc, argv);
+
+    if (quietTiming)
+    {
+        verbose = false;
+        enableFlowMonitor = false;
+        enableRsrpTrace = false;
+        enablePositionTrace = false;
+        enableHandoverTrace = false;
+        enableOranInfoLog = false;
+        enableNrHelperInfoLog = false;
+        enableSetupPrints = false;
+        enableProgress = true;
+        enableDecisionCsv = false;
+        enableOranAppLossReports = false;
+        enableOranCellLoadReports = false;
+        enableSatBackhaulMonitor = false;
+        remMode = false;
+    }
 
     NS_ABORT_MSG_IF(useOran == false && (useOnnx || useTorch || useRsrp),
                     "Cannot use ML LM or RSRP LM without enabling O-RAN.");
     NS_ABORT_MSG_IF((useOnnx + useTorch + useRsrp) > 1, "Cannot use more than one LM simultaneously.");
     NS_ABORT_MSG_IF(handoverAlgorithm != "ns3::NrNoOpHandoverAlgorithm" && (useOnnx || useTorch || useRsrp),
                     "Cannot use non-noop handover algorithm with ML/RSRP LM (avoid conflicts).");
+    NS_ABORT_MSG_IF(!enableFading,
+                    "This scenario uses NrHelper::AttachToMaxRsrpGnb for initial attach, "
+                    "which requires NR channel fading. Remove --enable-fading=0.");
+
+    Time simulationStopTime = simTime + Seconds(stopTailSeconds);
 
     std::ostringstream runTag;
-    runTag << "ueS1_" << numGroundUesS1
-            << "_ueS2_" << numGroundUesS2
-            << "_tnGnb_" << numTnGnbs
-            << "_tnCap_" << maxUesPerCellTn
-            << "_hyst_" << hysteresisDb;
+    runTag << "ueS1_" << numGroundUesS1 << "_ueS2_" << numGroundUesS2 << "_tnGnb_" << numTnGnbs << "_ntnGnb_" << numNtnGnbs << "_tnCap_" << maxUesPerCellTn << "_ntnCap_" << maxUesPerCellNtn << "_hyst_" << hysteresisDb;
 
     // Base output folder for this run
-    ns3_dir = "results/nr/tn/" + runTag.str() + "/";
+    ns3_dir = "results/nr/tn-ntn/" + runTag.str() + "/";
 
     // Update file paths to be inside ns3_dir
     s_ueS1PositionTraceFile = ns3_dir + "ues1-position-trace.tr";
     s_ueS2PositionTraceFile = ns3_dir + "ues2-position-trace.tr";
+    s_uavPositionTraceFile = ns3_dir + "uav-position-trace.tr";
     s_handoverTraceFile = ns3_dir + "handover-trace.tr";
     s_flowStatTraceFile = ns3_dir + "flow-stats.log";
+    s_satBackhaulTraceFile = ns3_dir + "sat-backhaul-trace.txt";
 
     // Ensure results/nr/ directory exists
     std::filesystem::create_directories(ns3_dir);
 
-    Ptr<OutputStreamWrapper> rsrpRsrqSinrTraceStream =
-    Create<OutputStreamWrapper>(ns3_dir + "rsrp-trace.tr", std::ios::out);
+    Ptr<OutputStreamWrapper> rsrpRsrqSinrTraceStream;
+    if (enableRsrpTrace)
+    {
+        rsrpRsrqSinrTraceStream =
+            Create<OutputStreamWrapper>(ns3_dir + "rsrp-trace.tr", std::ios::out);
 
-    *rsrpRsrqSinrTraceStream->GetStream()
-        << "Time RNTI CellId CellType RSRP RSRQ Serving CCID\n";
-    // ---- Redirect NS_LOG (std::clog) to a file ----
-    g_nsLogFile.open(ns3_dir + "ns3-oran-lm.log", std::ios::out | std::ios::trunc);
-    g_oldClogBuf = std::clog.rdbuf(g_nsLogFile.rdbuf());
+        *rsrpRsrqSinrTraceStream->GetStream()
+            << "Time RNTI CellId CellType RSRP RSRQ Serving CCID\n";
+    }
+
+    if (enableOranInfoLog || enableNrHelperInfoLog)
+    {
+        // Redirect enabled NS_LOG output to a file.
+        g_nsLogFile.open(ns3_dir + "ns3-oran-lm.log", std::ios::out | std::ios::trunc);
+        g_oldClogBuf = std::clog.rdbuf(g_nsLogFile.rdbuf());
+    }
 
     // // ---- Redirect NS_LOG_UNCOND (std::cout) to a separate file ----
     // g_uncondFile.open(ns3_dir + "init-attach.log", std::ios::out | std::ios::trunc);
@@ -920,7 +1630,10 @@ main(int argc, char* argv[])
 
     if (enableOranInfoLog)
     {
-        LogComponentEnable("OranLmNr2NrRsrpHandoverWithCellLoad", LOG_LEVEL_INFO);
+        LogComponentEnable("OranLmNr2NrRsrpHandoverWithTnNtn", LOG_LEVEL_INFO);
+    }
+    if (enableNrHelperInfoLog)
+    {
         LogComponentEnable("NrHelper", LOG_LEVEL_INFO);
     }
 
@@ -946,12 +1659,15 @@ main(int argc, char* argv[])
     NodeContainer groundUeNodesS1;
     NodeContainer groundUeNodesS2;
     NodeContainer tnGnbNodes;
+    NodeContainer ntnGnbNodes;
     NodeContainer allGnbNodes;
 
     tnGnbNodes.Create(numTnGnbs);
+    ntnGnbNodes.Create(numNtnGnbs);
     groundUeNodesS1.Create(numGroundUesS1);
     groundUeNodesS2.Create(numGroundUesS2);
     allGnbNodes.Add(tnGnbNodes);
+    allGnbNodes.Add(ntnGnbNodes);
 
     // Create ChannelHelper API
     // if (isLos)
@@ -993,7 +1709,17 @@ main(int argc, char* argv[])
     Ptr<NrChannelHelper> tnChannelHelper = CreateObject<NrChannelHelper>();
     tnChannelHelper->ConfigureFactories("UMa", "Default");
     tnChannelHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(enableShadowing));
+
+    // --- NTN channel helper ---
+    // The 3GPP NTN channel models (NTN-Urban, NTN-Suburban etc.) were designed for satellites
+    // at 600km–35,000km altitude where geocentric coordinates matter because the Earth's curvature
+    Ptr<NrChannelHelper> ntnChannelHelper = CreateObject<NrChannelHelper>();
+    ntnChannelHelper->ConfigureFactories("NTN-Urban", "Default");
+    ntnChannelHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(enableShadowing));
+
     tnChannelHelper->SetChannelConditionModelAttribute(
+        "UpdatePeriod", TimeValue(MilliSeconds(channelConditionUpdatePeriod)));
+    ntnChannelHelper->SetChannelConditionModelAttribute(
         "UpdatePeriod", TimeValue(MilliSeconds(channelConditionUpdatePeriod)));
     // }
     //ObjectFactory distanceBasedChannelFactory;
@@ -1007,9 +1733,15 @@ main(int argc, char* argv[])
         TypeId tid;
         if (TypeId::LookupByNameFailSafe(name, &tid))
         {
-            NS_LOG_UNCOND(std::string("NR: trying ") + name);
+            if (enableSetupPrints)
+            {
+                NS_LOG_UNCOND(std::string("NR: trying ") + name);
+            }
             nrHelper->SetSchedulerTypeId(tid); 
-            NS_LOG_UNCOND(std::string("NR: using ") + name);
+            if (enableSetupPrints)
+            {
+                NS_LOG_UNCOND(std::string("NR: using ") + name);
+            }
             return true;
         }
         return false;
@@ -1060,7 +1792,7 @@ main(int argc, char* argv[])
     nrHelper->SetGnbUlAmcAttribute("AmcModel", EnumValue(NrAmc::ErrorModel));
 
     double txTnPower = 43;
-
+    double txNtnPower = 38;
     double ueTxPower = 23;
     bool enableHarqRetx = false;
 
@@ -1094,36 +1826,88 @@ main(int argc, char* argv[])
     nrHelper->SetFhControlAttribute("FhCapacity", UintegerValue(10000)); // 10 Gbps for XR
     nrHelper->SetFhControlAttribute("OverheadDyn", UintegerValue(32));    // or 100 if you want heavier overhead
 
+
+    // ---- TDD single-carrier setup (ONE band, ONE BWP) ----
+    // bool enableFading = true;
+    // uint8_t bandMask = NrChannelHelper::INIT_PROPAGATION |
+    //                 (enableFading ? NrChannelHelper::INIT_FADING : 0);
+
+    // double centralFrequency = 4e9;
+    // double bandBw = 20e6;
+
+    // CcBwpCreator ccBwpCreator;
+    // CcBwpCreator::SimpleOperationBandConf conf(centralFrequency, bandBw, 1);
+    // OperationBandInfo band = ccBwpCreator.CreateOperationBandContiguousCc(conf);
+
+    // std::vector<std::reference_wrapper<OperationBandInfo>> bands;
+    // bands.emplace_back(std::ref(band));
+
+    // channelHelper->AssignChannelsToBands(bands, bandMask);
+
+    // // BWP 0
+    // BandwidthPartInfoPtrVector Bwps = CcBwpCreator::GetAllBwps(bands);
     ////////////////////////////////
+    // ---------------- Common BWP layout ----------------
+    // Global/common indices for ALL nodes:
+    //   BWP 0 = TN
+    //   BWP 1 = NTN DL
+    //   BWP 2 = NTN UL
+
     BandwidthPartInfoPtrVector allBwps;
 
-    bool enableFading = true;
+    // ---- TDD + FDD setup ----
     uint8_t bandMask = NrChannelHelper::INIT_PROPAGATION |
                     (enableFading ? NrChannelHelper::INIT_FADING : 0);
 
     CcBwpCreator ccBwpCreator;
 
-    double centralFrequencyBand = 4.0e9;
-    double bandwidthBand = 20e6;
+    // Frequencies
+    double centralFrequencyBand1 = 4.0e9; // TN band
+    double bandwidthBand1        = 20e6;
 
-    // TN-only FDD: two paired BWPs in the same band
-    CcBwpCreator::SimpleOperationBandConf bandConf(centralFrequencyBand,
-                                                bandwidthBand,
-                                                1);
-    bandConf.m_numBwp = 2;
+    double centralFrequencyBand2 = 4.2e9; // NTN band
+    double bandwidthBand2        = 20e6;
 
-    OperationBandInfo band = ccBwpCreator.CreateOperationBandContiguousCc(bandConf);
+    // TN band: 1 BWP
+    CcBwpCreator::SimpleOperationBandConf bandConfTn(centralFrequencyBand1,
+                                                    bandwidthBand1,
+                                                    1);
 
+    // NTN band: 2 BWPs (DL + UL)
+    CcBwpCreator::SimpleOperationBandConf bandConfNtn(centralFrequencyBand2,
+                                                    bandwidthBand2,
+                                                    1);
+    bandConfNtn.m_numBwp = 2;
+
+    OperationBandInfo bandTn  = ccBwpCreator.CreateOperationBandContiguousCc(bandConfTn);
+    OperationBandInfo bandNtn = ccBwpCreator.CreateOperationBandContiguousCc(bandConfNtn);
+
+    std::vector<std::reference_wrapper<OperationBandInfo>> tnBands;
+    tnBands.emplace_back(std::ref(bandTn));
+
+    std::vector<std::reference_wrapper<OperationBandInfo>> ntnBands;
+    ntnBands.emplace_back(std::ref(bandNtn));
+
+    // Assign different channel models to different bands
+    tnChannelHelper->AssignChannelsToBands(tnBands, bandMask);
+    ntnChannelHelper->AssignChannelsToBands(ntnBands, bandMask);
+
+    // Build ONE common/global BWP list
     std::vector<std::reference_wrapper<OperationBandInfo>> bands;
-    bands.emplace_back(std::ref(band));
+    bands.emplace_back(std::ref(bandTn));
+    bands.emplace_back(std::ref(bandNtn));
 
-    tnChannelHelper->AssignChannelsToBands(bands, bandMask);
-
+    // Global indexing becomes:
+    //   allBwps[0] = TN
+    //   allBwps[1] = NTN DL
+    //   allBwps[2] = NTN UL
     allBwps = CcBwpCreator::GetAllBwps(bands);
 
-    const uint32_t bwpDl   = 0;
-    const uint32_t bwpUl   = 1;
-    const uint32_t numBwps = allBwps.size(); // should be 2
+    // Global/common BWP indices
+    const uint32_t bwpTn    = 0;
+    const uint32_t bwpNtnDl = 1;
+    const uint32_t bwpNtnUl = 2;
+    const uint32_t numBwps  = allBwps.size(); // should be 3
 
     Ptr<IdealBeamformingHelper> idealBeamformingHelper = CreateObject<IdealBeamformingHelper>();
     idealBeamformingHelper->SetAttribute("BeamformingMethod",
@@ -1135,11 +1919,17 @@ main(int argc, char* argv[])
 
     // The network interface installed on the node (e.g., 5G modem)
     NetDeviceContainer tnGnbNrDevs;
+    NetDeviceContainer ntnGnbNrDevs;
     NetDeviceContainer allGnbNrDevs;
     NetDeviceContainer groundNrDevsS1;
     NetDeviceContainer groundNrDevsS2;
 
-    Ptr<NrPointToPointEpcHelper> epcHelper = CreateObject<NrPointToPointEpcHelper>();
+    Ptr<HybridSatEpcHelper> epcHelper = CreateObject<HybridSatEpcHelper>();
+    epcHelper->SetAttribute("TnS1uLinkDelay", TimeValue(MilliSeconds(0)));
+    epcHelper->SetAttribute("NtnGnbSatDelay", TimeValue(MilliSeconds(120)));
+    epcHelper->SetAttribute("NtnSatGwDelay", TimeValue(MilliSeconds(120)));
+    epcHelper->SetAttribute("NtnGwSgwDelay", TimeValue(MilliSeconds(1)));
+
     nrHelper->SetEpcHelper(epcHelper);
 
     // Create remote host
@@ -1153,9 +1943,38 @@ main(int argc, char* argv[])
 
     install_mobility_geocentric(remoteHostContainer,
                                 tnGnbNodes,
+                                ntnGnbNodes,
                                 groundUeNodesS1,
                                 groundUeNodesS2);
 
+    // ---------------- SAT / GW nodes ----------------
+    NodeContainer satNode;
+    satNode.Create(1);
+
+    NodeContainer gwNode;
+    gwNode.Create(1);
+
+    auto satMob = CreateObject<GeocentricConstantPositionMobilityModel>();
+    satMob->SetGeographicPosition(Vector(g_refLat, g_refLon, 35786000.0));
+    satMob->SetCoordinateTranslationReferencePoint(Vector(g_refLat, g_refLon, 0.0));
+    satNode.Get(0)->AggregateObject(satMob);
+
+    auto gwMob = CreateObject<GeocentricConstantPositionMobilityModel>();
+    gwMob->SetGeographicPosition(Vector(g_refLat, g_refLon, 20.0));
+    gwMob->SetCoordinateTranslationReferencePoint(Vector(g_refLat, g_refLon, 0.0));
+    gwNode.Get(0)->AggregateObject(gwMob);
+
+    NodeContainer backhaulNodes;
+    backhaulNodes.Add(satNode);
+    backhaulNodes.Add(gwNode);
+    internet.Install(backhaulNodes);
+
+    epcHelper->SetSatelliteNodes(satNode.Get(0), gwNode.Get(0));
+
+    for (uint32_t i = 0; i < ntnGnbNodes.GetN(); ++i)
+    {
+        epcHelper->AddNtnGnbNode(ntnGnbNodes.Get(i));
+    }
 
     // Initialize after EPC / NTN registration is ready
     nrHelper->Initialize();
@@ -1181,38 +2000,52 @@ main(int argc, char* argv[])
                                             1);
 
     // ------------------------------------------------------------
+    // Monitor-only point-to-point links for beamforming reference
+    // ------------------------------------------------------------
+    PointToPointHelper satMonP2p;
+    satMonP2p.SetDeviceAttribute("DataRate", DataRateValue(DataRate("1Gbps")));
+    satMonP2p.SetChannelAttribute("Delay", TimeValue(MilliSeconds(1)));
+
+    std::vector<NetDeviceContainer> uavSatMonitorDevs(numNtnGnbs);
+    for (uint32_t i = 0; i < numNtnGnbs; ++i)
+    {
+        uavSatMonitorDevs[i] = satMonP2p.Install(ntnGnbNodes.Get(i), satNode.Get(0));
+    }
+
+    NetDeviceContainer satGwMonitorDevs = satMonP2p.Install(satNode.Get(0), gwNode.Get(0));
+
+    // ------------------------------------------------------------
     // Global BWP manager mapping is now safe again
     // ------------------------------------------------------------
-    nrHelper->SetGnbBwpManagerAlgorithmAttribute("GBR_CONV_VOICE", UintegerValue(bwpDl));
-    nrHelper->SetGnbBwpManagerAlgorithmAttribute("GBR_CONV_VIDEO", UintegerValue(bwpDl));
-    nrHelper->SetGnbBwpManagerAlgorithmAttribute("GBR_LIVE_UL_71", UintegerValue(bwpUl));
+    nrHelper->SetGnbBwpManagerAlgorithmAttribute("GBR_CONV_VOICE", UintegerValue(bwpTn));
+    nrHelper->SetGnbBwpManagerAlgorithmAttribute("GBR_CONV_VIDEO", UintegerValue(bwpNtnDl));
+    nrHelper->SetGnbBwpManagerAlgorithmAttribute("GBR_LIVE_UL_71", UintegerValue(bwpNtnUl));
 
-    nrHelper->SetUeBwpManagerAlgorithmAttribute("GBR_CONV_VOICE", UintegerValue(bwpDl));
-    nrHelper->SetUeBwpManagerAlgorithmAttribute("GBR_CONV_VIDEO", UintegerValue(bwpDl));
-    nrHelper->SetUeBwpManagerAlgorithmAttribute("GBR_LIVE_UL_71", UintegerValue(bwpUl));
+    nrHelper->SetUeBwpManagerAlgorithmAttribute("GBR_CONV_VOICE", UintegerValue(bwpTn));
+    nrHelper->SetUeBwpManagerAlgorithmAttribute("GBR_CONV_VIDEO", UintegerValue(bwpNtnDl));
+    nrHelper->SetUeBwpManagerAlgorithmAttribute("GBR_LIVE_UL_71", UintegerValue(bwpNtnUl));
 
     // Install devices with ONE common BWP layout
     tnGnbNrDevs  = nrHelper->InstallGnbDevice(tnGnbNodes, allBwps);
+    ntnGnbNrDevs = nrHelper->InstallGnbDevice(ntnGnbNodes, allBwps);
 
-    // Must be set before UE device install
-    Config::SetDefault("ns3::NrUeNetDevice::PrimaryUlIndex", UintegerValue(bwpUl));
+    double uavControlPeriodSec = 2.0;
+    double underservedRsrpThreshDbm = -120.0;
+
+    // Start after measurements and initial attach have had a little time to appear
+    Simulator::Schedule(Seconds(7.0),
+                        &UpdateUavTargetsFromUnderservedUes,
+                        groundUeNodesS1,
+                        groundUeNodesS2,
+                        ntnGnbNrDevs,
+                        underservedRsrpThreshDbm,
+                        uavControlPeriodSec);
 
     allGnbNrDevs.Add(tnGnbNrDevs);
+    allGnbNrDevs.Add(ntnGnbNrDevs);
 
     groundNrDevsS1 = nrHelper->InstallUeDevice(groundUeNodesS1, allBwps);
     groundNrDevsS2 = nrHelper->InstallUeDevice(groundUeNodesS2, allBwps);
-
-    for (uint32_t i = 0; i < groundNrDevsS1.GetN(); ++i)
-    {
-        Ptr<NrUeNetDevice> ueDev = DynamicCast<NrUeNetDevice>(groundNrDevsS1.Get(i));
-        NrHelper::GetBwpManagerUe(ueDev)->SetOutputLink(bwpDl, bwpUl);
-    }
-
-    for (uint32_t i = 0; i < groundNrDevsS2.GetN(); ++i)
-    {
-        Ptr<NrUeNetDevice> ueDev = DynamicCast<NrUeNetDevice>(groundNrDevsS2.Get(i));
-        NrHelper::GetBwpManagerUe(ueDev)->SetOutputLink(bwpDl, bwpUl);
-    }
 
     const uint32_t ueNumBwps = numBwps;
 
@@ -1223,9 +2056,18 @@ main(int argc, char* argv[])
     // ------------------------------------------------------------
     for (uint32_t i = 0; i < tnGnbNrDevs.GetN(); ++i)
     {
-        nrHelper->GetGnbPhy(tnGnbNrDevs.Get(i), bwpDl)->SetAttribute("TxPower", DoubleValue(txTnPower));
-        nrHelper->GetGnbPhy(tnGnbNrDevs.Get(i), bwpUl)->SetAttribute("TxPower", DoubleValue(txTnPower));
+        nrHelper->GetGnbPhy(tnGnbNrDevs.Get(i), 0)->SetAttribute("TxPower", DoubleValue(txTnPower));
+        nrHelper->GetGnbPhy(tnGnbNrDevs.Get(i), 1)->SetAttribute("TxPower", DoubleValue(txTnPower));
+        nrHelper->GetGnbPhy(tnGnbNrDevs.Get(i), 2)->SetAttribute("TxPower", DoubleValue(0.0));
     }
+
+    for (uint32_t i = 0; i < ntnGnbNrDevs.GetN(); ++i)
+    {
+        nrHelper->GetGnbPhy(ntnGnbNrDevs.Get(i), 0)->SetAttribute("TxPower", DoubleValue(txNtnPower));
+        nrHelper->GetGnbPhy(ntnGnbNrDevs.Get(i), 1)->SetAttribute("TxPower", DoubleValue(txNtnPower));
+        nrHelper->GetGnbPhy(ntnGnbNrDevs.Get(i), 2)->SetAttribute("TxPower", DoubleValue(0.0)); // UL-only
+    }
+
     // Set TN gNB RRC capacity individually
     for (uint32_t i = 0; i < tnGnbNrDevs.GetN(); ++i)
     {
@@ -1234,24 +2076,207 @@ main(int argc, char* argv[])
         gnb->GetRrc()->SetAttribute("MaxUesPerCell", UintegerValue(maxUesPerCellTn));
     }
 
-    nrHelper->ConfigureFhControl(allGnbNrDevs);
-
-    if (enableFhTrace)
+    // Set NTN gNB RRC capacity individually
+    for (uint32_t i = 0; i < ntnGnbNrDevs.GetN(); ++i)
     {
-        for (auto it = allGnbNrDevs.Begin(); it != allGnbNrDevs.End(); ++it)
+        Ptr<NrGnbNetDevice> gnb = DynamicCast<NrGnbNetDevice>(ntnGnbNrDevs.Get(i));
+        NS_ABORT_MSG_IF(!gnb, "NTN device is not NrGnbNetDevice");
+        gnb->GetRrc()->SetAttribute("MaxUesPerCell", UintegerValue(maxUesPerCellNtn));
+    }
+
+    // Register NTN cell IDs
+    for (uint32_t i = 0; i < ntnGnbNrDevs.GetN(); ++i)
+    {
+        Ptr<NrGnbNetDevice> gnb = DynamicCast<NrGnbNetDevice>(ntnGnbNrDevs.Get(i));
+        NS_ABORT_MSG_IF(!gnb, "NTN device is not NrGnbNetDevice");
+        g_ntnCellIds.insert(gnb->GetCellId());
+    }
+
+    // ------------------------------------------------------------
+    // Parallel satellite backhaul monitor for each NTN/UAV gNB
+    // ------------------------------------------------------------
+    std::ofstream satBackhaulOut;
+    std::unique_ptr<SatBackhaulContext> satBackhaulCtx;
+
+    if (enableSatBackhaulMonitor)
+    {
+        satBackhaulOut.open(s_satBackhaulTraceFile, std::ios::out | std::ios::trunc);
+        NS_ABORT_MSG_IF(!satBackhaulOut.is_open(),
+                        "Could not create " << s_satBackhaulTraceFile);
+
+        satBackhaulOut << "Time,CellId,"
+                    << "ServiceDlSnrDb,ServiceUlSnrDb,"
+                    << "FeederDlSnrDb,FeederUlSnrDb,"
+                    << "BackhaulDlSnrDb,BackhaulUlSnrDb,"
+                    << "BackhaulHealthy\n";
+
+        ObjectFactory propFactory;
+        ObjectFactory condFactory;
+
+        if (satBackhaulScenario == "NTN-DenseUrban")
         {
-            Ptr<NrGnbNetDevice> gnb = DynamicCast<NrGnbNetDevice>(*it);
-            NS_ABORT_MSG_IF(!gnb, "Device is not NrGnbNetDevice");
+            propFactory.SetTypeId(ThreeGppNTNDenseUrbanPropagationLossModel::GetTypeId());
+            condFactory.SetTypeId(ThreeGppNTNDenseUrbanChannelConditionModel::GetTypeId());
+        }
+        else if (satBackhaulScenario == "NTN-Urban")
+        {
+            propFactory.SetTypeId(ThreeGppNTNUrbanPropagationLossModel::GetTypeId());
+            condFactory.SetTypeId(ThreeGppNTNUrbanChannelConditionModel::GetTypeId());
+        }
+        else if (satBackhaulScenario == "NTN-Suburban")
+        {
+            propFactory.SetTypeId(ThreeGppNTNSuburbanPropagationLossModel::GetTypeId());
+            condFactory.SetTypeId(ThreeGppNTNSuburbanChannelConditionModel::GetTypeId());
+        }
+        else if (satBackhaulScenario == "NTN-Rural")
+        {
+            propFactory.SetTypeId(ThreeGppNTNRuralPropagationLossModel::GetTypeId());
+            condFactory.SetTypeId(ThreeGppNTNRuralChannelConditionModel::GetTypeId());
+        }
+        else
+        {
+            NS_FATAL_ERROR("Unknown satBackhaulScenario: " << satBackhaulScenario);
+        }
 
-            gnb->GetNrFhControl()->TraceConnectWithoutContext(
-                "RequiredFhDlThroughput",
-                MakeCallback(&ReportFhTrace));
+        Ptr<ChannelConditionModel> serviceCond =
+            condFactory.Create<ThreeGppChannelConditionModel>();
+        Ptr<ChannelConditionModel> feederCond =
+            condFactory.Create<ThreeGppChannelConditionModel>();
 
-            gnb->GetNrFhControl()->TraceConnectWithoutContext(
-                "UsedAirRbs",
-                MakeCallback(&ReportAiTrace));
+        double satTxPowDbm =
+            (satEirpDensityDbwPerMHz +
+            10.0 * std::log10(satBackhaulBandwidthHz / 1e6) -
+            satAntennaGainDb) + 30.0;
+
+        Ptr<ThreeGppPropagationLossModel> servicePropagation =
+            propFactory.Create<ThreeGppPropagationLossModel>();
+        servicePropagation->SetAttribute("Frequency", DoubleValue(satBackhaulFrequencyHz));
+        servicePropagation->SetAttribute("ShadowingEnabled", BooleanValue(true));
+        servicePropagation->SetChannelConditionModel(serviceCond);
+
+        Ptr<ThreeGppSpectrumPropagationLossModel> serviceSpectrum =
+            CreateObject<ThreeGppSpectrumPropagationLossModel>();
+        serviceSpectrum->SetChannelModelAttribute("Frequency", DoubleValue(satBackhaulFrequencyHz));
+        serviceSpectrum->SetChannelModelAttribute("Scenario", StringValue(satBackhaulScenario));
+        serviceSpectrum->SetChannelModelAttribute("ChannelConditionModel",
+                                                PointerValue(serviceCond));
+
+        Ptr<ThreeGppPropagationLossModel> feederPropagation =
+            propFactory.Create<ThreeGppPropagationLossModel>();
+        feederPropagation->SetAttribute("Frequency", DoubleValue(satBackhaulFrequencyHz));
+        feederPropagation->SetAttribute("ShadowingEnabled", BooleanValue(true));
+        feederPropagation->SetChannelConditionModel(feederCond);
+
+        Ptr<ThreeGppSpectrumPropagationLossModel> feederSpectrum =
+            CreateObject<ThreeGppSpectrumPropagationLossModel>();
+        feederSpectrum->SetChannelModelAttribute("Frequency", DoubleValue(satBackhaulFrequencyHz));
+        feederSpectrum->SetChannelModelAttribute("Scenario", StringValue(satBackhaulScenario));
+        feederSpectrum->SetChannelModelAttribute("ChannelConditionModel",
+                                                PointerValue(feederCond));
+
+        auto MakeArray = [](double gainDb) -> Ptr<PhasedArrayModel>
+        {
+            return CreateObjectWithAttributes<UniformPlanarArray>(
+                "NumColumns", UintegerValue(1),
+                "NumRows", UintegerValue(1),
+                "AntennaElement",
+                PointerValue(CreateObjectWithAttributes<IsotropicAntennaModel>(
+                    "Gain", DoubleValue(gainDb))));
+        };
+
+        satBackhaulCtx = std::make_unique<SatBackhaulContext>();
+        satBackhaulCtx->satMob = satMob;
+        satBackhaulCtx->gwMob = gwMob;
+        satBackhaulCtx->file = &satBackhaulOut;
+        satBackhaulCtx->logPeriodMs = satBackhaulLogStepMs;
+        satBackhaulCtx->minAcceptableBackhaulSnrDb = satBackhaulMinSnrDb;
+        satBackhaulCtx->healthyNtnCapacity = maxUesPerCellNtn;
+
+        // Feeder DL: SAT -> GW
+        satBackhaulCtx->feederDl.propagation = feederPropagation;
+        satBackhaulCtx->feederDl.spectrum = feederSpectrum;
+        satBackhaulCtx->feederDl.txDev = satGwMonitorDevs.Get(0);
+        satBackhaulCtx->feederDl.rxDev = satGwMonitorDevs.Get(1);
+        satBackhaulCtx->feederDl.frequencyHz = satBackhaulFrequencyHz;
+        satBackhaulCtx->feederDl.bandwidthHz = satBackhaulBandwidthHz;
+        satBackhaulCtx->feederDl.rbBandwidthHz = satBackhaulRbBandwidthHz;
+        satBackhaulCtx->feederDl.txPowerDbm = satTxPowDbm;
+        satBackhaulCtx->feederDl.rxNoiseFigureDb = gwNoiseFigureDb;
+        satBackhaulCtx->feederDl.txAntenna = MakeArray(satAntennaGainDb);
+        satBackhaulCtx->feederDl.rxAntenna = MakeArray(gwAntennaGainDb);
+
+        // Feeder UL: GW -> SAT
+        satBackhaulCtx->feederUl.propagation = feederPropagation;
+        satBackhaulCtx->feederUl.spectrum = feederSpectrum;
+        satBackhaulCtx->feederUl.txDev = satGwMonitorDevs.Get(1);
+        satBackhaulCtx->feederUl.rxDev = satGwMonitorDevs.Get(0);
+        satBackhaulCtx->feederUl.frequencyHz = satBackhaulFrequencyHz;
+        satBackhaulCtx->feederUl.bandwidthHz = satBackhaulBandwidthHz;
+        satBackhaulCtx->feederUl.rbBandwidthHz = satBackhaulRbBandwidthHz;
+        satBackhaulCtx->feederUl.txPowerDbm = gwTxPowerDbm;
+        satBackhaulCtx->feederUl.rxNoiseFigureDb = satRxNoiseFigureDb;
+        satBackhaulCtx->feederUl.txAntenna = MakeArray(gwAntennaGainDb);
+        satBackhaulCtx->feederUl.rxAntenna = MakeArray(satAntennaGainDb);
+
+        for (uint32_t i = 0; i < ntnGnbNrDevs.GetN(); ++i)
+        {
+            Ptr<NrGnbNetDevice> gnb = DynamicCast<NrGnbNetDevice>(ntnGnbNrDevs.Get(i));
+            NS_ABORT_MSG_IF(!gnb, "NTN device is not NrGnbNetDevice");
+
+            Ptr<GeocentricConstantPositionMobilityModel> uavMob =
+                DynamicCast<GeocentricConstantPositionMobilityModel>(
+                    ntnGnbNodes.Get(i)->GetObject<MobilityModel>());
+            NS_ABORT_MSG_IF(!uavMob, "NTN node has no Geocentric mobility model");
+
+            UavSatBackhaulCell cell;
+            cell.cellId = gnb->GetCellId();
+            cell.uavMob = uavMob;
+
+            // Service DL: SAT -> UAV
+            cell.serviceDl.propagation = servicePropagation;
+            cell.serviceDl.spectrum = serviceSpectrum;
+            cell.serviceDl.txDev = uavSatMonitorDevs[i].Get(1);
+            cell.serviceDl.rxDev = uavSatMonitorDevs[i].Get(0);
+            cell.serviceDl.frequencyHz = satBackhaulFrequencyHz;
+            cell.serviceDl.bandwidthHz = satBackhaulBandwidthHz;
+            cell.serviceDl.rbBandwidthHz = satBackhaulRbBandwidthHz;
+            cell.serviceDl.txPowerDbm = satTxPowDbm;
+            cell.serviceDl.rxNoiseFigureDb = uavUtNoiseFigureDb;
+            cell.serviceDl.txAntenna = MakeArray(satAntennaGainDb);
+            cell.serviceDl.rxAntenna = MakeArray(uavUtAntennaGainDb);
+
+            // Service UL: UAV -> SAT
+            cell.serviceUl.propagation = servicePropagation;
+            cell.serviceUl.spectrum = serviceSpectrum;
+            cell.serviceUl.txDev = uavSatMonitorDevs[i].Get(0);
+            cell.serviceUl.rxDev = uavSatMonitorDevs[i].Get(1);
+            cell.serviceUl.frequencyHz = satBackhaulFrequencyHz;
+            cell.serviceUl.bandwidthHz = satBackhaulBandwidthHz;
+            cell.serviceUl.rbBandwidthHz = satBackhaulRbBandwidthHz;
+            cell.serviceUl.txPowerDbm = uavUtTxPowerDbm;
+            cell.serviceUl.rxNoiseFigureDb = satRxNoiseFigureDb;
+            cell.serviceUl.txAntenna = MakeArray(uavUtAntennaGainDb);
+            cell.serviceUl.rxAntenna = MakeArray(satAntennaGainDb);
+
+            satBackhaulCtx->cells.push_back(std::move(cell));
         }
     }
+
+    nrHelper->ConfigureFhControl(allGnbNrDevs);
+
+    // for (auto it = allGnbNrDevs.Begin(); it != allGnbNrDevs.End(); ++it)
+    // {
+    //     Ptr<NrGnbNetDevice> gnb = DynamicCast<NrGnbNetDevice>(*it);
+    //     NS_ABORT_MSG_IF(!gnb, "Device is not NrGnbNetDevice");
+
+    //     gnb->GetNrFhControl()->TraceConnectWithoutContext(
+    //         "RequiredFhDlThroughput",
+    //         MakeCallback(&ReportFhTrace));
+
+    //     gnb->GetNrFhControl()->TraceConnectWithoutContext(
+    //         "UsedAirRbs",
+    //         MakeCallback(&ReportAiTrace));
+    // }
 
     // -------- Role map: IMSI -> UES1/UES2 --------
     g_imsiRole.clear();
@@ -1271,18 +2296,43 @@ main(int argc, char* argv[])
     }
 
     // ---------------- Patterns ----------------
-    static const std::string fddDlPattern = "DL|DL|DL|DL|DL";
-    static const std::string fddUlPattern = "UL|UL|UL|UL|UL";
+    static const std::string tddPattern   = "DL|DL|DL|DL|DL|DL|DL|UL|UL|UL|";
+    static const std::string fddDlPattern = "DL|DL|DL|DL|DL|DL|DL|DL|DL|DL|";
+    static const std::string fddUlPattern = "UL|UL|UL|UL|UL|UL|UL|UL|UL|UL|";
 
-
+    // TN gNBs: use BWP0 only
     for (uint32_t i = 0; i < tnGnbNrDevs.GetN(); ++i)
     {
         Ptr<NetDevice> gnbDev = tnGnbNrDevs.Get(i);
+        nrHelper->GetGnbPhy(gnbDev, 0)->SetAttribute("Pattern", StringValue(tddPattern));
+        nrHelper->GetGnbPhy(gnbDev, 1)->SetAttribute("Pattern", StringValue(fddDlPattern));
+        nrHelper->GetGnbPhy(gnbDev, 2)->SetAttribute("Pattern", StringValue(fddUlPattern));
+    }
 
-        nrHelper->GetGnbPhy(gnbDev, bwpDl)->SetAttribute("Pattern", StringValue(fddDlPattern));
-        nrHelper->GetGnbPhy(gnbDev, bwpUl)->SetAttribute("Pattern", StringValue(fddUlPattern));
+    // NTN gNBs: use BWP1 for DL and BWP2 for UL
+    for (uint32_t i = 0; i < ntnGnbNrDevs.GetN(); ++i)
+    {
+        Ptr<NetDevice> gnbDev = ntnGnbNrDevs.Get(i);
+        nrHelper->GetGnbPhy(gnbDev, 0)->SetAttribute("Pattern", StringValue(tddPattern));
+        nrHelper->GetGnbPhy(gnbDev, 1)->SetAttribute("Pattern", StringValue(fddDlPattern));
+        nrHelper->GetGnbPhy(gnbDev, 2)->SetAttribute("Pattern", StringValue(fddUlPattern));
+    }
 
-        NrHelper::GetBwpManagerGnb(gnbDev)->SetOutputLink(bwpUl, bwpDl);
+    // ---------------- Output links ----------------
+    // Global/common mapping is safe again: UL BWP2 -> DL BWP1
+    for (uint32_t i = 0; i < allGnbNrDevs.GetN(); ++i)
+    {
+        NrHelper::GetBwpManagerGnb(allGnbNrDevs.Get(i))->SetOutputLink(2, 1);
+    }
+
+    for (uint32_t i = 0; i < groundNrDevsS1.GetN(); ++i)
+    {
+        NrHelper::GetBwpManagerUe(groundNrDevsS1.Get(i))->SetOutputLink(1, 2);
+    }
+
+    for (uint32_t i = 0; i < groundNrDevsS2.GetN(); ++i)
+    {
+        NrHelper::GetBwpManagerUe(groundNrDevsS2.Get(i))->SetOutputLink(1, 2);
     }
 
     // Apply final configuration after set patterns + output links
@@ -1320,29 +2370,51 @@ main(int argc, char* argv[])
         nrHelper->SetCellCapacity(gnb->GetCellId(), maxUesPerCellTn);
     }
 
+    for (uint32_t i = 0; i < ntnGnbNrDevs.GetN(); ++i)
+    {
+        Ptr<NrGnbNetDevice> gnb = DynamicCast<NrGnbNetDevice>(ntnGnbNrDevs.Get(i));
+        nrHelper->SetCellCapacity(gnb->GetCellId(), maxUesPerCellNtn);
+    }
+
     // Set global fallback to 0
     nrHelper->SetAttribute("InitMaxUesPerCell", UintegerValue(0));
-    nrHelper->SetAttribute("InitMinRsrpDbm",    DoubleValue(-120.0));
-    nrHelper->SetAttribute("InitRetryInterval", TimeValue(Seconds(2.0)));
+    nrHelper->SetAttribute("InitMinRsrpDbm",    DoubleValue(initMinRsrpDbm));
+    nrHelper->SetAttribute("InitRetryInterval", TimeValue(Seconds(initRetryIntervalSec)));
+    nrHelper->SetAttribute("InitAttachLogging", BooleanValue(enableSetupPrints));
+
     // ------------------------------------------------------------
+    // INITIAL backhaul-aware preload for attach/retry-attach
+    // This makes t=0 attach and later retries see the current NTN backhaul state.
+    // ------------------------------------------------------------
+    if (enableSatBackhaulMonitor && satBackhaulCtx)
+    {
+        satBackhaulCtx->initAttachNrHelper = nrHelper;
+
+        // Apply current backhaul state NOW, but do not write a log line at t=0
+        ApplySatelliteBackhaulState(satBackhaulCtx.get(), false);
+    }
+
     // S1 attach
     nrHelper->AttachToMaxRsrpGnb(groundNrDevsS1, allGnbNrDevs);
 
     // S2 late attach
-    
+    Time tLateAttach = Seconds(groundAttachDelay);
     Simulator::Schedule(tLateAttach, [nrHelper, groundNrDevsS2, allGnbNrDevs]() {
         nrHelper->AttachToMaxRsrpGnb(groundNrDevsS2, allGnbNrDevs);
     });
 
-    for (uint32_t i = 0; i < allGnbNodes.GetN(); ++i)
+    if (enableSetupPrints)
     {
-        Ptr<Node> n = allGnbNodes.Get(i);
-        std::cout << "Node " << n->GetId() << " devices:\n";
-        for (uint32_t d = 0; d < n->GetNDevices(); ++d)
+        for (uint32_t i = 0; i < allGnbNodes.GetN(); ++i)
         {
-            Ptr<NetDevice> dev = n->GetDevice(d);
-            std::cout << "  dev " << d
-                    << " type=" << dev->GetInstanceTypeId().GetName() << "\n";
+            Ptr<Node> n = allGnbNodes.Get(i);
+            std::cout << "Node " << n->GetId() << " devices:\n";
+            for (uint32_t d = 0; d < n->GetNDevices(); ++d)
+            {
+                Ptr<NetDevice> dev = n->GetDevice(d);
+                std::cout << "  dev " << d
+                        << " type=" << dev->GetInstanceTypeId().GetName() << "\n";
+            }
         }
     }
 
@@ -1481,16 +2553,16 @@ main(int argc, char* argv[])
 
     // Start/stop times
     xrDlSinks.Start(Seconds(1.0));
-    xrDlSinks.Stop(simTime + Seconds(15));
+    xrDlSinks.Stop(simulationStopTime);
 
     xrDlSenders.Start(Seconds(2.0));
-    xrDlSenders.Stop(simTime + Seconds(10));
+    xrDlSenders.Stop(simulationStopTime);
 
     xrUlSinks.Start(Seconds(1.0));
-    xrUlSinks.Stop(simTime + Seconds(15));
+    xrUlSinks.Stop(simulationStopTime);
 
     xrUlSenders.Start(Seconds(3.0));
-    xrUlSenders.Stop(simTime + Seconds(15));
+    xrUlSenders.Stop(simulationStopTime);
 
     // Ground UEs traffic
     uint16_t groundBasePort = 20000;
@@ -1509,8 +2581,7 @@ main(int argc, char* argv[])
         gdl.localPortEnd   = port;
         voiceRule->Add(gdl);
 
-
-        Simulator::Schedule(tS2Qos,
+        Simulator::Schedule(tLateAttach,
             [nrHelper, gUeDev, voiceFlow, voiceRule]() {
                 nrHelper->ActivateDedicatedQosFlow(gUeDev, voiceFlow, voiceRule);
             });
@@ -1528,10 +2599,10 @@ main(int argc, char* argv[])
     }
 
     ueAppsS2.Start(Seconds(1));
-    groundRemoteAppsS2.Start(tS2Qos + Seconds(0.5));;
+    groundRemoteAppsS2.Start(tLateAttach + Seconds(0.5));
 
-    groundRemoteAppsS2.Stop(simTime + Seconds(10));
-    ueAppsS2.Stop(simTime + Seconds(15));
+    groundRemoteAppsS2.Stop(simulationStopTime);
+    ueAppsS2.Stop(simulationStopTime);
 
 
 
@@ -1563,7 +2634,7 @@ main(int argc, char* argv[])
         }
         else if (useRsrp == true)
         {
-            defaultLmTid = TypeId::LookupByName("ns3::OranLmNr2NrRsrpHandoverWithCellLoad");
+            defaultLmTid = TypeId::LookupByName("ns3::OranLmNr2NrRsrpHandoverWithTnNtn");
         }
 
         if (useTorch)
@@ -1582,15 +2653,30 @@ main(int argc, char* argv[])
 
         if (useRsrp)
         {
-            Ptr<OranLmNr2NrRsrpHandoverWithCellLoad> rsrpLm =
-                DynamicCast<OranLmNr2NrRsrpHandoverWithCellLoad>(defaultLm);
+            Ptr<OranLmNr2NrRsrpHandoverWithTnNtn> rsrpLm =
+                DynamicCast<OranLmNr2NrRsrpHandoverWithTnNtn>(defaultLm);
+
             if (rsrpLm)
             {
                 g_rsrpLm = rsrpLm;
+
+                if (enableDecisionCsv)
+                {
+                    g_rsrpLm->SetDecisionCsvFilename(ns3_dir + "ml-ho-dataset.csv");
+                }
+
                 for (uint32_t i = 0; i < tnGnbNrDevs.GetN(); ++i)
                 {
                     Ptr<NrGnbNetDevice> gnb = DynamicCast<NrGnbNetDevice>(tnGnbNrDevs.Get(i));
                     rsrpLm->SetCellCapacity(gnb->GetCellId(), maxUesPerCellTn);
+                    rsrpLm->SetCellIsNtn(gnb->GetCellId(), false);
+                }
+
+                for (uint32_t i = 0; i < ntnGnbNrDevs.GetN(); ++i)
+                {
+                    Ptr<NrGnbNetDevice> gnb = DynamicCast<NrGnbNetDevice>(ntnGnbNrDevs.Get(i));
+                    rsrpLm->SetCellCapacity(gnb->GetCellId(), maxUesPerCellNtn);
+                    rsrpLm->SetCellIsNtn(gnb->GetCellId(), true);
                 }
             }
         }
@@ -1633,7 +2719,8 @@ main(int argc, char* argv[])
         {
             Ptr<OranReporterLocation> locationReporter = CreateObject<OranReporterLocation>();
             Ptr<OranReporterNrUeCellInfo> nrUeCellInfoReporter = CreateObject<OranReporterNrUeCellInfo>();
-            Ptr<OranReporterAppLoss> appLossReporter = CreateObject<OranReporterAppLoss>();
+            Ptr<OranReporterAppLoss> appLossReporter =
+                enableOranAppLossReports ? CreateObject<OranReporterAppLoss>() : nullptr;
             Ptr<OranReporterNrUeRsrpRsrq> rsrpRsrqReporter = CreateObject<OranReporterNrUeRsrpRsrq>();
             Ptr<OranE2NodeTerminatorNrUe> nrUeTerminator = CreateObject<OranE2NodeTerminatorNrUe>();
 
@@ -1641,11 +2728,14 @@ main(int argc, char* argv[])
             nrUeCellInfoReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
             rsrpRsrqReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
 
-            appLossReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
-            xrDlSenders.Get(idx)->TraceConnectWithoutContext("Tx",
-                                                            MakeCallback(&ns3::OranReporterAppLoss::AddTx, appLossReporter));
-            xrDlSinks.Get(idx)->TraceConnectWithoutContext("Rx",
-                                                        MakeCallback(&ns3::OranReporterAppLoss::AddRx, appLossReporter));
+            if (enableOranAppLossReports)
+            {
+                appLossReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
+                xrDlSenders.Get(idx)->TraceConnectWithoutContext(
+                    "Tx", MakeCallback(&ns3::OranReporterAppLoss::AddTx, appLossReporter));
+                xrDlSinks.Get(idx)->TraceConnectWithoutContext(
+                    "Rx", MakeCallback(&ns3::OranReporterAppLoss::AddRx, appLossReporter));
+            }
           
             //The UES1’s physical layer (NrUePhy) periodically measures:RSRP (signal strength),
                                                                     //RSRQ (signal quality),
@@ -1681,7 +2771,10 @@ main(int argc, char* argv[])
             nrUeTerminator->AddReporter(locationReporter);
             nrUeTerminator->AddReporter(nrUeCellInfoReporter);
             nrUeTerminator->AddReporter(rsrpRsrqReporter);
-            nrUeTerminator->AddReporter(appLossReporter);
+            if (enableOranAppLossReports)
+            {
+                nrUeTerminator->AddReporter(appLossReporter);
+            }
             nrUeTerminator->SetAttribute("TransmissionDelayRv",
                                          StringValue("ns3::ConstantRandomVariable[Constant=" +
                                                      std::to_string(txDelay) + "]"));
@@ -1695,7 +2788,8 @@ main(int argc, char* argv[])
         {
             Ptr<OranReporterLocation> locationReporter = CreateObject<OranReporterLocation>();
             Ptr<OranReporterNrUeCellInfo> nrUeCellInfoReporter = CreateObject<OranReporterNrUeCellInfo>();
-            Ptr<OranReporterAppLoss> appLossReporter = CreateObject<OranReporterAppLoss>();
+            Ptr<OranReporterAppLoss> appLossReporter =
+                enableOranAppLossReports ? CreateObject<OranReporterAppLoss>() : nullptr;
             Ptr<OranReporterNrUeRsrpRsrq> rsrpRsrqReporter = CreateObject<OranReporterNrUeRsrpRsrq>();
             Ptr<OranE2NodeTerminatorNrUe> nrUeTerminator = CreateObject<OranE2NodeTerminatorNrUe>();
 
@@ -1703,12 +2797,14 @@ main(int argc, char* argv[])
             nrUeCellInfoReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
             rsrpRsrqReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
 
-            // AppLoss: use GROUND traffic apps
-            appLossReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
-            groundRemoteAppsS2.Get(idx)->TraceConnectWithoutContext(
-                "Tx", MakeCallback(&ns3::OranReporterAppLoss::AddTx, appLossReporter));
-            ueAppsS2.Get(idx)->TraceConnectWithoutContext(
-                "Rx", MakeCallback(&ns3::OranReporterAppLoss::AddRx, appLossReporter));
+            if (enableOranAppLossReports)
+            {
+                appLossReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
+                groundRemoteAppsS2.Get(idx)->TraceConnectWithoutContext(
+                    "Tx", MakeCallback(&ns3::OranReporterAppLoss::AddTx, appLossReporter));
+                ueAppsS2.Get(idx)->TraceConnectWithoutContext(
+                    "Rx", MakeCallback(&ns3::OranReporterAppLoss::AddRx, appLossReporter));
+            }
 
             // RSRP/RSRQ measurements from the ground UE PHY
             for (uint32_t netDevIdx = 0; netDevIdx < groundUeNodesS2.Get(idx)->GetNDevices(); ++netDevIdx)
@@ -1742,7 +2838,10 @@ main(int argc, char* argv[])
             nrUeTerminator->AddReporter(locationReporter);
             nrUeTerminator->AddReporter(nrUeCellInfoReporter);
             nrUeTerminator->AddReporter(rsrpRsrqReporter);
-            nrUeTerminator->AddReporter(appLossReporter);
+            if (enableOranAppLossReports)
+            {
+                nrUeTerminator->AddReporter(appLossReporter);
+            }
 
             nrUeTerminator->SetAttribute("TransmissionDelayRv",
                                         StringValue("ns3::ConstantRandomVariable[Constant=" +
@@ -1753,7 +2852,7 @@ main(int argc, char* argv[])
             nrUeTerminator->Attach(groundUeNodesS2.Get(idx));
 
             // Activate E2 only after the UE is attached (small guard offset)
-            Simulator::Schedule(tLateAttach + Seconds(2.5),
+            Simulator::Schedule(tLateAttach + Seconds(1.0),
                                 &OranE2NodeTerminatorNrUe::Activate,
                                 nrUeTerminator);
         }
@@ -1762,17 +2861,24 @@ main(int argc, char* argv[])
         for (uint32_t idx = 0; idx < tnGnbNodes.GetN(); ++idx)
         {
             Ptr<OranReporterLocation> locationReporter = CreateObject<OranReporterLocation>();
-            Ptr<OranReporterNrCellLoad> nrCellLoadReporter = CreateObject<OranReporterNrCellLoad>();
+            Ptr<OranReporterNrCellLoad> nrCellLoadReporter =
+                enableOranCellLoadReports ? CreateObject<OranReporterNrCellLoad>() : nullptr;
             Ptr<OranE2NodeTerminatorNrGnb> nrGnbTerminator = CreateObject<OranE2NodeTerminatorNrGnb>();
 
             locationReporter->SetAttribute("Terminator", PointerValue(nrGnbTerminator));
-            nrCellLoadReporter->SetAttribute("Terminator", PointerValue(nrGnbTerminator));
+            if (enableOranCellLoadReports)
+            {
+                nrCellLoadReporter->SetAttribute("Terminator", PointerValue(nrGnbTerminator));
+            }
 
             auto dev = tnGnbNrDevs.Get(idx)->GetObject<NrGnbNetDevice>();
 
-            dev->GetMac(bwpDl)->TraceConnectWithoutContext(
-                "DlScheduling",
-                MakeCallback(&ns3::OranReporterNrCellLoad::DlScheduled, nrCellLoadReporter));
+            if (enableOranCellLoadReports)
+            {
+                dev->GetMac(0)->TraceConnectWithoutContext(
+                    "DlScheduling",
+                    MakeCallback(&ns3::OranReporterNrCellLoad::DlScheduled, nrCellLoadReporter));
+            }
 
             nrGnbTerminator->SetAttribute("NearRtRic", PointerValue(nearRtRic));
             nrGnbTerminator->SetAttribute("RegistrationIntervalRv",
@@ -1782,8 +2888,56 @@ main(int argc, char* argv[])
                                                     std::to_string(e2SendInterval) + "]"));
 
             nrGnbTerminator->AddReporter(locationReporter);
-            nrGnbTerminator->AddReporter(nrCellLoadReporter);
+            if (enableOranCellLoadReports)
+            {
+                nrGnbTerminator->AddReporter(nrCellLoadReporter);
+            }
             nrGnbTerminator->Attach(tnGnbNodes.Get(idx));
+            nrGnbTerminator->SetAttribute("TransmissionDelayRv",
+                                        StringValue("ns3::ConstantRandomVariable[Constant=" +
+                                                    std::to_string(txDelay) + "]"));
+
+            Simulator::Schedule(Seconds(1.5),
+                                &OranE2NodeTerminatorNrGnb::Activate,
+                                nrGnbTerminator);
+        }
+
+        // NTN gNB reporters
+        for (uint32_t idx = 0; idx < ntnGnbNodes.GetN(); ++idx)
+        {
+            Ptr<OranReporterLocation> locationReporter = CreateObject<OranReporterLocation>();
+            Ptr<OranReporterNrCellLoad> nrCellLoadReporter =
+                enableOranCellLoadReports ? CreateObject<OranReporterNrCellLoad>() : nullptr;
+            Ptr<OranE2NodeTerminatorNrGnb> nrGnbTerminator = CreateObject<OranE2NodeTerminatorNrGnb>();
+
+            locationReporter->SetAttribute("Terminator", PointerValue(nrGnbTerminator));
+            if (enableOranCellLoadReports)
+            {
+                nrCellLoadReporter->SetAttribute("Terminator", PointerValue(nrGnbTerminator));
+            }
+
+            auto dev = ntnGnbNrDevs.Get(idx)->GetObject<NrGnbNetDevice>();
+
+            if (enableOranCellLoadReports)
+            {
+                dev->GetMac(1)->TraceConnectWithoutContext(
+                    "DlScheduling",
+                    MakeCallback(&ns3::OranReporterNrCellLoad::DlScheduled, nrCellLoadReporter));
+            }
+
+            nrGnbTerminator->SetAttribute("NearRtRic", PointerValue(nearRtRic));
+            nrGnbTerminator->SetAttribute("RegistrationIntervalRv",
+                                        StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+            nrGnbTerminator->SetAttribute("SendIntervalRv",
+                                        StringValue("ns3::ConstantRandomVariable[Constant=" +
+                                                    std::to_string(e2SendInterval) + "]"));
+
+            nrGnbTerminator->AddReporter(locationReporter);
+            if (enableOranCellLoadReports)
+            {
+                nrGnbTerminator->AddReporter(nrCellLoadReporter);
+            }
+            nrGnbTerminator->Attach(ntnGnbNodes.Get(idx));
             nrGnbTerminator->SetAttribute("TransmissionDelayRv",
                                         StringValue("ns3::ConstantRandomVariable[Constant=" +
                                                     std::to_string(txDelay) + "]"));
@@ -1796,28 +2950,42 @@ main(int argc, char* argv[])
     }
     // ORAN END
 
-    // Erase the trace files if they exist
-    std::ofstream posOutFile1(s_ueS1PositionTraceFile, std::ios_base::trunc);
-    posOutFile1.close();
-
-    std::ofstream posOutFile3(s_ueS2PositionTraceFile, std::ios_base::trunc);
-    posOutFile3.close();
-
-    std::ofstream hoOutFile(s_handoverTraceFile, std::ios_base::trunc);
-    hoOutFile.close();
+    if (enableSatBackhaulMonitor && satBackhaulCtx)
+    {
+        Simulator::Schedule(Seconds(0.1),
+                            &LogSatelliteBackhaul,
+                            satBackhaulCtx.get());
+    }
 
     if (enablePositionTrace)
     {
+        // Erase the position trace files if they exist.
+        std::ofstream posOutFile1(s_ueS1PositionTraceFile, std::ios_base::trunc);
+        posOutFile1.close();
+
+        std::ofstream posOutFile2(s_uavPositionTraceFile, std::ios_base::trunc);
+        posOutFile2.close();
+
+        std::ofstream posOutFile3(s_ueS2PositionTraceFile, std::ios_base::trunc);
+        posOutFile3.close();
+
         // Start tracing node locations
-        Simulator::Schedule(Seconds(1), &TraceUeS1Positions, groundUeNodesS1);
+        Simulator::Schedule(Seconds(g_positionTraceIntervalSec), &TraceUeS1Positions, groundUeNodesS1);
+        Simulator::Schedule(Seconds(g_positionTraceIntervalSec), &TraceUavPositions, ntnGnbNodes);
 
         /* Start tracing UE Set 2 only when they actually start */
         Simulator::Schedule(tLateAttach, &TraceUeS2Positions, groundUeNodesS2);
     }
 
-    // Connect to handover trace so we know when a handover is successfully performed
-    Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverEndOk",
-                    MakeCallback(&NotifyHandoverEndOkGnb));
+    if (enableHandoverTrace)
+    {
+        std::ofstream hoOutFile(s_handoverTraceFile, std::ios_base::trunc);
+        hoOutFile.close();
+
+        // Connect to handover trace so we know when a handover is successfully performed
+        Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverEndOk",
+                        MakeCallback(&NotifyHandoverEndOkGnb));
+    }
 
     if (enableRsrpTrace)
     {
@@ -1914,7 +3082,7 @@ main(int argc, char* argv[])
     Ptr<NrRadioEnvironmentMapHelper> remHelper = CreateObject<NrRadioEnvironmentMapHelper>();
     if (remMode)
     {
-        remHelper->SetAttribute("SimTag", StringValue("tn-start"));
+        remHelper->SetAttribute("SimTag", StringValue("tn-ntn-start"));
 
         // Whole scenario area:
         // TN area  : x = [0,1000]
@@ -1934,27 +3102,30 @@ main(int argc, char* argv[])
         // Use one UE from set 1 as the receiver reference
         Ptr<NetDevice> rrdDevice = groundNrDevsS1.Get(0);
 
-        // DL BWP in the FDD setup
-        uint8_t bwpId = bwpDl;   // = 0
+        // BWP1 = DL BWP in your setup
+        uint8_t bwpId = 1;
 
         // Create REM at t = 10 s
         Simulator::Schedule(Seconds(10.0),
                             &NrRadioEnvironmentMapHelper::CreateRem,
                             remHelper,
-                            allGnbNrDevs, // transmitters: TN gNBs
+                            allGnbNrDevs, // transmitters: TN + NTN/UAV gNBs
                             rrdDevice,    // receiver
                             bwpId);
     }
 
-    if (enableFlowMonitor)
-    {
-        std::ofstream flowOutFile(s_flowStatTraceFile, std::ios_base::trunc);
-        flowOutFile << "Time,Role,IMSI\n";
-        flowOutFile.close();
-    }
+    // std::ofstream flowOutFile(s_flowStatTraceFile, std::ios_base::trunc);
+    // flowOutFile << "Time,Role,IMSI\n";
+    // flowOutFile.close();
 
     // Tell the simulator how long to run
-    Simulator::Stop(simTime + Seconds(15));
+    if (enableProgress)
+    {
+        Simulator::ScheduleNow(&PrintSimulationProgress,
+                               Seconds(std::max(0.1, progressIntervalSec)),
+                               simulationStopTime);
+    }
+    Simulator::Stop(simulationStopTime);
     Simulator::Run();
     if (enableFlowMonitor)
     {
@@ -1966,8 +3137,10 @@ main(int argc, char* argv[])
 
     // if (g_oldCoutBuf) { std::cout.rdbuf(g_oldCoutBuf); }
     // if (g_uncondFile.is_open()) { g_uncondFile.close(); }
-    if (g_fhTraceFile.is_open()) { g_fhTraceFile.close(); }
-    if (g_airTraceFile.is_open()) { g_airTraceFile.close(); }   
+    // if (g_fhTraceFile.is_open()) { g_fhTraceFile.close(); }
+    // if (g_airTraceFile.is_open()) { g_airTraceFile.close(); }   
+
+    if (satBackhaulOut.is_open()) { satBackhaulOut.close(); }
 
     Simulator::Destroy();
     return 0;

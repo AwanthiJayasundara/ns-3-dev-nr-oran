@@ -10,7 +10,12 @@
 #include "ns3/nr-radio-environment-map-helper.h"
 
 #include "ns3/nr-gnb-net-device.h" 
-#include "ns3/nr-ue-net-device.h"    
+#include "ns3/nr-ue-net-device.h"   
+
+#include "ns3/packet-sink-helper.h"
+#include "ns3/traffic-generator-helper.h"
+#include "ns3/traffic-generator-3gpp-generic-video.h"
+#include "ns3/traffic-generator-ngmn-voip.h"
 
 // NS-3 headers
 #include "ns3/flow-monitor-module.h"
@@ -30,10 +35,10 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavUeHandoverCellLoadTraffic");
+NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavUeHandoverCellLoadFh");
 
 /**
- * Example of ORAN-driven NR multi-cell UAV handover with QoS monitoring (5G-LENA).
+ * Usage example of the ORAN NR models for fronthaul-aware UAV and ground UE handover.
  *
  * Minimum required versions for reproducibility:
  *   - ns-3 version: 3.39 or later
@@ -66,12 +71,44 @@ NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavUeHandoverCellLoadTraffic");
  * 
  * Cell load capacity is set so no intial attachement or handover will be triggered for a 
  * gNB that has already reached the maximum number of UEs. 
+ * 
+ * NR can split the spectrum into Bandwidth Parts (BWPs) and configure each one differently.
+ * FDM (Frequency Division Multiplexing) Split the total spectrum into different frequency 
+ * pieces Each piece can serve a different purpose
+ * keep everything in one BWP because video can dominate resources voice packets may get delayed
+ * uplink-heavy traffic may suffer if DL traffic takes most capacity
+ * scheduler becomes less efficient
+ * ////////////////////////////
+ * This scenario combines:
+ *   (1) application-level traffic models (video / voice-like generators), and
+ *   (2) radio-level traffic steering (different QoS flows mapped to different BWPs).
+ * 
+ * UAV downlink (remoteHost -> UAV):
+ *   Uses TrafficGenerator3gppGenericVideo, so packets are generated according
+ *   to a video-like traffic model instead of a generic OnOff source.
+ *   This is still simulated UDP traffic, but its timing/rate behavior is meant
+ *   to resemble video service traffic more closely.
+ *
+ * UAV uplink (UAV -> remoteHost):
+ *   Also uses TrafficGenerator3gppGenericVideo, but with a lower data rate/FPS
+ *   than downlink. This represents lighter video-like uplink traffic from the UAV.
+ * 
+ * ofdm = true and schedKind="RR" are set by default to use OFDMA with Round Robin scheduling,
+ * for fh control in 7.2x split : https://cttc-lena.gitlab.io/nr/manual/nr-module.html#fronthaul-control
+ *
+ *   RequiredFhDlThroughput reports the required DL fronthaul throughput per BWP.
+ *   UsedAirRbs reports how many DL air-interface RBs were actually used per BWP.
+ *   These traces help compare fronthaul demand versus actual radio resource use.
+ * 
+ * In this scenario, when 5G-LENA Fronthaul Control is enabled, the fronthaul model 
+ * assumes functional split 7.2x.
+ * after this PDR is much less
  */
 
 const static float GNB_HEIGHT = 25;
 
 // Variables
-uint32_t numUAVs = 25;
+uint32_t numUAVs = 22;
 uint32_t numGnbs = 5;
 uint32_t numGroundUes = 20;   // ground UEs in addition to UAVs
 
@@ -82,16 +119,26 @@ Time management_interval = Seconds(4);
 std::vector<Ipv4Address> user_ip;
 
 // Vectors with the most recent metrics for each UAV
-std::vector<double> user_delay;
-std::vector<double> user_jitter;
-std::vector<double> user_throughput;
-std::vector<double> user_pdr;
+// DL (existing)
+std::vector<double> user_delay_dl;
+std::vector<double> user_jitter_dl;
+std::vector<double> user_throughput_dl;
+std::vector<double> user_pdr_dl;
+
+// UL (NEW)
+std::vector<double> user_delay_ul;
+std::vector<double> user_jitter_ul;
+std::vector<double> user_throughput_ul;
+std::vector<double> user_pdr_ul;
 
 // // static std::string s_trafficTraceFile;
 static std::string s_positionTraceFile;
 static std::string s_handoverTraceFile;
 static std::string s_flowStatTraceFile;
 static std::string ns3_dir;
+//fh control trace files
+static std::ofstream g_fhTraceFile;
+static std::ofstream g_airTraceFile;
 
 // --- ns-3 NS_LOG output redirection (LogComponentEnable -> file via std::clog) ---
 static std::ofstream g_nsLogFile;
@@ -133,6 +180,36 @@ TraceRsrpRsrqSinr(Ptr<OutputStreamWrapper> stream,
                          << static_cast<uint32_t>(componentCarrierId) << std::endl;
 }
 
+void
+ReportFhTrace(const SfnSf& sfn, uint16_t physCellId, uint16_t bwpId, uint64_t reqFh)
+{
+    if (!g_fhTraceFile.is_open())
+    {
+        g_fhTraceFile.open(ns3_dir + "fh-trace.txt", std::ios::out | std::ios::trunc);
+        g_fhTraceFile << "Time,CellId,BwpId,RequiredFhDlThroughput\n";
+    }
+
+    g_fhTraceFile << Simulator::Now().GetSeconds() << ","
+                  << physCellId << ","
+                  << bwpId << ","
+                  << reqFh << "\n";
+}
+
+void
+ReportAiTrace(const SfnSf& sfn, uint16_t physCellId, uint16_t bwpId, uint32_t airRbs)
+{
+    if (!g_airTraceFile.is_open())
+    {
+        g_airTraceFile.open(ns3_dir + "air-rbs-trace.txt", std::ios::out | std::ios::trunc);
+        g_airTraceFile << "Time,CellId,BwpId,UsedAirRbs\n";
+    }
+
+    g_airTraceFile << Simulator::Now().GetSeconds() << ","
+                   << physCellId << ","
+                   << bwpId << ","
+                   << airRbs << "\n";
+}
+
 // Helper function that returns the UAV id associated with a specific IP
 int
 get_user_id_from_ipv4(Ipv4Address ip)
@@ -166,11 +243,19 @@ ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
             continue;
         }
 
-        Ipv4FlowClassifier::FiveTuple fiveTuple = classing->FindFlow(stats.first);
-        if (!ue_network_mask.IsMatch(ue_network, fiveTuple.destinationAddress))
-            continue;
+        // Ipv4FlowClassifier::FiveTuple fiveTuple = classing->FindFlow(stats.first);
+        // if (!ue_network_mask.IsMatch(ue_network, fiveTuple.destinationAddress))
+        //     continue;
 
-        Ipv4Address ueIp = fiveTuple.destinationAddress; // for your DL traffic
+        // Ipv4Address ueIp = fiveTuple.destinationAddress; // for your DL traffic
+        Ipv4FlowClassifier::FiveTuple fiveTuple = classing->FindFlow(stats.first);
+
+        bool isDl = ue_network_mask.IsMatch(ue_network, fiveTuple.destinationAddress); // remoteHost -> UE
+        bool isUl = ue_network_mask.IsMatch(ue_network, fiveTuple.sourceAddress);      // UE -> remoteHost
+        if (!(isDl || isUl)) continue;
+
+        // UE IP = the UE side of the flow
+        Ipv4Address ueIp = isDl ? fiveTuple.destinationAddress : fiveTuple.sourceAddress;
         uint64_t imsi = LookupImsiFromIp(ueIp);
         const char* role = LookupRoleFromImsi(imsi);
 
@@ -211,26 +296,43 @@ ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
                 // << Throughput
                 << "\n";
 
-        int receiver_id = get_user_id_from_ipv4(fiveTuple.destinationAddress);
+        int receiver_id = get_user_id_from_ipv4(ueIp);
         if (receiver_id != -1)
         {
-            user_delay[receiver_id] = Delay;
-            user_jitter[receiver_id] = Jitter;
-            user_throughput[receiver_id] = Throughput;
-            user_pdr[receiver_id] = PDR;
+            if (isDl)
+            {
+                user_delay_dl[receiver_id] = Delay;
+                user_jitter_dl[receiver_id] = Jitter;
+                user_throughput_dl[receiver_id] = Throughput;
+                user_pdr_dl[receiver_id] = PDR;
+            }
+            else if (isUl)
+            {
+                user_delay_ul[receiver_id] = Delay;
+                user_jitter_ul[receiver_id] = Jitter;
+                user_throughput_ul[receiver_id] = Throughput;
+                user_pdr_ul[receiver_id] = PDR;
+            }
         }
     }
 
     std::ofstream qos_vs_time;
     qos_vs_time.open(ns3_dir + "qos-vs-time.txt", std::ofstream::out | std::ofstream::app);
+    double t = Simulator::Now().GetSeconds();
     for (uint32_t ue = 0; ue < numUAVs; ++ue)
     {
-        qos_vs_time << Simulator::Now().GetSeconds() << "," << ue << "," << user_delay[ue] << ","
-                    << user_jitter[ue] << "," << user_throughput[ue] << "," << user_pdr[ue]
-                    << std::endl;
+        // DL line
+        qos_vs_time << t << "," << ue << ",DL,"
+                    << user_delay_dl[ue] << "," << user_jitter_dl[ue] << ","
+                    << user_throughput_dl[ue] << "," << user_pdr_dl[ue] << "\n";
+
+        // UL line
+        qos_vs_time << t << "," << ue << ",UL,"
+                    << user_delay_ul[ue] << "," << user_jitter_ul[ue] << ","
+                    << user_throughput_ul[ue] << "," << user_pdr_ul[ue] << "\n";
     }
 
-    flowMon->ResetAllStats();
+    //flowMon->ResetAllStats();
 
     Simulator::Schedule(management_interval, ThroughputMonitor, fmhelper, flowMon);
 }
@@ -432,6 +534,65 @@ GetTopLevelSourceDir()
     return "";
 }
 
+static void
+WriteFlowReportToFile(Ptr<FlowMonitor> monitor,
+                      FlowMonitorHelper* helper,
+                      const std::string& filename)
+{
+    monitor->CheckForLostPackets();
+    Ptr<Ipv4FlowClassifier> classifier =
+        DynamicCast<Ipv4FlowClassifier>(helper->GetClassifier());
+
+    std::ofstream out(filename, std::ios::out | std::ios::trunc);
+    auto stats = monitor->GetFlowStats();
+
+    for (const auto& kv : stats)
+    {
+        uint32_t flowId = kv.first;
+        const auto& st  = kv.second;
+        Ipv4FlowClassifier::FiveTuple t = classifier->FindFlow(flowId);
+
+        std::string proto = (t.protocol == 6) ? "TCP" : (t.protocol == 17 ? "UDP" : "OTHER");
+
+        out << "Flow " << flowId << " (" << t.sourceAddress << ":" << t.sourcePort
+            << " -> " << t.destinationAddress << ":" << t.destinationPort
+            << ") proto " << proto << "\n";
+
+        out << "  Tx Packets: " << st.txPackets << "\n";
+        out << "  Tx Bytes:   " << st.txBytes << "\n";
+
+        // Offered rate (Tx)
+        double txDuration = (st.timeLastTxPacket > st.timeFirstTxPacket)
+            ? (st.timeLastTxPacket.GetSeconds() - st.timeFirstTxPacket.GetSeconds())
+            : 0.0;
+        double txOfferedMbps = (txDuration > 0)
+            ? (st.txBytes * 8.0 / txDuration / 1e6)
+            : 0.0;
+
+        out << "  TxOffered:  " << txOfferedMbps << " Mbps\n";
+        out << "  Rx Bytes:   " << st.rxBytes << "\n";
+
+        // Throughput (Rx)
+        double rxDuration = (st.timeLastRxPacket > st.timeFirstRxPacket)
+            ? (st.timeLastRxPacket.GetSeconds() - st.timeFirstRxPacket.GetSeconds())
+            : 0.0;
+        double thrMbps = (rxDuration > 0)
+            ? (st.rxBytes * 8.0 / rxDuration / 1e6)
+            : 0.0;
+
+        out << "  Throughput: " << thrMbps << " Mbps\n";
+
+        double meanDelayMs  = (st.rxPackets > 0) ? (1000.0 * st.delaySum.GetSeconds()  / st.rxPackets) : 0.0;
+        double meanJitterMs = (st.rxPackets > 0) ? (1000.0 * st.jitterSum.GetSeconds() / st.rxPackets) : 0.0;
+
+        out << "  Mean delay:  " << meanDelayMs  << " ms\n";
+        out << "  Mean jitter:  " << meanJitterMs << " ms\n";
+        out << "  Rx Packets: " << st.rxPackets << "\n";
+    }
+
+    out.close();
+}
+
 int
 main(int argc, char* argv[])
 {
@@ -455,8 +616,16 @@ main(int argc, char* argv[])
     double groundAttachDelay = 6.0; // seconds
     ///£
     // Scheduler CLI knobs (safe defaults to a concrete scheduler)
-    bool ofdma = false;            // true=OFDMA, false=TDMA
-    std::string schedKind = "RR"; // RR | PF | MR | Qos
+    bool ofdma = true;            // true=OFDMA, false=TDMA
+    //In this scenario, BWPs already separate the main service types (voice, UAV DL, UAV UL).
+    // Therefore, QoS scheduling is less critical than in a mixed-traffic single-BWP setup.
+    // QoS scheduler becomes more useful when multiple traffic classes compete within the same BWP.
+    std::string schedKind = "PF"; // RR | PF | MR | Qos
+    // UAV UL is configured lighter than UAV DL: 1 Mbps / 30 fps vs 5 Mbps / 60 fps
+    double uavDlVideoRateMbps = 2.0;
+    uint16_t uavDlVideoFps = 30;
+    double uavUlVideoRateMbps = 0.5;
+    uint16_t uavUlVideoFps = 15;
 
     CommandLine cmd;
     cmd.AddValue("verbose", "Enable printing SQL queries results", verbose);
@@ -617,6 +786,9 @@ main(int argc, char* argv[])
 
     std::string errorModel = "ns3::NrEesmIrT2";
 
+    nrHelper->SetDlErrorModel(errorModel);
+    nrHelper->SetUlErrorModel(errorModel);
+
     // Both DL and UL AMC will have the same model behind.
     nrHelper->SetGnbDlAmcAttribute("AmcModel", EnumValue(NrAmc::ErrorModel));
     nrHelper->SetGnbUlAmcAttribute("AmcModel", EnumValue(NrAmc::ErrorModel));
@@ -650,26 +822,67 @@ main(int argc, char* argv[])
     // Noise figure for the UE
     nrHelper->SetUePhyAttribute("NoiseFigure", DoubleValue(ueNoiseFigure));
 
+    nrHelper->EnableFhControl();
+    nrHelper->SetFhControlAttribute("FhControlMethod", StringValue("OptimizeRBs"));
+    nrHelper->SetFhControlAttribute("FhCapacity", UintegerValue(2000));   // Mbps, example
+    nrHelper->SetFhControlAttribute("OverheadDyn", UintegerValue(32));    // or 100 if you want heavier overhead
+
 
     // ---- TDD single-carrier setup (ONE band, ONE BWP) ----
+    // bool enableFading = true;
+    // uint8_t bandMask = NrChannelHelper::INIT_PROPAGATION |
+    //                 (enableFading ? NrChannelHelper::INIT_FADING : 0);
+
+    // double centralFrequency = 4e9;
+    // double bandBw = 20e6;
+
+    // CcBwpCreator ccBwpCreator;
+    // CcBwpCreator::SimpleOperationBandConf conf(centralFrequency, bandBw, 1);
+    // OperationBandInfo band = ccBwpCreator.CreateOperationBandContiguousCc(conf);
+
+    // std::vector<std::reference_wrapper<OperationBandInfo>> bands;
+    // bands.emplace_back(std::ref(band));
+
+    // channelHelper->AssignChannelsToBands(bands, bandMask);
+
+    // // BWP 0
+    // BandwidthPartInfoPtrVector Bwps = CcBwpCreator::GetAllBwps(bands);
+    ////////////////////////////////
+    BandwidthPartInfoPtrVector allBwps;
+
+    // ---- TDD + FDD setup (BWP0=TDD, BWP1=FDD-DL, BWP2=FDD-UL) ----
     bool enableFading = true;
     uint8_t bandMask = NrChannelHelper::INIT_PROPAGATION |
                     (enableFading ? NrChannelHelper::INIT_FADING : 0);
 
-    double centralFrequency = 4e9;
-    double bandBw = 20e6;
-
     CcBwpCreator ccBwpCreator;
-    CcBwpCreator::SimpleOperationBandConf conf(centralFrequency, bandBw, 1);
-    OperationBandInfo band = ccBwpCreator.CreateOperationBandContiguousCc(conf);
+
+    // Frequencies
+    double centralFrequencyBand1 = 4.0e9;
+    double bandwidthBand1        = 20e6;
+
+    double centralFrequencyBand2 = 4.2e9;
+    double bandwidthBand2        = 20e6;
+
+    // TDD band: 1 BWP
+    CcBwpCreator::SimpleOperationBandConf bandConfTdd(centralFrequencyBand1, bandwidthBand1, 1);
+
+    // FDD band: 2 BWPs (DL + UL)
+    CcBwpCreator::SimpleOperationBandConf bandConfFdd(centralFrequencyBand2, bandwidthBand2, 1);
+    bandConfFdd.m_numBwp = 2;
+
+    OperationBandInfo bandTdd = ccBwpCreator.CreateOperationBandContiguousCc(bandConfTdd);
+    OperationBandInfo bandFdd = ccBwpCreator.CreateOperationBandContiguousCc(bandConfFdd);
 
     std::vector<std::reference_wrapper<OperationBandInfo>> bands;
-    bands.emplace_back(std::ref(band));
+    bands.emplace_back(std::ref(bandTdd));
+    bands.emplace_back(std::ref(bandFdd));
 
     channelHelper->AssignChannelsToBands(bands, bandMask);
 
-    // BWP 0
-    BandwidthPartInfoPtrVector Bwps = CcBwpCreator::GetAllBwps(bands);
+    // BWP0=TDD, BWP1=FDD-DL, BWP2=FDD-UL
+    allBwps = CcBwpCreator::GetAllBwps(bands);
+    ////////////////////////////////
 
 
     Ptr<IdealBeamformingHelper> idealBeamformingHelper = CreateObject<IdealBeamformingHelper>();
@@ -718,9 +931,48 @@ main(int argc, char* argv[])
 
     install_mobility(remoteHostContainer, gnbNodes, uavNodes, groundUeNodes);
 
-    gnbNrDevs = nrHelper->InstallGnbDevice(gnbNodes, Bwps);
-    uavNrDevs = nrHelper->InstallUeDevice(uavNodes, Bwps);
-    groundNrDevs = nrHelper->InstallUeDevice(groundUeNodes, Bwps); 
+    ///////////////////////////////////////////////////////////
+
+    // BWP indices (match the design above)
+    uint32_t bwpTdd     = 0; // Ground
+    uint32_t bwpFddDl   = 1; // UAV downlink
+    uint32_t bwpFddUl   = 2; // UAV uplink
+
+    // Route QoS flows to BWPs (same idea as CTTC example)
+    nrHelper->SetGnbBwpManagerAlgorithmAttribute("GBR_CONV_VOICE", UintegerValue(bwpTdd));
+    nrHelper->SetGnbBwpManagerAlgorithmAttribute("GBR_CONV_VIDEO", UintegerValue(bwpFddDl));
+    nrHelper->SetGnbBwpManagerAlgorithmAttribute("GBR_LIVE_UL_71", UintegerValue(bwpFddUl));//GBR_GAMING
+
+    nrHelper->SetUeBwpManagerAlgorithmAttribute("GBR_CONV_VOICE", UintegerValue(bwpTdd));
+    nrHelper->SetUeBwpManagerAlgorithmAttribute("GBR_CONV_VIDEO", UintegerValue(bwpFddDl));
+    nrHelper->SetUeBwpManagerAlgorithmAttribute("GBR_LIVE_UL_71", UintegerValue(bwpFddUl));
+
+    // Install devices with ALL BWPs (IMPORTANT)
+    gnbNrDevs    = nrHelper->InstallGnbDevice(gnbNodes, allBwps);
+    uavNrDevs    = nrHelper->InstallUeDevice(uavNodes, allBwps);
+    groundNrDevs = nrHelper->InstallUeDevice(groundUeNodes, allBwps);
+    ////////////////////////////////////////////////////////////
+
+    nrHelper->ConfigureFhControl(gnbNrDevs);
+
+    for (auto it = gnbNrDevs.Begin(); it != gnbNrDevs.End(); ++it)
+    {
+        Ptr<NrGnbNetDevice> gnb = DynamicCast<NrGnbNetDevice>(*it);
+        NS_ABORT_MSG_IF(!gnb, "Device is not NrGnbNetDevice");
+
+        gnb->GetNrFhControl()->TraceConnectWithoutContext(
+            "RequiredFhDlThroughput",
+            MakeCallback(&ReportFhTrace));
+
+        gnb->GetNrFhControl()->TraceConnectWithoutContext(
+            "UsedAirRbs",
+            MakeCallback(&ReportAiTrace));
+    }
+
+
+    // gnbNrDevs = nrHelper->InstallGnbDevice(gnbNodes, Bwps);
+    // uavNrDevs = nrHelper->InstallUeDevice(uavNodes, Bwps);
+    // groundNrDevs = nrHelper->InstallUeDevice(groundUeNodes, Bwps); 
 
     // -------- Role map: IMSI -> UAV/GND --------
     g_imsiRole.clear();
@@ -740,14 +992,35 @@ main(int argc, char* argv[])
     }
 
     // TDD pattern (7 DL, 3 UL)
-    static const std::string tddPattern = "DL|DL|DL|DL|DL|DL|DL|UL|UL|UL|";
+
+    // for (uint32_t gnbIndex = 0; gnbIndex < gnbNrDevs.GetN(); ++gnbIndex)
+    // {
+    //     Ptr<NetDevice> gnbDev = gnbNrDevs.Get(gnbIndex);
+    //     Ptr<NrGnbPhy> gnbPhy = nrHelper->GetGnbPhy(gnbDev, 0); // only BWP0 exists now
+    //     gnbPhy->SetAttribute("Pattern", StringValue(tddPattern));
+    // }
+    ////////////////////////////
+    static const std::string tddPattern   = "DL|DL|DL|DL|DL|DL|DL|UL|UL|UL|";
+    static const std::string fddDlPattern = "DL|DL|DL|DL|DL|DL|DL|DL|DL|DL|";
+    static const std::string fddUlPattern = "UL|UL|UL|UL|UL|UL|UL|UL|UL|UL|";
 
     for (uint32_t gnbIndex = 0; gnbIndex < gnbNrDevs.GetN(); ++gnbIndex)
     {
         Ptr<NetDevice> gnbDev = gnbNrDevs.Get(gnbIndex);
-        Ptr<NrGnbPhy> gnbPhy = nrHelper->GetGnbPhy(gnbDev, 0); // only BWP0 exists now
-        gnbPhy->SetAttribute("Pattern", StringValue(tddPattern));
+
+        // BWP0: TDD (ground)
+        nrHelper->GetGnbPhy(gnbDev, 0)->SetAttribute("Pattern", StringValue(tddPattern));
+
+        // BWP1: FDD DL (UAV DL)
+        nrHelper->GetGnbPhy(gnbDev, 1)->SetAttribute("Pattern", StringValue(fddDlPattern));
+
+        // BWP2: FDD UL (UAV UL)
+        nrHelper->GetGnbPhy(gnbDev, 2)->SetAttribute("Pattern", StringValue(fddUlPattern));
+
+        // OPTIONAL (CTTC does this): ensure gNB does not transmit on UL-only BWP
+        nrHelper->GetGnbPhy(gnbDev, 2)->SetAttribute("TxPower", DoubleValue(0.0));
     }
+    ///////////////////////////////
 
 
     // Apply final configuration after set patterns + output links
@@ -768,6 +1041,23 @@ main(int argc, char* argv[])
         Ptr<NrUeNetDevice> ue = DynamicCast<NrUeNetDevice>(*it);
         if (ue) ue->UpdateConfig();
     }
+
+    //////////////////////////////////////////
+    // Link the FDD BWPs (same idea as CTTC example)
+    for (uint32_t i = 0; i < gnbNrDevs.GetN(); ++i)
+    {
+        NrHelper::GetBwpManagerGnb(gnbNrDevs.Get(i))->SetOutputLink(2, 1); // UL->DL mapping
+    }
+
+    for (uint32_t i = 0; i < uavNrDevs.GetN(); ++i)
+    {
+        NrHelper::GetBwpManagerUe(uavNrDevs.Get(i))->SetOutputLink(1, 2); // DL->UL mapping
+    }
+    for (uint32_t i = 0; i < groundNrDevs.GetN(); ++i)
+    {
+        NrHelper::GetBwpManagerUe(groundNrDevs.Get(i))->SetOutputLink(1, 2);
+    }
+    /////////////////////////////////////////
 
     //nrHelper->ConfigureFhControl(gnbNrDevs);
     nrHelper->SetAttribute("InitMaxUesPerCell", UintegerValue(maxUesPerCell));
@@ -830,44 +1120,138 @@ main(int argc, char* argv[])
     }
 
     // Install and start applications on UAVs and remote host
-    uint16_t basePort = 10000;
-    ApplicationContainer remoteApps;
-    ApplicationContainer uavApps;
+    ApplicationContainer remoteApps;   // DL senders on remote host (to UAV)
+    ApplicationContainer uavApps;      // DL sinks on UAV
 
-    Ptr<RandomVariableStream> onTimeRv = CreateObject<UniformRandomVariable>();
-    onTimeRv->SetAttribute("Min", DoubleValue(0.1));
-    onTimeRv->SetAttribute("Max", DoubleValue(0.5));
-    Ptr<RandomVariableStream> offTimeRv = CreateObject<UniformRandomVariable>();
-    offTimeRv->SetAttribute("Min", DoubleValue(0.1));
-    offTimeRv->SetAttribute("Max", DoubleValue(0.5));
+    // (E1) ADD THESE TWO for UAV uplink:
+    ApplicationContainer remoteUlSinks; // UL sinks on remote host (from UAV)
+    ApplicationContainer uavUlApps;     // UL senders on UAV
 
-    for (uint16_t i = 0; i < uavNodes.GetN(); i++)
+    // remoteHost IP address on the PGW-remoteHost point-to-point link
+    Ipv4Address remoteHostIp = internetIpIfaces.GetAddress(1);
+
+    for (uint32_t i = 0; i < uavNodes.GetN(); ++i)
     {
-        uint16_t port = basePort * (i + 1);
+        // -----------------------
+        // DL (remoteHost -> UAV)
+        // UAV UL uses the same Generic Video traffic model as DL, but with lower rate and frame rate
+        // (1 Mbps, 30 fps) to represent a lighter uplink stream than the downlink video (5 Mbps, 60 fps).
+        // -----------------------
+        uint16_t dlPort = 10000 + i;
 
-        PacketSinkHelper dlPacketSinkHelper("ns3::UdpSocketFactory",
-                                            InetSocketAddress(Ipv4Address::GetAny(), port));
-        uavApps.Add(dlPacketSinkHelper.Install(uavNodes.Get(i)));
-        // uavApps.Get(i)->TraceConnectWithoutContext("RxWithAddresses", MakeCallback(&RxTrace));
+        // Receiver at UAV stays the same
+        PacketSinkHelper dlSink("ns3::UdpSocketFactory",
+                                InetSocketAddress(Ipv4Address::GetAny(), dlPort));
+        uavApps.Add(dlSink.Install(uavNodes.Get(i)));
 
-        Ptr<OnOffApplication> streamingServer = CreateObject<OnOffApplication>();
-        remoteApps.Add(streamingServer);
-        streamingServer->SetAttribute("Remote",
-                                      AddressValue(InetSocketAddress(ueIpIface.GetAddress(i), port)));
-        // streamingServer->SetAttribute("DataRate", DataRateValue(DataRate("3000000bps")));
-        streamingServer->SetAttribute("DataRate", DataRateValue(DataRate("500kbps"))); // try 0.5–1 Mbps
-        streamingServer->SetAttribute("PacketSize", UintegerValue(1500));
-        streamingServer->SetAttribute("OnTime", PointerValue(onTimeRv));
-        streamingServer->SetAttribute("OffTime", PointerValue(offTimeRv));
+        // Sender at remote host: Generic Video traffic generator
+        TrafficGeneratorHelper videoHelper("ns3::UdpSocketFactory",
+                                        InetSocketAddress(ueIpIface.GetAddress(i), dlPort),
+                                        TrafficGenerator3gppGenericVideo::GetTypeId());
 
-        remoteHost->AddApplication(streamingServer);
-        // streamingServer->TraceConnectWithoutContext("TxWithAddresses", MakeCallback(&TxTrace));
+        ApplicationContainer dlVideoApps = videoHelper.Install(remoteHost);
+
+        Ptr<TrafficGenerator3gppGenericVideo> dlVideoApp =
+            DynamicCast<TrafficGenerator3gppGenericVideo>(dlVideoApps.Get(0));
+
+        NS_ABORT_MSG_IF(!dlVideoApp, "Could not cast to TrafficGenerator3gppGenericVideo");
+
+        dlVideoApp->SetAttribute("DataRate", DoubleValue(uavDlVideoRateMbps)); // Mbps
+        dlVideoApp->SetAttribute("Fps", UintegerValue(uavDlVideoFps));
+
+        remoteApps.Add(dlVideoApps);
+
+        // -----------------------
+        // UL (UAV -> remoteHost)
+        // Use Generic Video instead of OnOff
+        // -----------------------
+        uint16_t ulPort = 12000 + i;
+
+        // UL sink on remote host stays the same
+        PacketSinkHelper ulSink("ns3::UdpSocketFactory",
+                                InetSocketAddress(Ipv4Address::GetAny(), ulPort));
+        remoteUlSinks.Add(ulSink.Install(remoteHost));
+
+        // UL sender on UAV: Generic Video traffic generator
+        TrafficGeneratorHelper ulVideoHelper("ns3::UdpSocketFactory",
+                                            InetSocketAddress(remoteHostIp, ulPort),
+                                            TrafficGenerator3gppGenericVideo::GetTypeId());
+
+        ApplicationContainer ulVideoApps = ulVideoHelper.Install(uavNodes.Get(i));
+
+        Ptr<TrafficGenerator3gppGenericVideo> ulVideoApp =
+            DynamicCast<TrafficGenerator3gppGenericVideo>(ulVideoApps.Get(0));
+
+        NS_ABORT_MSG_IF(!ulVideoApp, "Could not cast UL app to TrafficGenerator3gppGenericVideo");
+
+        // Pick lighter UL traffic than DL
+        ulVideoApp->SetAttribute("DataRate", DoubleValue(uavUlVideoRateMbps));   // Mbps
+        ulVideoApp->SetAttribute("Fps", UintegerValue(uavUlVideoFps));
+
+        uavUlApps.Add(ulVideoApps);
+
+        // ----------------------------------------------------
+        // (E2) QoS FLOW ACTIVATION (this is what maps to BWPs)
+        //   - DL uses GBR_CONV_VIDEO -> BWP1 (FDD-DL)
+        //   - UL uses GBR_LIVE_UL_71 -> BWP2 (FDD-UL)
+        // ----------------------------------------------------
+        Ptr<NetDevice> ueDev = uavNrDevs.Get(i);
+
+        // Simulator::Schedule(Seconds(2.5), [nrHelper, ueDev, dlPort, ulPort]() {
+        //     // DL QoS rule: match the UE local port (dlPort)
+        //     NrQosFlow videoFlow(NrQosFlow::GBR_CONV_VIDEO);
+        //     Ptr<NrQosRule> videoRule = Create<NrQosRule>();
+        //     NrQosRule::PacketFilter dlpf;
+        //     dlpf.localPortStart = dlPort;
+        //     dlpf.localPortEnd   = dlPort;
+        //     videoRule->Add(dlpf);
+
+        //     // UL QoS rule: match the remote port on remoteHost (ulPort), uplink direction
+        //     NrQosFlow gamingFlow(NrQosFlow::GBR_GAMING);
+        //     Ptr<NrQosRule> gamingRule = Create<NrQosRule>();
+        //     NrQosRule::PacketFilter ulpf;
+        //     ulpf.remotePortStart = ulPort;
+        //     ulpf.remotePortEnd   = ulPort;
+        //     ulpf.direction       = NrQosRule::UPLINK;
+        //     gamingRule->Add(ulpf);
+
+        //     nrHelper->ActivateDedicatedQosFlow(ueDev, videoFlow,  videoRule);
+        //     nrHelper->ActivateDedicatedQosFlow(ueDev, gamingFlow, gamingRule);
+        // });
+        NrQosFlow videoFlow(NrQosFlow::GBR_CONV_VIDEO);
+        Ptr<NrQosRule> videoRule = Create<NrQosRule>();
+        NrQosRule::PacketFilter dlpf;
+        dlpf.localPortStart = dlPort;
+        dlpf.localPortEnd   = dlPort;
+        videoRule->Add(dlpf);
+
+        NrQosFlow gamingFlow(NrQosFlow::GBR_LIVE_UL_71);
+        Ptr<NrQosRule> gamingRule = Create<NrQosRule>();
+        NrQosRule::PacketFilter ulpf;
+        ulpf.remotePortStart = ulPort;
+        ulpf.remotePortEnd   = ulPort;
+        ulpf.direction       = NrQosRule::UPLINK;
+        gamingRule->Add(ulpf);
+
+        // Activate QoS flows for UAV traffic classification and BWP routing
+        nrHelper->ActivateDedicatedQosFlow(uavNrDevs.Get(i), videoFlow,  videoRule);
+        nrHelper->ActivateDedicatedQosFlow(uavNrDevs.Get(i), gamingFlow, gamingRule);
     }
 
-    remoteApps.Start(Seconds(2));
-    remoteApps.Stop(simTime + Seconds(10));
-    uavApps.Start(Seconds(1));
+    // Start/stop (DL)
+    uavApps.Start(Seconds(1.0));           // sinks can start early
     uavApps.Stop(simTime + Seconds(15));
+
+    remoteApps.Start(Seconds(2.0));        // DL starts
+    remoteApps.Stop(simTime + Seconds(10));
+
+    // Start/stop (UL)
+    remoteUlSinks.Start(Seconds(1.0));     // sinks can start early
+    remoteUlSinks.Stop(simTime + Seconds(15));
+
+    uavUlApps.Start(Seconds(3.0));         // UL starts after QoS activation
+    uavUlApps.Stop(simTime + Seconds(15));
+    ////////
 
     //ground UEs traffic (same remote host, different ports)
 
@@ -879,21 +1263,32 @@ main(int argc, char* argv[])
     {
         uint16_t port = groundBasePort + i;
 
+        ////////////////
+        Ptr<NetDevice> gUeDev = groundNrDevs.Get(i);
+        NrQosFlow voiceFlow(NrQosFlow::GBR_CONV_VOICE);
+        Ptr<NrQosRule> voiceRule = Create<NrQosRule>();
+        NrQosRule::PacketFilter gdl;
+        gdl.localPortStart = port;
+        gdl.localPortEnd   = port;
+        voiceRule->Add(gdl);
+
+        Simulator::Schedule(tGroundAttach,
+            [nrHelper, gUeDev, voiceFlow, voiceRule]() {
+                nrHelper->ActivateDedicatedQosFlow(gUeDev, voiceFlow, voiceRule);
+            });
+        //////////////
+
         PacketSinkHelper dlSink("ns3::UdpSocketFactory",
                                 InetSocketAddress(Ipv4Address::GetAny(), port));
         groundApps.Add(dlSink.Install(groundUeNodes.Get(i)));
 
-        Ptr<OnOffApplication> src = CreateObject<OnOffApplication>();
-        groundRemoteApps.Add(src);
+        // Sender at remote host: NGMN VoIP traffic generator
+        TrafficGeneratorHelper voiceHelper("ns3::UdpSocketFactory",
+                                        InetSocketAddress(groundIpIface.GetAddress(i), port),
+                                        TrafficGeneratorNgmnVoip::GetTypeId());
 
-        src->SetAttribute("Remote",
-            AddressValue(InetSocketAddress(groundIpIface.GetAddress(i), port)));
-        src->SetAttribute("DataRate", DataRateValue(DataRate("300kbps"))); // light load
-        src->SetAttribute("PacketSize", UintegerValue(1000));
-        src->SetAttribute("OnTime", PointerValue(onTimeRv));
-        src->SetAttribute("OffTime", PointerValue(offTimeRv));
-
-        remoteHost->AddApplication(src);
+        ApplicationContainer voiceApps = voiceHelper.Install(remoteHost);
+        groundRemoteApps.Add(voiceApps);
     }
 
     // groundRemoteApps.Start(Seconds(2));
@@ -1098,8 +1493,13 @@ main(int argc, char* argv[])
             nrCellLoadReporter->SetAttribute("Terminator", PointerValue(nrGnbTerminator));
 
             auto dev = gnbNrDevs.Get(idx)->GetObject<NrGnbNetDevice>();
-            auto mac = dev->GetMac(0); // Use BWP 0 (DL BWP)
-            mac->TraceConnectWithoutContext(
+
+            dev->GetMac(0)->TraceConnectWithoutContext(
+                "DlScheduling",
+                MakeCallback(&ns3::OranReporterNrCellLoad::DlScheduled, nrCellLoadReporter));
+
+            // UAV DL is on BWP1 (FDD-DL), so include it too:
+            dev->GetMac(1)->TraceConnectWithoutContext(
                 "DlScheduling",
                 MakeCallback(&ns3::OranReporterNrCellLoad::DlScheduled, nrCellLoadReporter));
 
@@ -1151,10 +1551,15 @@ main(int argc, char* argv[])
 
     // FlowMonitor setup
     user_ip.resize(numUAVs);
-    user_delay.assign(numUAVs, 0);
-    user_jitter.assign(numUAVs, 0);
-    user_throughput.assign(numUAVs, 0);
-    user_pdr.assign(numUAVs, 0);
+    user_delay_dl.assign(numUAVs, 0);
+    user_jitter_dl.assign(numUAVs, 0);
+    user_throughput_dl.assign(numUAVs, 0);
+    user_pdr_dl.assign(numUAVs, 0);
+
+    user_delay_ul.assign(numUAVs, 0);
+    user_jitter_ul.assign(numUAVs, 0);
+    user_throughput_ul.assign(numUAVs, 0);
+    user_pdr_ul.assign(numUAVs, 0);
 
     Ptr<FlowMonitor> flowMonitor;
     FlowMonitorHelper flowHelper;
@@ -1167,16 +1572,16 @@ main(int argc, char* argv[])
 
     std::ofstream qos_vs_time;
     qos_vs_time.open(ns3_dir + "qos-vs-time.txt", std::ofstream::out | std::ofstream::trunc);
-    qos_vs_time << "Time,UE,Delay,Jitter,Throughput,PDR" << std::endl;
+    qos_vs_time << "Time,UE,Dir,Delay,Jitter,Throughput,PDR" << std::endl;
     Simulator::Schedule(management_interval, ThroughputMonitor, &flowHelper, flowMonitor);
 
 
     // populate user ip map
     for (uint32_t i = 0; i < uavNodes.GetN(); i++)
     {
-        Ptr<Ipv4> remoteIpv4 = uavNodes.Get(i)->GetObject<Ipv4>();
-        Ipv4Address remoteIpAddr = remoteIpv4->GetAddress(1, 0).GetLocal();
-        user_ip[i] = remoteIpAddr;
+        // Ptr<Ipv4> remoteIpv4 = uavNodes.Get(i)->GetObject<Ipv4>();
+        // Ipv4Address remoteIpAddr = remoteIpv4->GetAddress(1, 0).GetLocal();
+        user_ip[i] = ueIpIface.GetAddress(i);
     }
 
     // ---- NR Radio Environment Map ----
@@ -1193,7 +1598,7 @@ main(int argc, char* argv[])
         remHelper->SetAttribute("Z", DoubleValue(1.0));
 
         Ptr<NetDevice> rrdDevice = uavNrDevs.Get(0); // UAV0 as receiver
-        uint8_t bwpId = 0; // DL BWP
+        uint8_t bwpId = 1; // DL BWP
 
         // Create REM at t=10s (no static Install() API in your helper)
         Simulator::Schedule(Seconds(10.0),
@@ -1211,12 +1616,15 @@ main(int argc, char* argv[])
     // Tell the simulator how long to run
     Simulator::Stop(simTime + Seconds(15));
     Simulator::Run();
+    WriteFlowReportToFile(flowMonitor, &flowHelper, ns3_dir + "final-flow-report.txt");
 
     if (g_oldClogBuf) { std::clog.rdbuf(g_oldClogBuf); }
     if (g_nsLogFile.is_open()) { g_nsLogFile.close(); }
 
     // if (g_oldCoutBuf) { std::cout.rdbuf(g_oldCoutBuf); }
-    // if (g_uncondFile.is_open()) { g_uncondFile.close(); }   
+    // if (g_uncondFile.is_open()) { g_uncondFile.close(); }
+    if (g_fhTraceFile.is_open()) { g_fhTraceFile.close(); }
+    if (g_airTraceFile.is_open()) { g_airTraceFile.close(); }   
 
     Simulator::Destroy();
     return 0;

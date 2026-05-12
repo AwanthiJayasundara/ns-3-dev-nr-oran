@@ -573,3 +573,55 @@ measurements that are reported by the UE to trigger handovers.
 ```shell
 ./ns3 run "oran-lte-2-lte-rsrp-handover-lm-example"
 ```
+
+## NR to NR RSRP Handover Examples
+These examples extend the ORAN handover workflow to 5G-LENA NR scenarios. UEs
+report location, serving-cell, RSRP, and QoS measurements to the Near-RT RIC,
+and the RIC uses NR-to-NR Logic Modules to trigger handovers.
+
+```shell
+./ns3 run "oran-nr-tn-rsrp-handover-example"
+./ns3 run "oran-nr-ntn-rsrp-handover-example"
+./ns3 run "oran-nr-uav-rsrp-handover-example"
+./ns3 run "oran-nr-uav-load-aware-rsrp-handover-example"
+```
+
+## NR UAV and Ground UE Load-Aware Handover Examples
+These examples add ground UE background load, bidirectional traffic variants,
+cell-load limits, QoS tracing, fronthaul tracing, and XR-style traffic to the NR
+handover scenario.
+
+```shell
+./ns3 run "oran-nr-uav-ground-traffic-handover-example"
+./ns3 run "oran-nr-uav-ground-qos-handover-example"
+./ns3 run "oran-nr-uav-ground-fronthaul-handover-example"
+./ns3 run "oran-nr-tn-ntn-load-aware-handover-example"
+./ns3 run "oran-nr-tn-ntn-xr-handover-example"
+./ns3 run "oran-nr-tn-ntn-uav-mobility-handover-example"
+```
+
+## NR TN/NTN Handover and Secrecy Examples
+These examples model terrestrial and non-terrestrial NR service areas. Some
+variants include secrecy-aware handover logic, ONNX-backed inference, and
+baseline runs without secrecy-aware control for comparison.
+
+```shell
+./ns3 run "oran-nr-tn-ntn-rsrp-handover-example"
+./ns3 run "oran-nr-tn-ntn-hybrid-xr-example"
+./ns3 run "oran-nr-tn-ntn-baseline-handover-example"
+./ns3 run "oran-nr-tn-ntn-secrecy-handover-example"
+./ns3 run "oran-nr-tn-ntn-secrecy-onnx-handover-example"
+```
+
+## NR UAV Satellite Backhaul Examples
+These examples study UAV-assisted TN/NTN service and satellite-backhauled UAV
+paths. They trace handovers, UE and UAV positions, flow statistics, cell load,
+and satellite backhaul behavior depending on the scenario.
+
+```shell
+./ns3 run "oran-nr-uav-satellite-backhaul-example"
+./ns3 run "oran-nr-tn-ntn-uav-satellite-handover-example"
+./ns3 run "oran-nr-tn-ntn-uav-satellite-load-handover-example"
+./ns3 run "oran-nr-tn-uav-satellite-handover-example"
+./ns3 run "oran-nr-hybrid-tn-ntn-uav-satellite-handover-example"
+```

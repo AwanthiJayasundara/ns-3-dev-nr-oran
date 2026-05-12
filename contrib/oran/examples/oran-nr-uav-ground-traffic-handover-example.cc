@@ -26,30 +26,26 @@
 #include <list>
 #include <sstream>
 #include <vector>
+#include <unordered_map>
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavHandoverCellLoad");
+NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavUeHandoverCellLoadTraffic");
 
 /**
- * Example of ORAN-driven NR multi-cell UAV handover with QoS monitoring (5G-LENA).
+ * Usage example of the ORAN NR models for UAV and ground UE traffic handover.
  *
  * Minimum required versions for reproducibility:
  *   - ns-3 version: 3.39 or later
  *   - 5G-LENA version: 2.6 or later
  *
- * The scenario consists of 50 NR UAV UEs moving randomly inside a large 2D area
- * and served by 5 fixed gNB macro cells. Each UAV receives downlink UDP traffic
- * from a remote host through an NR EPC (NrPointToPointEpcHelper).
+ * The scenario consists of X NR UAV UEs (moving randomly) and Y NR ground UEs (static) inside a large 2D area
+ * and served by Z fixed gNB macro cells. Each UAV receives downlink UDP traffic
+ * from a remote host through an NR EPC (NrPointToPointEpcHelper). 
  *
  * The NR radio access uses a 3GPP UMa propagation scenario with optional fading
  * enabled, and an Ideal Beamforming helper (Quasi-Omni direct path beamforming).
- * The configuration is based on an FDD setup, where two carriers/BWPs are created:
- *   - BWP 0: Downlink carrier (DL-only pattern)
- *   - BWP 1: Uplink carrier (UL-only pattern)
- * The gNB and UE BWP managers are configured to map DL and UL traffic correctly
- * between these BWPs.
- *
+
  * A concrete NR scheduler is selected at runtime (OFDMA/TDMA with RR/PF/MR/QoS),
  * and the UEs initially attach to the gNB offering the maximum RSRP. X2 interfaces
  * are enabled to support inter-gNB handovers.
@@ -64,15 +60,20 @@ NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavHandoverCellLoad");
  * and packet delivery ratio) periodically and write them to trace files over time.
  * Additionally, node mobility positions and successful handover events are logged.
  *
- * Optionally, a 5G NR Radio Environment Map (REM) can be generated at runtime
- * using NrRadioEnvironmentMapHelper to visualize coverage conditions in the area.
+ * Ground UEs are added with constant position (No HO> we can change if want) and connect
+ * with RIC too so load-aware handover decisions can be made based on the total number of 
+ * UEs (UAV + ground) connected to each gNB. 
+ * 
+ * Cell load capacity is set so no intial attachement or handover will be triggered for a 
+ * gNB that has already reached the maximum number of UEs. 
  */
 
 const static float GNB_HEIGHT = 25;
 
 // Variables
-uint32_t numUAVs = 20;
+uint32_t numUAVs = 25;
 uint32_t numGnbs = 5;
+uint32_t numGroundUes = 20;   // ground UEs in addition to UAVs
 
 // Metrics collection interval
 Time management_interval = Seconds(4);
@@ -92,14 +93,26 @@ static std::string s_handoverTraceFile;
 static std::string s_flowStatTraceFile;
 static std::string ns3_dir;
 
-// --- RRC/RLF trace output files (option 2 style) ---
-// static Ptr<OutputStreamWrapper> g_rlfStream;
-// static Ptr<OutputStreamWrapper> g_phySyncStream;
-// static Ptr<OutputStreamWrapper> g_ueStateStream;
-
 // --- ns-3 NS_LOG output redirection (LogComponentEnable -> file via std::clog) ---
 static std::ofstream g_nsLogFile;
 static std::streambuf* g_oldClogBuf = nullptr;
+
+static std::unordered_map<uint32_t, uint64_t> g_ipToImsi; // IPv4.Get() -> IMSI
+static std::unordered_map<uint64_t, std::string> g_imsiRole; // IMSI -> "UAV"/"GND"
+
+static inline uint64_t
+LookupImsiFromIp(const Ipv4Address& ip)
+{
+    auto it = g_ipToImsi.find(ip.Get());
+    return (it == g_ipToImsi.end()) ? 0 : it->second;
+}
+
+static inline const char*
+LookupRoleFromImsi(uint64_t imsi)
+{
+    auto it = g_imsiRole.find(imsi);
+    return (it == g_imsiRole.end()) ? "UNK" : it->second.c_str();
+}
 
 // static std::ofstream g_uncondFile;
 // static std::streambuf* g_oldCoutBuf = nullptr;
@@ -119,101 +132,6 @@ TraceRsrpRsrqSinr(Ptr<OutputStreamWrapper> stream,
                          << rsrp << " " << rsrq << " " << servingCell << " "
                          << static_cast<uint32_t>(componentCarrierId) << std::endl;
 }
-
-// static void
-// TraceRlf(std::string context, uint64_t imsi, uint16_t cellId, uint16_t rnti)
-// {
-//     std::cout << Simulator::Now().GetSeconds()
-//               << " " << context
-//               << " RLF IMSI=" << imsi << " cell=" << cellId << " rnti=" << rnti << "\n";
-// }
-
-// static void
-// TracePhySync(std::string context, uint64_t imsi, uint16_t rnti, uint16_t cellId, std::string msg, uint8_t count)
-// {
-//     std::cout << Simulator::Now().GetSeconds()
-//               << " " << context
-//               << " PHY_SYNC IMSI=" << imsi
-//               << " cell=" << cellId
-//               << " rnti=" << rnti
-//               << " " << msg
-//               << " count=" << +count   // + to print uint8_t as number
-//               << "\n";
-// }
-
-// static void
-// TraceUeState(std::string context, uint64_t imsi, uint16_t cellId, uint16_t rnti,
-//              NrUeRrc::State oldS, NrUeRrc::State newS)
-// {
-//     std::cout << Simulator::Now().GetSeconds()
-//               << " " << context
-//               << " UE_STATE IMSI=" << imsi
-//               << " cell=" << cellId << " rnti=" << rnti
-//               << " " << oldS << " -> " << newS << "\n";
-// }
-
-// static void
-// TraceRlfToFile(Ptr<OutputStreamWrapper> stream,
-//                std::string context, uint64_t imsi, uint16_t cellId, uint16_t rnti)
-// {
-//     *stream->GetStream() << Simulator::Now().GetSeconds()
-//                          << " " << context
-//                          << " RLF IMSI=" << imsi
-//                          << " cell=" << cellId
-//                          << " rnti=" << rnti
-//                          << "\n";
-// }
-
-// static void
-// TracePhySyncToFile(Ptr<OutputStreamWrapper> stream,
-//                    std::string context, uint64_t imsi, uint16_t rnti, uint16_t cellId,
-//                    std::string msg, uint8_t count)
-// {
-//     *stream->GetStream() << Simulator::Now().GetSeconds()
-//                          << " " << context
-//                          << " PHY_SYNC IMSI=" << imsi
-//                          << " cell=" << cellId
-//                          << " rnti=" << rnti
-//                          << " " << msg
-//                          << " count=" << +count
-//                          << "\n";
-// }
-
-// static void
-// TraceUeStateToFile(Ptr<OutputStreamWrapper> stream,
-//                    std::string context, uint64_t imsi, uint16_t cellId, uint16_t rnti,
-//                    NrUeRrc::State oldS, NrUeRrc::State newS)
-// {
-//     *stream->GetStream() << Simulator::Now().GetSeconds()
-//                          << " " << context
-//                          << " UE_STATE IMSI=" << imsi
-//                          << " cell=" << cellId
-//                          << " rnti=" << rnti
-//                          << " " << oldS << " -> " << newS
-//                          << "\n";
-// }
-
-// // Function that will save the traces of RX'd packets
-// void
-// RxTrace(Ptr<const Packet> p, const Address& from, const Address& to)
-// {
-//     uint16_t ueId = (InetSocketAddress::ConvertFrom(to).GetPort() / 1000);
-
-//     std::ofstream rxOutFile(s_trafficTraceFile, std::ios_base::app);
-//     rxOutFile << Simulator::Now().GetSeconds() << " " << ueId << " RX " << p->GetSize()
-//               << std::endl;
-// }
-
-// // Function that will save the traces of TX'd packets
-// void
-// TxTrace(Ptr<const Packet> p, const Address& from, const Address& to)
-// {
-//     uint16_t ueId = (InetSocketAddress::ConvertFrom(to).GetPort() / 1000);
-
-//     std::ofstream txOutFile(s_trafficTraceFile, std::ios_base::app);
-//     txOutFile << Simulator::Now().GetSeconds() << " " << ueId << " TX " << p->GetSize()
-//               << std::endl;
-// }
 
 // Helper function that returns the UAV id associated with a specific IP
 int
@@ -252,12 +170,16 @@ ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
         if (!ue_network_mask.IsMatch(ue_network, fiveTuple.destinationAddress))
             continue;
 
+        Ipv4Address ueIp = fiveTuple.destinationAddress; // for your DL traffic
+        uint64_t imsi = LookupImsiFromIp(ueIp);
+        const char* role = LookupRoleFromImsi(imsi);
+
         int rx_packets = stats.second.rxPackets;
         int tx_packets = stats.second.txPackets;
 
         double PDR = 100.0 * rx_packets / (tx_packets > 0 ? tx_packets : 1);
-        double lost = tx_packets - rx_packets;
-        double PLR = 100.0 * lost / (tx_packets > 0 ? tx_packets : 1);
+        //double lost = tx_packets - rx_packets;
+        //double PLR = 100.0 * lost / (tx_packets > 0 ? tx_packets : 1);
         double Delay = (rx_packets > 0) ? stats.second.delaySum.GetSeconds() / rx_packets : 0.0;
         double Jitter = (rx_packets > 0) ? stats.second.jitterSum.GetSeconds() / rx_packets : 0.0;
 
@@ -267,23 +189,26 @@ ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
                 stats.second.timeFirstTxPacket.GetSeconds()) / 1024 / 1024)
             : 0.0;
 
-        double duration = stats.second.timeLastRxPacket.GetSeconds() -
-                          stats.second.timeFirstTxPacket.GetSeconds();
+        //double duration = stats.second.timeLastRxPacket.GetSeconds() -
+        //                  stats.second.timeFirstTxPacket.GetSeconds();
 
-        flowLog << Simulator::Now().GetSeconds() << ","
-                << stats.first << ","
-                << fiveTuple.sourceAddress << ","
-                << fiveTuple.destinationAddress << ","
-                << tx_packets << ","
-                << rx_packets << ","
-                << lost << ","
-                << PDR << ","
-                << PLR << ","
-                << Delay << ","
-                << Jitter << ","
-                << duration << ","
-                << stats.second.timeLastRxPacket.GetSeconds() << ","
-                << Throughput
+        flowLog 
+                << Simulator::Now().GetSeconds() << ","
+                // << stats.first << ","
+                // << fiveTuple.sourceAddress << ","
+                // << fiveTuple.destinationAddress << ","
+                << role << ","
+                << imsi << ","
+                // << tx_packets << ","
+                // << rx_packets << ","
+                // << lost << ","
+                // << PDR << ","
+                // << PLR << ","
+                // << Delay << ","
+                // << Jitter << ","
+                // << duration << ","
+                // << stats.second.timeLastRxPacket.GetSeconds() << ","
+                // << Throughput
                 << "\n";
 
         int receiver_id = get_user_id_from_ipv4(fiveTuple.destinationAddress);
@@ -335,8 +260,10 @@ NotifyHandoverEndOkGnb(std::string context, uint64_t imsi, uint16_t cellid, uint
               << std::endl;
 }
 
-void
-install_mobility(NodeContainer staticNodes, NodeContainer gnbNodes, NodeContainer uavNodes)
+void install_mobility(NodeContainer staticNodes,
+                      NodeContainer gnbNodes,
+                      NodeContainer uavNodes,
+                      NodeContainer groundUeNodes)
 {
     Ptr<ListPositionAllocator> allocator = CreateObject<ListPositionAllocator>();
     allocator->Add(Vector(0, 0, 0));
@@ -448,6 +375,22 @@ install_mobility(NodeContainer staticNodes, NodeContainer gnbNodes, NodeContaine
                               "Pause",
                               StringValue("ns3::UniformRandomVariable[Min=1.0|Max=6.0]"));
     uavHelper.Install(uavNodes);
+
+    // Ground UE mobility (near-ground)
+    // -------------------------------
+    Ptr<RandomBoxPositionAllocator> gbox = CreateObject<RandomBoxPositionAllocator>();
+    gbox->SetAttribute("X", StringValue("ns3::UniformRandomVariable[Min=-990|Max=990]"));
+    gbox->SetAttribute("Y", StringValue("ns3::UniformRandomVariable[Min=-990|Max=990]"));
+    gbox->SetAttribute("Z", StringValue("ns3::ConstantRandomVariable[Constant=1.5]"));
+
+    MobilityHelper gueHelper;
+    gueHelper.SetPositionAllocator(gbox);
+    gueHelper.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+    // gueHelper.SetMobilityModel("ns3::RandomDirection2dMobilityModel",
+    //                            "Bounds", StringValue("-1000|1000|-1000|1000"),
+    //                            "Speed",  StringValue("ns3::UniformRandomVariable[Min=0.5|Max=1.5]"),
+    //                            "Pause",  StringValue("ns3::UniformRandomVariable[Min=0.5|Max=3.0]"));
+    gueHelper.Install(groundUeNodes);
 }
 
 bool
@@ -507,8 +450,10 @@ main(int argc, char* argv[])
     std::string dbFileName = "oran-repository-uav.db";
     std::string lateCommandPolicy = "DROP";
 
-    uint32_t maxUesPerCell = 3; // ORAN LM parameter: maximum number of UEs per cell (for load-aware handover decisions)
-
+    uint32_t maxUesPerCell = 10; // ORAN LM parameter: maximum number of UEs per cell (for load-aware handover decisions)
+    ///£
+    double groundAttachDelay = 6.0; // seconds
+    ///£
     // Scheduler CLI knobs (safe defaults to a concrete scheduler)
     bool ofdma = false;            // true=OFDMA, false=TDMA
     std::string schedKind = "RR"; // RR | PF | MR | Qos
@@ -530,6 +475,8 @@ main(int argc, char* argv[])
     cmd.AddValue("rem-rb-id", "RB id", remRbId);
     cmd.AddValue("ofdma", "Use OFDMA (1) or TDMA (0)", ofdma);
     cmd.AddValue("sched", "Scheduler kind: RR, PF, MR, Qos", schedKind);
+    cmd.AddValue("num-ground-ues", "Number of ground UEs", numGroundUes);
+    cmd.AddValue("ground-attach-delay", "Delay before attaching ground UEs (s)", groundAttachDelay);
     cmd.Parse(argc, argv);
 
     NS_ABORT_MSG_IF(useOran == false && (useOnnx || useTorch || useRsrp),
@@ -538,13 +485,8 @@ main(int argc, char* argv[])
     NS_ABORT_MSG_IF(handoverAlgorithm != "ns3::NrNoOpHandoverAlgorithm" && (useOnnx || useTorch || useRsrp),
                     "Cannot use non-noop handover algorithm with ML/RSRP LM (avoid conflicts).");
 
-    
-    // LogComponentEnable("NrGnbRrc", LOG_LEVEL_INFO);
-    // LogComponentEnable("NrUeRrc", LOG_LEVEL_INFO);
-    // LogComponentEnable("OranE2NodeTerminatorNrGnb", LOG_LEVEL_INFO);
-
     std::ostringstream runTag;
-    runTag << "uav" << numUAVs << "_gnb" << numGnbs << "_cellLoad" << maxUesPerCell;
+    runTag << "uav" << numUAVs << "_gnd" << numGroundUes << "_gnb" << numGnbs << "_cellLoad" << maxUesPerCell;
 
     // Base output folder for this run
     ns3_dir = "results/nr/uav/" + runTag.str() + "/";
@@ -565,17 +507,7 @@ main(int argc, char* argv[])
     // g_oldCoutBuf = std::cout.rdbuf(g_uncondFile.rdbuf());
 
     LogComponentEnable("OranLmNr2NrRsrpHandoverWithCellLoad", LOG_LEVEL_INFO);
-    LogComponentEnable("NrHelper", LOG_LEVEL_ALL);
-
-    // ---- Create trace files ----
-    // g_rlfStream     = Create<OutputStreamWrapper>(ns3_dir + "rrc-rlf.log",     std::ios::out);
-    // g_phySyncStream = Create<OutputStreamWrapper>(ns3_dir + "rrc-physync.log", std::ios::out);
-    // g_ueStateStream = Create<OutputStreamWrapper>(ns3_dir + "rrc-state.log",   std::ios::out);
-
-    // (optional headers)
-    // *g_rlfStream->GetStream()     << "# time context RLF IMSI cell rnti\n";
-    // *g_phySyncStream->GetStream() << "# time context PHY_SYNC IMSI cell rnti msg count\n";
-    // *g_ueStateStream->GetStream() << "# time context UE_STATE IMSI cell rnti old->new\n";
+    LogComponentEnable("NrHelper", LOG_LEVEL_INFO);
 
     // Increase the buffer size to accomodate the application demand
     bool enablePdcpDiscarding = false;
@@ -596,16 +528,15 @@ main(int argc, char* argv[])
     Config::SetDefault("ns3::ThreeGppChannelModel::UpdatePeriod",
                        TimeValue(MilliSeconds(channelUpdatePeriod)));
 
-    // Config::SetDefault("ns3::NrUeRrc::ReconnectDelayMin", TimeValue(Seconds(1.0)));
-    // Config::SetDefault("ns3::NrUeRrc::ReconnectDelayMax", TimeValue(Seconds(5.0)));
-
     //Config::SetDefault("ns3::NrGnbPhy::TxPower", DoubleValue(43));
 
     // Create gNB and UAV
     NodeContainer uavNodes;
+    NodeContainer groundUeNodes;
     NodeContainer gnbNodes;
     gnbNodes.Create(numGnbs);
     uavNodes.Create(numUAVs);
+    groundUeNodes.Create(numGroundUes);
     
     // Create ChannelHelper API
     Ptr<NrChannelHelper> channelHelper = CreateObject<NrChannelHelper>();
@@ -614,7 +545,6 @@ main(int argc, char* argv[])
     //     propChannelCondition = "LOS";
     // }
 
-    // The essentials describing a laydown
     NodeDistributionScenarioInterface* scenario{nullptr};
     std::string propScenario = "UMa"; //Urban Macro
     bool enableShadowing = false;
@@ -638,13 +568,12 @@ main(int argc, char* argv[])
     
     nrHelper->SetHandoverAlgorithmType(handoverAlgorithm);
 
-    // ---- Scheduler selection: pick a concrete class (avoid abstract base) ----
     auto setSchedulerIfAvailable = [&](const std::string& name) -> bool {
         TypeId tid;
         if (TypeId::LookupByNameFailSafe(name, &tid))
         {
             NS_LOG_UNCOND(std::string("NR: trying ") + name);
-            nrHelper->SetSchedulerTypeId(tid); // requires a TypeId (not a string)
+            nrHelper->SetSchedulerTypeId(tid); 
             NS_LOG_UNCOND(std::string("NR: using ") + name);
             return true;
         }
@@ -688,7 +617,7 @@ main(int argc, char* argv[])
 
     std::string errorModel = "ns3::NrEesmIrT2";
 
-        // Both DL and UL AMC will have the same model behind.
+    // Both DL and UL AMC will have the same model behind.
     nrHelper->SetGnbDlAmcAttribute("AmcModel", EnumValue(NrAmc::ErrorModel));
     nrHelper->SetGnbUlAmcAttribute("AmcModel", EnumValue(NrAmc::ErrorModel));
 
@@ -721,53 +650,6 @@ main(int argc, char* argv[])
     // Noise figure for the UE
     nrHelper->SetUePhyAttribute("NoiseFigure", DoubleValue(ueNoiseFigure));
 
-    // // Downlink
-    // double dlCentralFrequency = 4e9;  // 4 GHz
-    // //double dlBandwidth = 10e6;        // 100 MHz
-
-    // // Uplink
-    // double ulCentralFrequency = 3.9e9;  // 3.8 GHz (separate from DL to avoid interference)
-    // //double ulBandwidth = 10e6;          // 100 MHz
-    // double bandBw            = 20e6;
-
-    // CcBwpCreator ccBwpCreator;
-
-    //     // --- Downlink band ---
-    // CcBwpCreator::SimpleOperationBandConf dlConf(dlCentralFrequency, bandBw, 1);
-    // OperationBandInfo dlBand = ccBwpCreator.CreateOperationBandContiguousCc(dlConf);
-
-    // // --- Uplink band ---
-    // CcBwpCreator::SimpleOperationBandConf ulConf(ulCentralFrequency, bandBw, 1);
-    // OperationBandInfo ulBand = ccBwpCreator.CreateOperationBandContiguousCc(ulConf);
-
-    // double centralFrequency = 4e9;
-    // double bandBw = 20e6;
-
-    // CcBwpCreator ccBwpCreator;
-    // CcBwpCreator::SimpleOperationBandConf conf(centralFrequency, bandBw, 1);
-    // OperationBandInfo band = ccBwpCreator.CreateOperationBandContiguousCc(conf);
-
-    // std::vector<std::reference_wrapper<OperationBandInfo>> bands;
-    // bands.emplace_back(std::ref(band));
-
-    // channelHelper->AssignChannelsToBands(bands, bandMask);
-
-    // // Now Bwps has ONLY ONE BWP (BWP 0)
-    // BandwidthPartInfoPtrVector Bwps = CcBwpCreator::GetAllBwps(bands);
-
-
-    // std::vector<std::reference_wrapper<OperationBandInfo>> bands;
-    // bands.emplace_back(std::ref(dlBand));
-    // bands.emplace_back(std::ref(ulBand));
-
-    // bool enableFading = true;
-    // uint8_t bandMask = NrChannelHelper::INIT_PROPAGATION |
-    //                 (enableFading ? NrChannelHelper::INIT_FADING : 0);
-
-    // channelHelper->AssignChannelsToBands(bands, bandMask);
-
-    // // Get BWPs: Bwps[0] = DL BWP, Bwps[1] = UL BWP
-    // BandwidthPartInfoPtrVector Bwps = CcBwpCreator::GetAllBwps(bands);
 
     // ---- TDD single-carrier setup (ONE band, ONE BWP) ----
     bool enableFading = true;
@@ -786,7 +668,7 @@ main(int argc, char* argv[])
 
     channelHelper->AssignChannelsToBands(bands, bandMask);
 
-    // Now only ONE BWP exists: BWP 0
+    // BWP 0
     BandwidthPartInfoPtrVector Bwps = CcBwpCreator::GetAllBwps(bands);
 
 
@@ -797,20 +679,11 @@ main(int argc, char* argv[])
     {
         nrHelper->SetBeamformingHelper(idealBeamformingHelper);
     }
-
-    // uint32_t bwpIdForLowLat = 0; // DL mapping stays on BWP0
-
-    // // gNb routing between Bearer and bandwidth part
-    // nrHelper->SetGnbBwpManagerAlgorithmAttribute("NGBR_LOW_LAT_EMBB",
-    //                                              UintegerValue(bwpIdForLowLat));
-    // // Ue routing between Bearer and bandwidth part (DL bearer maps to BWP0)
-    // nrHelper->SetUeBwpManagerAlgorithmAttribute("NGBR_LOW_LAT_EMBB",
-    //                                             UintegerValue(bwpIdForLowLat));
- 
     
     //The network interface installed on the node (e.g., 5G modem)
     NetDeviceContainer gnbNrDevs;
     NetDeviceContainer uavNrDevs; 
+    NetDeviceContainer groundNrDevs;
 
     Ptr<NrPointToPointEpcHelper> epcHelper = CreateObject<NrPointToPointEpcHelper>();
     nrHelper->SetEpcHelper(epcHelper);
@@ -843,36 +716,30 @@ main(int argc, char* argv[])
         ipv4RoutingHelper.GetStaticRouting(remoteHost->GetObject<Ipv4>());
     remoteHostStaticRouting->AddNetworkRouteTo(Ipv4Address("7.0.0.0"), Ipv4Mask("255.0.0.0"), 1);
 
-    install_mobility(remoteHostContainer, gnbNodes, uavNodes);
-
-    // // FDD: install devices with two BWPs (DL, UL)
-    // gnbNrDevs = nrHelper->InstallGnbDevice(gnbNodes, Bwps);
-    // uavNrDevs  = nrHelper->InstallUeDevice(uavNodes, Bwps);
-
-    // static const std::string dlPattern = "DL|DL|DL|DL|DL|DL|DL|DL|DL|UL|";
-    // static const std::string ulPattern = "UL|UL|UL|UL|UL|UL|UL|UL|UL|DL|";
-
-    // for (uint32_t gnbIndex = 0; gnbIndex < gnbNrDevs.GetN(); ++gnbIndex) {
-    //     Ptr<NetDevice> gnbDev = gnbNrDevs.Get(gnbIndex);
-
-    //     // BWP 0 is the DL BWP
-    //     Ptr<NrGnbPhy> gnbPhyDl = nrHelper->GetGnbPhy(gnbDev, 0);
-    //     gnbPhyDl->SetAttribute("Pattern", StringValue(dlPattern));
-
-    //     // BWP 1 is the UL BWP
-    //     Ptr<NrGnbPhy> gnbPhyUl = nrHelper->GetGnbPhy(gnbDev, 1);
-    //     gnbPhyUl->SetAttribute("Pattern", StringValue(ulPattern));
-    // }
-
-    // Make RLF more aggressive (more frequent disconnects)
-    // Config::SetDefault("ns3::NrUeRrc::N310", UintegerValue(4));              // default 6
-    // Config::SetDefault("ns3::NrUeRrc::T310", TimeValue(MilliSeconds(500)));  // default 1000ms
-    // Config::SetDefault("ns3::NrUeRrc::N311", UintegerValue(2));              // default 2 (harder recovery)
+    install_mobility(remoteHostContainer, gnbNodes, uavNodes, groundUeNodes);
 
     gnbNrDevs = nrHelper->InstallGnbDevice(gnbNodes, Bwps);
     uavNrDevs = nrHelper->InstallUeDevice(uavNodes, Bwps);
+    groundNrDevs = nrHelper->InstallUeDevice(groundUeNodes, Bwps); 
 
-    // Example TDD pattern (7 DL, 3 UL)
+    // -------- Role map: IMSI -> UAV/GND --------
+    g_imsiRole.clear();
+
+    for (uint32_t i = 0; i < uavNrDevs.GetN(); ++i)
+    {
+        Ptr<NrUeNetDevice> ue = DynamicCast<NrUeNetDevice>(uavNrDevs.Get(i));
+        NS_ABORT_MSG_IF(!ue, "uavNrDevs[" << i << "] is not NrUeNetDevice");
+        g_imsiRole[ue->GetImsi()] = "UAV";
+    }
+
+    for (uint32_t i = 0; i < groundNrDevs.GetN(); ++i)
+    {
+        Ptr<NrUeNetDevice> ue = DynamicCast<NrUeNetDevice>(groundNrDevs.Get(i));
+        NS_ABORT_MSG_IF(!ue, "groundNrDevs[" << i << "] is not NrUeNetDevice");
+        g_imsiRole[ue->GetImsi()] = "GND";
+    }
+
+    // TDD pattern (7 DL, 3 UL)
     static const std::string tddPattern = "DL|DL|DL|DL|DL|DL|DL|UL|UL|UL|";
 
     for (uint32_t gnbIndex = 0; gnbIndex < gnbNrDevs.GetN(); ++gnbIndex)
@@ -896,18 +763,54 @@ main(int argc, char* argv[])
         if (ue) ue->UpdateConfig();
     }
 
+    for (auto it = groundNrDevs.Begin(); it != groundNrDevs.End(); ++it)
+    {
+        Ptr<NrUeNetDevice> ue = DynamicCast<NrUeNetDevice>(*it);
+        if (ue) ue->UpdateConfig();
+    }
+
     //nrHelper->ConfigureFhControl(gnbNrDevs);
     nrHelper->SetAttribute("InitMaxUesPerCell", UintegerValue(maxUesPerCell));
     nrHelper->SetAttribute("InitMinRsrpDbm",   DoubleValue(-120.0));
     nrHelper->SetAttribute("InitRetryInterval", TimeValue(Seconds(2.0)));
     //initial attach helper
     nrHelper->AttachToMaxRsrpGnb(uavNrDevs, gnbNrDevs);
+    //nrHelper->AttachToMaxRsrpGnb(groundNrDevs, gnbNrDevs);
+    Time tGroundAttach = Seconds(groundAttachDelay);
+
+    Simulator::Schedule(tGroundAttach, [nrHelper, groundNrDevs, gnbNrDevs]() {
+        nrHelper->AttachToMaxRsrpGnb(groundNrDevs, gnbNrDevs); // public container overload
+    });
 
     nrHelper->AddX2Interface(gnbNodes);
 
     internet.Install(uavNodes);
+    internet.Install(groundUeNodes);
     Ipv4InterfaceContainer ueIpIface;
+    Ipv4InterfaceContainer groundIpIface;
     ueIpIface = epcHelper->AssignUeIpv4Address(NetDeviceContainer(uavNrDevs));
+    groundIpIface = epcHelper->AssignUeIpv4Address(NetDeviceContainer(groundNrDevs));
+
+    // -------- IP -> IMSI map to identify UAVs and Ground UEs --------
+    g_ipToImsi.clear();
+
+    // UAV IPs
+    for (uint32_t i = 0; i < uavNrDevs.GetN(); ++i)
+    {
+        Ptr<NrUeNetDevice> ue = DynamicCast<NrUeNetDevice>(uavNrDevs.Get(i));
+        NS_ABORT_MSG_IF(!ue, "uavNrDevs[" << i << "] not NrUeNetDevice");
+        Ipv4Address ip = ueIpIface.GetAddress(i);
+        g_ipToImsi[ip.Get()] = ue->GetImsi();
+    }
+
+    // Ground IPs
+    for (uint32_t i = 0; i < groundNrDevs.GetN(); ++i)
+    {
+        Ptr<NrUeNetDevice> ue = DynamicCast<NrUeNetDevice>(groundNrDevs.Get(i));
+        NS_ABORT_MSG_IF(!ue, "groundNrDevs[" << i << "] not NrUeNetDevice");
+        Ipv4Address ip = groundIpIface.GetAddress(i);
+        g_ipToImsi[ip.Get()] = ue->GetImsi();
+    }
 
     for (uint32_t u = 0; u < uavNodes.GetN(); ++u)
     {
@@ -917,6 +820,14 @@ main(int argc, char* argv[])
         ueStaticRouting->SetDefaultRoute(epcHelper->GetUeDefaultGatewayAddress(), 1);
     }
     NS_LOG_UNCOND(std::string("Test"));
+    
+    for (uint32_t u = 0; u < groundUeNodes.GetN(); ++u)
+    {
+        Ptr<Node> ueNode = groundUeNodes.Get(u);
+        Ptr<Ipv4StaticRouting> ueStaticRouting =
+            ipv4RoutingHelper.GetStaticRouting(ueNode->GetObject<Ipv4>());
+        ueStaticRouting->SetDefaultRoute(epcHelper->GetUeDefaultGatewayAddress(), 1);
+    }
 
     // Install and start applications on UAVs and remote host
     uint16_t basePort = 10000;
@@ -958,6 +869,41 @@ main(int argc, char* argv[])
     uavApps.Start(Seconds(1));
     uavApps.Stop(simTime + Seconds(15));
 
+    //ground UEs traffic (same remote host, different ports)
+
+    uint16_t groundBasePort = 20000;              // NEW port base (avoid collision)
+    ApplicationContainer groundApps;              // sinks on ground UEs
+    ApplicationContainer groundRemoteApps;        // OnOff on remote host
+
+    for (uint16_t i = 0; i < groundUeNodes.GetN(); i++)
+    {
+        uint16_t port = groundBasePort + i;
+
+        PacketSinkHelper dlSink("ns3::UdpSocketFactory",
+                                InetSocketAddress(Ipv4Address::GetAny(), port));
+        groundApps.Add(dlSink.Install(groundUeNodes.Get(i)));
+
+        Ptr<OnOffApplication> src = CreateObject<OnOffApplication>();
+        groundRemoteApps.Add(src);
+
+        src->SetAttribute("Remote",
+            AddressValue(InetSocketAddress(groundIpIface.GetAddress(i), port)));
+        src->SetAttribute("DataRate", DataRateValue(DataRate("300kbps"))); // light load
+        src->SetAttribute("PacketSize", UintegerValue(1000));
+        src->SetAttribute("OnTime", PointerValue(onTimeRv));
+        src->SetAttribute("OffTime", PointerValue(offTimeRv));
+
+        remoteHost->AddApplication(src);
+    }
+
+    // groundRemoteApps.Start(Seconds(2));
+    // groundApps.Start(Seconds(1));
+    groundApps.Start(Seconds(1)); // sinks can start early, harmless
+    groundRemoteApps.Start(tGroundAttach + Seconds(0.5)); // send after attach
+
+    groundRemoteApps.Stop(simTime + Seconds(10));
+    groundApps.Stop(simTime + Seconds(15));
+
     // ORAN BEGIN
     if (useOran == true)
     {
@@ -977,12 +923,12 @@ main(int argc, char* argv[])
         if (useOnnx == true)
         {
             NS_ABORT_MSG_IF(!TypeId::LookupByNameFailSafe("ns3::OranLmNr2NrOnnxHandover", &defaultLmTid),
-                            "ONNX LM not found. Were ONNX headers and libraries found during ./waf configure?");
+                            "ONNX LM not found. Were ONNX headers and libraries found during");
         }
         else if (useTorch == true)
         {
             NS_ABORT_MSG_IF(!TypeId::LookupByNameFailSafe("ns3::OranLmNr2NrTorchHandover", &defaultLmTid),
-                            "Torch LM not found. Were Torch headers and libraries found during ./waf configure?");
+                            "Torch LM not found. Were Torch headers and libraries found during");
         }
         else if (useRsrp == true)
         {
@@ -1083,6 +1029,65 @@ main(int argc, char* argv[])
             Simulator::Schedule(Seconds(2), &OranE2NodeTerminatorNrUe::Activate, nrUeTerminator);
         }
 
+        // Ground UE -> RIC (reporters + terminator)
+        for (uint32_t idx = 0; idx < groundUeNodes.GetN(); idx++)
+        {
+            Ptr<OranReporterLocation> locationReporter = CreateObject<OranReporterLocation>();
+            Ptr<OranReporterNrUeCellInfo> nrUeCellInfoReporter = CreateObject<OranReporterNrUeCellInfo>();
+            Ptr<OranReporterAppLoss> appLossReporter = CreateObject<OranReporterAppLoss>();
+            Ptr<OranReporterNrUeRsrpRsrq> rsrpRsrqReporter = CreateObject<OranReporterNrUeRsrpRsrq>();
+            Ptr<OranE2NodeTerminatorNrUe> nrUeTerminator = CreateObject<OranE2NodeTerminatorNrUe>();
+
+            locationReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
+            nrUeCellInfoReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
+            rsrpRsrqReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
+
+            // AppLoss: use GROUND traffic apps
+            appLossReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
+            groundRemoteApps.Get(idx)->TraceConnectWithoutContext(
+                "Tx", MakeCallback(&ns3::OranReporterAppLoss::AddTx, appLossReporter));
+            groundApps.Get(idx)->TraceConnectWithoutContext(
+                "Rx", MakeCallback(&ns3::OranReporterAppLoss::AddRx, appLossReporter));
+
+            // RSRP/RSRQ measurements from the ground UE PHY
+            for (uint32_t netDevIdx = 0; netDevIdx < groundUeNodes.Get(idx)->GetNDevices(); netDevIdx++)
+            {
+                Ptr<NrUeNetDevice> nrUeDevice =
+                    groundUeNodes.Get(idx)->GetDevice(netDevIdx)->GetObject<NrUeNetDevice>();
+                if (nrUeDevice)
+                {
+                    Ptr<NrUePhy> uePhy = nrUeDevice->GetPhy(0);
+                    uePhy->TraceConnectWithoutContext(
+                        "ReportUeMeasurements",
+                        MakeCallback(&ns3::OranReporterNrUeRsrpRsrq::ReportRsrpRsrq, rsrpRsrqReporter));
+                }
+            }
+
+            nrUeTerminator->SetAttribute("NearRtRic", PointerValue(nearRtRic));
+            nrUeTerminator->SetAttribute("RegistrationIntervalRv",
+                                        StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+            nrUeTerminator->SetAttribute("SendIntervalRv",
+                                        StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+
+            nrUeTerminator->AddReporter(locationReporter);
+            nrUeTerminator->AddReporter(nrUeCellInfoReporter);
+            nrUeTerminator->AddReporter(rsrpRsrqReporter);
+            nrUeTerminator->AddReporter(appLossReporter);
+
+            nrUeTerminator->SetAttribute("TransmissionDelayRv",
+                                        StringValue("ns3::ConstantRandomVariable[Constant=" +
+                                                    std::to_string(txDelay) + "]"));
+
+            // nrUeTerminator->Attach(groundUeNodes.Get(idx));
+            // Simulator::Schedule(Seconds(2), &OranE2NodeTerminatorNrUe::Activate, nrUeTerminator);
+            nrUeTerminator->Attach(groundUeNodes.Get(idx));
+
+            // Activate E2 only after the UE is attached (small guard offset)
+            Simulator::Schedule(tGroundAttach + Seconds(1.0),
+                                &OranE2NodeTerminatorNrUe::Activate,
+                                nrUeTerminator);
+        }
+
         for (uint32_t idx = 0; idx < gnbNodes.GetN(); idx++)
         {
             Ptr<OranReporterLocation> locationReporter = CreateObject<OranReporterLocation>();
@@ -1117,8 +1122,6 @@ main(int argc, char* argv[])
     // ORAN END
 
     // Erase the trace files if they exist
-    // std::ofstream trafficOutFile(s_trafficTraceFile, std::ios_base::trunc);
-    // trafficOutFile.close();
     std::ofstream posOutFile(s_positionTraceFile, std::ios_base::trunc);
     posOutFile.close();
     std::ofstream hoOutFile(s_handoverTraceFile, std::ios_base::trunc);
@@ -1130,17 +1133,6 @@ main(int argc, char* argv[])
     // Connect to handover trace so we know when a handover is successfully performed
     Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverEndOk",
                     MakeCallback(&NotifyHandoverEndOkGnb));
-    // Config::Connect("/NodeList/*/DeviceList/*/$ns3::NrUeNetDevice/NrUeRrc/HandoverEndOk",
-    //             MakeCallback(&NotifyHandoverEndOkUe));
-
-    // Config::Connect("/NodeList/*/DeviceList/*/$ns3::NrUeNetDevice/NrUeRrc/RadioLinkFailure",
-    //                 MakeBoundCallback(&TraceRlfToFile, g_rlfStream));
-
-    // Config::Connect("/NodeList/*/DeviceList/*/$ns3::NrUeNetDevice/NrUeRrc/PhySyncDetection",
-    //                 MakeBoundCallback(&TracePhySyncToFile, g_phySyncStream));
-
-    // Config::Connect("/NodeList/*/DeviceList/*/$ns3::NrUeNetDevice/NrUeRrc/StateTransition",
-    //                 MakeBoundCallback(&TraceUeStateToFile, g_ueStateStream));
 
     Ptr<OutputStreamWrapper> rsrpRsrqSinrTraceStream =
         Create<OutputStreamWrapper>(ns3_dir + "rsrp-trace.tr", std::ios::out);
@@ -1168,7 +1160,10 @@ main(int argc, char* argv[])
     FlowMonitorHelper flowHelper;
 
     flowHelper.Install(remoteHost);
-    flowMonitor = flowHelper.Install(uavNodes);
+    NodeContainer allUes;
+    allUes.Add(uavNodes);
+    allUes.Add(groundUeNodes);
+    flowMonitor = flowHelper.Install(allUes);
 
     std::ofstream qos_vs_time;
     qos_vs_time.open(ns3_dir + "qos-vs-time.txt", std::ofstream::out | std::ofstream::trunc);
@@ -1210,9 +1205,8 @@ main(int argc, char* argv[])
     }
 
     std::ofstream flowOutFile(s_flowStatTraceFile, std::ios_base::trunc);
-    flowOutFile << "Time,FlowId,Src,Dest,TxPkts,RxPkts,LostPkts,PDR,PLR,Delay,Jitter,Duration,LastRx,ThroughputMbps\n";
+    flowOutFile << "Time,Role,IMSI\n";
     flowOutFile.close();
-
 
     // Tell the simulator how long to run
     Simulator::Stop(simTime + Seconds(15));

@@ -31,9 +31,11 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNrTnNtnSimulationWithSecrecy");
+NS_LOG_COMPONENT_DEFINE("OranNrTnNtnSimulationWithSecrecyOnnx");
 
 /**
+ * Usage example of the ORAN NR models for ONNX-based secrecy-aware TN/NTN handover.
+ *
  * OranNrTnNtnSimulationWithSecrecy
  *
  * End-to-end ns-3 (5G-LENA NR) + ns-O-RAN scenario for evaluating TN–NTN integration
@@ -233,6 +235,7 @@ void RxTrace(Ptr<const Packet> p, const Address& from, const Address& to)
     uint16_t ueId = (InetSocketAddress::ConvertFrom(to).GetPort() / 1000);
     std::ofstream rxOutFile(s_trafficTraceFile, std::ios_base::app);
     rxOutFile << Simulator::Now().GetSeconds() << " " << ueId << " RX " << p->GetSize() << std::endl;
+    rxOutFile.flush();
 }
 
 void TxTrace(Ptr<const Packet> p, const Address& from, const Address& to)
@@ -240,6 +243,7 @@ void TxTrace(Ptr<const Packet> p, const Address& from, const Address& to)
     uint16_t ueId = (InetSocketAddress::ConvertFrom(to).GetPort() / 1000);
     std::ofstream txOutFile(s_trafficTraceFile, std::ios_base::app);
     txOutFile << Simulator::Now().GetSeconds() << " " << ueId << " TX " << p->GetSize() << std::endl;
+    txOutFile.flush();
 }
 
 int get_user_id_from_ipv4(Ipv4Address ip)
@@ -320,7 +324,7 @@ void ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
         }
     }
 
-    std::ofstream qos_vs_time(ns3_dir + "qos-vs-time2.txt", std::ios::app);
+    std::ofstream qos_vs_time(ns3_dir + "qos-vs-time.txt", std::ios::app);
     double now = Simulator::Now().GetSeconds();
     for (uint32_t ue = 0; ue < user_delay.size(); ++ue)
     {
@@ -328,6 +332,7 @@ void ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
                     << user_jitter[ue] << "," << user_throughput[ue] << ","
                     << user_pdr[ue] << "," << user_plr[ue] << "\n";
     }
+    qos_vs_time.flush();
 
     Simulator::Schedule(management_interval, ThroughputMonitor, fmhelper, flowMon);
 }
@@ -346,6 +351,7 @@ void TracePositions(NodeContainer nodes)
         posOutFile << " " << pos.x << " " << pos.y;
     }
     posOutFile << std::endl;
+    posOutFile.flush();
 
     Simulator::Schedule(Seconds(1), &TracePositions, nodes);
 }
@@ -354,6 +360,7 @@ void NotifyHandoverEndOkGnb(std::string context, uint64_t imsi, uint16_t cellid,
 {
     std::ofstream hoOutFile(s_handoverTraceFile, std::ios_base::app);
     hoOutFile << Simulator::Now().GetSeconds() << " " << imsi << " " << cellid << " " << rnti << std::endl;
+    hoOutFile.flush();
 }
 
 // void NotifyHandoverStartGnb(std::string context, uint64_t imsi,
@@ -677,7 +684,7 @@ void SecrecyMonitorSinr(double secrecyTargetBitsPerHz)
             << ",outage," << outage
             << std::endl;
     }
-
+    out.flush();
     out.close();
 
     Simulator::Schedule(management_interval,
@@ -857,9 +864,9 @@ int main(int argc, char* argv[])
 {
     bool verbose = false;
     bool useOran = true;
-    bool useOnnx = false;
+    bool useOnnx = true;
     bool useTorch = false;
-    bool useRsrp = true;
+    bool useRsrp = false;
 
     // ------------------------------------------------------------------
     // NEW: Scenario selector
@@ -877,8 +884,8 @@ int main(int argc, char* argv[])
     bool enableTn = false;
 
     bool enableEves = true;
-    uint32_t numUesA = 50;
-    uint32_t numUesB = 50;
+    uint32_t numUesA = 75;
+    uint32_t numUesB = 75;
     uint32_t numTnGnbs = 10;
     uint32_t numNtnGnbs = 10;
 
@@ -914,7 +921,7 @@ int main(int argc, char* argv[])
     cmd.AddValue("use-rsrp-lm", "Use RSRP LM", useRsrp);
 
     // NEW
-    //cmd.AddValue("scenario", "Scenario: tn | ntn | tn-ntn", scenario);
+    cmd.AddValue("scenario", "Scenario: tn | ntn | tn-ntn", scenario);
 
     //cmd.AddValue("enable-ntn", "Enable NTN gNBs (TN-only vs TN+NTN)", enableNtn);
     cmd.AddValue("enable-eves", "Enable eavesdroppers + secrecy logging", enableEves);
@@ -962,25 +969,33 @@ int main(int argc, char* argv[])
     if (scenarioLower == "tn")
     {
         enableTn = true;
-        enableNtn = false; // overrides your --enable-ntn
-        // Force B-side node counts to zero (so they are not created/added)
+        enableNtn = false;
+
+        // Force NTN side to zero (so folder naming + node creation is consistent)
+        numUesB = 0;
+        numNtnGnbs = 0;
+        nEveB = 0;
     }
     else if (scenarioLower == "ntn")
     {
         enableTn = false;
-        enableNtn = true; // ensures B-side is active
-        // Force A-side node counts to zero
+        enableNtn = true;
+
+        // Force TN side to zero
+        numUesA = 0;
+        numTnGnbs = 0;
+        nEveA = 0;
     }
     else if (scenarioLower == "tn-ntn")
     {
         enableTn = true;
         enableNtn = true;
-        // keep your counts as provided
     }
     else
     {
         NS_ABORT_MSG("Unknown --scenario value. Use: tn | ntn | tn-ntn");
     }
+
 
     std::string propScenario;
 
@@ -1018,36 +1033,38 @@ int main(int argc, char* argv[])
 
     // Build a folder name for UE counts
     std::string uesFolder;
-    if (numUesA == numUesB)
+    if (scenarioLower == "tn")
     {
         uesFolder = std::to_string(numUesA) + "_ues";           // "50_ues"
     }
-    else
+    else if (scenarioLower == "ntn")
     {
-        uesFolder = std::to_string(numUesA) + "A_" +
-                    std::to_string(numUesB) + "B_ues";          // e.g., "50A_40B_ues"
+        uesFolder = std::to_string(numUesB) + "_ues"; // "50_ues"
     }
-
+    else // tn-ntn
+    {
+        uesFolder = std::to_string(numUesA) + "a_" + std::to_string(numUesB) + "b_ues"; // "50a_50b_ues"
+    }
     {
         std::string tag = scenarioLower;
         if (tag == "tn-ntn") tag = "tn-ntn"; // optional aliases
 
         // Make directory ABSOLUTE to avoid "build/" vs demonstrated directory confusion
         auto outDir = std::filesystem::absolute(
-            std::filesystem::path("results") / "nr" / "tn-ntn" / "withsecrecylm" / tag / uesFolder
+            std::filesystem::path("results") / "nr" / "tn-ntn" / "withsecrecylm" / "onnx" /tag / uesFolder
         );
 
         ns3_dir = outDir.string() + "/";
 
-        s_trafficTraceFile      = ns3_dir + "nr-traffic-trace2.tr";
-        s_positionTraceFile     = ns3_dir + "nr-position-trace2.tr";
-        s_handoverTraceFile     = ns3_dir + "nr-handover-trace2.tr";
+        s_trafficTraceFile      = ns3_dir + "nr-traffic-trace.tr";
+        s_positionTraceFile     = ns3_dir + "nr-position-trace.tr";
+        s_handoverTraceFile     = ns3_dir + "nr-handover-trace.tr";
         // s_rsrpUeTraceFile       = ns3_dir + "nr-rsrp-ue.tr";
         // s_rsrpEveTraceFile      = ns3_dir + "nr-rsrp-eve.tr";
         // s_secrecyTraceFile      = ns3_dir + "secrecy-vs-time.tr";
         // s_sinrUeTraceFile       = ns3_dir + "nr-sinr-ue.tr";
         // s_sinrEveTraceFile      = ns3_dir + "nr-sinr-eve.tr";
-        s_secrecySinrTraceFile  = ns3_dir + "secrecy-sinr-vs-time2.txt";
+        s_secrecySinrTraceFile  = ns3_dir + "secrecy-sinr-vs-time.txt";
 
         NS_LOG_UNCOND("CWD      = " << std::filesystem::current_path());
         NS_LOG_UNCOND("scenario = " << scenarioLower);
@@ -1077,7 +1094,7 @@ int main(int argc, char* argv[])
     // TouchOrAbort(s_sinrEveTraceFile);
     //TouchOrAbort(s_secrecyTraceFile);
     TouchOrAbort(s_secrecySinrTraceFile);
-    TouchOrAbort(ns3_dir + "qos-vs-time2.txt");
+    TouchOrAbort(ns3_dir + "qos-vs-time.txt");
 
 
     { std::ofstream f(s_trafficTraceFile, std::ios_base::trunc); }
@@ -1100,7 +1117,7 @@ int main(int argc, char* argv[])
     }
 
     {
-        std::ofstream f(ns3_dir + "qos-vs-time2.txt", std::ios_base::trunc);
+        std::ofstream f(ns3_dir + "qos-vs-time.txt", std::ios_base::trunc);
         f << "Time,UE,Delay,Jitter,Throughput,PDR,PLR\n";
     }
 
@@ -1503,7 +1520,7 @@ int main(int argc, char* argv[])
 
         if (useOnnx == true)
         {
-            NS_ABORT_MSG_IF(!TypeId::LookupByNameFailSafe("ns3::OranLmNr2NrOnnxHandover", &defaultLmTid),
+            NS_ABORT_MSG_IF(!TypeId::LookupByNameFailSafe("ns3::OranLmNrOnnxSecrecyAwareHandover", &defaultLmTid),
                             "ONNX LM not found.");
         }
         else if (useTorch == true)
@@ -1519,6 +1536,39 @@ int main(int argc, char* argv[])
         ObjectFactory defaultLmFactory;
         defaultLmFactory.SetTypeId(defaultLmTid);
         defaultLm = defaultLmFactory.Create<OranLm>();
+
+        // Enable ML trigger (if you want ML gating)
+        defaultLm->SetAttribute("EnableMlTrigger", BooleanValue(true));
+        defaultLm->SetAttribute("HoProbThr", DoubleValue(0.60));
+        defaultLm->SetAttribute("MlSecrecyTarget", DoubleValue(secrecyTargetBitsPerHz));
+
+        // Pick ONE model based on scenario (since you run separately)
+        if (scenarioLower == "tn")
+        {
+            defaultLm->SetAttribute("EnableMlTrigger", BooleanValue(true));
+            defaultLm->SetAttribute("OnnxModelPathTn", StringValue("model_tn.onnx"));
+
+            // IMPORTANT: disable/unload NTN model so it never tries to load it
+            defaultLm->SetAttribute("OnnxModelPathNtn", StringValue(""));
+
+            defaultLm->SetAttribute("TnCellIdMax", UintegerValue(numTnGnbs));
+        }
+        else if (scenarioLower == "ntn")
+        {
+            defaultLm->SetAttribute("EnableMlTrigger", BooleanValue(true));
+            defaultLm->SetAttribute("OnnxModelPathNtn", StringValue("model_ntn.onnx"));
+
+            // disable TN model
+            defaultLm->SetAttribute("OnnxModelPathTn", StringValue(""));
+
+            defaultLm->SetAttribute("TnCellIdMax", UintegerValue(numNtnGnbs));
+        }
+        else
+        {
+            // tn-ntn run: choose one, or keep ML off unless you implement dual-model logic
+            defaultLm->SetAttribute("EnableMlTrigger", BooleanValue(false));
+        }
+
 
         defaultLm->SetAttribute("LeakageModel", StringValue(leakageModel));
         defaultLm->SetAttribute("RiskMapFile", StringValue(riskMapFile));

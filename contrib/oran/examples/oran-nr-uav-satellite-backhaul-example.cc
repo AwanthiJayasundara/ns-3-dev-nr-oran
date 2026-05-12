@@ -1,20 +1,20 @@
-/*
- * Full satellite-backhauled UAV path
+/**
+ * Usage example of the ORAN NR models for a satellite-backhauled UAV path.
  *
- * Real packet path:
+ * The scenario builds a full IP forwarding path between a UE, UAV relay,
+ * satellite, gateway, and remote server:
+ *
  *   UL: UE -> UAV -> SAT -> GW -> Server
  *   DL: Server -> GW -> SAT -> UAV -> UE
  *
- * Packet forwarding is real at IP level using PointToPoint links.
- * Radio/SAT channel quality is monitored in parallel using:
+ * Packet forwarding is real at the IP layer using PointToPoint links. The radio
+ * and satellite channel quality is monitored in parallel using:
  *   - Friis access monitor (UE <-> UAV)
  *   - 3GPP NTN service monitor (UAV <-> SAT)
  *   - 3GPP NTN feeder monitor (SAT <-> GW)
  *
- * Outputs:
- *   - uav_sat_backhaul_channel_trace.txt
- *   - uav_sat_backhaul_flow_trace.txt
- *   - uav_sat_backhaul_flow_summary.txt
+ * The example writes channel, flow, and summary traces for the backhauled UAV
+ * path so the end-to-end packet behavior can be compared with link quality.
  */
 
 #include "ns3/applications-module.h"

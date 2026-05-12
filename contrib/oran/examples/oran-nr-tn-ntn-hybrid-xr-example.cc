@@ -38,7 +38,17 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("OranNrTnNtnHybridXr");
 
 /**
- * O-RAN-driven hybrid TN/NTN NR access with QoS monitoring.
+ * Usage example of the ORAN NR models for hybrid TN/NTN XR traffic.
+ *
+ * The scenario consists of terrestrial gNBs, non-terrestrial aerial gNBs, and
+ * two UE groups sharing a common NR BWP configuration. UES1 traffic uses XR-like
+ * downlink/uplink flows while UES2 provides background load. The UEs report
+ * location, serving cell, RSRP, and QoS measurements to the Near-RT RIC.
+ *
+ * In the RIC, an RSRP-based NR-to-NR Logic Module evaluates reported metrics and
+ * can issue handover commands between TN and NTN cells. The example also traces
+ * flow statistics, node positions, fronthaul usage, air-interface usage, and
+ * successful handover events.
  *
  * IMPORTANT IMPLEMENTATION NOTE:
  * --------------------------------

@@ -32,13 +32,13 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpHandoverSimulationNtn");
 
 /**
- * Example of ORAN-driven NR multi-cell UE handover with QoS monitoring (5G-LENA).
+ * Usage example of the ORAN NR models for NTN-style RSRP handover.
  *
  * Minimum required versions for reproducibility:
  *   - ns-3 version: 3.39 or later
  *   - 5G-LENA version: 2.6 or later
  *
- * The scenario consists of 50 NR UE UEs moving randomly inside a large 2D area
+ * The scenario consists of 50 NR UEs moving randomly inside a large 2D area
  * and served by 5 fixed gNB macro cells. Each UE receives downlink UDP traffic
  * from a remote host through an NR EPC (NrPointToPointEpcHelper).
  *
@@ -54,7 +54,7 @@ NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpHandoverSimulationNtn");
  * and the UEs initially attach to the gNB offering the maximum RSRP. X2 interfaces
  * are enabled to support inter-gNB handovers.
  *
- * In ORAN mode, UE UEs report periodic measurements (location, serving cell info,
+ * In ORAN mode, UEs report periodic measurements (location, serving cell info,
  * and application loss metrics) to a Near-RT RIC using E2 node terminators.
  * The Near-RT RIC runs an RSRP-based Logic Module (OranLmNr2NrRsrpHandover) that
  * can decide and trigger NR-to-NR handovers. gNB-side cell load is also reported

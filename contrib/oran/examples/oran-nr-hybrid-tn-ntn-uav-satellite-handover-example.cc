@@ -65,7 +65,7 @@ using namespace ns3;
 NS_LOG_COMPONENT_DEFINE("OranNrTnNtnUavSatHandover5");
 
 /**
- * Example of ORAN-driven NR multi-cell UES1 handover with QoS monitoring (5G-LENA).
+ * Usage example of the ORAN NR models for hybrid TN/NTN UAV-satellite handover.
  *
  * Minimum required versions for reproducibility:
  *   - ns-3 version: 3.39 or later
