@@ -309,6 +309,48 @@ This repository currently extends the ns-3 **NR (5G-LENA)** + **ns-O-RAN** examp
 
 ---
 
+## Current ORAN NR Examples
+The ORAN module currently builds the following NR examples. These are the
+renamed `./ns3 run` targets in `contrib/oran/examples/CMakeLists.txt`.
+
+### NR RSRP handover
+```shell
+./ns3 run "oran-nr-tn-rsrp-handover-example"
+./ns3 run "oran-nr-ntn-rsrp-handover-example"
+./ns3 run "oran-nr-uav-rsrp-handover-example"
+./ns3 run "oran-nr-uav-load-aware-rsrp-handover-example"
+```
+
+### NR UAV and ground UE load-aware handover
+```shell
+./ns3 run "oran-nr-uav-ground-traffic-handover-example"
+./ns3 run "oran-nr-uav-ground-qos-handover-example"
+./ns3 run "oran-nr-uav-ground-fronthaul-handover-example"
+./ns3 run "oran-nr-tn-ntn-load-aware-handover-example"
+./ns3 run "oran-nr-tn-ntn-xr-handover-example"
+./ns3 run "oran-nr-tn-ntn-uav-mobility-handover-example"
+```
+
+### NR TN/NTN and secrecy-aware handover
+```shell
+./ns3 run "oran-nr-tn-ntn-rsrp-handover-example"
+./ns3 run "oran-nr-tn-ntn-hybrid-xr-example"
+./ns3 run "oran-nr-tn-ntn-baseline-handover-example"
+./ns3 run "oran-nr-tn-ntn-secrecy-handover-example"
+./ns3 run "oran-nr-tn-ntn-secrecy-onnx-handover-example"
+```
+
+### NR UAV satellite backhaul
+```shell
+./ns3 run "oran-nr-uav-satellite-backhaul-example"
+./ns3 run "oran-nr-tn-ntn-uav-satellite-handover-example"
+./ns3 run "oran-nr-tn-ntn-uav-satellite-load-handover-example"
+./ns3 run "oran-nr-tn-uav-satellite-handover-example"
+./ns3 run "oran-nr-hybrid-tn-ntn-uav-satellite-handover-example"
+```
+
+---
+
 ## 🧠 ORAN Near-RT RIC Closed-Loop Control (Current Implementation)
 
 When ORAN is enabled (`--use-oran=1`), the following control loop runs:
@@ -458,5 +500,4 @@ Currently using ns3::RandomDirection2dMobilityModel for testing purposes with st
 
 ### Architecture
 <img width="1121" height="804" alt="Screenshot from 2026-01-21 12-27-03" src="https://github.com/user-attachments/assets/1a95fdbb-1238-4624-a13a-7863cca40451" />
-
 
