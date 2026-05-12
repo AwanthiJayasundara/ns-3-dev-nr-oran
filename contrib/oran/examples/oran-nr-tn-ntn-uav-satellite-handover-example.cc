@@ -1455,6 +1455,11 @@ main(int argc, char* argv[])
     double stopTailSeconds = 0.0;
     double progressIntervalSec = 1.0;
     bool enableFading = true;
+    int channelUpdatePeriodMs = 100;
+    int channelConditionUpdatePeriodMs = 200;
+    bool enableFhControl = true;
+    bool useFixedMcs = false;
+    uint8_t fixedMcs = 0;
     double initMinRsrpDbm = -120.0;
     double initRetryIntervalSec = 2.0;
     bool remMode = false; // [0]: REM disabled; [1]: generate REM
@@ -1557,6 +1562,11 @@ main(int argc, char* argv[])
     cmd.AddValue("rlc-max-tx-buffer-size", "Maximum RLC UM TX buffer size in bytes", maxRlcTxBufferSize);
     cmd.AddValue("stop-tail", "Extra simulation seconds after sim-time for app/drain events", stopTailSeconds);
     cmd.AddValue("enable-fading", "Enable fast fading channel component", enableFading);
+    cmd.AddValue("channel-update-ms", "3GPP channel matrix update period in milliseconds", channelUpdatePeriodMs);
+    cmd.AddValue("channel-condition-update-ms", "3GPP LOS/NLOS channel condition update period in milliseconds", channelConditionUpdatePeriodMs);
+    cmd.AddValue("enable-fh-control", "Enable 5G-LENA fronthaul control calculations", enableFhControl);
+    cmd.AddValue("use-fixed-mcs", "Use fixed DL/UL MCS instead of adaptive AMC", useFixedMcs);
+    cmd.AddValue("fixed-mcs", "Fixed MCS index used when --use-fixed-mcs=1", fixedMcs);
     cmd.AddValue("init-min-rsrp", "Minimum RSRP for initial attach in dBm", initMinRsrpDbm);
     cmd.AddValue("init-retry-interval", "Initial attach retry interval in seconds", initRetryIntervalSec);
     cmd.Parse(argc, argv);
@@ -1576,6 +1586,7 @@ main(int argc, char* argv[])
         enableOranAppLossReports = false;
         enableOranCellLoadReports = false;
         enableSatBackhaulMonitor = false;
+        enableFhControl = false;
         remMode = false;
     }
 
@@ -1648,10 +1659,8 @@ main(int argc, char* argv[])
     Config::SetDefault("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(maxRlcTxBufferSize));
     //Config::SetDefault("ns3::NrGnbRrc::MaxUesPerCell", UintegerValue(maxUesPerCell));
 
-    int channelUpdatePeriod = 100;
-    int channelConditionUpdatePeriod = 200;
     Config::SetDefault("ns3::ThreeGppChannelModel::UpdatePeriod",
-                       TimeValue(MilliSeconds(channelUpdatePeriod)));
+                       TimeValue(MilliSeconds(channelUpdatePeriodMs)));
 
     //Config::SetDefault("ns3::NrGnbPhy::TxPower", DoubleValue(43));
 
@@ -1718,9 +1727,9 @@ main(int argc, char* argv[])
     ntnChannelHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(enableShadowing));
 
     tnChannelHelper->SetChannelConditionModelAttribute(
-        "UpdatePeriod", TimeValue(MilliSeconds(channelConditionUpdatePeriod)));
+        "UpdatePeriod", TimeValue(MilliSeconds(channelConditionUpdatePeriodMs)));
     ntnChannelHelper->SetChannelConditionModelAttribute(
-        "UpdatePeriod", TimeValue(MilliSeconds(channelConditionUpdatePeriod)));
+        "UpdatePeriod", TimeValue(MilliSeconds(channelConditionUpdatePeriodMs)));
     // }
     //ObjectFactory distanceBasedChannelFactory;
     
@@ -1801,10 +1810,6 @@ main(int argc, char* argv[])
     //nrHelper->SetGnbPhyAttribute("Numerology", UintegerValue(numerology));
     nrHelper->SetUePhyAttribute("TxPower", DoubleValue(ueTxPower));
 
-    uint8_t fixedMcs = 0;
-    bool useFixedMcs = false; //Realistic behavior, where MCS is adapted based on channel conditions and CQI
-    
-
     nrHelper->SetSchedulerAttribute("FixedMcsDl", BooleanValue(useFixedMcs));
     nrHelper->SetSchedulerAttribute("FixedMcsUl", BooleanValue(useFixedMcs));
     if (useFixedMcs)
@@ -1821,10 +1826,13 @@ main(int argc, char* argv[])
     // Noise figure for the UE
     nrHelper->SetUePhyAttribute("NoiseFigure", DoubleValue(ueNoiseFigure));
 
-    nrHelper->EnableFhControl();
-    nrHelper->SetFhControlAttribute("FhControlMethod", StringValue("OptimizeRBs"));
-    nrHelper->SetFhControlAttribute("FhCapacity", UintegerValue(10000)); // 10 Gbps for XR
-    nrHelper->SetFhControlAttribute("OverheadDyn", UintegerValue(32));    // or 100 if you want heavier overhead
+    if (enableFhControl)
+    {
+        nrHelper->EnableFhControl();
+        nrHelper->SetFhControlAttribute("FhControlMethod", StringValue("OptimizeRBs"));
+        nrHelper->SetFhControlAttribute("FhCapacity", UintegerValue(10000)); // 10 Gbps for XR
+        nrHelper->SetFhControlAttribute("OverheadDyn", UintegerValue(32));    // or 100 if you want heavier overhead
+    }
 
 
     // ---- TDD single-carrier setup (ONE band, ONE BWP) ----
@@ -2262,7 +2270,10 @@ main(int argc, char* argv[])
         }
     }
 
-    nrHelper->ConfigureFhControl(allGnbNrDevs);
+    if (enableFhControl)
+    {
+        nrHelper->ConfigureFhControl(allGnbNrDevs);
+    }
 
     // for (auto it = allGnbNrDevs.Begin(); it != allGnbNrDevs.End(); ++it)
     // {
