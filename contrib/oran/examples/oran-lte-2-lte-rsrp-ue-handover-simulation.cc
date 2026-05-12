@@ -40,6 +40,18 @@ using namespace ns3;
  * This example demonstrates how to integrate ORAN reporting, RSRP-based
  * handover control, and QoS monitoring in a large-scale LTE multi-cell
  * scenario excute with max 150  mobile UEs.
+ *
+ * To see all configurable options, run:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-lte-2-lte-rsrp-ue-handover-simulation --PrintHelp"
+ * \endcode
+ *
+ * A basic run command is:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-lte-2-lte-rsrp-ue-handover-simulation"
+ * \endcode
  */
 
 

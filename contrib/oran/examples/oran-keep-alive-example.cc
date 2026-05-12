@@ -46,6 +46,18 @@ NS_LOG_COMPONENT_DEFINE("OranKeepAliveExample");
  * be missing), and activating the WARN log in the OranE2NodeTerminator,
  * which will report each registration interval that is greater than the
  * RIC's threshold
+ *
+ * To see all configurable options, run:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-keep-alive-example --PrintHelp"
+ * \endcode
+ *
+ * A basic run command is:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-keep-alive-example"
+ * \endcode
  */
 
 int

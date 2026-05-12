@@ -66,6 +66,18 @@ NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavUeHandoverCellLoadTraffic");
  * 
  * Cell load capacity is set so no intial attachement or handover will be triggered for a 
  * gNB that has already reached the maximum number of UEs. 
+ *
+ * To see all configurable options, run:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-uav-ground-traffic-handover-example --PrintHelp"
+ * \endcode
+ *
+ * A basic run command is:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-uav-ground-traffic-handover-example"
+ * \endcode
  */
 
 const static float GNB_HEIGHT = 25;

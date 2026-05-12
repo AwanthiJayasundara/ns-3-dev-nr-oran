@@ -45,6 +45,18 @@ NS_LOG_COMPONENT_DEFINE("OranDataRepositoryExample");
  * are saved for the LTE UE. These positions are then retrieved and reported
  * if they fall in a given time range. After that, notional LTE UE cell
  * information is stored, retrieved, and then reported.
+ *
+ * To see all configurable options, run:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-data-repository-example --PrintHelp"
+ * \endcode
+ *
+ * A basic run command is:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-data-repository-example"
+ * \endcode
  */
 int
 main(int argc, char* argv[])

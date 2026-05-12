@@ -41,6 +41,18 @@ NS_LOG_COMPONENT_DEFINE("OranRandomWalkExample");
  *
  * A simple topology of a node moving randomly
  * and reporting its location is used.
+ *
+ * To see all configurable options, run:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-random-walk-example --PrintHelp"
+ * \endcode
+ *
+ * A basic run command is:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-random-walk-example"
+ * \endcode
  */
 
 void

@@ -166,6 +166,18 @@ NS_LOG_COMPONENT_DEFINE("OranNrTnNtnSimulationWithoutSecrecy");
  *   - Secrecy monitor functions are kept (you asked not to remove anything), but we do NOT
  *     schedule them by default in this baseline. If you want them for logging only, you can
  *     uncomment the scheduling block near the bottom.
+ *
+ * To see all configurable options, run:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-tn-ntn-baseline-handover-example --PrintHelp"
+ * \endcode
+ *
+ * A basic run command is:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-tn-ntn-baseline-handover-example"
+ * \endcode
  */
 
 // =========================

@@ -127,6 +127,18 @@ NS_LOG_COMPONENT_DEFINE("OranNrTnNtnSimulationWithSecrecy");
  * - TN+NTN:         --scenario=tn-ntn
  * - TN+NTN (RSRP):  --scenario=tn-ntn --use-rsrp-lm=1 --enable-eves=0
  * - TN+NTN (Secrecy-aware): --scenario=tn-ntn --use-rsrp-lm=1 --enable-eves=1
+ *
+ * To see all configurable options, run:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-tn-ntn-secrecy-handover-example --PrintHelp"
+ * \endcode
+ *
+ * A basic run command is:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-tn-ntn-secrecy-handover-example"
+ * \endcode
  */
 
 // =========================

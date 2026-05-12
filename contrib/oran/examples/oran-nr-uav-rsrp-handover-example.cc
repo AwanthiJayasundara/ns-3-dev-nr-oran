@@ -66,6 +66,18 @@ NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavHandoverSimulation");
  *
  * Optionally, a 5G NR Radio Environment Map (REM) can be generated at runtime
  * using NrRadioEnvironmentMapHelper to visualize coverage conditions in the area.
+ *
+ * To see all configurable options, run:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-uav-rsrp-handover-example --PrintHelp"
+ * \endcode
+ *
+ * A basic run command is:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-uav-rsrp-handover-example"
+ * \endcode
  */
 
 const static float GNB_HEIGHT = 25;

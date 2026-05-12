@@ -15,6 +15,18 @@
  *
  * The example writes channel, flow, and summary traces for the backhauled UAV
  * path so the end-to-end packet behavior can be compared with link quality.
+ *
+ * To see all configurable options, run:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-uav-satellite-backhaul-example --PrintHelp"
+ * \endcode
+ *
+ * A basic run command is:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-uav-satellite-backhaul-example"
+ * \endcode
  */
 
 #include "ns3/applications-module.h"

@@ -62,6 +62,18 @@ NS_LOG_COMPONENT_DEFINE("OranNrTnNtnHybridXr");
  *
  * So the separation is done by CHANNEL/BWP ACTIVATION, not by installing
  * different BWP-vector sizes on different gNB classes.
+ *
+ * To see all configurable options, run:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-tn-ntn-hybrid-xr-example --PrintHelp"
+ * \endcode
+ *
+ * A basic run command is:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-tn-ntn-hybrid-xr-example"
+ * \endcode
  */
 
 static constexpr double TN_GNB_HEIGHT = 25.0;

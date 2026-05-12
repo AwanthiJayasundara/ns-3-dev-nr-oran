@@ -50,6 +50,18 @@ NS_LOG_COMPONENT_DEFINE("OranLte2LteDistanceHandoverHelperExample");
  * between 2 LTE eNBs. The LTE UE reports to the RIC its location
  * and current Cell ID. In the RIC, an LM will periodically check
  * the position, and if needed, issue a handover command.
+ *
+ * To see all configurable options, run:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-multiple-net-devices-example --PrintHelp"
+ * \endcode
+ *
+ * A basic run command is:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-multiple-net-devices-example"
+ * \endcode
  */
 
 void

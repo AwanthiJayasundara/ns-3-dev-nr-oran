@@ -130,6 +130,18 @@ NS_LOG_COMPONENT_DEFINE("OranNrTnNtnUavSatHandover5");
  * In this scenario, when 5G-LENA Fronthaul Control is enabled, the fronthaul model 
  * assumes functional split 7.2x.
  * after this PDR is much less
+ *
+ * To see all configurable options, run:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-hybrid-tn-ntn-uav-satellite-handover-example --PrintHelp"
+ * \endcode
+ *
+ * A basic run command is:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-hybrid-tn-ntn-uav-satellite-handover-example"
+ * \endcode
  */
 
 

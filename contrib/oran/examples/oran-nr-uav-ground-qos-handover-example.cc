@@ -73,6 +73,18 @@ NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavUeHandoverCellLoadQos");
  * keep everything in one BWP because video can dominate resources voice packets may get delayed
  * uplink-heavy traffic may suffer if DL traffic takes most capacity
  * scheduler becomes less efficient
+ *
+ * To see all configurable options, run:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-uav-ground-qos-handover-example --PrintHelp"
+ * \endcode
+ *
+ * A basic run command is:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-uav-ground-qos-handover-example"
+ * \endcode
  */
 
 const static float GNB_HEIGHT = 25;

@@ -74,6 +74,18 @@ NS_LOG_COMPONENT_DEFINE("OranNrTnNtnUavSatHandover2");
  * to the Near-RT RIC. The RIC uses the TN/NTN RSRP handover Logic Module to
  * select serving cells while respecting different TN and NTN capacity limits,
  * then records position, flow, handover, and satellite-backhaul traces.
+ *
+ * To see all configurable options, run:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-tn-ntn-uav-satellite-handover-example --PrintHelp"
+ * \endcode
+ *
+ * A basic run command is:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-tn-ntn-uav-satellite-handover-example"
+ * \endcode
  */
 
 const static float TN_GNB_HEIGHT = 25;

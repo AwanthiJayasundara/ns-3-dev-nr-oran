@@ -43,6 +43,18 @@ NS_LOG_COMPONENT_DEFINE("OranNrTnNtnRsrpHandover");
  * UEs move between available cells. FlowMonitor and trace callbacks are used to
  * record throughput, delay, jitter, packet delivery, UE positions, and handover
  * events for later analysis.
+ *
+ * To see all configurable options, run:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-tn-ntn-rsrp-handover-example --PrintHelp"
+ * \endcode
+ *
+ * A basic run command is:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-tn-ntn-rsrp-handover-example"
+ * \endcode
  */
 
 // =========================
