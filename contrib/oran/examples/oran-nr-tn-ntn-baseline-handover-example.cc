@@ -41,7 +41,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNrTnNtnSimulationWithoutSecrecy");
+NS_LOG_COMPONENT_DEFINE("OranNrTnNtnBaselineHandoverExample");
 
 /**
  * Usage example of the ORAN NR models for baseline TN/NTN handover without secrecy control.

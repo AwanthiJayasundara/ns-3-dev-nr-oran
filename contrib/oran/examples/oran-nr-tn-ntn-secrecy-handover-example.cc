@@ -31,7 +31,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNrTnNtnSimulationWithSecrecy");
+NS_LOG_COMPONENT_DEFINE("OranNrTnNtnSecrecyHandoverExample");
 
 /**
  * Usage example of the ORAN NR models for secrecy-aware TN/NTN handover.

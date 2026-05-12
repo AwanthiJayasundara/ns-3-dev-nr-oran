@@ -62,7 +62,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNrTnNtnUavSatHandover5");
+NS_LOG_COMPONENT_DEFINE("OranNrHybridTnNtnUavSatelliteHandoverExample");
 
 /**
  * Usage example of the ORAN NR models for hybrid TN/NTN UAV-satellite handover.

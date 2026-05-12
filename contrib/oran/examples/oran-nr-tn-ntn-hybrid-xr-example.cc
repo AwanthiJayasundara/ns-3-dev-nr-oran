@@ -35,7 +35,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNrTnNtnHybridXr");
+NS_LOG_COMPONENT_DEFINE("OranNrTnNtnHybridXrExample");
 
 /**
  * Usage example of the ORAN NR models for hybrid TN/NTN XR traffic.

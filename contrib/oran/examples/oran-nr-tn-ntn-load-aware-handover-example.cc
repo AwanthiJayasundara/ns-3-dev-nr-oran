@@ -36,7 +36,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavUeHandoverCellLoadTnNtn");
+NS_LOG_COMPONENT_DEFINE("OranNrTnNtnLoadAwareHandoverExample");
 
 /**
  * Usage example of the ORAN NR models for TN/NTN load-aware handover.

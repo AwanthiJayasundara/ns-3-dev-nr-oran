@@ -59,7 +59,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("UeUavSatGatewayCoreFullPath");
+NS_LOG_COMPONENT_DEFINE("OranNrUavSatelliteBackhaulExample");
 
 // ============================================================
 // Utility: PSD creation

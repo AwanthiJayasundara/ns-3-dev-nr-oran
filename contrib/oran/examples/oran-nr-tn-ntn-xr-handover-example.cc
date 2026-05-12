@@ -39,7 +39,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavUeHandoverCellLoadXr");
+NS_LOG_COMPONENT_DEFINE("OranNrTnNtnXrHandoverExample");
 
 /**
  * Usage example of the ORAN NR models for XR traffic and TN/NTN handover.

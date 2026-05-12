@@ -39,7 +39,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpHandoverLmWithUavMobilityLm");
+NS_LOG_COMPONENT_DEFINE("OranNrTnNtnUavMobilityHandoverExample");
 
 /**
  * Usage example of the ORAN NR models for RSRP handover with UAV mobility control.

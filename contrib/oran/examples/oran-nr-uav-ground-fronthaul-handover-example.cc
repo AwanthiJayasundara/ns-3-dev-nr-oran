@@ -35,7 +35,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavUeHandoverCellLoadFh");
+NS_LOG_COMPONENT_DEFINE("OranNrUavGroundFronthaulHandoverExample");
 
 /**
  * Usage example of the ORAN NR models for fronthaul-aware UAV and ground UE handover.

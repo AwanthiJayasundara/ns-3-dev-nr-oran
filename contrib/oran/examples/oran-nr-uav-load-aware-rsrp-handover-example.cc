@@ -29,7 +29,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavHandoverCellLoad");
+NS_LOG_COMPONENT_DEFINE("OranNrUavLoadAwareRsrpHandoverExample");
 
 /**
  * Usage example of the ORAN NR models for load-aware UAV UE handover.

@@ -29,7 +29,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNrTnNtnRsrpHandover");
+NS_LOG_COMPONENT_DEFINE("OranNrTnNtnRsrpHandoverExample");
 
 /**
  * Usage example of the ORAN NR models for TN/NTN RSRP handover.

@@ -30,7 +30,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE("OranNr2NrRsrpUavUeHandoverCellLoadQos");
+NS_LOG_COMPONENT_DEFINE("OranNrUavGroundQosHandoverExample");
 
 /**
  * Usage example of the ORAN NR models for QoS-aware UAV and ground UE handover.
