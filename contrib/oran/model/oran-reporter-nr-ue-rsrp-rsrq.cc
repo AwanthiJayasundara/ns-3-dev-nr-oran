@@ -83,17 +83,8 @@ OranReporterNrUeRsrpRsrq::ReportRsrpRsrq(uint16_t rnti,
         NS_ABORT_MSG_IF(m_terminator == nullptr,
                         "Attempting to generate reports in reporter with NULL E2 Terminator");
 
-        Ptr<OranReportNrUeRsrpRsrq> report = CreateObject<OranReportNrUeRsrpRsrq>();
-        report->SetAttribute("ReporterE2NodeId", UintegerValue(m_terminator->GetE2NodeId()));
-        report->SetAttribute("Time", TimeValue(Simulator::Now()));
-        report->SetAttribute("Rnti", UintegerValue(rnti));
-        report->SetAttribute("CellId", UintegerValue(cellId));
-        report->SetAttribute("Rsrp", DoubleValue(rsrp));
-        report->SetAttribute("Rsrq", DoubleValue(rsrq));
-        report->SetAttribute("IsServingCell", BooleanValue(isServingCell));
-        report->SetAttribute("ComponentCarrierId", UintegerValue(componentCarrierId));
-
-        m_reports.push_back(report);
+        m_latestMeasurements[{rnti, cellId, componentCarrierId, isServingCell}] =
+            {Simulator::Now(), rnti, cellId, rsrp, rsrq, isServingCell, componentCarrierId};
     }
 }
 
@@ -107,8 +98,22 @@ OranReporterNrUeRsrpRsrq::GenerateReports()
 
     if (m_active)
     {
-        reports = m_reports;
-        m_reports.clear();
+        reports.reserve(m_latestMeasurements.size());
+        for (const auto& kv : m_latestMeasurements)
+        {
+            const Measurement& measurement = kv.second;
+            Ptr<OranReportNrUeRsrpRsrq> report = CreateObject<OranReportNrUeRsrpRsrq>();
+            report->SetAttribute("ReporterE2NodeId", UintegerValue(m_terminator->GetE2NodeId()));
+            report->SetAttribute("Time", TimeValue(measurement.time));
+            report->SetAttribute("Rnti", UintegerValue(measurement.rnti));
+            report->SetAttribute("CellId", UintegerValue(measurement.cellId));
+            report->SetAttribute("Rsrp", DoubleValue(measurement.rsrp));
+            report->SetAttribute("Rsrq", DoubleValue(measurement.rsrq));
+            report->SetAttribute("IsServingCell", BooleanValue(measurement.isServingCell));
+            report->SetAttribute("ComponentCarrierId", UintegerValue(measurement.componentCarrierId));
+            reports.push_back(report);
+        }
+        m_latestMeasurements.clear();
     }
 
     return reports;

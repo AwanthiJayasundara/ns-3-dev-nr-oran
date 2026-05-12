@@ -46,6 +46,7 @@
 #include <cstdio>  
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <list>
 #include <sstream>
 #include <vector>
@@ -89,6 +90,7 @@ uint32_t maxUesPerCellNtn = 10;
 // Metrics collection interval
 Time management_interval = Seconds(2);
 static double g_mobilityUpdateMs = 200.0;
+static double g_positionTraceIntervalSec = 1.0;
 
 // UES1 ips vector
 std::vector<Ipv4Address> user_ip;
@@ -157,6 +159,30 @@ LookupRoleFromImsi(uint64_t imsi)
 {
     auto it = g_imsiRole.find(imsi);
     return (it == g_imsiRole.end()) ? "UNK" : it->second.c_str();
+}
+
+static void
+PrintSimulationProgress(Time interval, Time stopTime)
+{
+    const double now = Simulator::Now().GetSeconds();
+    const double stop = stopTime.GetSeconds();
+    const double pct = (stop > 0.0) ? (100.0 * now / stop) : 100.0;
+
+    std::cout << "\r[progress] sim t=" << std::fixed << std::setprecision(2)
+              << now << " / " << stop << " s (" << std::setprecision(1)
+              << std::min(100.0, pct) << "%)" << std::flush;
+
+    if (Simulator::Now() + interval < stopTime)
+    {
+        Simulator::Schedule(interval, &PrintSimulationProgress, interval, stopTime);
+    }
+    else
+    {
+        Simulator::Schedule(stopTime - Simulator::Now(), []() {
+            std::cout << "\r[progress] sim t=" << std::fixed << std::setprecision(2)
+                      << Simulator::Now().GetSeconds() << " s (done)" << std::endl;
+        });
+    }
 }
 
 // static std::ofstream g_uncondFile;
@@ -325,7 +351,7 @@ void TraceUeS1Positions(NodeContainer ues)
           << "\n";
     }
 
-    Simulator::Schedule(Seconds(1), &TraceUeS1Positions, ues);
+    Simulator::Schedule(Seconds(g_positionTraceIntervalSec), &TraceUeS1Positions, ues);
 }
 
 void TraceUeS2Positions(NodeContainer ues)
@@ -347,7 +373,7 @@ void TraceUeS2Positions(NodeContainer ues)
           << "\n";
     }
 
-    Simulator::Schedule(Seconds(1), &TraceUeS2Positions, ues);
+    Simulator::Schedule(Seconds(g_positionTraceIntervalSec), &TraceUeS2Positions, ues);
 }
 
 void TraceUavPositions(NodeContainer uavs)
@@ -369,7 +395,7 @@ void TraceUavPositions(NodeContainer uavs)
           << "\n";
     }
 
-    Simulator::Schedule(Seconds(1), &TraceUavPositions, uavs);
+    Simulator::Schedule(Seconds(g_positionTraceIntervalSec), &TraceUavPositions, uavs);
 }
 
 void
@@ -1398,11 +1424,24 @@ main(int argc, char* argv[])
     bool enableFlowMonitor = false;
     bool enableRsrpTrace = false;
     bool enablePositionTrace = true;
+    bool enableHandoverTrace = true;
     bool enableOranInfoLog = false;
+    bool enableNrHelperInfoLog = false;
+    bool enableSetupPrints = false;
+    bool enableProgress = true;
+    bool quietTiming = false;
+    bool enableDecisionCsv = true;
+    bool enableOranAppLossReports = true;
+    bool enableOranCellLoadReports = true;
     bool enablePdcpDiscarding = true;
     uint32_t discardTimerMs = 100;
     uint32_t reorderingTimerMs = 100;
     uint32_t maxRlcTxBufferSize = 10 * 1024 * 1024;
+    double stopTailSeconds = 0.0;
+    double progressIntervalSec = 1.0;
+    bool enableFading = true;
+    double initMinRsrpDbm = -120.0;
+    double initRetryIntervalSec = 2.0;
     bool remMode = false; // [0]: REM disabled; [1]: generate REM
     int32_t remRbId = -1; // kept for compatibility (not used by this REM helper)
     std::string handoverAlgorithm = "ns3::NrNoOpHandoverAlgorithm";
@@ -1483,21 +1522,58 @@ main(int argc, char* argv[])
                  "Satellite backhaul scenario: NTN-DenseUrban | NTN-Urban | NTN-Suburban | NTN-Rural",
                  satBackhaulScenario);
     cmd.AddValue("mobility-update-ms", "Waypoint mobility update period in milliseconds", g_mobilityUpdateMs);
+    cmd.AddValue("position-trace-interval", "UE/UAV position trace interval in seconds", g_positionTraceIntervalSec);
     cmd.AddValue("enable-flow-monitor", "Enable FlowMonitor and periodic QoS files", enableFlowMonitor);
     cmd.AddValue("enable-rsrp-trace", "Enable per-UE RSRP trace file", enableRsrpTrace);
     cmd.AddValue("enable-position-trace", "Enable periodic UE/UAV position trace files", enablePositionTrace);
-    cmd.AddValue("enable-oran-info-log", "Enable verbose INFO logging for ORAN LM and NrHelper", enableOranInfoLog);
+    cmd.AddValue("enable-handover-trace", "Enable handover trace file", enableHandoverTrace);
+    cmd.AddValue("enable-oran-info-log", "Enable verbose INFO logging for the ORAN LM", enableOranInfoLog);
+    cmd.AddValue("enable-nr-helper-info-log", "Enable verbose NrHelper INFO logging", enableNrHelperInfoLog);
+    cmd.AddValue("enable-setup-prints", "Enable setup-time console prints", enableSetupPrints);
+    cmd.AddValue("enable-progress", "Print lightweight simulation-time progress to stdout", enableProgress);
+    cmd.AddValue("progress-interval", "Simulation seconds between progress prints", progressIntervalSec);
+    cmd.AddValue("enable-decision-csv", "Write per-candidate handover decision CSV", enableDecisionCsv);
+    cmd.AddValue("enable-oran-app-loss-reports", "Enable O-RAN app-loss reporters", enableOranAppLossReports);
+    cmd.AddValue("enable-oran-cell-load-reports", "Enable O-RAN gNB cell-load reporters", enableOranCellLoadReports);
+    cmd.AddValue("quiet-timing", "Disable optional logs/traces/prints for wall-clock timing runs", quietTiming);
     cmd.AddValue("enable-pdcp-discarding", "Enable PDCP discarding for bounded UDP/XR queues", enablePdcpDiscarding);
     cmd.AddValue("pdcp-discard-timer-ms", "PDCP discard timer in milliseconds", discardTimerMs);
     cmd.AddValue("rlc-reordering-timer-ms", "RLC UM reordering timer in milliseconds", reorderingTimerMs);
     cmd.AddValue("rlc-max-tx-buffer-size", "Maximum RLC UM TX buffer size in bytes", maxRlcTxBufferSize);
+    cmd.AddValue("stop-tail", "Extra simulation seconds after sim-time for app/drain events", stopTailSeconds);
+    cmd.AddValue("enable-fading", "Enable fast fading channel component", enableFading);
+    cmd.AddValue("init-min-rsrp", "Minimum RSRP for initial attach in dBm", initMinRsrpDbm);
+    cmd.AddValue("init-retry-interval", "Initial attach retry interval in seconds", initRetryIntervalSec);
     cmd.Parse(argc, argv);
+
+    if (quietTiming)
+    {
+        verbose = false;
+        enableFlowMonitor = false;
+        enableRsrpTrace = false;
+        enablePositionTrace = false;
+        enableHandoverTrace = false;
+        enableOranInfoLog = false;
+        enableNrHelperInfoLog = false;
+        enableSetupPrints = false;
+        enableProgress = true;
+        enableDecisionCsv = false;
+        enableOranAppLossReports = false;
+        enableOranCellLoadReports = false;
+        enableSatBackhaulMonitor = false;
+        remMode = false;
+    }
 
     NS_ABORT_MSG_IF(useOran == false && (useOnnx || useTorch || useRsrp),
                     "Cannot use ML LM or RSRP LM without enabling O-RAN.");
     NS_ABORT_MSG_IF((useOnnx + useTorch + useRsrp) > 1, "Cannot use more than one LM simultaneously.");
     NS_ABORT_MSG_IF(handoverAlgorithm != "ns3::NrNoOpHandoverAlgorithm" && (useOnnx || useTorch || useRsrp),
                     "Cannot use non-noop handover algorithm with ML/RSRP LM (avoid conflicts).");
+    NS_ABORT_MSG_IF(!enableFading,
+                    "This scenario uses NrHelper::AttachToMaxRsrpGnb for initial attach, "
+                    "which requires NR channel fading. Remove --enable-fading=0.");
+
+    Time simulationStopTime = simTime + Seconds(stopTailSeconds);
 
     std::ostringstream runTag;
     runTag << "ueS1_" << numGroundUesS1 << "_ueS2_" << numGroundUesS2 << "_tnGnb_" << numTnGnbs << "_ntnGnb_" << numNtnGnbs << "_tnCap_" << maxUesPerCellTn << "_ntnCap_" << maxUesPerCellNtn << "_hyst_" << hysteresisDb;
@@ -1516,14 +1592,22 @@ main(int argc, char* argv[])
     // Ensure results/nr/ directory exists
     std::filesystem::create_directories(ns3_dir);
 
-    Ptr<OutputStreamWrapper> rsrpRsrqSinrTraceStream =
-    Create<OutputStreamWrapper>(ns3_dir + "rsrp-trace.tr", std::ios::out);
+    Ptr<OutputStreamWrapper> rsrpRsrqSinrTraceStream;
+    if (enableRsrpTrace)
+    {
+        rsrpRsrqSinrTraceStream =
+            Create<OutputStreamWrapper>(ns3_dir + "rsrp-trace.tr", std::ios::out);
 
-    *rsrpRsrqSinrTraceStream->GetStream()
-        << "Time RNTI CellId CellType RSRP RSRQ Serving CCID\n";
-    // ---- Redirect NS_LOG (std::clog) to a file ----
-    g_nsLogFile.open(ns3_dir + "ns3-oran-lm.log", std::ios::out | std::ios::trunc);
-    g_oldClogBuf = std::clog.rdbuf(g_nsLogFile.rdbuf());
+        *rsrpRsrqSinrTraceStream->GetStream()
+            << "Time RNTI CellId CellType RSRP RSRQ Serving CCID\n";
+    }
+
+    if (enableOranInfoLog || enableNrHelperInfoLog)
+    {
+        // Redirect enabled NS_LOG output to a file.
+        g_nsLogFile.open(ns3_dir + "ns3-oran-lm.log", std::ios::out | std::ios::trunc);
+        g_oldClogBuf = std::clog.rdbuf(g_nsLogFile.rdbuf());
+    }
 
     // // ---- Redirect NS_LOG_UNCOND (std::cout) to a separate file ----
     // g_uncondFile.open(ns3_dir + "init-attach.log", std::ios::out | std::ios::trunc);
@@ -1532,6 +1616,9 @@ main(int argc, char* argv[])
     if (enableOranInfoLog)
     {
         LogComponentEnable("OranLmNr2NrRsrpHandoverWithTnNtn", LOG_LEVEL_INFO);
+    }
+    if (enableNrHelperInfoLog)
+    {
         LogComponentEnable("NrHelper", LOG_LEVEL_INFO);
     }
 
@@ -1631,9 +1718,15 @@ main(int argc, char* argv[])
         TypeId tid;
         if (TypeId::LookupByNameFailSafe(name, &tid))
         {
-            NS_LOG_UNCOND(std::string("NR: trying ") + name);
+            if (enableSetupPrints)
+            {
+                NS_LOG_UNCOND(std::string("NR: trying ") + name);
+            }
             nrHelper->SetSchedulerTypeId(tid); 
-            NS_LOG_UNCOND(std::string("NR: using ") + name);
+            if (enableSetupPrints)
+            {
+                NS_LOG_UNCOND(std::string("NR: using ") + name);
+            }
             return true;
         }
         return false;
@@ -1748,7 +1841,6 @@ main(int argc, char* argv[])
     BandwidthPartInfoPtrVector allBwps;
 
     // ---- TDD + FDD setup ----
-    bool enableFading = true;
     uint8_t bandMask = NrChannelHelper::INIT_PROPAGATION |
                     (enableFading ? NrChannelHelper::INIT_FADING : 0);
 
@@ -2271,8 +2363,9 @@ main(int argc, char* argv[])
 
     // Set global fallback to 0
     nrHelper->SetAttribute("InitMaxUesPerCell", UintegerValue(0));
-    nrHelper->SetAttribute("InitMinRsrpDbm",    DoubleValue(-120.0));
-    nrHelper->SetAttribute("InitRetryInterval", TimeValue(Seconds(2.0)));
+    nrHelper->SetAttribute("InitMinRsrpDbm",    DoubleValue(initMinRsrpDbm));
+    nrHelper->SetAttribute("InitRetryInterval", TimeValue(Seconds(initRetryIntervalSec)));
+    nrHelper->SetAttribute("InitAttachLogging", BooleanValue(enableSetupPrints));
 
     // ------------------------------------------------------------
     // INITIAL backhaul-aware preload for attach/retry-attach
@@ -2295,15 +2388,18 @@ main(int argc, char* argv[])
         nrHelper->AttachToMaxRsrpGnb(groundNrDevsS2, allGnbNrDevs);
     });
 
-    for (uint32_t i = 0; i < allGnbNodes.GetN(); ++i)
+    if (enableSetupPrints)
     {
-        Ptr<Node> n = allGnbNodes.Get(i);
-        std::cout << "Node " << n->GetId() << " devices:\n";
-        for (uint32_t d = 0; d < n->GetNDevices(); ++d)
+        for (uint32_t i = 0; i < allGnbNodes.GetN(); ++i)
         {
-            Ptr<NetDevice> dev = n->GetDevice(d);
-            std::cout << "  dev " << d
-                    << " type=" << dev->GetInstanceTypeId().GetName() << "\n";
+            Ptr<Node> n = allGnbNodes.Get(i);
+            std::cout << "Node " << n->GetId() << " devices:\n";
+            for (uint32_t d = 0; d < n->GetNDevices(); ++d)
+            {
+                Ptr<NetDevice> dev = n->GetDevice(d);
+                std::cout << "  dev " << d
+                        << " type=" << dev->GetInstanceTypeId().GetName() << "\n";
+            }
         }
     }
 
@@ -2442,16 +2538,16 @@ main(int argc, char* argv[])
 
     // Start/stop times
     xrDlSinks.Start(Seconds(1.0));
-    xrDlSinks.Stop(simTime + Seconds(15));
+    xrDlSinks.Stop(simulationStopTime);
 
     xrDlSenders.Start(Seconds(2.0));
-    xrDlSenders.Stop(simTime + Seconds(10));
+    xrDlSenders.Stop(simulationStopTime);
 
     xrUlSinks.Start(Seconds(1.0));
-    xrUlSinks.Stop(simTime + Seconds(15));
+    xrUlSinks.Stop(simulationStopTime);
 
     xrUlSenders.Start(Seconds(3.0));
-    xrUlSenders.Stop(simTime + Seconds(15));
+    xrUlSenders.Stop(simulationStopTime);
 
     // Ground UEs traffic
     uint16_t groundBasePort = 20000;
@@ -2490,8 +2586,8 @@ main(int argc, char* argv[])
     ueAppsS2.Start(Seconds(1));
     groundRemoteAppsS2.Start(tLateAttach + Seconds(0.5));
 
-    groundRemoteAppsS2.Stop(simTime + Seconds(10));
-    ueAppsS2.Stop(simTime + Seconds(15));
+    groundRemoteAppsS2.Stop(simulationStopTime);
+    ueAppsS2.Stop(simulationStopTime);
 
 
 
@@ -2549,7 +2645,10 @@ main(int argc, char* argv[])
             {
                 g_rsrpLm = rsrpLm;
 
-                g_rsrpLm->SetDecisionCsvFilename(ns3_dir + "ml-ho-dataset.csv");
+                if (enableDecisionCsv)
+                {
+                    g_rsrpLm->SetDecisionCsvFilename(ns3_dir + "ml-ho-dataset.csv");
+                }
 
                 for (uint32_t i = 0; i < tnGnbNrDevs.GetN(); ++i)
                 {
@@ -2605,7 +2704,8 @@ main(int argc, char* argv[])
         {
             Ptr<OranReporterLocation> locationReporter = CreateObject<OranReporterLocation>();
             Ptr<OranReporterNrUeCellInfo> nrUeCellInfoReporter = CreateObject<OranReporterNrUeCellInfo>();
-            Ptr<OranReporterAppLoss> appLossReporter = CreateObject<OranReporterAppLoss>();
+            Ptr<OranReporterAppLoss> appLossReporter =
+                enableOranAppLossReports ? CreateObject<OranReporterAppLoss>() : nullptr;
             Ptr<OranReporterNrUeRsrpRsrq> rsrpRsrqReporter = CreateObject<OranReporterNrUeRsrpRsrq>();
             Ptr<OranE2NodeTerminatorNrUe> nrUeTerminator = CreateObject<OranE2NodeTerminatorNrUe>();
 
@@ -2613,11 +2713,14 @@ main(int argc, char* argv[])
             nrUeCellInfoReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
             rsrpRsrqReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
 
-            appLossReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
-            xrDlSenders.Get(idx)->TraceConnectWithoutContext("Tx",
-                                                            MakeCallback(&ns3::OranReporterAppLoss::AddTx, appLossReporter));
-            xrDlSinks.Get(idx)->TraceConnectWithoutContext("Rx",
-                                                        MakeCallback(&ns3::OranReporterAppLoss::AddRx, appLossReporter));
+            if (enableOranAppLossReports)
+            {
+                appLossReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
+                xrDlSenders.Get(idx)->TraceConnectWithoutContext(
+                    "Tx", MakeCallback(&ns3::OranReporterAppLoss::AddTx, appLossReporter));
+                xrDlSinks.Get(idx)->TraceConnectWithoutContext(
+                    "Rx", MakeCallback(&ns3::OranReporterAppLoss::AddRx, appLossReporter));
+            }
           
             //The UES1’s physical layer (NrUePhy) periodically measures:RSRP (signal strength),
                                                                     //RSRQ (signal quality),
@@ -2653,7 +2756,10 @@ main(int argc, char* argv[])
             nrUeTerminator->AddReporter(locationReporter);
             nrUeTerminator->AddReporter(nrUeCellInfoReporter);
             nrUeTerminator->AddReporter(rsrpRsrqReporter);
-            nrUeTerminator->AddReporter(appLossReporter);
+            if (enableOranAppLossReports)
+            {
+                nrUeTerminator->AddReporter(appLossReporter);
+            }
             nrUeTerminator->SetAttribute("TransmissionDelayRv",
                                          StringValue("ns3::ConstantRandomVariable[Constant=" +
                                                      std::to_string(txDelay) + "]"));
@@ -2667,7 +2773,8 @@ main(int argc, char* argv[])
         {
             Ptr<OranReporterLocation> locationReporter = CreateObject<OranReporterLocation>();
             Ptr<OranReporterNrUeCellInfo> nrUeCellInfoReporter = CreateObject<OranReporterNrUeCellInfo>();
-            Ptr<OranReporterAppLoss> appLossReporter = CreateObject<OranReporterAppLoss>();
+            Ptr<OranReporterAppLoss> appLossReporter =
+                enableOranAppLossReports ? CreateObject<OranReporterAppLoss>() : nullptr;
             Ptr<OranReporterNrUeRsrpRsrq> rsrpRsrqReporter = CreateObject<OranReporterNrUeRsrpRsrq>();
             Ptr<OranE2NodeTerminatorNrUe> nrUeTerminator = CreateObject<OranE2NodeTerminatorNrUe>();
 
@@ -2675,12 +2782,14 @@ main(int argc, char* argv[])
             nrUeCellInfoReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
             rsrpRsrqReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
 
-            // AppLoss: use GROUND traffic apps
-            appLossReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
-            groundRemoteAppsS2.Get(idx)->TraceConnectWithoutContext(
-                "Tx", MakeCallback(&ns3::OranReporterAppLoss::AddTx, appLossReporter));
-            ueAppsS2.Get(idx)->TraceConnectWithoutContext(
-                "Rx", MakeCallback(&ns3::OranReporterAppLoss::AddRx, appLossReporter));
+            if (enableOranAppLossReports)
+            {
+                appLossReporter->SetAttribute("Terminator", PointerValue(nrUeTerminator));
+                groundRemoteAppsS2.Get(idx)->TraceConnectWithoutContext(
+                    "Tx", MakeCallback(&ns3::OranReporterAppLoss::AddTx, appLossReporter));
+                ueAppsS2.Get(idx)->TraceConnectWithoutContext(
+                    "Rx", MakeCallback(&ns3::OranReporterAppLoss::AddRx, appLossReporter));
+            }
 
             // RSRP/RSRQ measurements from the ground UE PHY
             for (uint32_t netDevIdx = 0; netDevIdx < groundUeNodesS2.Get(idx)->GetNDevices(); ++netDevIdx)
@@ -2714,7 +2823,10 @@ main(int argc, char* argv[])
             nrUeTerminator->AddReporter(locationReporter);
             nrUeTerminator->AddReporter(nrUeCellInfoReporter);
             nrUeTerminator->AddReporter(rsrpRsrqReporter);
-            nrUeTerminator->AddReporter(appLossReporter);
+            if (enableOranAppLossReports)
+            {
+                nrUeTerminator->AddReporter(appLossReporter);
+            }
 
             nrUeTerminator->SetAttribute("TransmissionDelayRv",
                                         StringValue("ns3::ConstantRandomVariable[Constant=" +
@@ -2734,17 +2846,24 @@ main(int argc, char* argv[])
         for (uint32_t idx = 0; idx < tnGnbNodes.GetN(); ++idx)
         {
             Ptr<OranReporterLocation> locationReporter = CreateObject<OranReporterLocation>();
-            Ptr<OranReporterNrCellLoad> nrCellLoadReporter = CreateObject<OranReporterNrCellLoad>();
+            Ptr<OranReporterNrCellLoad> nrCellLoadReporter =
+                enableOranCellLoadReports ? CreateObject<OranReporterNrCellLoad>() : nullptr;
             Ptr<OranE2NodeTerminatorNrGnb> nrGnbTerminator = CreateObject<OranE2NodeTerminatorNrGnb>();
 
             locationReporter->SetAttribute("Terminator", PointerValue(nrGnbTerminator));
-            nrCellLoadReporter->SetAttribute("Terminator", PointerValue(nrGnbTerminator));
+            if (enableOranCellLoadReports)
+            {
+                nrCellLoadReporter->SetAttribute("Terminator", PointerValue(nrGnbTerminator));
+            }
 
             auto dev = tnGnbNrDevs.Get(idx)->GetObject<NrGnbNetDevice>();
 
-            dev->GetMac(0)->TraceConnectWithoutContext(
-                "DlScheduling",
-                MakeCallback(&ns3::OranReporterNrCellLoad::DlScheduled, nrCellLoadReporter));
+            if (enableOranCellLoadReports)
+            {
+                dev->GetMac(0)->TraceConnectWithoutContext(
+                    "DlScheduling",
+                    MakeCallback(&ns3::OranReporterNrCellLoad::DlScheduled, nrCellLoadReporter));
+            }
 
             nrGnbTerminator->SetAttribute("NearRtRic", PointerValue(nearRtRic));
             nrGnbTerminator->SetAttribute("RegistrationIntervalRv",
@@ -2754,7 +2873,10 @@ main(int argc, char* argv[])
                                                     std::to_string(e2SendInterval) + "]"));
 
             nrGnbTerminator->AddReporter(locationReporter);
-            nrGnbTerminator->AddReporter(nrCellLoadReporter);
+            if (enableOranCellLoadReports)
+            {
+                nrGnbTerminator->AddReporter(nrCellLoadReporter);
+            }
             nrGnbTerminator->Attach(tnGnbNodes.Get(idx));
             nrGnbTerminator->SetAttribute("TransmissionDelayRv",
                                         StringValue("ns3::ConstantRandomVariable[Constant=" +
@@ -2769,17 +2891,24 @@ main(int argc, char* argv[])
         for (uint32_t idx = 0; idx < ntnGnbNodes.GetN(); ++idx)
         {
             Ptr<OranReporterLocation> locationReporter = CreateObject<OranReporterLocation>();
-            Ptr<OranReporterNrCellLoad> nrCellLoadReporter = CreateObject<OranReporterNrCellLoad>();
+            Ptr<OranReporterNrCellLoad> nrCellLoadReporter =
+                enableOranCellLoadReports ? CreateObject<OranReporterNrCellLoad>() : nullptr;
             Ptr<OranE2NodeTerminatorNrGnb> nrGnbTerminator = CreateObject<OranE2NodeTerminatorNrGnb>();
 
             locationReporter->SetAttribute("Terminator", PointerValue(nrGnbTerminator));
-            nrCellLoadReporter->SetAttribute("Terminator", PointerValue(nrGnbTerminator));
+            if (enableOranCellLoadReports)
+            {
+                nrCellLoadReporter->SetAttribute("Terminator", PointerValue(nrGnbTerminator));
+            }
 
             auto dev = ntnGnbNrDevs.Get(idx)->GetObject<NrGnbNetDevice>();
 
-            dev->GetMac(1)->TraceConnectWithoutContext(
-            "DlScheduling",
-            MakeCallback(&ns3::OranReporterNrCellLoad::DlScheduled, nrCellLoadReporter));
+            if (enableOranCellLoadReports)
+            {
+                dev->GetMac(1)->TraceConnectWithoutContext(
+                    "DlScheduling",
+                    MakeCallback(&ns3::OranReporterNrCellLoad::DlScheduled, nrCellLoadReporter));
+            }
 
             nrGnbTerminator->SetAttribute("NearRtRic", PointerValue(nearRtRic));
             nrGnbTerminator->SetAttribute("RegistrationIntervalRv",
@@ -2789,7 +2918,10 @@ main(int argc, char* argv[])
                                                     std::to_string(e2SendInterval) + "]"));
 
             nrGnbTerminator->AddReporter(locationReporter);
-            nrGnbTerminator->AddReporter(nrCellLoadReporter);
+            if (enableOranCellLoadReports)
+            {
+                nrGnbTerminator->AddReporter(nrCellLoadReporter);
+            }
             nrGnbTerminator->Attach(ntnGnbNodes.Get(idx));
             nrGnbTerminator->SetAttribute("TransmissionDelayRv",
                                         StringValue("ns3::ConstantRandomVariable[Constant=" +
@@ -2810,32 +2942,35 @@ main(int argc, char* argv[])
                             satBackhaulCtx.get());
     }
 
-    // Erase the trace files if they exist
-    std::ofstream posOutFile1(s_ueS1PositionTraceFile, std::ios_base::trunc);
-    posOutFile1.close();
-
-    std::ofstream posOutFile2(s_uavPositionTraceFile, std::ios_base::trunc);
-    posOutFile2.close();
-
-    std::ofstream posOutFile3(s_ueS2PositionTraceFile, std::ios_base::trunc);
-    posOutFile3.close();
-
-    std::ofstream hoOutFile(s_handoverTraceFile, std::ios_base::trunc);
-    hoOutFile.close();
-
     if (enablePositionTrace)
     {
+        // Erase the position trace files if they exist.
+        std::ofstream posOutFile1(s_ueS1PositionTraceFile, std::ios_base::trunc);
+        posOutFile1.close();
+
+        std::ofstream posOutFile2(s_uavPositionTraceFile, std::ios_base::trunc);
+        posOutFile2.close();
+
+        std::ofstream posOutFile3(s_ueS2PositionTraceFile, std::ios_base::trunc);
+        posOutFile3.close();
+
         // Start tracing node locations
-        Simulator::Schedule(Seconds(1), &TraceUeS1Positions, groundUeNodesS1);
-        Simulator::Schedule(Seconds(1), &TraceUavPositions, ntnGnbNodes);
+        Simulator::Schedule(Seconds(g_positionTraceIntervalSec), &TraceUeS1Positions, groundUeNodesS1);
+        Simulator::Schedule(Seconds(g_positionTraceIntervalSec), &TraceUavPositions, ntnGnbNodes);
 
         /* Start tracing UE Set 2 only when they actually start */
         Simulator::Schedule(tLateAttach, &TraceUeS2Positions, groundUeNodesS2);
     }
 
-    // Connect to handover trace so we know when a handover is successfully performed
-    Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverEndOk",
-                    MakeCallback(&NotifyHandoverEndOkGnb));
+    if (enableHandoverTrace)
+    {
+        std::ofstream hoOutFile(s_handoverTraceFile, std::ios_base::trunc);
+        hoOutFile.close();
+
+        // Connect to handover trace so we know when a handover is successfully performed
+        Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverEndOk",
+                        MakeCallback(&NotifyHandoverEndOkGnb));
+    }
 
     if (enableRsrpTrace)
     {
@@ -2969,7 +3104,13 @@ main(int argc, char* argv[])
     // flowOutFile.close();
 
     // Tell the simulator how long to run
-    Simulator::Stop(simTime + Seconds(15));
+    if (enableProgress)
+    {
+        Simulator::ScheduleNow(&PrintSimulationProgress,
+                               Seconds(std::max(0.1, progressIntervalSec)),
+                               simulationStopTime);
+    }
+    Simulator::Stop(simulationStopTime);
     Simulator::Run();
     if (enableFlowMonitor)
     {

@@ -1080,6 +1080,7 @@ class NrHelper : public Object
 
     bool m_snrTest{false};
     bool m_fhEnabled{false};
+    bool m_initAttachLogging{true};
 
     uint32_t m_initMaxUesPerCell {0};     // 0 = disable (old behavior)
     double   m_initMinRsrpDbm {-1e9};     // e.g., -120

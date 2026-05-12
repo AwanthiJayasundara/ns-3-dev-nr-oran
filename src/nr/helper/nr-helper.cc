@@ -162,6 +162,11 @@ NrHelper::GetTypeId()
                         TimeValue(Seconds(0)),
                         MakeTimeAccessor(&NrHelper::m_initRetryInterval),
                         MakeTimeChecker())
+            .AddAttribute("InitAttachLogging",
+                        "Enable unconditional initial attach diagnostic output.",
+                        BooleanValue(true),
+                        MakeBooleanAccessor(&NrHelper::m_initAttachLogging),
+                        MakeBooleanChecker())
             // .AddAttribute("InitMaxTryCandidates",
             //             "Initial attach: number of best-RSRP candidate cells to try (>=1). Default 2.",
             //             UintegerValue(2),
@@ -1163,10 +1168,13 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
         if (ueNd->GetRrc()->GetCellId() != 0 ||
             ueNd->GetRrc()->GetState() == NrUeRrc::CONNECTED_NORMALLY)
         {
-            NS_LOG_UNCOND("---- INIT_ATTACH t=" << Simulator::Now().GetSeconds()
-                << " UE(imsi)=" << ueNd->GetImsi()
-                << " SKIP already connected cell=" << ueNd->GetRrc()->GetCellId()
-                << " state=" << ueNd->GetRrc()->GetState());
+            if (m_initAttachLogging)
+            {
+                NS_LOG_UNCOND("---- INIT_ATTACH t=" << Simulator::Now().GetSeconds()
+                    << " UE(imsi)=" << ueNd->GetImsi()
+                    << " SKIP already connected cell=" << ueNd->GetRrc()->GetCellId()
+                    << " state=" << ueNd->GetRrc()->GetState());
+            }
             return;
         }
     }
@@ -1199,8 +1207,11 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
     const uint64_t imsi = ueNd->GetImsi();
     const double bestRsrpAll = nrInitAssoc->GetMaxRsrp(idx[0]);
 
-    NS_LOG_UNCOND("---- INIT_ATTACH t=" << Simulator::Now().GetSeconds()
-                << " UE(imsi)=" << imsi << " ----");
+    if (m_initAttachLogging)
+    {
+        NS_LOG_UNCOND("---- INIT_ATTACH t=" << Simulator::Now().GetSeconds()
+                    << " UE(imsi)=" << imsi << " ----");
+    }
 
     // ------------------------------------------------------------
     // RSRP FILTER FIRST
@@ -1226,11 +1237,14 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
 
     if (rsrpOk.empty())
     {
-        NS_LOG_UNCOND("  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=" << imsi
-                    << " bestRsrp=" << bestRsrpAll
-                    << " < min=" << m_initMinRsrpDbm
-                    << " (all cells below threshold)"
-                    << " retryIn=" << m_initRetryInterval.GetSeconds() << "s");
+        if (m_initAttachLogging)
+        {
+            NS_LOG_UNCOND("  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=" << imsi
+                        << " bestRsrp=" << bestRsrpAll
+                        << " < min=" << m_initMinRsrpDbm
+                        << " (all cells below threshold)"
+                        << " retryIn=" << m_initRetryInterval.GetSeconds() << "s");
+        }
 
         if (m_initRetryInterval > Seconds(0))
         {
@@ -1258,7 +1272,10 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
         Ptr<NrGnbNetDevice> gnb = gnbDevices.Get(k)->GetObject<NrGnbNetDevice>();
         if (!gnb)
         {
-            NS_LOG_UNCOND("  candOK" << rank << " FAIL_NULL_GNB -> skip");
+            if (m_initAttachLogging)
+            {
+                NS_LOG_UNCOND("  candOK" << rank << " FAIL_NULL_GNB -> skip");
+            }
             continue;
         }
 
@@ -1301,9 +1318,12 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
         // NEW: explicit per-cell cap = 0 means BLOCKED
         if (hasPerCellCap && effectiveCap == 0)
         {
-            NS_LOG_UNCOND("  candOK" << rank << " cell=" << cell
-                        << " rsrp=" << rsrp
-                        << " -> SKIP_BLOCKED_BACKHAUL");
+            if (m_initAttachLogging)
+            {
+                NS_LOG_UNCOND("  candOK" << rank << " cell=" << cell
+                            << " rsrp=" << rsrp
+                            << " -> SKIP_BLOCKED_BACKHAUL");
+            }
             continue;
         }
 
@@ -1314,28 +1334,37 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
 
             if (occ >= effectiveCap)
             {
-                NS_LOG_UNCOND("  candOK" << rank << " cell=" << cell
-                            << " rsrp=" << rsrp
-                            << " occ=" << occ << "/" << effectiveCap
-                            << " -> SKIP_FULL");
+                if (m_initAttachLogging)
+                {
+                    NS_LOG_UNCOND("  candOK" << rank << " cell=" << cell
+                                << " rsrp=" << rsrp
+                                << " occ=" << occ << "/" << effectiveCap
+                                << " -> SKIP_FULL");
+                }
                 continue;
             }
         }
 
         // cap disabled OR not full
-        NS_LOG_UNCOND("  candOK" << rank << " cell=" << cell
-                    << " rsrp=" << rsrp
-                    << " occ=" << occ << "/" << effectiveCap
-                    << " -> OK");
+        if (m_initAttachLogging)
+        {
+            NS_LOG_UNCOND("  candOK" << rank << " cell=" << cell
+                        << " rsrp=" << rsrp
+                        << " occ=" << occ << "/" << effectiveCap
+                        << " -> OK");
+        }
         notFull.push_back(k);
     }
 
     if (notFull.empty())
     {
-        NS_LOG_UNCOND("  INIT_ATTACH_FAIL_ALL_FULL: UE(imsi)=" << imsi
-                    << " rsrpOk=" << rsrpOk.size()
-                    << " (all RSRP>=min but full or invalid)"
-                    << " retryIn=" << m_initRetryInterval.GetSeconds() << "s");
+        if (m_initAttachLogging)
+        {
+            NS_LOG_UNCOND("  INIT_ATTACH_FAIL_ALL_FULL: UE(imsi)=" << imsi
+                        << " rsrpOk=" << rsrpOk.size()
+                        << " (all RSRP>=min but full or invalid)"
+                        << " retryIn=" << m_initRetryInterval.GetSeconds() << "s");
+        }
 
         if (m_initRetryInterval > Seconds(0))
         {
@@ -1379,10 +1408,13 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
 
                 chosen = gnbDevices.Get(k);
 
-        NS_LOG_UNCOND("  SELECT cell=" << cell
-                            << " rsrp=" << rsrp
-                            << " occ(afterReserve)=" << (selectedCap > 0 ? m_initReservedPerCell[cell] : 0)
-                            << "/" << selectedCap);
+        if (m_initAttachLogging)
+        {
+            NS_LOG_UNCOND("  SELECT cell=" << cell
+                                << " rsrp=" << rsrp
+                                << " occ(afterReserve)=" << (selectedCap > 0 ? m_initReservedPerCell[cell] : 0)
+                                << "/" << selectedCap);
+        }
     }
 
     // Attach
@@ -1403,9 +1435,12 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
             }
         }
 
-        NS_LOG_UNCOND("  INIT_ATTACH_FAIL_ATTACH_CALL: UE(imsi)=" << imsi
-                    << " selectedCell=" << targetCell
-                    << " retryIn=" << m_initRetryInterval.GetSeconds() << "s");
+        if (m_initAttachLogging)
+        {
+            NS_LOG_UNCOND("  INIT_ATTACH_FAIL_ATTACH_CALL: UE(imsi)=" << imsi
+                        << " selectedCell=" << targetCell
+                        << " retryIn=" << m_initRetryInterval.GetSeconds() << "s");
+        }
 
         if (m_initRetryInterval > Seconds(0))
         {
@@ -1417,7 +1452,10 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
         return;
     }
 
-    NS_LOG_UNCOND("  INIT_ATTACH_OK: UE(imsi)=" << imsi << " -> cell=" << targetCell);
+    if (m_initAttachLogging)
+    {
+        NS_LOG_UNCOND("  INIT_ATTACH_OK: UE(imsi)=" << imsi << " -> cell=" << targetCell);
+    }
 }
 
 void
@@ -1481,10 +1519,13 @@ NrHelper::AttachToGnb(const Ptr<NetDevice>& ueDevice, const Ptr<NetDevice>& gnbD
         // Explicit per-cell cap = 0 means BLOCKED
         if (hasPerCellCap && hardCap == 0)
         {
-            NS_LOG_UNCOND("  INIT_ATTACH_REJECTED_IN_AttachToGnb t=" << Simulator::Now().GetSeconds()
-                << " UE(imsi)=" << ueNetDev->GetImsi()
-                << " cell=" << gnbNetDev->GetCellId()
-                << " -> BLOCKED_BACKHAUL");
+            if (m_initAttachLogging)
+            {
+                NS_LOG_UNCOND("  INIT_ATTACH_REJECTED_IN_AttachToGnb t=" << Simulator::Now().GetSeconds()
+                    << " UE(imsi)=" << ueNetDev->GetImsi()
+                    << " cell=" << gnbNetDev->GetCellId()
+                    << " -> BLOCKED_BACKHAUL");
+            }
             return;
         }
 
@@ -1494,10 +1535,13 @@ NrHelper::AttachToGnb(const Ptr<NetDevice>& ueDevice, const Ptr<NetDevice>& gnbD
             uint32_t occ = gnbNetDev->GetRrc()->GetUeCount();
             if (occ >= hardCap)
             {
-                NS_LOG_UNCOND("  INIT_ATTACH_REJECTED_IN_AttachToGnb t=" << Simulator::Now().GetSeconds()
-                    << " UE(imsi)=" << ueNetDev->GetImsi()
-                    << " cell=" << gnbNetDev->GetCellId()
-                    << " occ=" << occ << "/" << hardCap);
+                if (m_initAttachLogging)
+                {
+                    NS_LOG_UNCOND("  INIT_ATTACH_REJECTED_IN_AttachToGnb t=" << Simulator::Now().GetSeconds()
+                        << " UE(imsi)=" << ueNetDev->GetImsi()
+                        << " cell=" << gnbNetDev->GetCellId()
+                        << " occ=" << occ << "/" << hardCap);
+                }
                 return;
             }
         }

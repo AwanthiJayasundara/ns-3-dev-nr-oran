@@ -34,8 +34,11 @@
 #include "oran-report.h"
 #include "oran-reporter.h"
 
+#include "ns3/nstime.h"
 #include "ns3/ptr.h"
 
+#include <map>
+#include <tuple>
 #include <vector>
 
 namespace ns3
@@ -93,9 +96,20 @@ class OranReporterNrUeRsrpRsrq : public OranReporter
 
   private:
     /**
-     * The reports.
+     * Latest measurement values since the previous E2 report send.
      */
-    std::vector<Ptr<OranReport>> m_reports;
+    struct Measurement
+    {
+        Time time;
+        uint16_t rnti;
+        uint16_t cellId;
+        double rsrp;
+        double rsrq;
+        bool isServingCell;
+        uint8_t componentCarrierId;
+    };
+
+    std::map<std::tuple<uint16_t, uint16_t, uint8_t, bool>, Measurement> m_latestMeasurements;
 };
 
 } // namespace ns3

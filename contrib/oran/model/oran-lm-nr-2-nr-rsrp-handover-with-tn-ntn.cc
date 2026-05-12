@@ -259,12 +259,12 @@ OranLmNr2NrRsrpHandoverWithTnNtn::GetUeInfos(Ptr<OranDataRepository> data) const
             }
             else
             {
-                NS_LOG_UNCOND("Could not find NR UE location for E2 Node ID = " << ueInfo.nodeId);
+                NS_LOG_INFO("Could not find NR UE location for E2 Node ID = " << ueInfo.nodeId);
             }
         }
         else
         {
-            NS_LOG_UNCOND("Could not find NR UE cell info for E2 Node ID = " << ueInfo.nodeId);
+            NS_LOG_INFO("Could not find NR UE cell info for E2 Node ID = " << ueInfo.nodeId);
         }
     }
     return ueInfos;
@@ -295,12 +295,12 @@ OranLmNr2NrRsrpHandoverWithTnNtn::GetGnbInfos(Ptr<OranDataRepository> data) cons
             }
             else
             {
-                NS_LOG_UNCOND("Could not find NR gNB location for E2 Node ID = " << gnbInfo.nodeId);
+                NS_LOG_INFO("Could not find NR gNB location for E2 Node ID = " << gnbInfo.nodeId);
             }
         }
         else
         {
-            NS_LOG_UNCOND("Could not find NR gNB cell info for E2 Node ID = " << gnbInfo.nodeId);
+            NS_LOG_INFO("Could not find NR gNB cell info for E2 Node ID = " << gnbInfo.nodeId);
         }
     }
     return gnbInfos;
@@ -464,7 +464,7 @@ std::vector<Ptr<OranCommand>> commands;
         }
     }
 
-    NS_LOG_UNCOND("---- LOAD at t=" << Simulator::Now().GetSeconds() << " ----");
+    NS_LOG_INFO("---- LOAD at t=" << Simulator::Now().GetSeconds() << " ----");
     for (const auto& g : gnbInfos)
     {
         uint16_t c = g.cellId;
@@ -474,17 +474,17 @@ std::vector<Ptr<OranCommand>> commands;
 
         if (hasPerCell && cap == 0)
         {
-            NS_LOG_UNCOND("  cell " << c << " (" << type << ") load=" << realLoad[c]
+            NS_LOG_INFO("  cell " << c << " (" << type << ") load=" << realLoad[c]
                         << " (BLOCKED)");
         }
         else if (!hasPerCell && cap == 0)
         {
-            NS_LOG_UNCOND("  cell " << c << " (" << type << ") load=" << realLoad[c]
+            NS_LOG_INFO("  cell " << c << " (" << type << ") load=" << realLoad[c]
                         << " (global cap disabled)");
         }
         else
         {
-            NS_LOG_UNCOND("  cell " << c << " (" << type << ") load=" << realLoad[c]
+            NS_LOG_INFO("  cell " << c << " (" << type << ") load=" << realLoad[c]
                         << "/" << cap);
         }
     }
@@ -746,7 +746,7 @@ std::vector<Ptr<OranCommand>> commands;
 
         if (chosenRsrp < m_minAcceptableRsrpDbm)
         {
-            NS_LOG_UNCOND("LM HO_FAIL_LOW_RSRP UE=" << ueInfo.nodeId
+            NS_LOG_INFO("LM HO_FAIL_LOW_RSRP UE=" << ueInfo.nodeId
                           << " currCell=" << servingCellId
                           << " candCell=" << chosenCell
                           << " candRsrp=" << chosenRsrp
@@ -768,7 +768,7 @@ std::vector<Ptr<OranCommand>> commands;
         Time elapsed = Simulator::Now() - tttIt->second.second;
         if (elapsed < m_timeToTrigger)
         {
-            NS_LOG_UNCOND("UE " << ueInfo.nodeId
+            NS_LOG_INFO("UE " << ueInfo.nodeId
                           << " TTT_WAIT target=" << chosenCell
                           << " elapsed=" << elapsed.GetSeconds()
                           << "s need=" << m_timeToTrigger.GetSeconds() << "s");
@@ -788,7 +788,7 @@ std::vector<Ptr<OranCommand>> commands;
         uint32_t tgtEff = effectiveLoad[chosenCell];
         uint32_t cap = GetCellCap(chosenCell);
 
-        NS_LOG_UNCOND("LM HO UE=" << ueInfo.nodeId
+        NS_LOG_INFO("LM HO UE=" << ueInfo.nodeId
                       << " rnti=" << servingRnti
                       << " " << servingCellId << "->" << chosenCell
                       << " type=" << (IsNtnCell(chosenCell) ? "NTN" : "TN")
