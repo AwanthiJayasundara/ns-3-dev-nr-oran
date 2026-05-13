@@ -143,15 +143,18 @@ struct FlowIntervalSnapshot
     uint64_t rxBytes = 0;
     Time delaySum = Seconds(0);
     Time jitterSum = Seconds(0);
+    Time sampleTime = Seconds(0);
 };
 
 static std::map<uint32_t, FlowIntervalSnapshot> g_prevFlowStats;
+static Time g_lastQosSampleTime = Seconds(0);
 
 // // static std::string s_trafficTraceFile;
 static std::string s_ueS1PositionTraceFile;
 static std::string s_ueS2PositionTraceFile;
 static std::string s_uavPositionTraceFile;
 static std::string s_handoverTraceFile;
+static std::string s_handoverFailureTraceFile;
 static std::string s_flowStatTraceFile;
 static std::string ns3_dir;
 //fh control trace files
@@ -248,15 +251,32 @@ get_user_id_from_ipv4(Ipv4Address ip)
 void
 ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
 {
-    // std::ofstream flowLog(s_flowStatTraceFile, std::ios_base::app);
-
+    flowMon->CheckForLostPackets();
     auto flowStats = flowMon->GetFlowStats();
     auto ue_network = Ipv4Address("7.0.0.0");
     auto ue_network_mask = Ipv4Mask("255.0.0.0");
     Ptr<Ipv4FlowClassifier> classing =
         DynamicCast<Ipv4FlowClassifier>(fmhelper->GetClassifier());
+    Time now = Simulator::Now();
+    double t = now.GetSeconds();
+    double monitorIntervalSec = g_lastQosSampleTime.IsZero()
+                                    ? t
+                                    : (now - g_lastQosSampleTime).GetSeconds();
 
-    const double intervalSec = management_interval.GetSeconds();
+    std::vector<uint64_t> dlTxPackets(numGroundUesS1, 0);
+    std::vector<uint64_t> dlRxPackets(numGroundUesS1, 0);
+    std::vector<uint64_t> dlRxBytes(numGroundUesS1, 0);
+    std::vector<Time> dlDelaySum(numGroundUesS1, Seconds(0));
+    std::vector<Time> dlJitterSum(numGroundUesS1, Seconds(0));
+
+    std::vector<uint64_t> ulTxPackets(numGroundUesS1, 0);
+    std::vector<uint64_t> ulRxPackets(numGroundUesS1, 0);
+    std::vector<uint64_t> ulRxBytes(numGroundUesS1, 0);
+    std::vector<Time> ulDelaySum(numGroundUesS1, Seconds(0));
+    std::vector<Time> ulJitterSum(numGroundUesS1, Seconds(0));
+
+    std::ofstream qos_flow_vs_time(ns3_dir + "qos-flow-vs-time.txt",
+                                   std::ofstream::out | std::ofstream::app);
 
     for (const auto& stats : flowStats)
     {
@@ -285,6 +305,9 @@ ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
 
         Time dDelaySum  = st.delaySum  - prev.delaySum;
         Time dJitterSum = st.jitterSum - prev.jitterSum;
+        double flowIntervalSec = prev.sampleTime.IsZero()
+                                     ? t
+                                     : (now - prev.sampleTime).GetSeconds();
 
         // Save current snapshot for next interval
         prev.txPackets = st.txPackets;
@@ -292,6 +315,7 @@ ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
         prev.rxBytes   = st.rxBytes;
         prev.delaySum  = st.delaySum;
         prev.jitterSum = st.jitterSum;
+        prev.sampleTime = now;
 
         // -------- interval metrics --------
         double pdr = (dTxPackets > 0) ? (100.0 * static_cast<double>(dRxPackets) /
@@ -306,41 +330,84 @@ ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
                                             static_cast<double>(dRxPackets))
                                          : 0.0;
 
-        double throughput = (intervalSec > 0.0)
+        double throughput = (flowIntervalSec > 0.0)
                                 ? (static_cast<double>(dRxBytes) * 8.0 /
-                                   intervalSec / 1024.0 / 1024.0)
+                                   flowIntervalSec / 1024.0 / 1024.0)
                                 : 0.0;
 
-        // flowLog << Simulator::Now().GetSeconds() << ","
-        //         << role << ","
-        //         << imsi << "\n";
+        qos_flow_vs_time << t << ","
+                         << flowId << ","
+                         << (isDl ? "DL" : "UL") << ","
+                         << ueIp << ","
+                         << fiveTuple.sourceAddress << ","
+                         << fiveTuple.destinationAddress << ","
+                         << fiveTuple.sourcePort << ","
+                         << fiveTuple.destinationPort << ","
+                         << dTxPackets << ","
+                         << dRxPackets << ","
+                         << dRxBytes << ","
+                         << delay << ","
+                         << jitter << ","
+                         << throughput << ","
+                         << pdr << "\n";
 
         int receiver_id = get_user_id_from_ipv4(ueIp);
         if (receiver_id != -1)
         {
             if (isDl)
             {
-                user_delay_dl[receiver_id] = delay;
-                user_jitter_dl[receiver_id] = jitter;
-                user_throughput_dl[receiver_id] = throughput;
-                user_pdr_dl[receiver_id] = pdr;
+                dlTxPackets[receiver_id] += dTxPackets;
+                dlRxPackets[receiver_id] += dRxPackets;
+                dlRxBytes[receiver_id] += dRxBytes;
+                dlDelaySum[receiver_id] += dDelaySum;
+                dlJitterSum[receiver_id] += dJitterSum;
             }
             else if (isUl)
             {
-                user_delay_ul[receiver_id] = delay;
-                user_jitter_ul[receiver_id] = jitter;
-                user_throughput_ul[receiver_id] = throughput;
-                user_pdr_ul[receiver_id] = pdr;
+                ulTxPackets[receiver_id] += dTxPackets;
+                ulRxPackets[receiver_id] += dRxPackets;
+                ulRxBytes[receiver_id] += dRxBytes;
+                ulDelaySum[receiver_id] += dDelaySum;
+                ulJitterSum[receiver_id] += dJitterSum;
             }
         }
     }
 
     std::ofstream qos_vs_time;
     qos_vs_time.open(ns3_dir + "qos-vs-time.txt", std::ofstream::out | std::ofstream::app);
-    double t = Simulator::Now().GetSeconds();
 
     for (uint32_t ue = 0; ue < numGroundUesS1; ++ue)
     {
+        user_delay_dl[ue] = (dlRxPackets[ue] > 0)
+                                ? (dlDelaySum[ue].GetSeconds() / static_cast<double>(dlRxPackets[ue]))
+                                : 0.0;
+        user_jitter_dl[ue] = (dlRxPackets[ue] > 0)
+                                 ? (dlJitterSum[ue].GetSeconds() / static_cast<double>(dlRxPackets[ue]))
+                                 : 0.0;
+        user_throughput_dl[ue] = (monitorIntervalSec > 0.0)
+                                     ? (static_cast<double>(dlRxBytes[ue]) * 8.0 /
+                                        monitorIntervalSec / 1024.0 / 1024.0)
+                                     : 0.0;
+        user_pdr_dl[ue] = (dlTxPackets[ue] > 0)
+                              ? (100.0 * static_cast<double>(dlRxPackets[ue]) /
+                                 static_cast<double>(dlTxPackets[ue]))
+                              : 0.0;
+
+        user_delay_ul[ue] = (ulRxPackets[ue] > 0)
+                                ? (ulDelaySum[ue].GetSeconds() / static_cast<double>(ulRxPackets[ue]))
+                                : 0.0;
+        user_jitter_ul[ue] = (ulRxPackets[ue] > 0)
+                                 ? (ulJitterSum[ue].GetSeconds() / static_cast<double>(ulRxPackets[ue]))
+                                 : 0.0;
+        user_throughput_ul[ue] = (monitorIntervalSec > 0.0)
+                                     ? (static_cast<double>(ulRxBytes[ue]) * 8.0 /
+                                        monitorIntervalSec / 1024.0 / 1024.0)
+                                     : 0.0;
+        user_pdr_ul[ue] = (ulTxPackets[ue] > 0)
+                              ? (100.0 * static_cast<double>(ulRxPackets[ue]) /
+                                 static_cast<double>(ulTxPackets[ue]))
+                              : 0.0;
+
         qos_vs_time << t << "," << ue << ",DL,"
                     << user_delay_dl[ue] << ","
                     << user_jitter_dl[ue] << ","
@@ -354,6 +421,7 @@ ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
                     << user_pdr_ul[ue] << "\n";
     }
 
+    g_lastQosSampleTime = now;
     Simulator::Schedule(management_interval, ThroughputMonitor, fmhelper, flowMon);
 }
 
@@ -473,6 +541,38 @@ NotifyHandoverEndOkGnb(std::string context, uint64_t imsi, uint16_t targetCellId
       << " ServingRSRP=" << servingRsrp
       << " BackhaulDlSnr=" << bhDl
       << " BackhaulUlSnr=" << bhUl
+      << "\n";
+}
+
+void
+NotifyHandoverFailureGnb(std::string reason,
+                         std::string context,
+                         uint64_t imsi,
+                         uint16_t rnti,
+                         uint16_t cellId)
+{
+    std::ofstream f(s_handoverFailureTraceFile, std::ios_base::app);
+    f << Simulator::Now().GetSeconds()
+      << " Side=GNB"
+      << " Reason=" << reason
+      << " IMSI=" << imsi
+      << " Cell=" << cellId
+      << " RNTI=" << rnti
+      << " Context=" << context
+      << "\n";
+}
+
+void
+NotifyHandoverEndErrorUe(std::string context, uint64_t imsi, uint16_t cellId, uint16_t rnti)
+{
+    std::ofstream f(s_handoverFailureTraceFile, std::ios_base::app);
+    f << Simulator::Now().GetSeconds()
+      << " Side=UE"
+      << " Reason=HandoverEndError"
+      << " IMSI=" << imsi
+      << " Cell=" << cellId
+      << " RNTI=" << rnti
+      << " Context=" << context
       << "\n";
 }
 
@@ -1453,6 +1553,7 @@ main(int argc, char* argv[])
     bool enableRsrpTrace = false;
     bool enablePositionTrace = true;
     bool enableHandoverTrace = true;
+    bool enableHandoverFailureTrace = true;
     bool enableOranInfoLog = false;
     bool enableNrHelperInfoLog = false;
     bool enableSetupPrints = false;
@@ -1560,6 +1661,9 @@ main(int argc, char* argv[])
     cmd.AddValue("enable-rsrp-trace", "Enable per-UE RSRP trace file", enableRsrpTrace);
     cmd.AddValue("enable-position-trace", "Enable periodic UE/UAV position trace files", enablePositionTrace);
     cmd.AddValue("enable-handover-trace", "Enable handover trace file", enableHandoverTrace);
+    cmd.AddValue("enable-handover-failure-trace",
+                 "Enable NR RRC handover failure trace file",
+                 enableHandoverFailureTrace);
     cmd.AddValue("enable-oran-info-log", "Enable verbose INFO logging for the ORAN LM", enableOranInfoLog);
     cmd.AddValue("enable-nr-helper-info-log", "Enable verbose NrHelper INFO logging", enableNrHelperInfoLog);
     cmd.AddValue("enable-setup-prints", "Enable setup-time console prints", enableSetupPrints);
@@ -1591,6 +1695,7 @@ main(int argc, char* argv[])
         enableRsrpTrace = false;
         enablePositionTrace = false;
         enableHandoverTrace = false;
+        enableHandoverFailureTrace = false;
         enableOranInfoLog = false;
         enableNrHelperInfoLog = false;
         enableSetupPrints = false;
@@ -1625,6 +1730,7 @@ main(int argc, char* argv[])
     s_ueS2PositionTraceFile = ns3_dir + "ues2-position-trace.tr";
     s_uavPositionTraceFile = ns3_dir + "uav-position-trace.tr";
     s_handoverTraceFile = ns3_dir + "handover-trace.tr";
+    s_handoverFailureTraceFile = ns3_dir + "handover-failure-trace.tr";
     s_flowStatTraceFile = ns3_dir + "flow-stats.log";
     s_satBackhaulTraceFile = ns3_dir + "sat-backhaul-trace.txt";
 
@@ -3011,6 +3117,23 @@ main(int argc, char* argv[])
                         MakeCallback(&NotifyHandoverEndOkGnb));
     }
 
+    if (enableHandoverFailureTrace)
+    {
+        std::ofstream hoFailOutFile(s_handoverFailureTraceFile, std::ios_base::trunc);
+        hoFailOutFile.close();
+
+        Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverFailureNoPreamble",
+                        MakeBoundCallback(&NotifyHandoverFailureGnb, std::string("NoPreamble")));
+        Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverFailureMaxRach",
+                        MakeBoundCallback(&NotifyHandoverFailureGnb, std::string("MaxRach")));
+        Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverFailureLeaving",
+                        MakeBoundCallback(&NotifyHandoverFailureGnb, std::string("LeavingTimeout")));
+        Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverFailureJoining",
+                        MakeBoundCallback(&NotifyHandoverFailureGnb, std::string("JoiningTimeout")));
+        Config::Connect("/NodeList/*/DeviceList/*/NrUeRrc/HandoverEndError",
+                        MakeCallback(&NotifyHandoverEndErrorUe));
+    }
+
     if (enableRsrpTrace)
     {
         for (NetDeviceContainer::Iterator it = groundNrDevsS1.Begin(); it != groundNrDevsS1.End(); ++it)
@@ -3089,7 +3212,16 @@ main(int argc, char* argv[])
         std::ofstream qos_vs_time;
         qos_vs_time.open(ns3_dir + "qos-vs-time.txt", std::ofstream::out | std::ofstream::trunc);
         qos_vs_time << "Time,UE,Dir,Delay,Jitter,Throughput,PDR" << std::endl;
+
+        std::ofstream qos_flow_vs_time;
+        qos_flow_vs_time.open(ns3_dir + "qos-flow-vs-time.txt",
+                              std::ofstream::out | std::ofstream::trunc);
+        qos_flow_vs_time << "Time,FlowId,Dir,UeIp,Src,Dst,SrcPort,DstPort,"
+                         << "TxPackets,RxPackets,RxBytes,Delay,Jitter,Throughput,PDR"
+                         << std::endl;
+
         g_prevFlowStats.clear();
+        g_lastQosSampleTime = Seconds(0);
         Simulator::Schedule(Seconds(4.0), ThroughputMonitor, &flowHelper, flowMonitor);
     }
 
