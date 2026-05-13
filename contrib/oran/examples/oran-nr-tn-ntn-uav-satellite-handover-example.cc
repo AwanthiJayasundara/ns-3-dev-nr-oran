@@ -79,6 +79,7 @@ NS_LOG_COMPONENT_DEFINE("OranNrTnNtnUavSatelliteHandoverExample");
  *
  * \code{.unparsed}
  * ./ns3 run "oran-nr-tn-ntn-uav-satellite-handover-example --PrintHelp"
+ * ./ns3 run "oran-nr-tn-ntn-uav-satellite-handover-example --sim-time=40 --enable-flow-monitor=0 --enable-rsrp-trace=0 --enable-position-trace=1 --position-trace-interval=5 --enable-handover-trace=1 --enable-sat-backhaul-monitor=0 --enable-decision-csv=1 --enable-oran-info-log=0 --enable-nr-helper-info-log=0 --enable-setup-prints=0 --enable-progress=1 --progress-interval=5 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4"
  * \endcode
  *
  * A basic run command is:
