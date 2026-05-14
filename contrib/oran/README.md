@@ -625,3 +625,21 @@ and satellite backhaul behavior depending on the scenario.
 ./ns3 run "oran-nr-tn-uav-satellite-handover-example"
 ./ns3 run "oran-nr-hybrid-tn-ntn-uav-satellite-handover-example"
 ```
+
+### NR TN/NTN UAV satellite handover with O-RAN LM logs
+To write `NS_LOG_INFO` messages such as `LOAD`, `TTT_WAIT`, `LM HO`, and
+`LM HO_FAIL_LOW_RSRP` to `ns3-oran-lm.log`, configure the optimized build with
+runtime logging enabled first:
+
+```shell
+./ns3 configure --build-profile=optimized --enable-logs --enable-examples --enable-tests
+./ns3 build
+```
+
+Then run the example with O-RAN LM logging enabled:
+
+```shell
+./ns3 run "oran-nr-tn-ntn-uav-satellite-handover-example --sim-time=40 --enable-flow-monitor=1 --enable-rsrp-trace=0 --enable-position-trace=1 --position-trace-interval=5 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-sat-backhaul-monitor=0 --enable-decision-csv=1 --enable-oran-info-log=1 --enable-nr-helper-info-log=0 --enable-setup-prints=0 --enable-progress=1 --progress-interval=5 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --ground-attach-delay=2 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4"
+```
+
+Use `--enable-setup-prints=1` when initial attach messages are also needed.
