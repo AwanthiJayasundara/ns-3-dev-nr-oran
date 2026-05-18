@@ -107,8 +107,8 @@ OranLmNr2NrRsrpHandoverWithTnNtn::OranLmNr2NrRsrpHandoverWithTnNtn(void)
       m_tryNextBest(true),
       m_minAcceptableRsrpDbm(-120.0),
       m_tnMinRsrpDbm(-110.0),
-      m_ntnEnterMarginDb(3.0),
-      m_tnReturnMarginDb(5.0)
+      m_ntnEnterMarginDb(2.0),
+      m_tnReturnMarginDb(2.0)
 {
     NS_LOG_FUNCTION(this);
     m_name = "OranLmNr2NrRsrpHandoverWithTnNtn";

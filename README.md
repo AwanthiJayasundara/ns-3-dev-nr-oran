@@ -362,10 +362,83 @@ runtime logging enabled first:
 Then run the example with O-RAN LM logging enabled:
 
 ```shell
-./ns3 run "oran-nr-tn-ntn-uav-satellite-handover-example --sim-time=40 --enable-flow-monitor=1 --enable-rsrp-trace=0 --enable-position-trace=1 --position-trace-interval=5 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-sat-backhaul-monitor=0 --enable-decision-csv=1 --enable-oran-info-log=1 --enable-nr-helper-info-log=0 --enable-setup-prints=0 --enable-progress=1 --progress-interval=5 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --ground-attach-delay=2 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4"
+./ns3 run "oran-nr-tn-ntn-uav-satellite-handover-example --sim-time=40 --enable-flow-monitor=1 --enable-rsrp-trace=0 --enable-position-trace=1 --position-trace-interval=5 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-sat-backhaul-monitor=0 --enable-decision-csv=1 --enable-oran-info-log=1 --enable-nr-helper-info-log=0 --enable-setup-prints=0 --enable-progress=1 --progress-interval=5 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --ground-attach-delay=2 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4 --enable-srs-in-ul-slots=0 --enable-srs-in-f-slots=0"
 ```
 
 Use `--enable-setup-prints=1` when initial attach messages are also needed.
+The SRS switches are disabled in this stress-run command to avoid SRS reception
+overlapping with uplink data reception when using ideal beamforming.
+
+### UAV underserved-heatmap predictor training
+After running the TN/NTN UAV satellite handover example, the Python script
+`train_uav_trajectory_final.py` can train models that predict where underserved
+UE hotspots will appear next. It reads:
+
+- `ues1-position-trace.tr`
+- `ues2-position-trace.tr`
+- `ml-ho-dataset.csv`
+- `ns3-oran-lm.log`
+
+The script converts UE positions into local meter coordinates, aligns O-RAN/ML
+event timestamps with the nearest position trace timestamp, builds underserved
+UE heatmaps, and trains persistence, MLP, CNN, and GRU predictors using a
+chronological train/validation/test split.
+
+The split is chronological, so future heatmaps are not mixed into past
+training data:
+
+```text
+60% training   -> the model studies past examples and updates its weights
+15% validation -> checks which epoch/model version is best
+25% testing    -> final exam used only for reporting final performance
+```
+
+Validation is needed because a model can keep improving on the training data
+by memorizing it, while getting worse on unseen future data. After each epoch,
+the script measures validation loss and keeps the model checkpoint with the
+best validation result. The test split is kept untouched until the end, so the
+reported metrics are not used to choose the model.
+
+Example:
+
+```shell
+python3 train_uav_trajectory_final.py \
+  --ues1 results/nr/tn-ntn/ueS1_115_ueS2_115_tnGnb_8_ntnGnb_6_tnCap_20_ntnCap_10_hyst_2/ues1-position-trace.tr \
+  --ues2 results/nr/tn-ntn/ueS1_115_ueS2_115_tnGnb_8_ntnGnb_6_tnCap_20_ntnCap_10_hyst_2/ues2-position-trace.tr \
+  --ml-csv results/nr/tn-ntn/ueS1_115_ueS2_115_tnGnb_8_ntnGnb_6_tnCap_20_ntnCap_10_hyst_2/ml-ho-dataset.csv \
+  --log results/nr/tn-ntn/ueS1_115_ueS2_115_tnGnb_8_ntnGnb_6_tnCap_20_ntnCap_10_hyst_2/ns3-oran-lm.log \
+  --outdir results/nr/tn-ntn/ml_uav_final \
+  --train-ratio 0.60 --val-ratio 0.15 --event-time-tolerance 2.5
+```
+
+Main outputs are written under `--outdir`, including
+`predictor_comparison.csv`, `training_history_all_models.csv`,
+`underserved_heatmap_summary.csv`, `predictor_config.json`, comparison plots,
+and saved model state dictionaries. Use `--export-onnx` to export the selected
+neural predictor to ONNX when ONNX dependencies are installed.
+
+To create the GRU ONNX model used by the predictive UAV load-handover example,
+run:
+
+```shell
+python3 train_uav_trajectory_final.py --rsrp-thresh -120 --export-onnx --export-model gru
+```
+
+This writes:
+
+```text
+results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx
+```
+
+Then run the predictive UAV load-handover example:
+
+```shell
+./ns3 run "oran-nr-tn-ntn-uav-satellite-load-handover-example --sim-time=122 --enable-predictive-uav=1 --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 --enable-flow-monitor=1 --enable-position-trace=1 --position-trace-interval=5 --enable-sat-backhaul-monitor=0 --enable-oran-info-log=1 --enable-nr-helper-info-log=1 --ground-attach-delay=2 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5"
+```
+
+`--uav-heat-norm-max` must match `normalization_max_count` in
+`predictor_config.json`, and `--uav-underserved-rsrp-thresh` must match the
+RSRP threshold used during training.
 
 ---
 

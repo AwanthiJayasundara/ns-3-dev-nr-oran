@@ -639,7 +639,64 @@ runtime logging enabled first:
 Then run the example with O-RAN LM logging enabled:
 
 ```shell
-./ns3 run "oran-nr-tn-ntn-uav-satellite-handover-example --sim-time=40 --enable-flow-monitor=1 --enable-rsrp-trace=0 --enable-position-trace=1 --position-trace-interval=5 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-sat-backhaul-monitor=0 --enable-decision-csv=1 --enable-oran-info-log=1 --enable-nr-helper-info-log=0 --enable-setup-prints=0 --enable-progress=1 --progress-interval=5 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --ground-attach-delay=2 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4"
+./ns3 run "oran-nr-tn-ntn-uav-satellite-handover-example --sim-time=40 --enable-flow-monitor=1 --enable-rsrp-trace=0 --enable-position-trace=1 --position-trace-interval=5 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-sat-backhaul-monitor=0 --enable-decision-csv=1 --enable-oran-info-log=1 --enable-nr-helper-info-log=0 --enable-setup-prints=0 --enable-progress=1 --progress-interval=5 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --ground-attach-delay=2 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4 --enable-srs-in-ul-slots=0 --enable-srs-in-f-slots=0"
 ```
 
 Use `--enable-setup-prints=1` when initial attach messages are also needed.
+The SRS switches are disabled in this stress-run command to avoid SRS reception
+overlapping with uplink data reception when using ideal beamforming.
+
+### UAV underserved-heatmap predictor training
+After generating TN/NTN UAV satellite handover traces, use the repository-root
+script `train_uav_trajectory_final.py` to train a UAV repositioning predictor.
+The script reads UE position traces, `ml-ho-dataset.csv`, and
+`ns3-oran-lm.log`, then builds underserved-UE heatmaps and trains persistence,
+MLP, CNN, and GRU predictors.
+
+The split is chronological:
+
+```text
+60% training   -> the model studies past examples and updates its weights
+15% validation -> checks which epoch/model version is best
+25% testing    -> final exam used only for reporting final performance
+```
+
+Validation is needed because training loss alone can be misleading: a model may
+memorize the training period while performing poorly on later unseen heatmaps.
+The script therefore selects the best checkpoint using validation loss, and the
+test period remains untouched until final reporting.
+
+Example from the ns-3 repository root:
+
+```shell
+python3 train_uav_trajectory_final.py \
+  --ues1 results/nr/tn-ntn/ueS1_115_ueS2_115_tnGnb_8_ntnGnb_6_tnCap_20_ntnCap_10_hyst_2/ues1-position-trace.tr \
+  --ues2 results/nr/tn-ntn/ueS1_115_ueS2_115_tnGnb_8_ntnGnb_6_tnCap_20_ntnCap_10_hyst_2/ues2-position-trace.tr \
+  --ml-csv results/nr/tn-ntn/ueS1_115_ueS2_115_tnGnb_8_ntnGnb_6_tnCap_20_ntnCap_10_hyst_2/ml-ho-dataset.csv \
+  --log results/nr/tn-ntn/ueS1_115_ueS2_115_tnGnb_8_ntnGnb_6_tnCap_20_ntnCap_10_hyst_2/ns3-oran-lm.log \
+  --outdir results/nr/tn-ntn/ml_uav_final \
+  --train-ratio 0.60 --val-ratio 0.15 --event-time-tolerance 2.5
+```
+
+The split is chronological: training first, validation for model selection,
+and a final held-out test period for reporting. Outputs include
+`predictor_comparison.csv`, `training_history_all_models.csv`,
+`underserved_heatmap_summary.csv`, plots, saved PyTorch state dictionaries, and
+`predictor_config.json`. Add `--export-onnx` when ONNX export is needed and the
+Python ONNX package is installed.
+
+To export the GRU predictor for the predictive UAV load-handover example:
+
+```shell
+python3 train_uav_trajectory_final.py --rsrp-thresh -120 --export-onnx --export-model gru
+```
+
+Then run the load-handover example with the trained predictor:
+
+```shell
+./ns3 run "oran-nr-tn-ntn-uav-satellite-load-handover-example --sim-time=122 --enable-predictive-uav=1 --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 --enable-flow-monitor=1 --enable-position-trace=1 --position-trace-interval=5 --enable-sat-backhaul-monitor=0 --enable-oran-info-log=1 --enable-nr-helper-info-log=1 --ground-attach-delay=2 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5"
+```
+
+Keep `--uav-heat-norm-max` equal to `normalization_max_count` in
+`predictor_config.json`, and keep `--uav-underserved-rsrp-thresh` equal to the
+RSRP threshold used when training the ONNX model.

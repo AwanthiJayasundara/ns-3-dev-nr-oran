@@ -143,7 +143,6 @@ struct FlowIntervalSnapshot
     uint64_t rxBytes = 0;
     Time delaySum = Seconds(0);
     Time jitterSum = Seconds(0);
-    Time sampleTime = Seconds(0);
 };
 
 static std::map<uint32_t, FlowIntervalSnapshot> g_prevFlowStats;
@@ -275,9 +274,6 @@ ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
     std::vector<Time> ulDelaySum(numGroundUesS1, Seconds(0));
     std::vector<Time> ulJitterSum(numGroundUesS1, Seconds(0));
 
-    std::ofstream qos_flow_vs_time(ns3_dir + "qos-flow-vs-time.txt",
-                                   std::ofstream::out | std::ofstream::app);
-
     for (const auto& stats : flowStats)
     {
         uint32_t flowId = stats.first;
@@ -305,9 +301,6 @@ ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
 
         Time dDelaySum  = st.delaySum  - prev.delaySum;
         Time dJitterSum = st.jitterSum - prev.jitterSum;
-        double flowIntervalSec = prev.sampleTime.IsZero()
-                                     ? t
-                                     : (now - prev.sampleTime).GetSeconds();
 
         // Save current snapshot for next interval
         prev.txPackets = st.txPackets;
@@ -315,41 +308,6 @@ ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
         prev.rxBytes   = st.rxBytes;
         prev.delaySum  = st.delaySum;
         prev.jitterSum = st.jitterSum;
-        prev.sampleTime = now;
-
-        // -------- interval metrics --------
-        double pdr = (dTxPackets > 0) ? (100.0 * static_cast<double>(dRxPackets) /
-                                         static_cast<double>(dTxPackets))
-                                      : 0.0;
-
-        double delay = (dRxPackets > 0) ? (dDelaySum.GetSeconds() /
-                                           static_cast<double>(dRxPackets))
-                                        : 0.0;
-
-        double jitter = (dRxPackets > 0) ? (dJitterSum.GetSeconds() /
-                                            static_cast<double>(dRxPackets))
-                                         : 0.0;
-
-        double throughput = (flowIntervalSec > 0.0)
-                                ? (static_cast<double>(dRxBytes) * 8.0 /
-                                   flowIntervalSec / 1024.0 / 1024.0)
-                                : 0.0;
-
-        qos_flow_vs_time << t << ","
-                         << flowId << ","
-                         << (isDl ? "DL" : "UL") << ","
-                         << ueIp << ","
-                         << fiveTuple.sourceAddress << ","
-                         << fiveTuple.destinationAddress << ","
-                         << fiveTuple.sourcePort << ","
-                         << fiveTuple.destinationPort << ","
-                         << dTxPackets << ","
-                         << dRxPackets << ","
-                         << dRxBytes << ","
-                         << delay << ","
-                         << jitter << ","
-                         << throughput << ","
-                         << pdr << "\n";
 
         int receiver_id = get_user_id_from_ipv4(ueIp);
         if (receiver_id != -1)
@@ -1574,6 +1532,8 @@ main(int argc, char* argv[])
     bool enableFhControl = true;
     bool useFixedMcs = false;
     uint8_t fixedMcs = 0;
+    bool enableSrsInUlSlots = true;
+    bool enableSrsInFSlots = true;
     double initMinRsrpDbm = -120.0;
     double initRetryIntervalSec = 2.0;
     bool remMode = false; // [0]: REM disabled; [1]: generate REM
@@ -1684,6 +1644,8 @@ main(int argc, char* argv[])
     cmd.AddValue("enable-fh-control", "Enable 5G-LENA fronthaul control calculations", enableFhControl);
     cmd.AddValue("use-fixed-mcs", "Use fixed DL/UL MCS instead of adaptive AMC", useFixedMcs);
     cmd.AddValue("fixed-mcs", "Fixed MCS index used when --use-fixed-mcs=1", fixedMcs);
+    cmd.AddValue("enable-srs-in-ul-slots", "Allow NR SRS scheduling in UL slots", enableSrsInUlSlots);
+    cmd.AddValue("enable-srs-in-f-slots", "Allow NR SRS scheduling in flexible slots", enableSrsInFSlots);
     cmd.AddValue("init-min-rsrp", "Minimum RSRP for initial attach in dBm", initMinRsrpDbm);
     cmd.AddValue("init-retry-interval", "Initial attach retry interval in seconds", initRetryIntervalSec);
     cmd.Parse(argc, argv);
@@ -1752,6 +1714,8 @@ main(int argc, char* argv[])
         // Redirect enabled NS_LOG output to a file.
         g_nsLogFile.open(ns3_dir + "ns3-oran-lm.log", std::ios::out | std::ios::trunc);
         g_oldClogBuf = std::clog.rdbuf(g_nsLogFile.rdbuf());
+        g_nsLogFile << std::unitbuf;
+        std::clog << std::unitbuf;
     }
 
     // // ---- Redirect NS_LOG_UNCOND (std::cout) to a separate file ----
@@ -1925,6 +1889,8 @@ main(int argc, char* argv[])
     bool enableHarqRetx = false;
 
     nrHelper->SetSchedulerAttribute("EnableHarqReTx", BooleanValue(enableHarqRetx));
+    nrHelper->SetSchedulerAttribute("EnableSrsInUlSlots", BooleanValue(enableSrsInUlSlots));
+    nrHelper->SetSchedulerAttribute("EnableSrsInFSlots", BooleanValue(enableSrsInFSlots));
     //nrHelper->SetGnbPhyAttribute("TxPower", DoubleValue(txPower));
     //nrHelper->SetGnbPhyAttribute("Numerology", UintegerValue(numerology));
     nrHelper->SetUePhyAttribute("TxPower", DoubleValue(ueTxPower));
@@ -3212,13 +3178,6 @@ main(int argc, char* argv[])
         std::ofstream qos_vs_time;
         qos_vs_time.open(ns3_dir + "qos-vs-time.txt", std::ofstream::out | std::ofstream::trunc);
         qos_vs_time << "Time,UE,Dir,Delay,Jitter,Throughput,PDR" << std::endl;
-
-        std::ofstream qos_flow_vs_time;
-        qos_flow_vs_time.open(ns3_dir + "qos-flow-vs-time.txt",
-                              std::ofstream::out | std::ofstream::trunc);
-        qos_flow_vs_time << "Time,FlowId,Dir,UeIp,Src,Dst,SrcPort,DstPort,"
-                         << "TxPackets,RxPackets,RxBytes,Delay,Jitter,Throughput,PDR"
-                         << std::endl;
 
         g_prevFlowStats.clear();
         g_lastQosSampleTime = Seconds(0);

@@ -1149,6 +1149,16 @@ NrUeManager::RecvRrcConnectionRequest(NrRrcSap::RrcConnectionRequest msg)
     }
     break;
 
+    case CONNECTED_NORMALLY:
+    case CONNECTION_RECONFIGURATION:
+    case HANDOVER_JOINING:
+    case HANDOVER_PATH_SWITCH:
+    case HANDOVER_LEAVING:
+        NS_LOG_INFO("ignoring duplicate RRC connection request for IMSI "
+                    << msg.ueIdentity << ", RNTI " << m_rnti << " in state "
+                    << ToString(m_state));
+        break;
+
     default:
         NS_FATAL_ERROR("method unexpected in state " << ToString(m_state));
         break;

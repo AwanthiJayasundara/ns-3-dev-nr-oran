@@ -141,6 +141,24 @@ NS_LOG_COMPONENT_DEFINE("OranNrTnNtnUavSatelliteLoadHandoverExample");
  * \code{.unparsed}
  * ./ns3 run "oran-nr-tn-ntn-uav-satellite-load-handover-example"
  * \endcode
+ *
+ * To run this example with the trained GRU UAV heatmap predictor, first create
+ * the ONNX model from the repository root:
+ *
+ * \code{.unparsed}
+ * python3 train_uav_trajectory_final.py --rsrp-thresh -120 --export-onnx --export-model gru
+ * \endcode
+ *
+ * Then run the load-handover scenario and point it to the exported ONNX file:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-tn-ntn-uav-satellite-load-handover-example --sim-time=122 --enable-predictive-uav=1 --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 --enable-flow-monitor=1 --enable-position-trace=1 --position-trace-interval=5 --enable-sat-backhaul-monitor=0 --enable-oran-info-log=1 --enable-nr-helper-info-log=1 --ground-attach-delay=2 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5"
+ * \endcode
+ *
+ * The `--uav-heat-norm-max` value must match `normalization_max_count` in
+ * `results/nr/tn-ntn/ml_uav_final/predictor_config.json`. The
+ * `--uav-underserved-rsrp-thresh` value must match the RSRP threshold used
+ * during training.
  */
 
 
@@ -162,9 +180,10 @@ static double g_gridNorthMax = 1500.0;
 static uint32_t g_gridNx = 24;
 static uint32_t g_gridNy = 12;
 
-static double g_heatNormMax = 5.0;
+static double g_heatNormMax = 3.0;
+static double g_underservedRsrpThreshDbm = -120.0;
 static std::string g_uavPredictorOnnxPath =
-    "results/nr/tn-ntn/ml_uav_predictor_compare/uav_underserved_heatmap_gru_ir8.onnx";
+    "results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx";
 /////
 const static float TN_GNB_HEIGHT = 25;
 
@@ -1939,6 +1958,18 @@ main(int argc, char* argv[])
     cmd.AddValue("enable-fading", "Enable fast fading channel component", enableFading);
     cmd.AddValue("init-min-rsrp", "Minimum RSRP for initial attach in dBm", initMinRsrpDbm);
     cmd.AddValue("init-retry-interval", "Initial attach retry interval in seconds", initRetryIntervalSec);
+    cmd.AddValue("enable-predictive-uav",
+                 "Enable ONNX heatmap predictor for UAV target updates",
+                 g_enablePredictiveUav);
+    cmd.AddValue("uav-predictor-onnx",
+                 "Path to the UAV underserved-heatmap predictor ONNX model",
+                 g_uavPredictorOnnxPath);
+    cmd.AddValue("uav-heat-norm-max",
+                 "Training max heatmap cell count used to normalize predictor input",
+                 g_heatNormMax);
+    cmd.AddValue("uav-underserved-rsrp-thresh",
+                 "RSRP threshold in dBm used to build live underserved-UE heatmaps",
+                 g_underservedRsrpThreshDbm);
     cmd.Parse(argc, argv);
 
     NS_ABORT_MSG_IF(useOran == false && (useOnnx || useTorch || useRsrp),
@@ -1967,7 +1998,6 @@ main(int argc, char* argv[])
     if (g_enablePredictiveUav)
     {
         LoadUavHeatmapPredictor(g_uavPredictorOnnxPath);
-        g_heatNormMax = 5.0;  // max per-cell heatmap count used during training
     }
 
     Ptr<OutputStreamWrapper> rsrpRsrqSinrTraceStream =
@@ -2379,7 +2409,6 @@ main(int argc, char* argv[])
     ntnGnbNrDevs = nrHelper->InstallGnbDevice(ntnGnbNodes, allBwps);
 
     double uavControlPeriodSec = 2.0;
-    double underservedRsrpThreshDbm = -120.0;
 
     // Start after measurements and initial attach have had a little time to appear
     Simulator::Schedule(Seconds(7),
@@ -2387,7 +2416,7 @@ main(int argc, char* argv[])
                         groundUeNodesS1,
                         groundUeNodesS2,
                         ntnGnbNrDevs,
-                        underservedRsrpThreshDbm,
+                        g_underservedRsrpThreshDbm,
                         uavControlPeriodSec);
 
     allGnbNrDevs.Add(tnGnbNrDevs);
@@ -3293,7 +3322,7 @@ main(int argc, char* argv[])
     Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverEndOk",
                     MakeCallback(&NotifyHandoverEndOkGnb));
 
-    if (enableRsrpTrace)
+    if (enableRsrpTrace || g_enablePredictiveUav)
     {
         for (NetDeviceContainer::Iterator it = groundNrDevsS1.Begin(); it != groundNrDevsS1.End(); ++it)
         {

@@ -1162,18 +1162,26 @@ NrHelper::AttachToMaxRsrpGnb(const Ptr<NetDevice>& ueDevice,
     Ptr<NrUeNetDevice> ueNd = ueDevice->GetObject<NrUeNetDevice>();
     NS_ABORT_IF(ueNd == nullptr);
 
-    // If already connected, do not retry
+    // If the UE is already attached or an attach attempt is still in flight,
+    // stale retry events must not start another RRC connection request.
     if (ueNd->GetRrc())
     {
-        if (ueNd->GetRrc()->GetCellId() != 0 ||
-            ueNd->GetRrc()->GetState() == NrUeRrc::CONNECTED_NORMALLY)
+        const auto state = ueNd->GetRrc()->GetState();
+        if (ueNd->GetTargetGnb() ||
+            ueNd->GetRrc()->GetCellId() != 0 ||
+            ueNd->GetRrc()->GetRnti() != 0 ||
+            state == NrUeRrc::IDLE_RANDOM_ACCESS ||
+            state == NrUeRrc::IDLE_CONNECTING ||
+            state == NrUeRrc::CONNECTED_NORMALLY ||
+            state == NrUeRrc::CONNECTED_HANDOVER)
         {
             if (m_initAttachLogging)
             {
                 NS_LOG_UNCOND("---- INIT_ATTACH t=" << Simulator::Now().GetSeconds()
                     << " UE(imsi)=" << ueNd->GetImsi()
                     << " SKIP already connected cell=" << ueNd->GetRrc()->GetCellId()
-                    << " state=" << ueNd->GetRrc()->GetState());
+                    << " rnti=" << ueNd->GetRrc()->GetRnti()
+                    << " state=" << state);
             }
             return;
         }
@@ -1505,6 +1513,32 @@ NrHelper::AttachToGnb(const Ptr<NetDevice>& ueDevice, const Ptr<NetDevice>& gnbD
     Ptr<NrUeNetDevice> ueNetDev = ueDevice->GetObject<NrUeNetDevice>();
 
     NS_ABORT_IF(gnbNetDev == nullptr || ueNetDev == nullptr);
+
+    Ptr<NrUeRrc> ueRrc = ueNetDev->GetRrc();
+    if (ueRrc)
+    {
+        const auto state = ueRrc->GetState();
+        if (ueNetDev->GetTargetGnb() ||
+            ueRrc->GetCellId() != 0 ||
+            ueRrc->GetRnti() != 0 ||
+            state == NrUeRrc::IDLE_RANDOM_ACCESS ||
+            state == NrUeRrc::IDLE_CONNECTING ||
+            state == NrUeRrc::CONNECTED_NORMALLY ||
+            state == NrUeRrc::CONNECTED_HANDOVER)
+        {
+            if (m_initAttachLogging)
+            {
+                NS_LOG_UNCOND("  INIT_ATTACH_SKIP_IN_AttachToGnb t="
+                    << Simulator::Now().GetSeconds()
+                    << " UE(imsi)=" << ueNetDev->GetImsi()
+                    << " candidateCell=" << gnbNetDev->GetCellId()
+                    << " currentCell=" << ueRrc->GetCellId()
+                    << " rnti=" << ueRrc->GetRnti()
+                    << " state=" << state);
+            }
+            return;
+        }
+    }
 
     // hard admission control (prevents any attach path exceeding cap)
     if (gnbNetDev->GetRrc())
