@@ -133,13 +133,13 @@ NS_LOG_COMPONENT_DEFINE("OranNrTnNtnUavSatelliteLoadHandoverExample");
  * To see all configurable options, run:
  *
  * \code{.unparsed}
- * ./ns3 run "oran-nr-tn-ntn-uav-satellite-load-handover-example --PrintHelp"
+ * ./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example --PrintHelp"
  * \endcode
  *
  * A basic run command is:
  *
  * \code{.unparsed}
- * ./ns3 run "oran-nr-tn-ntn-uav-satellite-load-handover-example"
+ * ./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example"
  * \endcode
  *
  * To run this example with the trained GRU UAV heatmap predictor, first create
@@ -149,10 +149,10 @@ NS_LOG_COMPONENT_DEFINE("OranNrTnNtnUavSatelliteLoadHandoverExample");
  * python3 train_uav_trajectory_final.py --rsrp-thresh -120 --export-onnx --export-model gru
  * \endcode
  *
- * Then run the load-handover scenario and point it to the exported ONNX file:
+ * Then run the ML load-handover scenario and point it to the exported ONNX file:
  *
  * \code{.unparsed}
- * ./ns3 run "oran-nr-tn-ntn-uav-satellite-load-handover-example --sim-time=122 --enable-predictive-uav=1 --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 --enable-flow-monitor=1 --enable-position-trace=1 --position-trace-interval=5 --enable-sat-backhaul-monitor=0 --enable-oran-info-log=1 --enable-nr-helper-info-log=1 --ground-attach-delay=2 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5"
+ * ./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example --sim-time=122 --enable-predictive-uav=1 --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 --db-file=oran-gru.db --run-tag=gru --enable-flow-monitor=1 --enable-rsrp-trace=0 --enable-position-trace=1 --position-trace-interval=5 --enable-sat-backhaul-monitor=0 --enable-oran-info-log=1 --enable-nr-helper-info-log=1 --enable-setup-prints=1 --enable-progress=1 --progress-interval=5 --ground-attach-delay=2 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4 --enable-srs-in-ul-slots=0 --enable-srs-in-f-slots=0"
  * \endcode
  *
  * The `--uav-heat-norm-max` value must match `normalization_max_count` in
@@ -187,10 +187,34 @@ static std::string g_uavPredictorOnnxPath =
 /////
 const static float TN_GNB_HEIGHT = 25;
 
+static void
+PrintSimulationProgress(Time interval, Time stopTime)
+{
+    const double now = Simulator::Now().GetSeconds();
+    const double stop = stopTime.GetSeconds();
+    const double pct = (stop > 0.0) ? (100.0 * now / stop) : 100.0;
+
+    std::cout << "\r[progress] sim t=" << std::fixed << std::setprecision(2)
+              << now << " / " << stop << " s (" << std::setprecision(1)
+              << std::min(100.0, pct) << "%)" << std::flush;
+
+    if (Simulator::Now() + interval < stopTime)
+    {
+        Simulator::Schedule(interval, &PrintSimulationProgress, interval, stopTime);
+    }
+    else
+    {
+        Simulator::Schedule(stopTime - Simulator::Now(), []() {
+            std::cout << "\r[progress] sim t=" << std::fixed << std::setprecision(2)
+                      << Simulator::Now().GetSeconds() << " s (done)" << std::endl;
+        });
+    }
+}
+
 
 // Variables
-uint32_t numGroundUesS1 = 120; // UES1 
-uint32_t numGroundUesS2 = 120; // UES2
+uint32_t numGroundUesS1 = 115; // UES1 
+uint32_t numGroundUesS2 = 115; // UES2
 
 uint32_t numTnGnbs = 8;
 uint32_t numNtnGnbs = 6; // e.g., uav gnbs for ntn area
@@ -1856,12 +1880,22 @@ main(int argc, char* argv[])
     bool enablePositionTrace = true;
     bool enableOranInfoLog = true;
     bool enableNrHelperInfoLog = false;
+    bool enableSetupPrints = false;
+    bool enableProgress = false;
+    double progressIntervalSec = 5.0;
     bool enablePdcpDiscarding = true;
     uint32_t discardTimerMs = 100;
     uint32_t reorderingTimerMs = 100;
     uint32_t maxRlcTxBufferSize = 10 * 1024 * 1024;
     double stopTailSeconds = 0.0;
     bool enableFading = true;
+    int channelUpdatePeriodMs = 100;
+    int channelConditionUpdatePeriodMs = 200;
+    bool enableFhControl = true;
+    bool useFixedMcs = false;
+    uint32_t fixedMcs = 0;
+    bool enableSrsInUlSlots = true;
+    bool enableSrsInFSlots = true;
     double initMinRsrpDbm = -120.0;
     double initRetryIntervalSec = 2.0;
     bool remMode = false; // [0]: REM disabled; [1]: generate REM
@@ -1870,6 +1904,7 @@ main(int argc, char* argv[])
     Time simTime = Seconds(40);
     std::string dbFileName = "oran-repository-tn-ntn.db";
     std::string lateCommandPolicy = "DROP";
+    std::string runTagSuffix;
 
     bool enableSatBackhaulMonitor = true;
     double satBackhaulLogStepMs = 500.0;
@@ -1950,14 +1985,25 @@ main(int argc, char* argv[])
     cmd.AddValue("enable-position-trace", "Enable periodic UE/UAV position trace files", enablePositionTrace);
     cmd.AddValue("enable-oran-info-log", "Enable verbose INFO logging for the ORAN LM", enableOranInfoLog);
     cmd.AddValue("enable-nr-helper-info-log", "Enable verbose NrHelper INFO logging", enableNrHelperInfoLog);
+    cmd.AddValue("enable-setup-prints", "Enable setup-time console prints", enableSetupPrints);
+    cmd.AddValue("enable-progress", "Print lightweight simulation-time progress to stdout", enableProgress);
+    cmd.AddValue("progress-interval", "Simulation seconds between progress prints", progressIntervalSec);
     cmd.AddValue("enable-pdcp-discarding", "Enable PDCP discarding for bounded UDP/XR queues", enablePdcpDiscarding);
     cmd.AddValue("pdcp-discard-timer-ms", "PDCP discard timer in milliseconds", discardTimerMs);
     cmd.AddValue("rlc-reordering-timer-ms", "RLC UM reordering timer in milliseconds", reorderingTimerMs);
     cmd.AddValue("rlc-max-tx-buffer-size", "Maximum RLC UM TX buffer size in bytes", maxRlcTxBufferSize);
     cmd.AddValue("stop-tail", "Extra simulation seconds after sim-time for app/drain events", stopTailSeconds);
     cmd.AddValue("enable-fading", "Enable fast fading channel component", enableFading);
+    cmd.AddValue("channel-update-ms", "3GPP channel matrix update period in milliseconds", channelUpdatePeriodMs);
+    cmd.AddValue("channel-condition-update-ms", "3GPP LOS/NLOS channel condition update period in milliseconds", channelConditionUpdatePeriodMs);
+    cmd.AddValue("enable-fh-control", "Enable 5G-LENA fronthaul control calculations", enableFhControl);
+    cmd.AddValue("use-fixed-mcs", "Use fixed DL/UL MCS instead of adaptive AMC", useFixedMcs);
+    cmd.AddValue("fixed-mcs", "Fixed MCS index used when --use-fixed-mcs=1", fixedMcs);
+    cmd.AddValue("enable-srs-in-ul-slots", "Allow NR SRS scheduling in UL slots", enableSrsInUlSlots);
+    cmd.AddValue("enable-srs-in-f-slots", "Allow NR SRS scheduling in flexible slots", enableSrsInFSlots);
     cmd.AddValue("init-min-rsrp", "Minimum RSRP for initial attach in dBm", initMinRsrpDbm);
     cmd.AddValue("init-retry-interval", "Initial attach retry interval in seconds", initRetryIntervalSec);
+    cmd.AddValue("run-tag", "Optional suffix added to the output directory name", runTagSuffix);
     cmd.AddValue("enable-predictive-uav",
                  "Enable ONNX heatmap predictor for UAV target updates",
                  g_enablePredictiveUav);
@@ -1980,6 +2026,10 @@ main(int argc, char* argv[])
 
     std::ostringstream runTag;
     runTag << "ueS1_" << numGroundUesS1 << "_ueS2_" << numGroundUesS2 << "_tnGnb_" << numTnGnbs << "_ntnGnb_" << numNtnGnbs << "_tnCap_" << maxUesPerCellTn << "_ntnCap_" << maxUesPerCellNtn << "_hyst_" << hysteresisDb;
+    if (!runTagSuffix.empty())
+    {
+        runTag << "_" << runTagSuffix;
+    }
 
     // Base output folder for this run
     ns3_dir = "results/nr/tn-ntn/ml_uav_final/" + runTag.str() + "/";
@@ -2033,10 +2083,8 @@ main(int argc, char* argv[])
     Config::SetDefault("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(maxRlcTxBufferSize));
     //Config::SetDefault("ns3::NrGnbRrc::MaxUesPerCell", UintegerValue(maxUesPerCell));
 
-    int channelUpdatePeriod = 100;
-    int channelConditionUpdatePeriod = 200;
     Config::SetDefault("ns3::ThreeGppChannelModel::UpdatePeriod",
-                       TimeValue(MilliSeconds(channelUpdatePeriod)));
+                       TimeValue(MilliSeconds(channelUpdatePeriodMs)));
 
     //Config::SetDefault("ns3::NrGnbPhy::TxPower", DoubleValue(43));
 
@@ -2103,9 +2151,9 @@ main(int argc, char* argv[])
     ntnChannelHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(enableShadowing));
 
     tnChannelHelper->SetChannelConditionModelAttribute(
-        "UpdatePeriod", TimeValue(MilliSeconds(channelConditionUpdatePeriod)));
+        "UpdatePeriod", TimeValue(MilliSeconds(channelConditionUpdatePeriodMs)));
     ntnChannelHelper->SetChannelConditionModelAttribute(
-        "UpdatePeriod", TimeValue(MilliSeconds(channelConditionUpdatePeriod)));
+        "UpdatePeriod", TimeValue(MilliSeconds(channelConditionUpdatePeriodMs)));
     // }
     //ObjectFactory distanceBasedChannelFactory;
     
@@ -2176,13 +2224,11 @@ main(int argc, char* argv[])
     bool enableHarqRetx = false;
 
     nrHelper->SetSchedulerAttribute("EnableHarqReTx", BooleanValue(enableHarqRetx));
+    nrHelper->SetSchedulerAttribute("EnableSrsInUlSlots", BooleanValue(enableSrsInUlSlots));
+    nrHelper->SetSchedulerAttribute("EnableSrsInFSlots", BooleanValue(enableSrsInFSlots));
     //nrHelper->SetGnbPhyAttribute("TxPower", DoubleValue(txPower));
     //nrHelper->SetGnbPhyAttribute("Numerology", UintegerValue(numerology));
     nrHelper->SetUePhyAttribute("TxPower", DoubleValue(ueTxPower));
-
-    uint8_t fixedMcs = 0;
-    bool useFixedMcs = false; //Realistic behavior, where MCS is adapted based on channel conditions and CQI
-    
 
     nrHelper->SetSchedulerAttribute("FixedMcsDl", BooleanValue(useFixedMcs));
     nrHelper->SetSchedulerAttribute("FixedMcsUl", BooleanValue(useFixedMcs));
@@ -2200,10 +2246,13 @@ main(int argc, char* argv[])
     // Noise figure for the UE
     nrHelper->SetUePhyAttribute("NoiseFigure", DoubleValue(ueNoiseFigure));
 
-    nrHelper->EnableFhControl();
-    nrHelper->SetFhControlAttribute("FhControlMethod", StringValue("OptimizeRBs"));
-    nrHelper->SetFhControlAttribute("FhCapacity", UintegerValue(10000)); // 10 Gbps for XR
-    nrHelper->SetFhControlAttribute("OverheadDyn", UintegerValue(32));    // or 100 if you want heavier overhead
+    if (enableFhControl)
+    {
+        nrHelper->EnableFhControl();
+        nrHelper->SetFhControlAttribute("FhControlMethod", StringValue("OptimizeRBs"));
+        nrHelper->SetFhControlAttribute("FhCapacity", UintegerValue(10000)); // 10 Gbps for XR
+        nrHelper->SetFhControlAttribute("OverheadDyn", UintegerValue(32));    // or 100 if you want heavier overhead
+    }
 
 
     // ---- TDD single-carrier setup (ONE band, ONE BWP) ----
@@ -2640,7 +2689,10 @@ main(int argc, char* argv[])
         }
     }
 
-    nrHelper->ConfigureFhControl(allGnbNrDevs);
+    if (enableFhControl)
+    {
+        nrHelper->ConfigureFhControl(allGnbNrDevs);
+    }
 
     // for (auto it = allGnbNrDevs.Begin(); it != allGnbNrDevs.End(); ++it)
     // {
@@ -2758,6 +2810,7 @@ main(int argc, char* argv[])
     nrHelper->SetAttribute("InitMaxUesPerCell", UintegerValue(0));
     nrHelper->SetAttribute("InitMinRsrpDbm",    DoubleValue(initMinRsrpDbm));
     nrHelper->SetAttribute("InitRetryInterval", TimeValue(Seconds(initRetryIntervalSec)));
+    nrHelper->SetAttribute("InitAttachLogging", BooleanValue(enableSetupPrints));
 
     // ------------------------------------------------------------
     // INITIAL backhaul-aware preload for attach/retry-attach
@@ -3454,7 +3507,14 @@ main(int argc, char* argv[])
     // flowOutFile.close();
 
     // Tell the simulator how long to run
-    Simulator::Stop(simTime + Seconds(stopTailSeconds));
+    Time simulationStopTime = simTime + Seconds(stopTailSeconds);
+    if (enableProgress)
+    {
+        Simulator::ScheduleNow(&PrintSimulationProgress,
+                               Seconds(std::max(0.1, progressIntervalSec)),
+                               simulationStopTime);
+    }
+    Simulator::Stop(simulationStopTime);
     Simulator::Run();
     if (enableFlowMonitor)
     {

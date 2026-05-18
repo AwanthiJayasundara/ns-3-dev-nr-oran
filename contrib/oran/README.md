@@ -621,7 +621,7 @@ and satellite backhaul behavior depending on the scenario.
 ```shell
 ./ns3 run "oran-nr-uav-satellite-backhaul-example"
 ./ns3 run "oran-nr-tn-ntn-uav-satellite-handover-example"
-./ns3 run "oran-nr-tn-ntn-uav-satellite-load-handover-example"
+./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example"
 ./ns3 run "oran-nr-tn-uav-satellite-handover-example"
 ./ns3 run "oran-nr-hybrid-tn-ntn-uav-satellite-handover-example"
 ```
@@ -685,16 +685,16 @@ and a final held-out test period for reporting. Outputs include
 `predictor_config.json`. Add `--export-onnx` when ONNX export is needed and the
 Python ONNX package is installed.
 
-To export the GRU predictor for the predictive UAV load-handover example:
+To export the GRU predictor for the predictive UAV ML load-handover example:
 
 ```shell
 python3 train_uav_trajectory_final.py --rsrp-thresh -120 --export-onnx --export-model gru
 ```
 
-Then run the load-handover example with the trained predictor:
+Then run the ML load-handover example with the trained predictor:
 
 ```shell
-./ns3 run "oran-nr-tn-ntn-uav-satellite-load-handover-example --sim-time=122 --enable-predictive-uav=1 --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 --enable-flow-monitor=1 --enable-position-trace=1 --position-trace-interval=5 --enable-sat-backhaul-monitor=0 --enable-oran-info-log=1 --enable-nr-helper-info-log=1 --ground-attach-delay=2 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5"
+./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example --sim-time=122 --enable-predictive-uav=1 --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 --db-file=oran-gru.db --run-tag=gru --enable-flow-monitor=1 --enable-rsrp-trace=0 --enable-position-trace=1 --position-trace-interval=5 --enable-sat-backhaul-monitor=0 --enable-oran-info-log=1 --enable-nr-helper-info-log=1 --enable-setup-prints=1 --enable-progress=1 --progress-interval=5 --ground-attach-delay=2 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4 --enable-srs-in-ul-slots=0 --enable-srs-in-f-slots=0"
 ```
 
 Keep `--uav-heat-norm-max` equal to `normalization_max_count` in

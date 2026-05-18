@@ -344,7 +344,7 @@ renamed `./ns3 run` targets in `contrib/oran/examples/CMakeLists.txt`.
 ```shell
 ./ns3 run "oran-nr-uav-satellite-backhaul-example"
 ./ns3 run "oran-nr-tn-ntn-uav-satellite-handover-example"
-./ns3 run "oran-nr-tn-ntn-uav-satellite-load-handover-example"
+./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example"
 ./ns3 run "oran-nr-tn-uav-satellite-handover-example"
 ./ns3 run "oran-nr-hybrid-tn-ntn-uav-satellite-handover-example"
 ```
@@ -417,7 +417,7 @@ Main outputs are written under `--outdir`, including
 and saved model state dictionaries. Use `--export-onnx` to export the selected
 neural predictor to ONNX when ONNX dependencies are installed.
 
-To create the GRU ONNX model used by the predictive UAV load-handover example,
+To create the GRU ONNX model used by the predictive UAV ML load-handover example,
 run:
 
 ```shell
@@ -430,10 +430,10 @@ This writes:
 results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx
 ```
 
-Then run the predictive UAV load-handover example:
+Then run the predictive UAV ML load-handover example:
 
 ```shell
-./ns3 run "oran-nr-tn-ntn-uav-satellite-load-handover-example --sim-time=122 --enable-predictive-uav=1 --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 --enable-flow-monitor=1 --enable-position-trace=1 --position-trace-interval=5 --enable-sat-backhaul-monitor=0 --enable-oran-info-log=1 --enable-nr-helper-info-log=1 --ground-attach-delay=2 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5"
+./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example --sim-time=122 --enable-predictive-uav=1 --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 --db-file=oran-gru.db --run-tag=gru --enable-flow-monitor=1 --enable-rsrp-trace=0 --enable-position-trace=1 --position-trace-interval=5 --enable-sat-backhaul-monitor=0 --enable-oran-info-log=1 --enable-nr-helper-info-log=1 --enable-setup-prints=1 --enable-progress=1 --progress-interval=5 --ground-attach-delay=2 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4 --enable-srs-in-ul-slots=0 --enable-srs-in-f-slots=0"
 ```
 
 `--uav-heat-norm-max` must match `normalization_max_count` in
