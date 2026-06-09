@@ -265,7 +265,7 @@ The command contains:
 - `model/oran-command-nr-2-nr-handover.h`
 ---
 
-## 🔴 Present Work
+## Work carried out next
 
 - Looking for a way to add a **maximum cell load capacity threshold**
 - Adding support to retrieve and track **handover decision failures** (e.g., HO command issued but not successfully completed)
