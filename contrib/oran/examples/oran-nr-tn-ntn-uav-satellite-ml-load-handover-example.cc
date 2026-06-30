@@ -155,10 +155,19 @@ NS_LOG_COMPONENT_DEFINE("OranNrTnNtnUavSatelliteLoadHandoverExample");
  * ./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example --sim-time=122 --enable-predictive-uav=1 --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 --db-file=oran-gru.db --run-tag=gru --enable-flow-monitor=1 --enable-rsrp-trace=0 --enable-position-trace=1 --position-trace-interval=5 --enable-sat-backhaul-monitor=0 --enable-oran-info-log=1 --enable-nr-helper-info-log=1 --enable-setup-prints=1 --enable-progress=1 --progress-interval=5 --ground-attach-delay=2 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4 --enable-srs-in-ul-slots=0 --enable-srs-in-f-slots=0"
  * \endcode
  *
+ * To compare against the CNN predictor, export the CNN ONNX model and run the
+ * same scenario with a different database and run tag:
+ *
+ * \code{.unparsed}
+ * python3 train_uav_trajectory_final.py --rsrp-thresh -120 --export-onnx --export-model cnn
+ * ./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example --sim-time=40 --enable-predictive-uav=1 --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/best_cnn_predictor.onnx --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 --db-file=oran-cnn.db --run-tag=cnn --enable-flow-monitor=0 --enable-rsrp-trace=0 --enable-position-trace=1 --position-trace-interval=5 --enable-sat-backhaul-monitor=0 --enable-oran-info-log=0 --enable-nr-helper-info-log=0 --enable-setup-prints=0 --enable-progress=1 --progress-interval=5 --ground-attach-delay=2 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4 --enable-srs-in-ul-slots=0 --enable-srs-in-f-slots=0 --uav-control-period=5"
+ * \endcode
+ *
  * The `--uav-heat-norm-max` value must match `normalization_max_count` in
  * `results/nr/tn-ntn/ml_uav_final/predictor_config.json`. The
  * `--uav-underserved-rsrp-thresh` value must match the RSRP threshold used
- * during training.
+ * during training. Use different `--db-file` and `--run-tag` values for GRU
+ * and CNN runs so their result folders and O-RAN databases do not overlap.
  */
 
 
@@ -1889,6 +1898,7 @@ main(int argc, char* argv[])
     uint32_t maxRlcTxBufferSize = 10 * 1024 * 1024;
     double stopTailSeconds = 0.0;
     bool enableFading = true;
+    bool useRlcAm = false;
     int channelUpdatePeriodMs = 100;
     int channelConditionUpdatePeriodMs = 200;
     bool enableFhControl = true;
@@ -1898,6 +1908,7 @@ main(int argc, char* argv[])
     bool enableSrsInFSlots = true;
     double initMinRsrpDbm = -120.0;
     double initRetryIntervalSec = 2.0;
+    double uavControlPeriodSec = 2.0;
     bool remMode = false; // [0]: REM disabled; [1]: generate REM
     int32_t remRbId = -1; // kept for compatibility (not used by this REM helper)
     std::string handoverAlgorithm = "ns3::NrNoOpHandoverAlgorithm";
@@ -1994,6 +2005,10 @@ main(int argc, char* argv[])
     cmd.AddValue("rlc-max-tx-buffer-size", "Maximum RLC UM TX buffer size in bytes", maxRlcTxBufferSize);
     cmd.AddValue("stop-tail", "Extra simulation seconds after sim-time for app/drain events", stopTailSeconds);
     cmd.AddValue("enable-fading", "Enable fast fading channel component", enableFading);
+    cmd.AddValue("use-rlc-am",
+                 "Use RLC AM for QoS flows instead of RLC UM. This is slower but more robust "
+                 "for long overloaded stress runs.",
+                 useRlcAm);
     cmd.AddValue("channel-update-ms", "3GPP channel matrix update period in milliseconds", channelUpdatePeriodMs);
     cmd.AddValue("channel-condition-update-ms", "3GPP LOS/NLOS channel condition update period in milliseconds", channelConditionUpdatePeriodMs);
     cmd.AddValue("enable-fh-control", "Enable 5G-LENA fronthaul control calculations", enableFhControl);
@@ -2016,6 +2031,9 @@ main(int argc, char* argv[])
     cmd.AddValue("uav-underserved-rsrp-thresh",
                  "RSRP threshold in dBm used to build live underserved-UE heatmaps",
                  g_underservedRsrpThreshDbm);
+    cmd.AddValue("uav-control-period",
+                 "Seconds between predictive UAV heatmap inference and target updates",
+                 uavControlPeriodSec);
     cmd.Parse(argc, argv);
 
     NS_ABORT_MSG_IF(useOran == false && (useOnnx || useTorch || useRsrp),
@@ -2076,9 +2094,8 @@ main(int argc, char* argv[])
     Config::SetDefault("ns3::NrRlcUm::EnablePdcpDiscarding", BooleanValue(enablePdcpDiscarding));
     Config::SetDefault("ns3::NrRlcUm::DiscardTimerMs", UintegerValue(discardTimerMs));
     Config::SetDefault("ns3::NrRlcUm::ReorderingTimer", TimeValue(MilliSeconds(reorderingTimerMs)));
-    bool useUdp = true;
     Config::SetDefault("ns3::NrGnbRrc::QosFlowToRlcMapping",
-                       EnumValue(useUdp ? NrGnbRrc::RLC_UM_ALWAYS : NrGnbRrc::RLC_AM_ALWAYS));
+                       EnumValue(useRlcAm ? NrGnbRrc::RLC_AM_ALWAYS : NrGnbRrc::RLC_UM_ALWAYS));
 
     Config::SetDefault("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(maxRlcTxBufferSize));
     //Config::SetDefault("ns3::NrGnbRrc::MaxUesPerCell", UintegerValue(maxUesPerCell));
@@ -2456,8 +2473,6 @@ main(int argc, char* argv[])
     // Install devices with ONE common BWP layout
     tnGnbNrDevs  = nrHelper->InstallGnbDevice(tnGnbNodes, allBwps);
     ntnGnbNrDevs = nrHelper->InstallGnbDevice(ntnGnbNodes, allBwps);
-
-    double uavControlPeriodSec = 2.0;
 
     // Start after measurements and initial attach have had a little time to appear
     Simulator::Schedule(Seconds(7),

@@ -613,4 +613,4 @@ This framework can be extended further to support:
 Currently using ns3::RandomDirection2dMobilityModel for testing purposes with static height.
 
 ### Architecture
-<img width="1121" height="804" alt="Screenshot from 2026-01-21 12-27-03" src="https://github.com/user-attachments/assets/1a95fdbb-1238-4624-a13a-7863cca40451" />
+<img width="1121" height="804" alt="Architecture diagram" src="images/ORAN-Architecture.png" />

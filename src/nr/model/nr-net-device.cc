@@ -246,7 +246,10 @@ NrNetDevice::Receive(Ptr<Packet> p)
     }
     else
     {
-        NS_ABORT_MSG("Unknown IP type");
+        NS_LOG_WARN("Dropping " << p->GetSize()
+                                << " bytes on " << m_macaddress
+                                << " because the packet is neither IPv4 nor IPv6");
+        m_dropTrace(p);
     }
 }
 
