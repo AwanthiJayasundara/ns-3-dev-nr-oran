@@ -436,9 +436,32 @@ Then run the predictive UAV ML load-handover example:
 ./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example --sim-time=122 --enable-predictive-uav=1 --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 --db-file=oran-gru.db --run-tag=gru --enable-flow-monitor=1 --enable-rsrp-trace=0 --enable-position-trace=1 --position-trace-interval=5 --enable-sat-backhaul-monitor=0 --enable-oran-info-log=1 --enable-nr-helper-info-log=1 --enable-setup-prints=1 --enable-progress=1 --progress-interval=5 --ground-attach-delay=2 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4 --enable-srs-in-ul-slots=0 --enable-srs-in-f-slots=0"
 ```
 
+To compare with the CNN predictor, export the CNN model:
+
+```shell
+python3 train_uav_trajectory_final.py --rsrp-thresh -120 --export-onnx --export-model cnn
+```
+
+This writes:
+
+```text
+results/nr/tn-ntn/ml_uav_final/best_cnn_predictor.onnx
+```
+
+Then run the same ML load-handover scenario with the CNN ONNX file. This
+timing-friendly command mirrors the faster baseline run: FlowMonitor and verbose
+logs are disabled, position tracing remains enabled, and CNN inference runs
+every 5 simulation seconds.
+
+```shell
+./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example --sim-time=40 --enable-predictive-uav=1 --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/best_cnn_predictor.onnx --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 --db-file=oran-cnn.db --run-tag=cnn --enable-flow-monitor=0 --enable-rsrp-trace=0 --enable-position-trace=1 --position-trace-interval=5 --enable-sat-backhaul-monitor=0 --enable-oran-info-log=0 --enable-nr-helper-info-log=0 --enable-setup-prints=0 --enable-progress=1 --progress-interval=5 --ground-attach-delay=2 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4 --enable-srs-in-ul-slots=0 --enable-srs-in-f-slots=0 --uav-control-period=5"
+```
+
 `--uav-heat-norm-max` must match `normalization_max_count` in
 `predictor_config.json`, and `--uav-underserved-rsrp-thresh` must match the
-RSRP threshold used during training.
+RSRP threshold used during training. Keep `--db-file` and `--run-tag`
+different for GRU and CNN runs so their databases and result directories do
+not overwrite each other.
 
 ---
 
