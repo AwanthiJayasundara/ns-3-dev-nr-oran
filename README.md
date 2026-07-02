@@ -370,7 +370,7 @@ If this repository supports your research, please cite it as software:
 }
 ```
 
-Please also cite the relevant ns-3, 5G-LENA, ns-O-RAN, and other upstream publications when using their models. Replace or supplement the software citation above with the associated peer-reviewed publication once available.
+Please also cite the relevant ns-3, 5G-LENA, ns-O-RAN, and other upstream publications when using their models.
 
 ## License and third-party software
 
