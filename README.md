@@ -1,328 +1,273 @@
-# ORAN Handover Optimization (ns-3 NR/ORAN)
+# Learning-Enabled O-RAN Automation for UAV Networks
+
+> An ns-3, 5G-LENA, and ns-O-RAN research framework for terrestrial/non-terrestrial network (TN/NTN) handover, UAV-assisted coverage, and learning-enabled Near-RT RIC control.
+
+- **Research area:** multi-objective handover optimisation for automated UAV networks
+- **Network stack:** ns-3, 5G-LENA NR, and ns-O-RAN
+- **Control:** Near-Real-Time RAN Intelligent Controller (Near-RT RIC) logic modules
+- **License:** GNU General Public License v2.0 (GPL-2.0-only)
+- **Author and maintainer:** Kasunika Awanthi Kumari Jayasundara Mudiyanselage (Awanthi Jayasundara), University College Dublin
+
+## Overview
+
+This repository extends ns-3's NR and ns-O-RAN capabilities to study mobility and service continuity in UAV-assisted 5G/6G networks. It provides an end-to-end discrete-event simulation environment in which terrestrial gNBs, non-terrestrial nodes, UAV-mounted gNBs, and mobile user equipment interact with an O-RAN control loop.
+
+The Near-RT RIC collects live radio, mobility, traffic, and cell-load measurements. Configurable logic modules use those measurements to select handover targets, coordinate commands, and support reactive or predictive UAV repositioning. The generated traces expose protocol behaviour, telemetry, and performance metrics needed for reproducible comparison with conventional handover strategies.
+
+The framework supports research on:
+
+- NR-to-NR handover using RSRP, hysteresis, timing, and cell-capacity constraints;
+- terrestrial and non-terrestrial network integration with satellite backhaul;
+- UAV and ground-user mobility;
+- O-RAN E2 reporting, SQLite data storage, and conflict mitigation;
+- secrecy-aware and sensing-assisted handover decisions;
+- ML-based prediction of underserved-user hotspots; and
+- multi-objective optimisation using radio quality, mobility stability, load, energy, QoS, and security information.
+
+## Architecture
+
+![O-RAN architecture](images/ORAN-Architecture.png)
+
+The implemented closed loop is:
+
+1. NR UEs and gNBs register as E2 nodes.
+2. UEs report location, serving-cell information, RSRP/RSRQ, and application statistics.
+3. gNBs report location and cell-load indicators derived from MAC scheduling callbacks.
+4. The Near-RT RIC stores reports in an SQLite repository and periodically invokes a logic module.
+5. The logic module selects a target and emits an NR-to-NR handover command.
+6. A Conflict Mitigation Module (CMM) schedules the command for execution at the source gNB.
+
+### Relationship to an srsRAN Near-RT RIC testbed
+
+This repository models the O-RAN control loop entirely inside ns-3. Its E2 terminators, reports, logic modules, commands, and SQLite repository are simulation abstractions; they do **not** currently provide a network-facing E2AP/SCTP endpoint or directly connect to an external Near-RT RIC.
+
+The [srsRAN Near-RT RIC and xApp tutorial](https://docs.srsran.com/projects/project/en/latest/tutorials/source/near-rt-ric/source/index.html) is the reference workflow for a later real-time/testbed validation stage. That workflow uses an srsRAN gNB with an E2 agent, Open5GS, a UE, and either ORAN SC RIC or FlexRIC. It enables the E2SM-KPM service model for measurements and E2SM-RC for control.
+
+Moving an algorithm from this simulator to that testbed therefore requires an adapter or xApp implementation with the following mapping:
+
+| Research input/action | ns-3 implementation | Testbed equivalent or requirement |
+|---|---|---|
+| E2 node identity | ns-3 node/E2 terminator ID | PLMN, gNB/DU identity, and RAN function ID |
+| UE identity | IMSI and RNTI in reports | Stable UE key plus the identifiers exposed by KPM/RC messages |
+| Radio measurements | NR RSRP/RSRQ reporters | E2SM-KPM measurement records; confirm that the chosen gNB version exposes real rather than placeholder values |
+| QoS measurements | FlowMonitor and application reports | KPM metrics such as downlink/uplink UE throughput, packet success/drop rate, and transmitted RLC SDU volume |
+| Cell load | NR MAC scheduling callbacks | Scheduler/KPM metrics, normalized to a documented cell-load definition |
+| Mobility | Exact simulated UE/UAV coordinates | Timestamped position source external to KPM, such as GNSS or a testbed telemetry feed |
+| Handover decision | O-RAN logic module | xApp subscription, state store, and decision function |
+| Handover command | `OranCommandNr2NrHandover` | Supported E2SM-RC control action; verify target-cell and UE-control capabilities in the selected srsRAN release |
+| Validation evidence | SQLite, CSV traces, and ns-3 logs | RIC/xApp logs, gNB logs, KPM indications, E2AP packet capture, traffic results, and handover events |
+
+At minimum, a cross-platform evaluation dataset should record a monotonic timestamp, run/scenario ID, E2 node and UE identifiers, serving and candidate cell IDs, RSRP/RSRQ/SINR where available, DL/UL throughput, packet loss/drop indicators, cell load, UE/UAV position, decision reason, command timestamp, handover result, and failure cause. Units, reporting interval, missing-value encoding, and clock source must be documented. This allows the same policy to be evaluated fairly in ns-3 and in a live or emulated RAN.
+
+For the tutorial-style testbed, the external prerequisites are Ubuntu, srsRAN Project, srsUE, ZeroMQ, Open5GS, a supported Near-RT RIC, and Wireshark for E2AP inspection. The gNB must be configured with its DU E2 agent and the required KPM/RC service models enabled, along with RLC and scheduler metric reporting. Start the components in dependency order: 5G Core, Near-RT RIC, gNB, UE, user traffic, and finally the xApp. These packages are **not** dependencies of the ns-3 simulations in this repository.
+
+Interoperability work should pin the exact srsRAN, RIC, service-model, and E2AP versions. The referenced tutorial describes E2AP/E2SM/KPM/RC revision 3 and notes implementation limitations; compatibility must be rechecked against the versions used in each experiment.
+
+## Target UCD NetLab implementation
+
+The ultimate research target is to transfer the handover policy developed in ns-3 into a UAV handover-optimisation xApp and validate it on the [UCD NetLab 6G AI-RAN Security Test Network](https://netslab.ucd.ie/testbed/). NetLab is based on **OpenAirInterface (OAI)** rather than srsRAN, so the OAI E2 agent and its supported service-model versions must be used for the final integration. The srsRAN tutorial above remains a useful operational reference for E2 setup, subscriptions, metrics, packet capture, and component startup order.
+
+### Target end-to-end architecture
+
+```mermaid
+flowchart LR
+  subgraph OFF[Offline development and reproducible training]
+    NS3[ns-3 + 5G-LENA + ns-O-RAN\nTN/NTN and UAV scenarios]
+    DATA[(Simulation traces\nradio + QoS + load + mobility + HO)]
+    TRAIN[Policy design and ML training\nbaselines + CNN/GRU + multi-objective model]
+    ART[Versioned policy/model artifact\nfeatures + units + thresholds + checksum]
+    NS3 --> DATA --> TRAIN --> ART
+  end
+
+  subgraph RIC[Near-RT RIC and edge-computing domain]
+    E2T[E2 termination]
+    XAPP[UAV handover-optimisation xApp\nstate + inference + safety gates]
+    STORE[(Time-series experiment store\nKPM + decisions + outcomes)]
+    E2T -->|KPM indications| XAPP
+    XAPP -->|decision and confidence| STORE
+    E2T -->|indications| STORE
+    XAPP -->|RC control request| E2T
+  end
+
+  subgraph RAN[UCD NetLab OAI 5G/O-RAN domain]
+    CORE[CN5G]
+    CU[O-CU / E2 node]
+    DU1[Serving O-DU]
+    DU2[Target O-DU]
+    RU1[Serving O-RU]
+    RU2[Target O-RU]
+    UE[5G UE / modem\non ground or UAV]
+    CORE <-->|N2 / N3| CU
+    CU <-->|F1| DU1
+    CU <-->|F1| DU2
+    DU1 <-->|Open Fronthaul| RU1
+    DU2 <-->|Open Fronthaul| RU2
+    RU1 <-->|NR radio| UE
+    RU2 <-.->|candidate-cell measurements| UE
+  end
+
+  subgraph UAV[UAV telemetry and flight-safety domain]
+    DRONE[UVify IFO-S UAV\nGNSS + battery + mission state]
+    GW[Telemetry gateway\nROS 2 / MAVLink / approved API]
+    SAFETY[Flight controller and safety supervisor\ngeofence + battery reserve + manual override]
+    DRONE --> GW --> SAFETY --> DRONE
+  end
+
+  ART -.->|deploy after validation| XAPP
+  CU <-->|E2AP over SCTP\nKPM reports / RC control| E2T
+  UE -->|traffic and measurements| CU
+  GW -->|timestamped position, velocity, battery| XAPP
+  XAPP -.->|optional reposition request| SAFETY
+```
+
+The solid E2 control path is for RAN handover decisions. A request to physically reposition a UAV is a different control problem and must pass through an approved flight controller and safety supervisor; it should not be treated as an ordinary E2 handover command.
+
+### xApp decision loop
+
+For each UE and decision interval, the target xApp should:
+
+1. subscribe to the KPM measurements available from the OAI E2 nodes;
+2. join KPM data with UE/UAV telemetry using synchronized timestamps and stable identifiers;
+3. maintain a short history window for mobility and trend prediction;
+4. filter candidate cells by availability, minimum radio quality, capacity, security policy, and UAV-energy constraints;
+5. score the remaining candidates using the selected baseline or learned multi-objective policy;
+6. apply hysteresis, time-to-trigger, confidence, cooldown, and ping-pong protection;
+7. issue a supported E2SM-RC handover/control request, or fall back to a documented non-E2 test API if the selected OAI release lacks that action;
+8. correlate the request with RRC/E2 outcomes and record success, failure cause, interruption time, and post-handover QoS; and
+9. enter a safe fallback mode if measurements are stale, the model fails, identifiers cannot be resolved, or control acknowledgement times out.
+
+The first testbed version should be deterministic and explainable: reproduce the RSRP-plus-hysteresis baseline, then add cell load, and only then deploy the learned multi-objective policy. This staged approach gives each later result a defensible baseline.
+
+### Resources already described by UCD NetLab
+
+The public NetLab page identifies the following resources:
+
+| Resource | Intended role in this research |
+|---|---|
+| OAI CN5G | Registration, sessions, mobility anchoring, and user-plane connectivity |
+| O-CU and five O-DUs | Multi-cell RAN processing and potential E2-node placement |
+| Benetel indoor/outdoor O-RUs | At least two radio cells are required for a handover experiment |
+| Dell edge servers, including a Precision 7920 | Near-RT RIC, xApp, data collection, inference, and experiment orchestration |
+| Two NI Ettus B200 USRPs and one NI Ettus X410 SDR | Controlled radio experiments, emulation, or additional RF endpoints, subject to the selected topology |
+| Two Quectel RM500 5G modems and 5G dongles | Mobile UE endpoints for repeatable handover and traffic tests |
+| Two UVify IFO-S drones | UAV mobility and telemetry experiments, subject to flight and payload approval |
+| Nvidia Jetson AGX Orin and Raspberry Pi 4 devices | Onboard/edge telemetry gateway or optional distributed inference |
+| 3.8–4.2 GHz ComReg test licence | Licensed over-the-air experimentation under the testbed's approved conditions |
+
+These resources are reported by the testbed website; their availability, exact models, firmware, supported bands, and booking conditions must be confirmed before an experiment.
+
+### Resources and access that still need confirmation
 
-This repository extends the original ns-3 ORAN handover examples into a **large-scale-optimized, performance-oriented multi-cell experiment** with additional **NR-compatible reporters, learning models, CMM orchestration logic, and SQLite-based data storage**.
+Before claiming an end-to-end xApp-controlled handover demonstration, confirm or provision:
 
----
+- two simultaneously operational and overlapping NR cells with safe, calibrated RF coverage;
+- an OAI release with a working E2 agent and compatible E2AP, E2SM-KPM, and E2SM-RC versions;
+- the exact RC control style/action required to identify a UE and target cell;
+- a Near-RT RIC distribution compatible with that OAI build, plus xApp SDK and deployment access;
+- KPM metric availability and granularity for RSRP/RSRQ/SINR, throughput, packet loss, PRB or cell utilisation, and per-UE measurements;
+- access to RRC handover events and failure causes for ground-truth labelling;
+- synchronized clocks across RIC, CU/DU, UE traffic generator, telemetry gateway, and data collector (NTP for initial work; PTP where tighter timing is required);
+- routable management, E2/SCTP, F1, fronthaul, core, telemetry, and user-plane networks with documented IP addresses and firewall rules;
+- UE provisioning, SIM credentials, traffic-generation hosts, and repeatable UE mobility or channel-control procedures;
+- UAV payload, power, communications, GNSS, telemetry API, geofence, manual override, battery-reserve policy, and institutional flight approval;
+- secure model and xApp deployment, authentication/authorization, secrets management, audit logs, and an emergency stop/rollback procedure; and
+- experiment booking, spectrum/licence conditions, privacy review, risk assessment, and data-management approval.
 
-## 📌 Example: `oran-lte-2-lte-rsrp-ue-handover-simulation.cc`
-This example is used to verify the simulation speed compared to NR channel and retrieve the results for more than 50 users. With Nr channel conditions, it's taking a longer time to simulate, and earlier it was suspected that due to the effect of UAV dynamic movements, but it was not the reason behind the NR simulation taking a longer time to end. 
+### Minimum experiment record
 
-### Background (Original ORAN Example)
-The original ORAN example **`oran-lte-2-lte-rsrp-handover-lm-example`** is intentionally minimal and focused:
+Every run should preserve enough information to reproduce both the radio conditions and the xApp decision:
 
-- **1 LTE UE** moving between **2 eNBs**
-- UE reports:
-  - **Location**
-  - **RSRP / RSRQ**
-  - (optionally SINR)
-- A simple RIC **Logic Module (LM)** periodically checks PHY measurements
-- The LM triggers **only one decision**:
-  ✅ whether to **initiate a handover**
+- experiment ID, scenario, software commit/container digest, model checksum, configuration, random seed, and start time;
+- synchronized monotonic and wall-clock timestamps;
+- E2 node, cell, UE, RNTI, and anonymized subscriber identifiers with an explicit identity-mapping lifetime;
+- serving/candidate measurements with metric name, value, unit, source layer, aggregation window, and missing-data flag;
+- throughput, latency, jitter, packet loss, cell/PRB load, UE/UAV position and velocity, UAV battery, and mission state;
+- complete candidate set, normalized feature vector, constraints, model output, confidence, chosen action, and human-readable decision reason;
+- E2 subscription/control transaction identifiers and request, acknowledgement, execution, and timeout timestamps;
+- RRC handover start/end, source and target cells, success/failure cause, interruption time, ping-pong label, and post-handover QoS; and
+- safety interventions, stale-data events, xApp/RIC restarts, packet captures, and relevant CU/DU/core/UE logs.
 
-This example is mainly meant to demonstrate:
+Personally identifying subscriber data should not be stored unless it is necessary and approved. Use pseudonymous experiment identifiers and document retention and access controls.
 
-- how to connect ORAN tracing (RSRP/RSRQ/SINR),
-- how to add LM processing delays,
-- and how to trigger a handover from the RIC.
+### Validation sequence
 
----
+1. **Software-in-the-loop:** validate all policies in ns-3 using fixed seeds and identical scenarios.
+2. **RIC integration without radio control:** connect an xApp to emulated or replayed KPM data and verify subscriptions, timing, state, and logs.
+3. **Passive testbed observation:** receive live KPM data from OAI without issuing control actions.
+4. **Closed-loop static UE test:** enable handover control between two cells under attenuated or otherwise controlled RF conditions.
+5. **Ground mobility test:** repeat with a modem moved through a documented path before introducing a drone.
+6. **Tethered/contained UAV test:** validate telemetry, timing, payload, radio behaviour, and safety fallback.
+7. **Approved free-flight experiment:** evaluate the xApp with geofencing, manual override, staged traffic load, and predefined abort criteria.
+8. **Comparative evaluation:** compare conventional handover, RSRP/hysteresis xApp, load-aware xApp, and the final multi-objective learned xApp using the same scenarios and statistical reporting.
 
-### What This Script Adds (My Extended Scenario)
-In **`oran-lte-2-lte-rsrp-ue-handover-simulation.cc`**, the same *handover steering idea* is expanded into a **large-scale multi-cell experiment** designed for performance evaluation.
+## Main extensions
 
-#### Key Enhancements
-✅ **Multi-cell deployment**
-- **7 macro LTE cells**
-- **100 UEs**
+### NR support for ns-O-RAN
 
-✅ **Realistic mobility**
-- Random mobility using a **box model**
-- Total distance span: **~1000 meters**
+- NR UE cell-information and RSRP/RSRQ reporters;
+- NR and LTE cell-load reports;
+- NR gNB and UE E2 node terminators;
+- NR-to-NR handover commands and trigger reports;
+- NR Fractional Frequency Reuse (FFR) algorithm and service access points;
+- CMM handover coordination and single-command-per-node control; and
+- generic and SQLite-backed O-RAN data repositories.
 
-✅ **Continuous application traffic**
-- UDP traffic flows generated throughout the simulation
+Most O-RAN extensions are under [`contrib/oran`](contrib/oran). See the [module README](contrib/oran/README.md) for the lower-level model and API documentation.
 
-✅ **QoS Metrics using FlowMonitor**
-Collected KPIs include:
-- **End-to-end delay**
-- **Jitter**
-- **Throughput**
-- **Packet Delivery Ratio (PDR)**
+### Load-aware handover
 
-✅ **Cell Load Reporting**
-- MAC scheduler load reporting
-- Used to monitor network utilization at scale
+`OranLmNr2NrRsrpHandoverWithCellLoad` selects targets using:
 
-✅ **ORAN Reporting + RSRP-based HO Logic**
-- ORAN reporters continuously feed RIC data
-- A **RSRP-based LM** uses PHY info to steer handovers for many UEs
+- an RSRP improvement and configurable hysteresis margin;
+- warm-up, command cooldown, and pending-handover timeout gates;
+- a minimum acceptable target RSRP;
+- an optional maximum number of UEs per cell; and
+- next-best-cell fallback when the strongest candidate is full.
 
----
+Setting `MaxUesPerCell` to `0` disables the capacity constraint. Pending handovers reserve target capacity so that several decisions in one RIC interval cannot overfill a cell.
 
-### Summary Comparison
-| Feature | Original Example | This Script |
-|--------|------------------|------------|
-| Cells | 2 eNBs | 7 macro eNBs |
-| UEs | 1 UE | 100 UEs |
-| Measurements | RSRP/RSRQ (+SINR optional) | RSRP/RSRQ (+optional SINR), cell info, cell load |
-| Decision | Single HO trigger | HO steering for many UEs + KPI evaluation |
-| Traffic | None / minimal | Continuous UDP traffic |
-| Metrics | PHY tracing demo | QoS: delay, jitter, throughput, PDR |
-| Goal | Demonstrate wiring | Large-scale experiment + performance pipeline |
+### Predictive UAV repositioning
 
----
+[`train_uav_trajectory_final.py`](train_uav_trajectory_final.py) converts UE trajectories and O-RAN events into time-ordered underserved-user heatmaps. It compares persistence, multilayer perceptron (MLP), convolutional neural network (CNN), and gated recurrent unit (GRU) predictors using chronological training, validation, and test partitions. Selected CNN or GRU models can be exported to ONNX and evaluated inside the simulation.
 
-### ⏱ Simulation Time & Runtime Notes
-- Simulation duration: **~100 seconds**
-- Runtime for **100 UEs + 7 eNBs**: **~60 minutes**
-- Total scenario span: **~1000 meters**
+## Requirements
 
-> Note: runtime depends on machine and build type (debug vs optimized).
+- A Linux environment suitable for building ns-3
+- CMake 3.20
+- SQLite 3.7.17 or later
+- The dependencies required by the bundled ns-3, NR/5G-LENA, and ns-O-RAN modules
+- ONNX Runtime 1.14.1 (optional, for ONNX inference)
+- PyTorch 2.2.2 and the Python training dependencies (optional, for ML training)
 
----
+The checked-out tree identifies itself as the ns-3 development version (`3-dev`). Optional ML dependencies are not required for the policy-based examples.
 
-## 📡 Cell Load Reporters (LTE + NR)
+## Build
 
-In addition to the handover experiment above, cell load reporting support was implemented for both LTE and NR.
+From the repository root:
 
-### ✅ LTE Cell Load
-- **Files:**
-  - `model/oran-report-lte-cell-load.cc`
-  - `model/oran-report-lte-cell-load.h`
+```bash
+./ns3 configure --build-profile=optimized --enable-logs --enable-examples --enable-tests
+./ns3 build
+```
 
-### ✅ NR Cell Load
-- **Files:**
-  - `model/oran-report-nr-cell-load.cc`
-  - `model/oran-report-nr-cell-load.h`
+For dependency setup, optional ONNX/PyTorch integration, and module-specific build instructions, see [`contrib/oran/README.md`](contrib/oran/README.md).
 
-***These reports enable the RIC/LM pipeline to track how busy each cell is and enable future load-aware decision policies.***
+## Run
 
----
+The main NR examples are grouped below. Run any target from the repository root with `./ns3 run`.
 
-# ✅ Commit #1: NR Compatibility + ORAN Extensions
+### RSRP and load-aware handover
 
-The first commit introduced a set of new components to make ORAN functionality compatible with NR and to expand ORAN capabilities beyond the baseline LTE examples.
-
----
-
-## 1️⃣ NR UE Reporters (Cell Info + RSRP/RSRQ)
-
-### ✅ NR UE Cell Info Reporter
-Implemented `OranReporterNrUeCellInfo` to capture and report:
-
-- **NR Cell ID**
-- **RNTI**
-- **Timestamp (time for the UE report)**
-
-**Files:**
-- `oran-reporter-nr-ue-cell-info.h`
-- `model/oran-reporter-nr-ue-cell-info.cc`
-- `model/oran-report-nr-ue-cell-info.cc`
-
----
-
-### ✅ NR UE RSRP/RSRQ Reporter
-Implemented `OranReporterNrUeRsrpRsrq` to report:
-
-- **RSRP** (Reference Signal Received Power)
-- **RSRQ** (Reference Signal Received Quality)
-
-**Files:**
-- `oran-reporter-nr-ue-rsrp-rsrq.h`
-- `model/oran-reporter-nr-ue-rsrp-rsrq.cc`
-- `model/oran-report-nr-ue-rsrp-rsrq.cc`
-
----
-
-### ✅ Additional Reporting Models Added
-**NR UE handover trigger report:**
-- `model/oran-report-trigger-nr-ue-handover.cc`
-
-**NR cell load report:**
-- `model/oran-report-nr-cell-load.cc`
-
-**LTE cell load report:**
-- `model/oran-report-lte-cell-load.cc`
-
----
-
-## 2️⃣ NR FFR Algorithm and SAPs
-
-Introduced an **NR FFR (Fractional Frequency Reuse) Algorithm** for frequency reuse management.
-
-### Core algorithm logic
-- `nr-ffr-algorithm.cc`
-- `nr-ffr-algorithm.h`
-
-### Service Access Points (SAPs)
-- `nr-ffr-sap.cc`
-- `nr-ffr-sap.h`
-
----
-
-## 3️⃣ ORAN CMM (Control/Management) Logic
-
-Implemented ORAN **CMM handover coordination logic** to manage how HO commands are issued.
-
-### ✅ Handover orchestration
-- `model/oran-cmm-handover.cc`
-
-### ✅ Single-command-per-node control
-- `model/oran-cmm-single-command-per-node.cc`
-
-These are used together with the NR→NR command + learning models to coordinate handover behavior per node.
-
----
-
-## 4️⃣ Data Repository with SQLite Backend
-
-Extended ORAN data handling with a repository abstraction and SQLite storage backend.
-
-### ✅ Generic repository interface
-- `model/oran-data-repository.h`
-
-### ✅ SQLite-backed implementation
-- `model/oran-data-repository-sqlite.cc`
-- `model/oran-data-repository-sqlite.h`
-
----
-
-## 5️⃣ NR E2 Node Terminators
-
-Extended E2 node terminator support for NR endpoints.
-
-### ✅ NR gNB E2 node terminator
-- `model/oran-e2-node-terminator-nr-gnb.cc`
-- `model/oran-e2-node-terminator-nr-gnb.h`
-
-### ✅ NR UE E2 node terminator
-- `model/oran-e2-node-terminator-nr-ue.cc`
-- `model/oran-e2-node-terminator-nr-ue.h`
-
----
-
-## 6️⃣ Build Integration and Robustness
-
-All new components were integrated into the ORAN module build system and hardened with logging + error handling.
-
-### ✅ Build integration updates
-- `contrib/oran/CMakeLists.txt`
-
-### Robustness improvements across
-- NR UE reporters  
-- NR load/cell reporting  
-- NR FFR algorithm + SAPs  
-- NR→NR learning models + commands  
-- CMM handover logic  
-- SQLite-backed data repository  
-- NR E2 node terminators  
-
----
-### Protocol
-<img width="1079" height="792" alt="Screenshot from 2026-01-21 12-28-51" src="https://github.com/user-attachments/assets/14c011e4-fa52-45e4-b944-b3a68413e684" />
-
-
-## 7️⃣ NR → NR Handover Optimization Models
-
-Implemented multiple NR→NR handover decision models and the command interface to execute HO decisions.
-
-## ✅ NR → NR Handover Decision Models & Command Interface
-
-Implemented multiple **NR→NR handover decision models** and the **command interface** required to execute handover actions from the Near-RT RIC.
-
-These components enable policy-driven and ML-driven handover control where:
-- UEs and gNBs send measurement/state reports to the Near-RT RIC
-- Logic Modules (LMs) make decisions periodically (based on the configured query interval)
-- Commands are issued back to the source gNB to perform NR→NR handover
-
----
-
-### *** Policy-Based Handover Mechanisms ***
-
-#### ✅ RSRP-based NR→NR HO Logic Module (LM)
-A lightweight **policy-based handover** model that selects the best serving gNB using **maximum RSRP**:
-
-- Retrieves UE serving-cell info (CellId, RNTI)
-- Reads UE measurement reports (RSRP/RSRQ to multiple gNBs)
-- Chooses the **highest RSRP** gNB as the target cell
-- Avoids repeated handover retries by falling back to the **second-best** RSRP candidate when needed
-
-**File:**
-- `model/oran-lm-nr-2-nr-rsrp-handover.cc`
-
----
-
-#### ✅ NR→NR Handover Command Implementation
-Implements the command object used by the RIC to instruct the **current serving gNB** to handover a specific UE to a **target NR cell**.
-
-The command contains:
-- Source/Target E2 Node ID
-- UE RNTI
-- Target Cell ID
-
-**Files:**
-- `model/oran-command-nr-2-nr-handover.cc`
-- `model/oran-command-nr-2-nr-handover.h`
----
-
-## Work carried out next
-
-- Looking for a way to add a **maximum cell load capacity threshold**
-- Adding support to retrieve and track **handover decision failures** (e.g., HO command issued but not successfully completed)
-
-  ## ⚡ LTE vs NR Runtime Comparison (Why NR is Slower)
-
-| Feature / Component | LTE Scenario | NR Scenario | Why NR is Slower |
-|---------------------|-------------|-------------|------------------|
-| Channel / Propagation Model | `Cost231PropagationLossModel` (simple pathloss) | `ThreeGppChannelModel (UMa)` (realistic 3GPP) | 3GPP model computes LOS/NLOS, shadowing, fading behavior → higher CPU cost |
-| PHY Processing | Lightweight LTE PHY | Heavy NR PHY | NR PHY has more detailed signal processing & scheduling operations |
-| Fading | Usually minimal / simplified | ✅ Enabled (`INIT_FADING`) | Fast fading calculations increase per-link computation |
-| Beamforming | ❌ Not used | ✅ Enabled (IdealBeamformingHelper + QuasiOmni) | Beamforming adds gain calculations + channel matrix handling |
-| Carrier/BWP Setup | Single carrier (simpler) | ✅ Dual-band FDD + 2 BWPs (DL + UL) | More BWPs = more PHY instances + more scheduling + mapping operations |
-| Scheduling Complexity | LTE RR scheduler (`RrFfMacScheduler`) | NR OFDMA scheduler (`NrMacSchedulerOfdmaRR`) | NR OFDMA scheduling is heavier due to resource-grid level allocations |
-| Mobility Speed | UE speed: **1–2.5 m/s** | UAV speed: **20–30 m/s** | Higher speed changes channel faster → more frequent recalculations |
-| Channel Update Period | Not explicitly heavy | UpdatePeriod configured (`ThreeGppChannelModel::UpdatePeriod`) | Even with large update period, NR calculations per update are costly |
-| QoS / FlowMonitor Prints | Moderate | High (frequent `std::cout`) | Console printing inside loops slows execution significantly |
-| Simulation Outcome | Faster runtime | Slower runtime | NR is more realistic and detailed → expensive per timestep |
-
-✅ **Summary:** NR simulation runs slower mainly due to **3GPP channel model + fading + beamforming + multi-BWP FDD + OFDMA scheduling**, even if the number of nodes is lower than LTE.
-  
-
-This repository currently extends the ns-3 **NR (5G-LENA)** + **ns-O-RAN** examples into a **large-scale UAV mobility experiment** where a Near-RT RIC continuously collects measurements and issues **NR→NR handover commands** using a lightweight **policy-based logic module**.
-
-### ✅ Example 02: `oran-nr-uav-rsrp-handover-example.cc`
-
-**What the scenario does**
-- Deploys multiple **fixed NR gNB macro cells** (e.g., 5) and many **UAV UEs** (e.g., 50–75).
-- UAVs move using `RandomDirection2dMobilityModel` inside a large 2D bounded area with randomized altitude.
-- Downlink UDP traffic is generated from a remote host through **NR EPC** (`NrPointToPointEpcHelper`).
-- Uses **3GPP UMa channel model** (optionally with fast fading) and **Ideal Beamforming** (Quasi-Omni direct path).
-- Uses a **single-carrier TDD setup** (1 band, 1 BWP) with a configurable DL/UL pattern.
-- Enables X2 between gNBs to support inter-cell handover.
-- Collects **QoS KPIs** using FlowMonitor and writes time-series traces:
-  - delay, jitter, throughput (Mbps), packet delivery ratio (PDR), packet loss ratio (PLR)
-- Logs mobility + HO events:
-  - UAV position trace (`position-trace.tr`)
-  - Handover success events (`NrGnbRrc/HandoverEndOk` → `handover-trace.tr`)
-  - RSRP measurements (`rsrp-trace.tr`)
-- Optionally generates a **NR Radio Environment Map (REM)** snapshot.
-
----
-
-## Current ORAN NR Examples
-The ORAN module currently builds the following NR examples. These are the
-renamed `./ns3 run` targets in `contrib/oran/examples/CMakeLists.txt`.
-
-### NR RSRP handover
-```shell
+```bash
 ./ns3 run "oran-nr-tn-rsrp-handover-example"
 ./ns3 run "oran-nr-ntn-rsrp-handover-example"
 ./ns3 run "oran-nr-uav-rsrp-handover-example"
 ./ns3 run "oran-nr-uav-load-aware-rsrp-handover-example"
 ```
 
-### NR UAV and ground UE load-aware handover
-```shell
+### UAV and ground-user scenarios
+
+```bash
 ./ns3 run "oran-nr-uav-ground-traffic-handover-example"
 ./ns3 run "oran-nr-uav-ground-qos-handover-example"
 ./ns3 run "oran-nr-uav-ground-fronthaul-handover-example"
@@ -331,17 +276,14 @@ renamed `./ns3 run` targets in `contrib/oran/examples/CMakeLists.txt`.
 ./ns3 run "oran-nr-tn-ntn-uav-mobility-handover-example"
 ```
 
-### NR TN/NTN and secrecy-aware handover
-```shell
+### TN/NTN, security, and satellite-backhaul scenarios
+
+```bash
 ./ns3 run "oran-nr-tn-ntn-rsrp-handover-example"
 ./ns3 run "oran-nr-tn-ntn-hybrid-xr-example"
 ./ns3 run "oran-nr-tn-ntn-baseline-handover-example"
 ./ns3 run "oran-nr-tn-ntn-secrecy-handover-example"
 ./ns3 run "oran-nr-tn-ntn-secrecy-onnx-handover-example"
-```
-
-### NR UAV satellite backhaul
-```shell
 ./ns3 run "oran-nr-uav-satellite-backhaul-example"
 ./ns3 run "oran-nr-tn-ntn-uav-satellite-handover-example"
 ./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example"
@@ -349,268 +291,99 @@ renamed `./ns3 run` targets in `contrib/oran/examples/CMakeLists.txt`.
 ./ns3 run "oran-nr-hybrid-tn-ntn-uav-satellite-handover-example"
 ```
 
-### NR TN/NTN UAV satellite handover with O-RAN LM logs
-To write `NS_LOG_INFO` messages such as `LOAD`, `TTT_WAIT`, `LM HO`, and
-`LM HO_FAIL_LOW_RSRP` to `ns3-oran-lm.log`, configure the optimized build with
-runtime logging enabled first:
+### Detailed O-RAN logging
 
-```shell
-./ns3 configure --build-profile=optimized --enable-logs --enable-examples --enable-tests
-./ns3 build
+After building with `--enable-logs`, enable the scenario's O-RAN information log to record load snapshots, time-to-trigger waits, handover commands, and low-RSRP rejections:
+
+```bash
+./ns3 run "oran-nr-tn-ntn-uav-satellite-handover-example \
+  --sim-time=40 --use-oran=1 --enable-oran-info-log=1 \
+  --enable-decision-csv=1 --enable-position-trace=1 \
+  --enable-handover-trace=1 --enable-handover-failure-trace=1"
 ```
 
-Then run the example with O-RAN LM logging enabled:
+Common outputs include position and RSRP traces, handover success/failure events, decision CSV files, FlowMonitor KPIs, `ns3-oran-lm.log`, and an SQLite report/command database. Exact output names depend on the selected example and command-line options.
 
-```shell
-./ns3 run "oran-nr-tn-ntn-uav-satellite-handover-example --sim-time=40 --enable-flow-monitor=1 --enable-rsrp-trace=0 --enable-position-trace=1 --position-trace-interval=5 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-sat-backhaul-monitor=0 --enable-decision-csv=1 --enable-oran-info-log=1 --enable-nr-helper-info-log=0 --enable-setup-prints=0 --enable-progress=1 --progress-interval=5 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --ground-attach-delay=2 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4 --enable-srs-in-ul-slots=0 --enable-srs-in-f-slots=0"
-```
+## ML workflow
 
-Use `--enable-setup-prints=1` when initial attach messages are also needed.
-The SRS switches are disabled in this stress-run command to avoid SRS reception
-overlapping with uplink data reception when using ideal beamforming.
+Train the heatmap predictors after generating position traces and the ML handover dataset:
 
-### UAV underserved-heatmap predictor training
-After running the TN/NTN UAV satellite handover example, the Python script
-`train_uav_trajectory_final.py` can train models that predict where underserved
-UE hotspots will appear next. It reads:
-
-- `ues1-position-trace.tr`
-- `ues2-position-trace.tr`
-- `ml-ho-dataset.csv`
-- `ns3-oran-lm.log`
-
-The script converts UE positions into local meter coordinates, aligns O-RAN/ML
-event timestamps with the nearest position trace timestamp, builds underserved
-UE heatmaps, and trains persistence, MLP, CNN, and GRU predictors using a
-chronological train/validation/test split.
-
-The split is chronological, so future heatmaps are not mixed into past
-training data:
-
-```text
-60% training   -> the model studies past examples and updates its weights
-15% validation -> checks which epoch/model version is best
-25% testing    -> final exam used only for reporting final performance
-```
-
-Validation is needed because a model can keep improving on the training data
-by memorizing it, while getting worse on unseen future data. After each epoch,
-the script measures validation loss and keeps the model checkpoint with the
-best validation result. The test split is kept untouched until the end, so the
-reported metrics are not used to choose the model.
-
-Example:
-
-```shell
+```bash
 python3 train_uav_trajectory_final.py \
-  --ues1 results/nr/tn-ntn/ueS1_115_ueS2_115_tnGnb_8_ntnGnb_6_tnCap_20_ntnCap_10_hyst_2/ues1-position-trace.tr \
-  --ues2 results/nr/tn-ntn/ueS1_115_ueS2_115_tnGnb_8_ntnGnb_6_tnCap_20_ntnCap_10_hyst_2/ues2-position-trace.tr \
-  --ml-csv results/nr/tn-ntn/ueS1_115_ueS2_115_tnGnb_8_ntnGnb_6_tnCap_20_ntnCap_10_hyst_2/ml-ho-dataset.csv \
-  --log results/nr/tn-ntn/ueS1_115_ueS2_115_tnGnb_8_ntnGnb_6_tnCap_20_ntnCap_10_hyst_2/ns3-oran-lm.log \
+  --ues1 results/nr/tn-ntn/<run>/ues1-position-trace.tr \
+  --ues2 results/nr/tn-ntn/<run>/ues2-position-trace.tr \
+  --ml-csv results/nr/tn-ntn/<run>/ml-ho-dataset.csv \
+  --log results/nr/tn-ntn/<run>/ns3-oran-lm.log \
   --outdir results/nr/tn-ntn/ml_uav_final \
   --train-ratio 0.60 --val-ratio 0.15 --event-time-tolerance 2.5
 ```
 
-Main outputs are written under `--outdir`, including
-`predictor_comparison.csv`, `training_history_all_models.csv`,
-`underserved_heatmap_summary.csv`, `predictor_config.json`, comparison plots,
-and saved model state dictionaries. Use `--export-onnx` to export the selected
-neural predictor to ONNX when ONNX dependencies are installed.
+Export a GRU model for ONNX inference:
 
-To create the GRU ONNX model used by the predictive UAV ML load-handover example,
-run:
-
-```shell
-python3 train_uav_trajectory_final.py --rsrp-thresh -120 --export-onnx --export-model gru
+```bash
+python3 train_uav_trajectory_final.py \
+  --rsrp-thresh -120 --export-onnx --export-model gru
 ```
 
-This writes:
+Then pass the generated model to the predictive scenario:
 
-```text
-results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx
+```bash
+./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example \
+  --sim-time=122 --enable-predictive-uav=1 \
+  --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx \
+  --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 \
+  --db-file=oran-gru.db --run-tag=gru"
 ```
 
-Then run the predictive UAV ML load-handover example:
+`--uav-heat-norm-max` must match `normalization_max_count` in the generated `predictor_config.json`, and the inference RSRP threshold must match the training threshold. Use distinct database files and run tags when comparing models.
 
-```shell
-./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example --sim-time=122 --enable-predictive-uav=1 --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 --db-file=oran-gru.db --run-tag=gru --enable-flow-monitor=1 --enable-rsrp-trace=0 --enable-position-trace=1 --position-trace-interval=5 --enable-sat-backhaul-monitor=0 --enable-oran-info-log=1 --enable-nr-helper-info-log=1 --enable-setup-prints=1 --enable-progress=1 --progress-interval=5 --ground-attach-delay=2 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4 --enable-srs-in-ul-slots=0 --enable-srs-in-f-slots=0"
+## Evaluation metrics
+
+Depending on the scenario, the framework records:
+
+- throughput, end-to-end delay, jitter, packet delivery ratio, and packet loss ratio;
+- RSRP/RSRQ, SINR, serving-cell association, and cell load;
+- handover attempts, successes, failures, and ping-pong events;
+- UE and UAV trajectories;
+- satellite-backhaul state; and
+- ML training history and predictor-comparison results.
+
+NR simulations can be substantially slower than LTE simulations because the 3GPP channel model, fading, beamforming, bandwidth-part processing, OFDMA scheduling, mobility, and frequent tracing add computational cost. Use an optimized build and disable unneeded traces for large experiments.
+
+## Project status
+
+Implemented work includes NR-compatible O-RAN reporting and control, RSRP/load-aware NR handover, TN/NTN and satellite-backhaul scenarios, secrecy-aware experiments, and CNN/GRU-based underserved-hotspot prediction.
+
+Ongoing research extends the framework toward multi-objective decision-making that jointly considers radio quality, handover stability, cell load, UAV energy, QoS, sensing information, and security risk. A later validation stage can package the decision logic as an xApp and connect it to an E2-enabled platform such as srsRAN after the required KPM/RC data and control mappings are implemented. Experimental features and results should be treated as research software rather than production network-control code.
+
+## Citing
+
+If this repository supports your research, please cite it as software:
+
+```bibtex
+@software{jayasundara2026oran_uav,
+  author  = {Jayasundara Mudiyanselage, Kasunika Awanthi Kumari},
+  title   = {Learning-Enabled O-RAN Automation for UAV Networks: an ns-3 NR/ORAN Simulation Framework},
+  year    = {2026},
+  url     = {https://github.com/AwanthiJayasundara/ns-3-dev-nr-oran},
+  note    = {Research software, University College Dublin}
+}
 ```
 
-To compare with the CNN predictor, export the CNN model:
+Please also cite the relevant ns-3, 5G-LENA, ns-O-RAN, and other upstream publications when using their models. Replace or supplement the software citation above with the associated peer-reviewed publication once available.
 
-```shell
-python3 train_uav_trajectory_final.py --rsrp-thresh -120 --export-onnx --export-model cnn
-```
+## License and third-party software
 
-This writes:
+This repository is distributed under the **GNU General Public License v2.0 only (GPL-2.0-only)**. See [`LICENSE`](LICENSE) for the full terms.
 
-```text
-results/nr/tn-ntn/ml_uav_final/best_cnn_predictor.onnx
-```
+The repository incorporates and extends upstream ns-3, 5G-LENA, and ns-O-RAN software. Third-party components retain their own copyright notices and license terms; consult [`LICENSES`](LICENSES) and component-level license files, including the ONNX Runtime license where applicable. The license does not imply endorsement by upstream projects or institutions.
 
-Then run the same ML load-handover scenario with the CNN ONNX file. This
-timing-friendly command mirrors the faster baseline run: FlowMonitor and verbose
-logs are disabled, position tracing remains enabled, and CNN inference runs
-every 5 simulation seconds.
+## Author and acknowledgement
 
-```shell
-./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example --sim-time=40 --enable-predictive-uav=1 --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/best_cnn_predictor.onnx --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 --db-file=oran-cnn.db --run-tag=cnn --enable-flow-monitor=0 --enable-rsrp-trace=0 --enable-position-trace=1 --position-trace-interval=5 --enable-sat-backhaul-monitor=0 --enable-oran-info-log=0 --enable-nr-helper-info-log=0 --enable-setup-prints=0 --enable-progress=1 --progress-interval=5 --ground-attach-delay=2 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4 --enable-srs-in-ul-slots=0 --enable-srs-in-f-slots=0 --uav-control-period=5"
-```
+The UAV/O-RAN research extensions are developed and maintained by **K. A. K. Jayasundara Mudiyanselage (Awanthi Jayasundara)**, School of Electrical and Electronic Engineering, University College Dublin, under the supervision of **Dr. Pasika Ranaweera** and co-supervision of **Dr. Nima Afraz**.
 
-`--uav-heat-norm-max` must match `normalization_max_count` in
-`predictor_config.json`, and `--uav-underserved-rsrp-thresh` must match the
-RSRP threshold used during training. Keep `--db-file` and `--run-tag`
-different for GRU and CNN runs so their databases and result directories do
-not overwrite each other.
+This work builds on the contributions of the ns-3, 5G-LENA, and ns-O-RAN communities. See [`AUTHORS`](AUTHORS) and the repository history for upstream and individual contributions.
 
----
+## Contributing
 
-## 🧠 ORAN Near-RT RIC Closed-Loop Control (Current Implementation)
-
-When ORAN is enabled (`--use-oran=1`), the following control loop runs:
-
-1. **UAV UEs and gNBs act as E2 nodes** using NR E2 terminators.
-2. UEs periodically report:
-   - location,
-   - serving cell info (CellId/RNTI),
-   - RSRP/RSRQ measurements (to multiple cells),
-   - application Tx/Rx loss stats (from UDP traces).
-3. gNBs periodically report:
-   - location,
-   - cell-load indicators derived from NR MAC scheduling callbacks (DL scheduling).
-4. A Near-RT RIC queries the repository at `LmQueryInterval` and runs the selected **Logic Module (LM)**.
-5. The LM issues an **NR→NR handover command** (source gNB + UE RNTI + target cellId).
-6. A Conflict Mitigation Module (CMM) applies command scheduling policies.
-
-Repository backend: **SQLite** (`OranDataRepositorySqlite`) for reproducible logging of reports and commands.
-
----
-
-## ✅ Load-Aware RSRP Handover Logic Module (RSRP-only)
-
-### LM: `OranLmNr2NrRsrpHandoverWithCellLoad`
-
-This LM implements **RSRP-based HO target selection** with:
-- **hysteresis margin** to reduce ping-pong,
-- **rate limiting / cooldown** between HO commands,
-- **pending-HO timeout handling**,
-- optional **cell capacity gating** (`MaxUesPerCell`),
-- a **minimum acceptable target RSRP** guard with backoff on failure.
-
-### Key Attributes (configurable from the simulation script)
-- `HysteresisDb` (default `2.0` dB): neighbor must exceed `servingRsrp + hysteresis` to be considered.
-- `Warmup` (default `2s`): LM does not issue HOs before warmup ends.
-- `MinHoInterval` (default `2s`): minimum time between HO commands per UE.
-- `HoAttemptTimeout` (default `2s`): pending HO is considered stale after this duration.
-- `MaxUesPerCell` (default `0`):  
-  - **`0` disables the capacity cap** (no load restriction).  
-  - **`>0` enables a hard cap**: candidate target cells at/above capacity are rejected.
-- `TryNextBest` (default `true`): if best cell is full, try the next-best RSRP candidate.
-- `MinAcceptableRsrpDbm` (default `-120 dBm`): rejects HO if the target candidate is too weak.
-- `LowRsrpRecheck` (default `2s`): after a low-RSRP rejection, the UE is blocked from re-evaluation for this time.
-
----
-
-## 🔁 Handover Decision Logic (Step-by-Step)
-
-Inside `GetHandoverCommands(...)`, the LM follows this per-tick logic:
-
-### 1) Build a live cell-load map (cellId → UE count)
-- The LM counts UEs per cell using *serving-cell* PHY measurements (BWP/CC 0), with a fallback to UE cell info if needed.
-- It also **reserves capacity for pending HO targets**, so multiple HOs in the same tick don’t exceed the cap.
-
-### 2) Apply safety gates per UE
-Before evaluating candidates, the LM skips UEs when:
-- simulation time is still in `Warmup`,
-- the UE is in **low-RSRP backoff** (`lowRsrpBlockUntil`),
-- a previous HO is still pending and not timed out (`pendingHoTarget` + `HoAttemptTimeout`),
-- the UE is still in HO cooldown (`MinHoInterval`).
-
-### 3) Build candidate list from measurements
-- Reads RSRP measurements for the UE.
-- Extracts:
-  - the **serving cell** (CellId/RNTI + serving RSRP),
-  - the **best RSRP per candidate cell** (max across measurements for that cell).
-- Sorts candidates by **descending RSRP**.
-
-### 4) Candidate filtering + target selection
-For each candidate (best-to-worst):
-- **Hysteresis gate:**  
-  candidate must satisfy:  
-  `candRsrp > servingRsrp + HysteresisDb`
-- **Min acceptable RSRP gate:**  
-  if `candRsrp < MinAcceptableRsrpDbm` → reject HO and apply UE backoff for `LowRsrpRecheck`.
-- **Capacity gate (only if enabled):**  
-  if `MaxUesPerCell > 0` and `cellLoad >= MaxUesPerCell` → reject that target.  
-  - if `TryNextBest=true`, continue searching other candidates  
-  - else stop and keep current serving cell
-- First candidate that passes all gates becomes the HO target.
-
-### 5) Emit HO command (only if a valid target exists)
-If a target cell is selected (different from serving cell):
-- Creates `OranCommandNr2NrHandover`:
-  - `TargetE2NodeId` = serving gNB node ID (**source** gNB),
-  - `TargetRnti` = UE RNTI,
-  - `TargetCellId` = chosen target cell ID.
-- Logs the command to the repository and prints a summary log line.
-- Updates internal state:
-  - `lastHoCmdTime[ue] = now`
-  - `pendingHoTarget[ue] = chosenCell`
-  - increments `cellUeCount[chosenCell]` (reserve slot immediately)
-
-### 6) Behavior when `MaxUesPerCell = 0`
-When `MaxUesPerCell` is **0**:
-- **Capacity checks are fully bypassed** (`m_maxUesPerCell > 0` condition is false).
-- Logs print `cap=disabled`.
-- HO decisions become purely **RSRP + hysteresis + min-RSRP + timing gates**.
-
----
-
-## 📌 Outputs Useful for Debugging/Validation
-- Per-tick load snapshot logs show:
-  - `cell X load=Y (cap=disabled)` OR `cell X load=Y/Z`
-- HO logs:
-  - `LM HO UE=... servingCell->targetCell servingRsrp=... targetRsrp=...`
-- Low-RSRP rejection logs:
-  - `LM HO_FAIL_LOW_RSRP ... recheckAfter=...`
-
----
-
-## Next Steps (Planned)
-- Extend load awareness beyond a static hard cap into:
-  - dynamic policies (e.g., load balancing objectives),
-  - multi-objective HO
-  - future ML/game-theoretic handover optimizers.
-
-
- ## 🔴 ***Below will be implemented in the Future***
-  
-  ### *** Optimize handover based on Game theory ***
-  
-  ### *** ML-Based Handover Mechanisms ***
-
-### Torch-based NR→NR HO Learning Model
-- `model/oran-lm-nr-2-nr-torch-handover.cc`
-- `model/oran-lm-nr-2-nr-torch-handover.h`
-
-### ONNX-based NR→NR HO Learning Model
-- `model/oran-lm-nr-2-nr-onnx-handover.cc`
-- `model/oran-lm-nr-2-nr-onnx-handover.h`
-
----
-
-## ✅ Notes / Future Extensions Summary
-This framework can be extended further to support:
-- Load-aware HO steering (RSRP + cell load) : Keep a cell load capacity and design the model
-- Multi-objective optimization (QoS + PHY + load) - Game theory
-- RIC-driven ML-based decision loops using the SQLite repository
-
----
-
-### Proposed dynamic movement of the UAV
-<img width="1112" height="734" alt="Screenshot from 2026-01-21 11-44-38" src="https://github.com/user-attachments/assets/f3cca852-05b9-48d1-b783-8ab03dfc4933" />
-
-Currently using ns3::RandomDirection2dMobilityModel for testing purposes with static height.
-
-### Architecture
-<img width="1121" height="804" alt="Architecture diagram" src="images/ORAN-Architecture.png" />
+Contributions and reproducible bug reports are welcome. Before submitting a change, build the affected targets, run relevant tests, and avoid committing generated databases, traces, model checkpoints, or result directories. General contribution guidance is available in [`CONTRIBUTING.md`](CONTRIBUTING.md).
