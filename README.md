@@ -354,7 +354,7 @@ NR simulations can be substantially slower than LTE simulations because the 3GPP
 
 Implemented work includes NR-compatible O-RAN reporting and control, RSRP/load-aware NR handover, TN/NTN and satellite-backhaul scenarios, secrecy-aware experiments, and CNN/GRU-based underserved-hotspot prediction.
 
-Ongoing research extends the framework toward multi-objective decision-making that jointly considers radio quality, handover stability, cell load, UAV energy, QoS, sensing information, and security risk. A later validation stage can package the decision logic as an xApp and connect it to an E2-enabled platform such as srsRAN after the required KPM/RC data and control mappings are implemented. Experimental features and results should be treated as research software rather than production network-control code.
+Ongoing research extends the framework toward multi-objective decision-making that jointly considers radio quality, handover stability, cell load, UAV energy, QoS, sensing information, and security risk. The target validation stage will package the decision logic as an xApp and connect it to the OAI-based UCD NetLab through a compatible Near-RT RIC after the required KPM/RC data and control mappings are implemented. Experimental features and results should be treated as research software rather than production network-control code.
 
 ## Citing
 
