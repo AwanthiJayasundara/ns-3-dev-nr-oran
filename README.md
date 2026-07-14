@@ -276,6 +276,42 @@ The main NR examples are grouped below. Run any target from the repository root 
 ./ns3 run "oran-nr-tn-ntn-uav-mobility-handover-example"
 ```
 
+### xHaul-aware UAV autonomy comparison
+
+This scenario compares the same 100-UE experiment under three deployment modes:
+UE + TN only, UE + TN + UAV, and UE + TN + UAV + satellite. The UAV-to-ground
+TN donor link is treated as the wireless xHaul health indicator, so
+`xhaul-autonomy-trace.csv` records the estimated xHaul RSRP, xHaul state,
+satellite health, and selected UAV autonomy mode. When FlowMonitor is enabled,
+`qos-vs-time.txt` records QoS KPIs such as delay, jitter, throughput, and packet
+delivery ratio.
+
+Run all three commented commands with:
+
+```bash
+bash contrib/oran/examples/run-uav-xhaul-autonomy-scenarios.sh
+```
+
+Or run each scenario separately:
+
+```bash
+# Scenario 1: UE + TN only.
+# This is the terrestrial baseline. No UAV cell node is active.
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-only --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1"
+
+# Scenario 2: UE + TN + UAV.
+# UAVs are active cell nodes and their UAV-to-TN donor link is monitored as xHaul.
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --num-ntn-gnbs=2 --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1"
+
+# Scenario 3: UE + TN + UAV + satellite.
+# This adds satellite backhaul monitoring for continuity comparison.
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --num-ntn-gnbs=2 --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-sat-backhaul-monitor=1"
+```
+
+Compare the runs using `qos-vs-time.txt`, `xhaul-autonomy-trace.csv`,
+`handover-trace.tr`, `handover-failure-trace.tr`, and `ml-ho-dataset.csv` in the
+corresponding `results/nr/tn-ntn/...` output directory.
+
 ### TN/NTN, security, and satellite-backhaul scenarios
 
 ```bash

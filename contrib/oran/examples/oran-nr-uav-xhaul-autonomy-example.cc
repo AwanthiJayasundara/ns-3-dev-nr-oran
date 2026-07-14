@@ -98,6 +98,12 @@ NS_LOG_COMPONENT_DEFINE("OranNrUavXhaulAutonomyExample");
  * ./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --sim-time=40 --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-decision-csv=1"
  * \endcode
  *
+ * To run the three commented comparison scenarios, use:
+ *
+ * \code{.unparsed}
+ * bash contrib/oran/examples/run-uav-xhaul-autonomy-scenarios.sh
+ * \endcode
+ *
  * A basic run command is:
  *
  * \code{.unparsed}
