@@ -300,6 +300,17 @@ build_lib_example(
 )
 
 build_lib_example(
+  NAME oran-nr-uav-xhaul-autonomy-example
+  SOURCE_FILES oran-nr-uav-xhaul-autonomy-example.cc
+  LIBRARIES_TO_LINK
+    ${liboran}
+    ${oran_ai_libraries}
+    ${libnetwork}
+    ${libnr}
+    ${libmobility}
+)
+
+build_lib_example(
   NAME oran-nr-tn-ntn-uav-satellite-ml-load-handover-example
   SOURCE_FILES oran-nr-tn-ntn-uav-satellite-ml-load-handover-example.cc
   LIBRARIES_TO_LINK
