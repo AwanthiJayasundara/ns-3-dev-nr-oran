@@ -55,6 +55,21 @@
 
 # Version 0.2 (3/02/2018) * Run git diff against this file to see all changes
 # =============================================================
+
+if(NOT DEFINED GTK3_ADDITIONAL_SUFFIXES)
+  set(GTK3_ADDITIONAL_SUFFIXES)
+endif()
+
+set(_GTK3_MSYS_GLIB_PATH)
+if(DEFINED ENV{MSYSTEM})
+  list(APPEND _GTK3_MSYS_GLIB_PATH "C:/msys64/$ENV{MSYSTEM}/lib/glib-2.0")
+endif()
+
+set(_GTK3_GTKMM_BASEPATH)
+if(DEFINED ENV{GTKMM_BASEPATH})
+  list(APPEND _GTK3_GTKMM_BASEPATH "$ENV{GTKMM_BASEPATH}")
+endif()
+
 # _GTK3_GET_VERSION Internal function to parse the version number in
 # gtkversion.h _OUT_major = Major version number _OUT_minor = Minor version
 # number _OUT_micro = Micro version number _gtkversion_hdr = Header file to
@@ -144,7 +159,7 @@ function(_GTK3_FIND_INCLUDE_DIR _var _hdr)
     PATHS # On Windows, glibconfig.h is located under
           # $PREFIX/lib/glib-2.0/include.
           C:/GTK/lib/glib-2.0/include
-          C:/msys64/$ENV{MSYSTEM}/lib/glib-2.0
+          ${_GTK3_MSYS_GLIB_PATH}
           # end
           /usr/local/lib64
           /usr/local/lib
@@ -161,7 +176,7 @@ function(_GTK3_FIND_INCLUDE_DIR _var _hdr)
           /sw
           /opt/local
           /opt/local/lib
-          $ENV{GTKMM_BASEPATH}
+          ${_GTK3_GTKMM_BASEPATH}
           [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]
           [HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\2.4;Path]
     PATH_SUFFIXES ${_suffixes} include lib
@@ -296,7 +311,7 @@ function(_GTK3_FIND_LIBRARY _var _lib _expand_vc _append_version)
   find_library(
     ${_var}
     NAMES ${_lib_list}
-    PATHS /opt/gnome /usr/openwin /sw $ENV{GTKMM_BASEPATH}
+    PATHS /opt/gnome /usr/openwin /sw ${_GTK3_GTKMM_BASEPATH}
           [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]
           [HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\2.4;Path]
     PATH_SUFFIXES lib lib64
@@ -314,7 +329,8 @@ function(_GTK3_FIND_LIBRARY _var _lib _expand_vc _append_version)
     find_library(
       ${_var}_DEBUG
       NAMES ${_libd_list}
-      PATHS $ENV{GTKMM_BASEPATH} [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]
+      PATHS ${_GTK3_GTKMM_BASEPATH}
+            [HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\2.4;Path]
             [HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\2.4;Path]
       PATH_SUFFIXES lib
     )
@@ -560,7 +576,8 @@ foreach(_GTK3_component ${GTK3_FIND_COMPONENTS})
   if(_GTK3_component STREQUAL "gtk")
     find_package_handle_standard_args(
       GTK3_${_COMPONENT_UPPER}
-      "Some or all of the gtk libraries were not found."
+      NAME_MISMATCHED
+      REQUIRED_VARS
       GTK3_GTK_LIBRARY
       GTK3_GTK_INCLUDE_DIR
       GTK3_GLIB_INCLUDE_DIR
@@ -570,11 +587,14 @@ foreach(_GTK3_component ${GTK3_FIND_COMPONENTS})
       GTK3_GDK_INCLUDE_DIR
       GTK3_GDKCONFIG_INCLUDE_DIR
       GTK3_GDK_LIBRARY
+      FAIL_MESSAGE
+      "Some or all of the gtk libraries were not found."
     )
   elseif(_GTK3_component STREQUAL "gtkmm")
     find_package_handle_standard_args(
       GTK3_${_COMPONENT_UPPER}
-      "Some or all of the gtkmm libraries were not found."
+      NAME_MISMATCHED
+      REQUIRED_VARS
       GTK3_GTKMM_LIBRARY
       GTK3_GTKMM_INCLUDE_DIR
       GTK3_GTKMMCONFIG_INCLUDE_DIR
@@ -584,17 +604,27 @@ foreach(_GTK3_component ${GTK3_FIND_COMPONENTS})
       GTK3_GDKMM_INCLUDE_DIR
       GTK3_GDKMMCONFIG_INCLUDE_DIR
       GTK3_GDKMM_LIBRARY
+      FAIL_MESSAGE
+      "Some or all of the gtkmm libraries were not found."
     )
   elseif(_GTK3_component STREQUAL "glade")
     find_package_handle_standard_args(
-      GTK3_${_COMPONENT_UPPER} "The glade library was not found."
+      GTK3_${_COMPONENT_UPPER}
+      NAME_MISMATCHED
+      REQUIRED_VARS
       GTK3_GLADE_LIBRARY GTK3_GLADE_INCLUDE_DIR
+      FAIL_MESSAGE
+      "The glade library was not found."
     )
   elseif(_GTK3_component STREQUAL "glademm")
     find_package_handle_standard_args(
-      GTK3_${_COMPONENT_UPPER} "The glademm library was not found."
+      GTK3_${_COMPONENT_UPPER}
+      NAME_MISMATCHED
+      REQUIRED_VARS
       GTK3_GLADEMM_LIBRARY GTK3_GLADEMM_INCLUDE_DIR
       GTK3_GLADEMMCONFIG_INCLUDE_DIR
+      FAIL_MESSAGE
+      "The glademm library was not found."
     )
   endif()
 

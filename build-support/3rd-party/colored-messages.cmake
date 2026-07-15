@@ -43,7 +43,12 @@ set(BoldWhite "")
 # Custom message types fallback when not colorized
 set(HIGHLIGHTED_STATUS STATUS)
 
-if(${NS3_COLORED_OUTPUT} OR "$ENV{CLICOLOR}")
+set(_ns3_clicolor)
+if(DEFINED ENV{CLICOLOR})
+  set(_ns3_clicolor "$ENV{CLICOLOR}")
+endif()
+
+if(${NS3_COLORED_OUTPUT} OR "${_ns3_clicolor}")
   if(NOT WIN32)
     # When colorized, set color values
     string(ASCII 27 Esc)

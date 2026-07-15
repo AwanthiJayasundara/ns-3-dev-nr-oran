@@ -66,6 +66,26 @@ This will define the following variables in your project:
 
 find_package(PkgConfig QUIET)
 pkg_check_modules(PC_HARFBUZZ QUIET harfbuzz)
+
+foreach(
+  _harfbuzz_optional_var
+  PC_HARFBUZZ_CFLAGS_OTHER
+  PC_HARFBUZZ_CFLAGS_VERSION
+  PC_HARFBUZZ_INCLUDEDIR
+  PC_HARFBUZZ_INCLUDE_DIRS
+  PC_HARFBUZZ_LIBDIR
+  PC_HARFBUZZ_LIBRARY_DIRS
+  HarfBuzz_NAMES
+  HarfBuzz_FIND_VERSION
+  HarfBuzz_ICU_LIBRARY
+  HarfBuzz_ICU_INCLUDE_DIR
+  HarfBuzz_ICU_COMPILE_OPTIONS
+)
+  if(NOT DEFINED ${_harfbuzz_optional_var})
+    set(${_harfbuzz_optional_var})
+  endif()
+endforeach()
+
 set(HarfBuzz_COMPILE_OPTIONS ${PC_HARFBUZZ_CFLAGS_OTHER})
 set(HarfBuzz_VERSION ${PC_HARFBUZZ_CFLAGS_VERSION})
 
@@ -93,7 +113,10 @@ if(HarfBuzz_INCLUDE_DIR AND NOT HarfBuzz_VERSION)
   endif()
 endif()
 
-if("${HarfBuzz_FIND_VERSION}" VERSION_GREATER "${HarfBuzz_VERSION}")
+if(HarfBuzz_FIND_VERSION
+   AND HarfBuzz_VERSION
+   AND "${HarfBuzz_FIND_VERSION}" VERSION_GREATER "${HarfBuzz_VERSION}"
+)
   message(
     FATAL_ERROR "Required version (" ${HarfBuzz_FIND_VERSION}
                 ") is higher than found version (" ${HarfBuzz_VERSION} ")"
@@ -111,6 +134,19 @@ endif()
 
 if("ICU" IN_LIST HarfBuzz_FIND_COMPONENTS)
   pkg_check_modules(PC_HARFBUZZ_ICU QUIET harfbuzz-icu)
+  foreach(
+    _harfbuzz_icu_optional_var
+    PC_HARFBUZZ_ICU_CFLAGS_OTHER
+    PC_HARFBUZZ_ICU_INCLUDEDIR
+    PC_HARFBUZZ_ICU_INCLUDE_DIRS
+    PC_HARFBUZZ_ICU_LIBDIR
+    PC_HARFBUZZ_ICU_LIBRARY_DIRS
+    HarfBuzz_ICU_NAMES
+  )
+    if(NOT DEFINED ${_harfbuzz_icu_optional_var})
+      set(${_harfbuzz_icu_optional_var})
+    endif()
+  endforeach()
   set(HarfBuzz_ICU_COMPILE_OPTIONS ${PC_HARFBUZZ_ICU_CFLAGS_OTHER})
 
   find_path(

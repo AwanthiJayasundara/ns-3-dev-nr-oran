@@ -279,13 +279,17 @@ The main NR examples are grouped below. Run any target from the repository root 
 ### xHaul-aware UAV autonomy comparison
 
 This scenario compares the same 100-UE experiment under three deployment modes:
-UE + TN only, UE + TN + UAV, and UE + TN + UAV + satellite. The UAV-to-ground
-TN donor link is treated as the wireless xHaul health indicator, so
+UE + TN only, UE + TN + UAV, and UE + TN + UAV + satellite. All three modes can
+use the same 15-30 s TN infrastructure degradation window, so the TN-only case
+shows when terrestrial service becomes insufficient. The UAV-to-ground TN donor
+link is treated as the wireless xHaul health indicator, so
 `xhaul-autonomy-trace.csv` records the estimated xHaul RSRP, xHaul state,
-satellite health, and selected UAV autonomy mode. When FlowMonitor is enabled,
-`qos-vs-time.txt` records QoS KPIs such as delay, jitter, throughput, and packet
-delivery ratio. Use `--rlc-mode=am` for the paper-comparison runs because it is
-more robust during long, loaded handover simulations.
+satellite health, selected backhaul mode, and selected UAV autonomy mode.
+`tn-infrastructure-trace.csv` records the TN degradation state and applied TN
+gNB transmit power. When FlowMonitor is enabled, `qos-vs-time.txt` records QoS
+KPIs such as delay, jitter, throughput, and packet delivery ratio. Use
+`--rlc-mode=am` for the paper-comparison runs because it is more robust during
+long, loaded handover simulations.
 
 Run all three commented commands with:
 
@@ -296,22 +300,23 @@ bash contrib/oran/examples/run-uav-xhaul-autonomy-scenarios.sh
 Or run each scenario separately:
 
 ```bash
-# Scenario 1: UE + TN only.
-# This is the terrestrial baseline. No UAV cell node is active.
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-only --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --rlc-mode=am --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1"
+# Scenario 1: UE + TN only with degraded TN infrastructure.
+# This is the stressed terrestrial baseline. No UAV cell node is active.
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-only --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --rlc-mode=am --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --tn-degradation-start=15 --tn-degradation-stop=30 --tn-degradation-penalty-db=15"
 
-# Scenario 2: UE + TN + UAV.
+# Scenario 2: UE + TN + UAV with degraded TN infrastructure and degraded xHaul.
 # UAVs are active cell nodes and their UAV-to-TN donor link is monitored as xHaul.
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --num-ntn-gnbs=2 --rlc-mode=am --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1"
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --num-ntn-gnbs=2 --rlc-mode=am --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --tn-degradation-start=15 --tn-degradation-stop=30 --tn-degradation-penalty-db=15 --xhaul-degradation-start=15 --xhaul-degradation-stop=30 --xhaul-degradation-penalty-db=35"
 
-# Scenario 3: UE + TN + UAV + satellite.
-# This adds satellite backhaul monitoring for continuity comparison.
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --num-ntn-gnbs=2 --rlc-mode=am --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-sat-backhaul-monitor=1"
+# Scenario 3: UE + TN + UAV + satellite with the same degradation.
+# This adds satellite backhaul monitoring/fallback for continuity comparison.
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --num-ntn-gnbs=2 --rlc-mode=am --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --enable-sat-backhaul-monitor=1 --tn-degradation-start=15 --tn-degradation-stop=30 --tn-degradation-penalty-db=15 --xhaul-degradation-start=15 --xhaul-degradation-stop=30 --xhaul-degradation-penalty-db=35"
 ```
 
-Compare the runs using `qos-vs-time.txt`, `xhaul-autonomy-trace.csv`,
-`handover-trace.tr`, `handover-failure-trace.tr`, and `ml-ho-dataset.csv` in the
-corresponding `results/nr/tn-ntn/...` output directory.
+Compare the runs using `qos-vs-time.txt`, `tn-infrastructure-trace.csv`,
+`xhaul-autonomy-trace.csv`, `handover-trace.tr`, `handover-failure-trace.tr`,
+and `ml-ho-dataset.csv` in the corresponding `results/nr/tn-ntn/...` output
+directory.
 
 ### TN/NTN, security, and satellite-backhaul scenarios
 

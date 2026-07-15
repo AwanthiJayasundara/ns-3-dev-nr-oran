@@ -83,7 +83,7 @@ OranCmmHandover
 
 It executes the selected NR-to-NR handover command after the logic module chooses a target cell.
 
-In the current implementation, the xHaul/autonomy trace is deliberately separated from the handover path. It records the evidence needed to compare the three scenarios, but it does not yet force handovers based on xHaul RSRP. This is useful for a clean baseline study before adding stronger closed-loop autonomy control.
+In the current implementation, the xHaul/autonomy trace is deliberately separated from the handover decision path. It records the evidence needed to compare the three scenarios and, in the satellite-assisted mode, switches the UAV S1-U backhaul route between direct TN backhaul and satellite fallback. It does not yet force UE handovers based on xHaul RSRP, which keeps the O-RAN/xApp handover process clean for baseline comparison.
 
 ## 5. Deployment Scenarios
 
@@ -126,8 +126,10 @@ The UAV autonomy mode is then selected as:
 
 ```text
 COVERAGE_EXTENSION
-SEMI_AUTONOMOUS_AERIAL_RAN
-AUTONOMOUS_EMERGENCY_NETWORK
+EDGE_ASSISTED_LOCAL
+EDGE_ASSISTED_WITH_SATELLITE
+AUTONOMOUS_EMERGENCY_ISLAND
+SATELLITE_ASSISTED_EMERGENCY
 ```
 
 This scenario answers:
@@ -143,10 +145,10 @@ This scenario adds satellite backhaul monitoring to the TN + UAV deployment.
 ```text
 UEs -> UAV cell -> terrestrial donor/core network
               \
-               -> satellite-assisted backhaul monitor
+               -> SAT -> GW -> core network fallback
 ```
 
-The satellite path is used as a continuity-support indicator when terrestrial xHaul is degraded or unavailable. In normal conditions, the satellite may not significantly improve UE access coverage because the UAV already serves as the aerial radio node. Its main value appears when terrestrial xHaul or infrastructure reachability becomes unreliable.
+The satellite path is used as a fallback UAV backhaul route when terrestrial xHaul is degraded or unavailable. In normal conditions, the satellite may not significantly improve UE access coverage because the UAV already serves as the aerial radio node. Its main value appears when terrestrial xHaul or infrastructure reachability becomes unreliable. In the simulation, this fallback is represented by switching the UAV S1-U route from the direct TN/core path to the UAV gNB -> SAT -> GW -> core path.
 
 This scenario answers:
 
@@ -170,6 +172,10 @@ The common experiment uses:
 | UAV/NTN cell capacity | 10 UEs |
 | Hysteresis | 2 dB |
 | RLC mode for comparison runs | AM |
+| TN degradation window | 15-30 s |
+| TN gNB TxPower penalty during degradation | 15 dB |
+| UAV xHaul degradation window, UAV scenarios | 15-30 s |
+| UAV xHaul RSRP penalty during degradation | 35 dB |
 
 Run all three scenarios with:
 
@@ -180,12 +186,20 @@ bash contrib/oran/examples/run-uav-xhaul-autonomy-scenarios.sh
 The three individual modes are:
 
 ```bash
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-only --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --rlc-mode=am --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1"
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-only --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --rlc-mode=am --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --tn-degradation-start=15 --tn-degradation-stop=30 --tn-degradation-penalty-db=15"
 
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --num-ntn-gnbs=2 --rlc-mode=am --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1"
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --num-ntn-gnbs=2 --rlc-mode=am --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --tn-degradation-start=15 --tn-degradation-stop=30 --tn-degradation-penalty-db=15 --xhaul-degradation-start=15 --xhaul-degradation-stop=30 --xhaul-degradation-penalty-db=35"
 
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --num-ntn-gnbs=2 --rlc-mode=am --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-sat-backhaul-monitor=1"
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --num-ntn-gnbs=2 --rlc-mode=am --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --enable-sat-backhaul-monitor=1 --tn-degradation-start=15 --tn-degradation-stop=30 --tn-degradation-penalty-db=15 --xhaul-degradation-start=15 --xhaul-degradation-stop=30 --xhaul-degradation-penalty-db=35"
 ```
+
+All three scenarios include the same explicit terrestrial degradation interval. The UAV-assisted and satellite-assisted runs also include a matching UAV-to-TN xHaul degradation interval:
+
+| Time interval | Infrastructure condition | Expected interpretation |
+|---|---|---|
+| 0-15 s | Healthy TN infrastructure and healthy UAV-to-TN xHaul | Normal baseline operation |
+| 15-30 s | Degraded TN infrastructure; degraded UAV-to-TN xHaul in UAV scenarios | TN-only should show insufficiency; UAV and satellite support are tested |
+| 30-40 s | TN and xHaul recovery | Service should recover toward normal operation |
 
 ## 7. Measured Outputs and KPIs
 
@@ -194,10 +208,12 @@ The main output files are:
 | Output file | Purpose |
 |---|---|
 | `qos-vs-time.txt` | Per-UE delay, jitter, throughput, and packet delivery ratio |
-| `xhaul-autonomy-trace.csv` | UAV xHaul RSRP, xHaul state, satellite health, and UAV autonomy mode |
+| `xhaul-autonomy-trace.csv` | UAV xHaul RSRP, xHaul state, satellite health, selected backhaul mode, and UAV autonomy mode |
+| `tn-infrastructure-trace.csv` | TN degradation state and applied TN gNB transmit power |
 | `handover-trace.tr` | Successful handover events |
 | `handover-failure-trace.tr` | Failed handover events |
 | `ml-ho-dataset.csv` | Candidate-level O-RAN decision records |
+| `ns3-oran-lm.log` | Verbose O-RAN logic-module INFO log when `--enable-oran-info-log=1` is used |
 | `uav-position-trace.tr` | UAV movement and position evidence |
 | `ues1-position-trace.tr` | Monitored UE position trace |
 | `ues2-position-trace.tr` | Background UE position trace |
@@ -228,18 +244,30 @@ The three scenarios should be compared using the same UE count, mobility pattern
 The expected interpretation is:
 
 ```text
-TN-only shows the baseline terrestrial service quality.
-TN+UAV shows the benefit of adding aerial radio access.
-TN+UAV+satellite shows whether continuity improves when terrestrial xHaul is weak.
+TN-only shows how terrestrial service behaves when the TN layer itself is degraded.
+TN+UAV shows whether aerial access can compensate for degraded TN coverage.
+TN+UAV+satellite shows whether continuity improves when both TN infrastructure and UAV xHaul are weak.
 ```
 
-For a stronger degradation experiment, the optional xHaul stress command can be used:
+The TN degradation parameters reduce terrestrial gNB transmit power during the middle of the simulation, making the TN-only baseline visibly stressed. The xHaul degradation parameters introduce an RSRP penalty for the UAV-to-TN donor health estimate in the same interval. This gives a fair comparison: the TN-only case shows terrestrial insufficiency, the TN + UAV case shows whether UAV coverage helps without satellite fallback, and the TN + UAV + satellite case shows whether satellite fallback improves continuity.
 
-```bash
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --num-ntn-gnbs=2 --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --xhaul-degradation-start=15 --xhaul-degradation-stop=30 --xhaul-degradation-penalty-db=35"
+### 8.1 Sample Figure Set
+
+Three sample comparison figures were generated from the currently available result folders:
+
+| Figure | File | What it compares |
+|---|---|---|
+| Figure 1 | `docs/figures/figure1_qos_throughput_delay.png` | Mean downlink throughput and delay over time |
+| Figure 2 | `docs/figures/figure2_handover_counts.png` | Successful and failed handover counts |
+| Figure 3 | `docs/figures/figure3_xhaul_autonomy_satellite.png` | UAV xHaul RSRP and satellite backhaul SNR |
+
+The generated summary table is:
+
+```text
+docs/figures/uav_xhaul_comparison_summary.csv
 ```
 
-This introduces an xHaul RSRP penalty during the middle of the simulation, making it easier to observe transitions from healthy to degraded or unreachable infrastructure states.
+These figures should be treated as preliminary because the current `tn-uav` and `tn-uav-satellite` result folders do not yet contain `final-flow-report.txt`. For final article figures, all three runs should complete the full 40 s simulation and produce the same set of output files.
 
 ## 9. Expected Findings
 
@@ -249,7 +277,7 @@ In the UE + TN only case, performance depends completely on terrestrial gNB cove
 
 In the UE + TN + UAV case, the UAV may improve UE access performance by serving users from a better aerial location. However, this improvement is meaningful only when the UAV has sufficient xHaul connectivity to the terrestrial donor. If the xHaul becomes weak, the UAV may still provide radio coverage, but service continuity can degrade.
 
-In the UE + TN + UAV + satellite case, the satellite path provides an additional continuity indicator. During healthy terrestrial xHaul periods, performance may be similar to the TN + UAV case. During degraded or isolated periods, the satellite-assisted mode should provide stronger evidence for continuity support and autonomous UAV operation.
+In the UE + TN + UAV + satellite case, the satellite path provides a fallback UAV backhaul route. During healthy terrestrial xHaul periods, performance may be similar to the TN + UAV case because the UAV can still use direct TN backhaul. During degraded or isolated periods, the satellite-assisted mode should show stronger continuity because the UAV backhaul can switch to the satellite path.
 
 The main article claim can therefore be:
 
@@ -260,7 +288,7 @@ Satellite assistance is most valuable when terrestrial xHaul or control reachabi
 
 ## 10. Current Limitation and Next Step
 
-The current simulation records xHaul health and satellite backhaul health as monitoring evidence. It does not yet make the satellite path directly carry user traffic or force handover decisions based on xHaul state. Therefore, the current results are best described as an xHaul-aware autonomy monitoring and comparison framework.
+The current simulation records xHaul health, satellite backhaul health, and the selected UAV backhaul mode. In the satellite-assisted scenario, the UAV S1-U route can switch from direct TN backhaul to a satellite fallback path when terrestrial xHaul is degraded or unreachable. The remaining limitation is that UE handover decisions are still based on the O-RAN RSRP/capacity policy rather than directly using xHaul state.
 
 The next improvement is to close the control loop:
 

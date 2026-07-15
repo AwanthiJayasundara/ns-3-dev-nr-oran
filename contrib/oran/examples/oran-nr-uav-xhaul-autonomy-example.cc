@@ -85,11 +85,11 @@ NS_LOG_COMPONENT_DEFINE("OranNrUavXhaulAutonomyExample");
  *      handover command after the logic module chooses a target cell.
  *
  * The xHaul/autonomy part is deliberately separated from the basic handover
- * path. The new xhaul-autonomy-trace.csv estimates the UAV-to-ground-donor
- * xHaul RSRP and maps it to UAV autonomy modes. This first version records the
- * mode decision evidence for comparing TN-only, TN+UAV, and TN+UAV+satellite
- * baselines. It does not yet force handovers based on xHaul RSRP; that can be
- * added as the next step once the baseline traces are validated.
+ * path. The xhaul-autonomy-trace.csv estimates the UAV-to-ground-donor xHaul
+ * RSRP, maps it to UAV autonomy modes, and records the active UAV backhaul mode.
+ * In TN+UAV+satellite mode, degraded or unreachable xHaul can switch the UAV
+ * S1-U route from direct TN backhaul to satellite fallback while leaving the
+ * O-RAN/xApp handover decision process unchanged.
  *
  * To see all configurable options, run:
  *
@@ -177,6 +177,7 @@ static std::string s_uavPositionTraceFile;
 static std::string s_handoverTraceFile;
 static std::string s_handoverFailureTraceFile;
 static std::string s_flowStatTraceFile;
+static std::string s_tnInfrastructureTraceFile;
 static std::string ns3_dir;
 //fh control trace files
 // static std::ofstream g_fhTraceFile;
@@ -194,6 +195,7 @@ static std::map<std::pair<uint16_t,uint16_t>, double> g_latestRsrp;
 static Ptr<OranLmNr2NrRsrpHandoverWithTnNtn> g_rsrpLm = nullptr;
 
 static std::string g_deploymentMode = "tn-uav-satellite";
+static double g_satBackhaulMinSnrDb = 0.0;
 
 // --- ns-3 NS_LOG output redirection (LogComponentEnable -> file via std::clog) ---
 static std::ofstream g_nsLogFile;
@@ -517,8 +519,9 @@ SelectUavAutonomyMode(const std::string& deploymentMode,
     //   HEALTHY xHaul       -> UAV remains a coverage extension.
     //   DEGRADED xHaul      -> UAV activates local/edge assistance.
     //   UNREACHABLE xHaul   -> UAV enters emergency/autonomous operation.
-    // Satellite health only changes the naming of the degraded/emergency mode;
-    // it does not yet change traffic routing in this first implementation.
+    // In tn-uav-satellite mode, satellite health also allows the EPC helper to
+    // switch the UAV S1-U backhaul route to the satellite fallback path. The
+    // xApp handover algorithm still remains independent from this route switch.
     if (deploymentMode == "tn-only")
     {
         return "NO_UAV";
@@ -543,6 +546,7 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
                    NodeContainer uavs,
                    NetDeviceContainer tnGnbNrDevs,
                    NetDeviceContainer uavGnbNrDevs,
+                   Ptr<HybridSatEpcHelper> epcHelper,
                    double xhaulTxPowerDbm,
                    double xhaulFrequencyHz,
                    double healthyThresholdDbm,
@@ -628,10 +632,20 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
         }
         const bool satHealthy =
             itDl != g_backhaulDlSnrDb.end() && itUl != g_backhaulUlSnrDb.end() &&
-            std::min(satDl, satUl) >= 0.0;
+            std::min(satDl, satUl) >= g_satBackhaulMinSnrDb;
 
         const std::string uavMode =
             SelectUavAutonomyMode(g_deploymentMode, xhaulState, satHealthy);
+
+        const bool useSatelliteBackhaul =
+            g_deploymentMode == "tn-uav-satellite" && xhaulState != "HEALTHY" && satHealthy;
+        const std::string backhaulMode = useSatelliteBackhaul ? "SATELLITE_FALLBACK"
+                                                              : "TN_DIRECT";
+        if (epcHelper)
+        {
+            epcHelper->SetNtnBackhaulMode(uavCellId,
+                                          useSatelliteBackhaul ? "satellite" : "tn");
+        }
 
         out << now << ","
             << g_deploymentMode << ","
@@ -644,6 +658,7 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
             << satDl << ","
             << satUl << ","
             << (satHealthy ? 1 : 0) << ","
+            << backhaulMode << ","
             << e2TxDelaySec << ","
             << e2SendIntervalSec << ","
             << lmQueryIntervalSec << ","
@@ -656,6 +671,7 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
                         uavs,
                         tnGnbNrDevs,
                         uavGnbNrDevs,
+                        epcHelper,
                         xhaulTxPowerDbm,
                         xhaulFrequencyHz,
                         healthyThresholdDbm,
@@ -749,6 +765,40 @@ NotifyHandoverEndErrorUe(std::string context, uint64_t imsi, uint16_t cellId, ui
       << " RNTI=" << rnti
       << " Context=" << context
       << "\n";
+}
+
+static void
+ApplyTnInfrastructureDegradation(Ptr<NrHelper> nrHelper,
+                                 NetDeviceContainer tnGnbNrDevs,
+                                 double nominalTxPowerDbm,
+                                 double degradationPenaltyDb,
+                                 bool degradationActive)
+{
+    // Controlled terrestrial-infrastructure stress model.
+    //
+    // This reduces the TN gNB transmit power during a configured time window so
+    // that the TN-only baseline also experiences a visible degradation period.
+    // The UAV xHaul degradation remains a separate metric; this one affects the
+    // UE-facing terrestrial access layer and therefore helps demonstrate why
+    // TN-only coverage/service may become insufficient during an incident.
+    const double activeTxPowerDbm =
+        degradationActive ? nominalTxPowerDbm - degradationPenaltyDb : nominalTxPowerDbm;
+
+    for (uint32_t i = 0; i < tnGnbNrDevs.GetN(); ++i)
+    {
+        nrHelper->GetGnbPhy(tnGnbNrDevs.Get(i), 0)->SetAttribute("TxPower",
+                                                                 DoubleValue(activeTxPowerDbm));
+        nrHelper->GetGnbPhy(tnGnbNrDevs.Get(i), 1)->SetAttribute("TxPower",
+                                                                 DoubleValue(activeTxPowerDbm));
+        nrHelper->GetGnbPhy(tnGnbNrDevs.Get(i), 2)->SetAttribute("TxPower",
+                                                                 DoubleValue(0.0));
+    }
+
+    std::ofstream out(s_tnInfrastructureTraceFile, std::ios_base::app);
+    out << Simulator::Now().GetSeconds() << ","
+        << (degradationActive ? 1 : 0) << ","
+        << activeTxPowerDbm << ","
+        << degradationPenaltyDb << "\n";
 }
 
 
@@ -1729,7 +1779,7 @@ main(int argc, char* argv[])
     bool enablePositionTrace = true;
     bool enableHandoverTrace = true;
     bool enableHandoverFailureTrace = true;
-    bool enableOranInfoLog = false;
+    bool enableOranInfoLog = true;
     bool enableNrHelperInfoLog = false;
     bool enableSetupPrints = false;
     bool enableProgress = true;
@@ -1787,6 +1837,15 @@ main(int argc, char* argv[])
     double xhaulDegradationStartSec = -1.0;
     double xhaulDegradationStopSec = -1.0;
     double xhaulDegradationPenaltyDb = 25.0;
+
+    // Optional TN access/infrastructure degradation window.
+    // This reduces terrestrial gNB transmit power during the configured period.
+    // It is useful for the TN-only baseline because it creates a repeatable
+    // "terrestrial network is insufficient" interval for comparison against
+    // UAV-assisted and satellite-assisted deployments.
+    double tnDegradationStartSec = -1.0;
+    double tnDegradationStopSec = -1.0;
+    double tnDegradationPenaltyDb = 15.0;
 
     bool enableSatBackhaulMonitor = true;
     double satBackhaulLogStepMs = 500.0;
@@ -1854,6 +1913,15 @@ main(int argc, char* argv[])
     cmd.AddValue("xhaul-degradation-penalty-db",
                  "RSRP penalty applied during synthetic xHaul degradation",
                  xhaulDegradationPenaltyDb);
+    cmd.AddValue("tn-degradation-start",
+                 "Start time for synthetic TN access degradation; negative disables it",
+                 tnDegradationStartSec);
+    cmd.AddValue("tn-degradation-stop",
+                 "Stop time for synthetic TN access degradation",
+                 tnDegradationStopSec);
+    cmd.AddValue("tn-degradation-penalty-db",
+                 "TN gNB TxPower penalty applied during synthetic TN degradation",
+                 tnDegradationPenaltyDb);
     cmd.AddValue("num-uess1", "Number of UES1", numGroundUesS1);
     cmd.AddValue("num-tn-gnbs", "Number of TN gNBs", numTnGnbs);
     cmd.AddValue("num-ntn-gnbs", "Number of NTN gNBs", numNtnGnbs);
@@ -1921,6 +1989,7 @@ main(int argc, char* argv[])
                         deploymentMode != "tn-uav-satellite",
                     "Unsupported --deployment-mode. Use tn-only, tn-uav, or tn-uav-satellite.");
     g_deploymentMode = deploymentMode;
+    g_satBackhaulMinSnrDb = satBackhaulMinSnrDb;
     if (deploymentMode == "tn-only")
     {
         numNtnGnbs = 0;
@@ -1981,6 +2050,7 @@ main(int argc, char* argv[])
     s_handoverTraceFile = ns3_dir + "handover-trace.tr";
     s_handoverFailureTraceFile = ns3_dir + "handover-failure-trace.tr";
     s_flowStatTraceFile = ns3_dir + "flow-stats.log";
+    s_tnInfrastructureTraceFile = ns3_dir + "tn-infrastructure-trace.csv";
     s_satBackhaulTraceFile = ns3_dir + "sat-backhaul-trace.txt";
     s_xhaulAutonomyTraceFile = ns3_dir + "xhaul-autonomy-trace.csv";
 
@@ -2357,7 +2427,13 @@ main(int argc, char* argv[])
 
     for (uint32_t i = 0; i < ntnGnbNodes.GetN(); ++i)
     {
-        epcHelper->AddNtnGnbNode(ntnGnbNodes.Get(i));
+        if (deploymentMode == "tn-uav-satellite")
+        {
+            // Satellite mode registers UAV gNBs as dual-backhaul nodes:
+            // healthy xHaul uses the direct TN/core route, while degraded
+            // xHaul can switch the same S1-U endpoint to SAT->GW->core.
+            epcHelper->AddNtnGnbNode(ntnGnbNodes.Get(i));
+        }
     }
 
     // Initialize after EPC / NTN registration is ready
@@ -2450,6 +2526,33 @@ main(int argc, char* argv[])
         nrHelper->GetGnbPhy(ntnGnbNrDevs.Get(i), 0)->SetAttribute("TxPower", DoubleValue(txNtnPower));
         nrHelper->GetGnbPhy(ntnGnbNrDevs.Get(i), 1)->SetAttribute("TxPower", DoubleValue(txNtnPower));
         nrHelper->GetGnbPhy(ntnGnbNrDevs.Get(i), 2)->SetAttribute("TxPower", DoubleValue(0.0)); // UL-only
+    }
+
+    {
+        std::ofstream tnInfraOut(s_tnInfrastructureTraceFile, std::ios_base::trunc);
+        tnInfraOut << "Time,TnDegradationActive,TnGnbTxPowerDbm,TnPenaltyDb\n";
+    }
+    ApplyTnInfrastructureDegradation(nrHelper,
+                                     tnGnbNrDevs,
+                                     txTnPower,
+                                     tnDegradationPenaltyDb,
+                                     false);
+    if (tnDegradationStartSec >= 0.0 && tnDegradationStopSec > tnDegradationStartSec)
+    {
+        Simulator::Schedule(Seconds(tnDegradationStartSec),
+                            &ApplyTnInfrastructureDegradation,
+                            nrHelper,
+                            tnGnbNrDevs,
+                            txTnPower,
+                            tnDegradationPenaltyDb,
+                            true);
+        Simulator::Schedule(Seconds(tnDegradationStopSec),
+                            &ApplyTnInfrastructureDegradation,
+                            nrHelper,
+                            tnGnbNrDevs,
+                            txTnPower,
+                            tnDegradationPenaltyDb,
+                            false);
     }
 
     // Set TN gNB RRC capacity individually
@@ -3407,6 +3510,7 @@ main(int argc, char* argv[])
         xhaulOut << "Time,DeploymentMode,UavIndex,UavCellId,BestDonorCellId,"
                  << "XhaulRsrpDbm,XhaulState,XhaulDegradationActive,"
                  << "SatBackhaulDlSnrDb,SatBackhaulUlSnrDb,SatBackhaulHealthy,"
+                 << "BackhaulMode,"
                  << "E2TxDelaySec,E2SendIntervalSec,LmQueryIntervalSec,UavMode\n";
     }
     if (ntnGnbNrDevs.GetN() > 0)
@@ -3419,6 +3523,7 @@ main(int argc, char* argv[])
                             ntnGnbNodes,
                             tnGnbNrDevs,
                             ntnGnbNrDevs,
+                            epcHelper,
                             xhaulTxPowerDbm,
                             xhaulFrequencyHz,
                             xhaulHealthyRsrpDbm,

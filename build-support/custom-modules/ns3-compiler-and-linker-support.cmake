@@ -6,6 +6,11 @@
 
 # Compiler-specific version checks and flag/feature setting should be done here
 
+set(_ns3_clicolor)
+if(DEFINED ENV{CLICOLOR})
+  set(_ns3_clicolor "$ENV{CLICOLOR}")
+endif()
+
 # Identify compiler and check version
 set(below_minimum_msg "compiler is below the minimum required version")
 set(CLANG FALSE)
@@ -30,7 +35,7 @@ if((NOT CLANG) AND ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"))
 endif()
 
 if(CLANG)
-  if(${NS3_COLORED_OUTPUT} OR "$ENV{CLICOLOR}")
+  if(${NS3_COLORED_OUTPUT} OR "${_ns3_clicolor}")
     add_definitions(-fcolor-diagnostics) # colorize clang++ output
   endif()
   if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
@@ -84,7 +89,7 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
   endif()
   set(GCC TRUE)
   add_definitions(-fno-semantic-interposition)
-  if(${NS3_COLORED_OUTPUT} OR "$ENV{CLICOLOR}")
+  if(${NS3_COLORED_OUTPUT} OR "${_ns3_clicolor}")
     add_definitions(-fdiagnostics-color=always) # colorize g++ output
   endif()
 endif()

@@ -680,7 +680,7 @@ macro(process_options)
       if(NOT ${NS3_FORCE_LOCAL_DEPENDENCIES})
         include_directories(${Python3_INCLUDE_DIRS})
       endif()
-    else()
+    elseif(${NS3_PYTHON_BINDINGS})
       message(${HIGHLIGHTED_STATUS}
               "Python: development libraries were not found"
       )

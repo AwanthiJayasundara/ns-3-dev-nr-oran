@@ -6,6 +6,16 @@
 
 disable_cmake_warnings()
 string(REPLACE ";" "/bin;" syspaths "${CMAKE_SYSTEM_PREFIX_PATH};")
+set(program_files_hints)
+if(DEFINED ENV{ProgramFiles})
+    list(APPEND program_files_hints
+        "$ENV{ProgramFiles}/Dia"
+        "$ENV{ProgramFiles}/ATT/Graphviz/bin"
+    )
+endif()
+if(DEFINED ENV{ProgramFiles\(x86\)})
+    list(APPEND program_files_hints "$ENV{ProgramFiles\(x86\)}/Dia")
+endif()
 set(3RD_PARTY_FIND_PROGRAM_HINTS
     # find_program HINTS for Doxygen
     # https://gitlab.kitware.com/cmake/cmake/-/blob/master/Modules/FindDoxygen.cmake
@@ -16,11 +26,9 @@ set(3RD_PARTY_FIND_PROGRAM_HINTS
     /Applications/Utilities/Doxygen.app/Contents/MacOS
     # find_program HINTS for Dia
     # https://gitlab.kitware.com/cmake/cmake/-/blob/master/Modules/FindDoxygen.cmake
-    "$ENV{ProgramFiles}/Dia"
-    "$ENV{ProgramFiles\(x86\)}/Dia"
+    ${program_files_hints}
     # find_program HINTS for Graphviz
     # https://gitlab.kitware.com/cmake/cmake/-/blob/master/Modules/FindDoxygen.cmake
-    "$ENV{ProgramFiles}/ATT/Graphviz/bin"
     "C:/Program Files/ATT/Graphviz/bin"
     "[HKEY_LOCAL_MACHINE\\SOFTWARE\\ATT\\Graphviz;InstallPath]/bin"
     /Applications/Graphviz.app/Contents/MacOS
