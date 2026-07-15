@@ -1,0 +1,277 @@
+# Toward xHaul-Aware Mission-Adaptive UAV O-RAN for TN-NTN Service Continuity
+
+## Abstract
+
+The integration of terrestrial networks (TN), unmanned aerial vehicle (UAV) cells, and satellite-assisted non-terrestrial networks (NTN) is a promising direction for extending mobile connectivity in congested, remote, and disaster-affected environments. However, UAV-assisted radio access cannot be evaluated only from the user equipment (UE) fronthaul perspective. A UAV cell may provide strong access-link coverage to UEs while still being unable to deliver reliable service if its wireless xHaul connection to the terrestrial donor, core network, or control infrastructure is degraded. This article proposes an xHaul-aware mission-adaptive UAV O-RAN scenario for studying progressive UAV autonomy under infrastructure degradation. The same UAV platform is evaluated under three deployment modes: UE + TN only, UE + TN + UAV, and UE + TN + UAV + satellite. The UAV-to-ground TN donor link is used as the xHaul health indicator, while satellite backhaul monitoring is added in the third mode to represent service-continuity support when terrestrial infrastructure becomes degraded or unavailable. The proposed ns-3/ns-O-RAN simulation records QoS, handover, xHaul, and autonomy-mode traces, enabling a comparative evaluation of terrestrial-only service, UAV-assisted coverage, and satellite-assisted UAV continuity. The study provides a foundation for future AI-native O-RAN control in which UAV network functions adapt dynamically according to access, xHaul, and control-path conditions.
+
+## 1. Introduction
+
+Future 5G-Advanced and 6G systems are expected to support connectivity across heterogeneous three-dimensional network environments. Terrestrial infrastructure alone is often insufficient in remote regions, temporary crowded events, and disaster scenarios where ground base stations may be overloaded, damaged, or partially disconnected. UAV-mounted cells can provide flexible aerial coverage, while satellite links can provide additional resilience when terrestrial backhaul is degraded.
+
+However, the main challenge is not simply whether a UAV can transmit a strong radio signal to UEs. A UAV cell also requires reliable xHaul connectivity toward the terrestrial network, edge cloud, core network, or O-RAN control plane. If the UAV access link is healthy but the UAV-to-ground donor connection is weak, delayed, or unavailable, the UAV may become a coverage island with limited service continuity. Therefore, UAV-assisted TN-NTN systems should be evaluated using both UE-facing radio metrics and infrastructure-facing xHaul/control metrics.
+
+This article focuses on a mission-adaptive UAV O-RAN concept. The UAV changes its operational role depending on infrastructure health. When terrestrial xHaul and control connectivity are healthy, the UAV behaves mainly as an aerial coverage extension. When xHaul becomes degraded, it can activate additional local functions and operate in a semi-autonomous mode. When terrestrial connectivity is unavailable, the UAV can escalate to an autonomous emergency-network mode, optionally assisted by satellite backhaul.
+
+## 2. Proposed Concept
+
+The proposed concept is based on progressive UAV autonomy. The same UAV platform does not always operate with the same level of onboard network functionality. Instead, its role depends on the health of the surrounding infrastructure.
+
+In normal conditions, the UAV provides radio coverage while relying on terrestrial infrastructure for network processing, O-RAN control, and core-network connectivity. This is suitable for events, temporary hotspots, or coverage extension where ground infrastructure remains healthy.
+
+In degraded conditions, the UAV detects that its xHaul connection to the terrestrial donor is becoming weak. It can then activate more onboard functions, reduce dependency on remote control, and maintain service with a semi-autonomous aerial RAN mode.
+
+In disaster or isolation conditions, the UAV may lose terrestrial xHaul or control reachability. In this case, it can switch to an autonomous emergency-network mode. If satellite connectivity is available, the satellite path can provide additional backhaul support for emergency service continuity.
+
+The key idea is:
+
+```text
+Access coverage alone is not enough.
+The UAV must also know whether its xHaul/control path is healthy.
+```
+
+## 3. Simulation Environment
+
+The scenario is implemented in ns-3 using 5G-LENA NR and ns-O-RAN components. The main simulation file is:
+
+```text
+contrib/oran/examples/oran-nr-uav-xhaul-autonomy-example.cc
+```
+
+The comparison script is:
+
+```text
+contrib/oran/examples/run-uav-xhaul-autonomy-scenarios.sh
+```
+
+The simulation contains:
+
+- terrestrial NR gNBs;
+- UAV-mounted NR cell nodes;
+- two UE groups;
+- O-RAN Near-RT RIC-based handover control;
+- UAV-to-ground TN donor xHaul monitoring;
+- optional satellite backhaul monitoring;
+- QoS, handover, position, decision, and autonomy traces.
+
+The first UE group, UES1, is used for monitored traffic and handover/QoS evaluation. The second UE group, UES2, provides additional background load. In the current comparison setup, the experiment uses 50 UES1 nodes and 50 UES2 nodes, giving 100 total UEs.
+
+## 4. Handover and Control Mechanism
+
+Initial UE attachment is performed using the strongest-RSRP cell selection mechanism:
+
+```text
+AttachToMaxRsrpGnb()
+```
+
+Runtime handover is controlled through the O-RAN logic module rather than the native NR handover algorithm. The NR helper keeps the native handover algorithm as:
+
+```text
+NrNoOpHandoverAlgorithm
+```
+
+This ensures that handover decisions are issued by the O-RAN control logic. The default logic module is:
+
+```text
+OranLmNr2NrRsrpHandoverWithTnNtn
+```
+
+This module uses UE-reported RSRP, hysteresis, minimum acceptable RSRP, cell capacity, TN/NTN cell type, and optional backhaul health information. The command management module is:
+
+```text
+OranCmmHandover
+```
+
+It executes the selected NR-to-NR handover command after the logic module chooses a target cell.
+
+In the current implementation, the xHaul/autonomy trace is deliberately separated from the handover path. It records the evidence needed to compare the three scenarios, but it does not yet force handovers based on xHaul RSRP. This is useful for a clean baseline study before adding stronger closed-loop autonomy control.
+
+## 5. Deployment Scenarios
+
+### 5.1 Scenario 1: UE + TN Only
+
+This is the terrestrial baseline.
+
+```text
+UEs -> terrestrial gNBs -> terrestrial/core network
+```
+
+There are no UAV cells and no satellite support. UEs can only connect to terrestrial gNBs. This scenario answers:
+
+```text
+How well does the terrestrial network perform by itself?
+```
+
+Expected observations include the baseline delay, throughput, packet delivery ratio, and handover behavior under only terrestrial coverage.
+
+### 5.2 Scenario 2: UE + TN + UAV
+
+This scenario adds UAV-mounted cell nodes.
+
+```text
+UEs -> terrestrial gNBs
+UEs -> UAV cell -> terrestrial donor/core network
+```
+
+The UAV improves radio access coverage, especially for UEs that are poorly served by ground cells. However, the UAV still depends on a UAV-to-ground TN donor connection. In this work, that donor connection is treated as the wireless xHaul link.
+
+The xHaul state is classified using the estimated UAV-to-TN donor RSRP:
+
+```text
+HEALTHY
+DEGRADED
+UNREACHABLE
+```
+
+The UAV autonomy mode is then selected as:
+
+```text
+COVERAGE_EXTENSION
+SEMI_AUTONOMOUS_AERIAL_RAN
+AUTONOMOUS_EMERGENCY_NETWORK
+```
+
+This scenario answers:
+
+```text
+Does adding UAV coverage improve service compared with TN-only, and when does the UAV become limited by its terrestrial xHaul?
+```
+
+### 5.3 Scenario 3: UE + TN + UAV + Satellite
+
+This scenario adds satellite backhaul monitoring to the TN + UAV deployment.
+
+```text
+UEs -> UAV cell -> terrestrial donor/core network
+              \
+               -> satellite-assisted backhaul monitor
+```
+
+The satellite path is used as a continuity-support indicator when terrestrial xHaul is degraded or unavailable. In normal conditions, the satellite may not significantly improve UE access coverage because the UAV already serves as the aerial radio node. Its main value appears when terrestrial xHaul or infrastructure reachability becomes unreliable.
+
+This scenario answers:
+
+```text
+Can satellite support improve service continuity when the UAV-to-TN xHaul is degraded?
+```
+
+## 6. Experimental Configuration
+
+The common experiment uses:
+
+| Parameter | Value |
+|---|---:|
+| Simulation time | 40 s |
+| Monitored UEs, UES1 | 50 |
+| Background/load UEs, UES2 | 50 |
+| Total UEs | 100 |
+| Terrestrial gNBs | 4 |
+| UAV gNBs, when enabled | 2 |
+| TN cell capacity | 20 UEs |
+| UAV/NTN cell capacity | 10 UEs |
+| Hysteresis | 2 dB |
+| RLC mode for comparison runs | AM |
+
+Run all three scenarios with:
+
+```bash
+bash contrib/oran/examples/run-uav-xhaul-autonomy-scenarios.sh
+```
+
+The three individual modes are:
+
+```bash
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-only --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --rlc-mode=am --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1"
+
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --num-ntn-gnbs=2 --rlc-mode=am --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1"
+
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --num-ntn-gnbs=2 --rlc-mode=am --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-sat-backhaul-monitor=1"
+```
+
+## 7. Measured Outputs and KPIs
+
+The main output files are:
+
+| Output file | Purpose |
+|---|---|
+| `qos-vs-time.txt` | Per-UE delay, jitter, throughput, and packet delivery ratio |
+| `xhaul-autonomy-trace.csv` | UAV xHaul RSRP, xHaul state, satellite health, and UAV autonomy mode |
+| `handover-trace.tr` | Successful handover events |
+| `handover-failure-trace.tr` | Failed handover events |
+| `ml-ho-dataset.csv` | Candidate-level O-RAN decision records |
+| `uav-position-trace.tr` | UAV movement and position evidence |
+| `ues1-position-trace.tr` | Monitored UE position trace |
+| `ues2-position-trace.tr` | Background UE position trace |
+
+The key comparison metrics are:
+
+- average downlink and uplink delay;
+- average jitter;
+- average throughput;
+- packet delivery ratio;
+- number of successful handovers;
+- number of failed handovers;
+- xHaul RSRP over time;
+- fraction of time in healthy, degraded, and unreachable xHaul states;
+- selected UAV autonomy mode over time;
+- satellite backhaul SNR and health when satellite monitoring is enabled.
+
+## 8. Comparison Method
+
+The three scenarios should be compared using the same UE count, mobility pattern, simulation time, traffic model, and TN deployment. The only intended difference is the infrastructure support level:
+
+| Scenario | Infrastructure support | Main role |
+|---|---|---|
+| UE + TN only | Terrestrial cells only | Baseline |
+| UE + TN + UAV | Terrestrial cells plus UAV cells | Aerial coverage extension |
+| UE + TN + UAV + satellite | Terrestrial cells, UAV cells, and satellite monitor | Aerial coverage plus continuity support |
+
+The expected interpretation is:
+
+```text
+TN-only shows the baseline terrestrial service quality.
+TN+UAV shows the benefit of adding aerial radio access.
+TN+UAV+satellite shows whether continuity improves when terrestrial xHaul is weak.
+```
+
+For a stronger degradation experiment, the optional xHaul stress command can be used:
+
+```bash
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --sim-time=40 --num-uess1=50 --num-ground-ues=50 --num-tn-gnbs=4 --num-ntn-gnbs=2 --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --xhaul-degradation-start=15 --xhaul-degradation-stop=30 --xhaul-degradation-penalty-db=35"
+```
+
+This introduces an xHaul RSRP penalty during the middle of the simulation, making it easier to observe transitions from healthy to degraded or unreachable infrastructure states.
+
+## 9. Expected Findings
+
+The expected outcome is not that satellite always improves every KPI. Instead, the expected behavior is condition-dependent.
+
+In the UE + TN only case, performance depends completely on terrestrial gNB coverage and capacity. UEs at weak-coverage locations or congested cells may experience lower throughput, higher delay, or failed handover attempts.
+
+In the UE + TN + UAV case, the UAV may improve UE access performance by serving users from a better aerial location. However, this improvement is meaningful only when the UAV has sufficient xHaul connectivity to the terrestrial donor. If the xHaul becomes weak, the UAV may still provide radio coverage, but service continuity can degrade.
+
+In the UE + TN + UAV + satellite case, the satellite path provides an additional continuity indicator. During healthy terrestrial xHaul periods, performance may be similar to the TN + UAV case. During degraded or isolated periods, the satellite-assisted mode should provide stronger evidence for continuity support and autonomous UAV operation.
+
+The main article claim can therefore be:
+
+```text
+UAVs improve access coverage, but xHaul-aware autonomy is needed to maintain service continuity.
+Satellite assistance is most valuable when terrestrial xHaul or control reachability is degraded.
+```
+
+## 10. Current Limitation and Next Step
+
+The current simulation records xHaul health and satellite backhaul health as monitoring evidence. It does not yet make the satellite path directly carry user traffic or force handover decisions based on xHaul state. Therefore, the current results are best described as an xHaul-aware autonomy monitoring and comparison framework.
+
+The next improvement is to close the control loop:
+
+1. Use xHaul state inside the O-RAN logic module.
+2. Penalize or avoid UAV cells when their xHaul is unreachable.
+3. Prefer UAV/satellite-supported service when terrestrial infrastructure is degraded.
+4. Add service-specific policies for emergency traffic, video traffic, and background traffic.
+5. Compare against a baseline that ignores xHaul health and selects cells using only UE-facing RSRP.
+
+This would turn the current monitoring framework into a stronger AI-native or policy-driven control framework.
+
+## 11. Conclusion
+
+This article presented an xHaul-aware UAV O-RAN scenario for evaluating service continuity across TN, UAV, and satellite-assisted deployments. The key contribution is the separation of UE access quality from UAV infrastructure reachability. By comparing UE + TN only, UE + TN + UAV, and UE + TN + UAV + satellite modes, the simulation can show how UAVs improve aerial access coverage and how satellite assistance may improve continuity under terrestrial xHaul degradation. The resulting traces provide a practical basis for future AI-driven handover, UAV positioning, and autonomy-mode control in integrated TN-NTN systems.

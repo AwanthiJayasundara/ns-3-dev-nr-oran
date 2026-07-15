@@ -1741,6 +1741,7 @@ main(int argc, char* argv[])
     uint32_t discardTimerMs = 100;
     uint32_t reorderingTimerMs = 100;
     uint32_t maxRlcTxBufferSize = 10 * 1024 * 1024;
+    std::string rlcMode = "um";
     double stopTailSeconds = 0.0;
     double progressIntervalSec = 1.0;
     bool enableFading = true;
@@ -1898,6 +1899,10 @@ main(int argc, char* argv[])
     cmd.AddValue("pdcp-discard-timer-ms", "PDCP discard timer in milliseconds", discardTimerMs);
     cmd.AddValue("rlc-reordering-timer-ms", "RLC UM reordering timer in milliseconds", reorderingTimerMs);
     cmd.AddValue("rlc-max-tx-buffer-size", "Maximum RLC UM TX buffer size in bytes", maxRlcTxBufferSize);
+    cmd.AddValue("rlc-mode",
+                 "QoS-flow RLC mapping: um uses RLC_UM_ALWAYS; am uses RLC_AM_ALWAYS. "
+                 "Use am for robust long handover/load comparison runs.",
+                 rlcMode);
     cmd.AddValue("stop-tail", "Extra simulation seconds after sim-time for app/drain events", stopTailSeconds);
     cmd.AddValue("enable-fading", "Enable fast fading channel component", enableFading);
     cmd.AddValue("channel-update-ms", "3GPP channel matrix update period in milliseconds", channelUpdatePeriodMs);
@@ -1958,6 +1963,8 @@ main(int argc, char* argv[])
     NS_ABORT_MSG_IF(!enableFading,
                     "This scenario uses NrHelper::AttachToMaxRsrpGnb for initial attach, "
                     "which requires NR channel fading. Remove --enable-fading=0.");
+    NS_ABORT_MSG_IF(rlcMode != "um" && rlcMode != "am",
+                    "Unsupported --rlc-mode. Use um or am.");
 
     Time simulationStopTime = simTime + Seconds(stopTailSeconds);
 
@@ -2016,9 +2023,12 @@ main(int argc, char* argv[])
     Config::SetDefault("ns3::NrRlcUm::EnablePdcpDiscarding", BooleanValue(enablePdcpDiscarding));
     Config::SetDefault("ns3::NrRlcUm::DiscardTimerMs", UintegerValue(discardTimerMs));
     Config::SetDefault("ns3::NrRlcUm::ReorderingTimer", TimeValue(MilliSeconds(reorderingTimerMs)));
-    bool useUdp = true;
+    // UM is lower-latency but can expose RLC reassembly/PDCP-header assertions in
+    // heavy mobility and handover stress runs. AM is more conservative and is the
+    // recommended mode when collecting paper-comparison QoS baselines.
     Config::SetDefault("ns3::NrGnbRrc::QosFlowToRlcMapping",
-                       EnumValue(useUdp ? NrGnbRrc::RLC_UM_ALWAYS : NrGnbRrc::RLC_AM_ALWAYS));
+                       EnumValue(rlcMode == "um" ? NrGnbRrc::RLC_UM_ALWAYS
+                                                  : NrGnbRrc::RLC_AM_ALWAYS));
 
     Config::SetDefault("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(maxRlcTxBufferSize));
     //Config::SetDefault("ns3::NrGnbRrc::MaxUesPerCell", UintegerValue(maxUesPerCell));

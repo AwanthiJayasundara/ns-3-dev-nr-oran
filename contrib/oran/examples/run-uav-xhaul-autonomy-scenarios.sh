@@ -16,6 +16,7 @@ set -euo pipefail
 #   --num-ground-ues=50   50 additional background/load UEs.
 #   --num-tn-gnbs=4       Four terrestrial gNBs over the study area.
 #   --num-ntn-gnbs=2      Two UAV cell nodes when UAVs are enabled.
+#   --rlc-mode=am         Use acknowledged-mode RLC for robust handover/load runs.
 #
 # Common outputs:
 #   qos-vs-time.txt             Delay, jitter, throughput, and PDR.
@@ -29,6 +30,7 @@ COMMON_ARGS="--sim-time=40 \
   --num-ground-ues=50 \
   --num-tn-gnbs=4 \
   --num-ntn-gnbs=2 \
+  --rlc-mode=am \
   --enable-flow-monitor=1 \
   --enable-position-trace=1 \
   --enable-handover-trace=1 \
