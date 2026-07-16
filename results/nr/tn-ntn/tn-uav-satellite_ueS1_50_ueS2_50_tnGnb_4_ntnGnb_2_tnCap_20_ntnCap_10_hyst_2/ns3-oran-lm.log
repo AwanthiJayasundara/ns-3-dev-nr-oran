@@ -1,0 +1,504 @@
+Could not find NR UE cell info for E2 Node ID = 7
+Could not find NR UE cell info for E2 Node ID = 8
+Could not find NR UE cell info for E2 Node ID = 9
+Could not find NR UE cell info for E2 Node ID = 10
+Could not find NR UE cell info for E2 Node ID = 11
+Could not find NR UE cell info for E2 Node ID = 12
+Could not find NR UE cell info for E2 Node ID = 13
+Could not find NR UE cell info for E2 Node ID = 14
+Could not find NR UE cell info for E2 Node ID = 15
+Could not find NR UE cell info for E2 Node ID = 16
+Could not find NR UE cell info for E2 Node ID = 17
+Could not find NR UE cell info for E2 Node ID = 18
+Could not find NR UE cell info for E2 Node ID = 19
+Could not find NR UE cell info for E2 Node ID = 20
+Could not find NR UE cell info for E2 Node ID = 21
+Could not find NR UE cell info for E2 Node ID = 22
+Could not find NR UE cell info for E2 Node ID = 23
+Could not find NR UE cell info for E2 Node ID = 24
+Could not find NR UE cell info for E2 Node ID = 25
+Could not find NR UE cell info for E2 Node ID = 26
+Could not find NR UE cell info for E2 Node ID = 27
+Could not find NR UE cell info for E2 Node ID = 28
+Could not find NR UE cell info for E2 Node ID = 29
+Could not find NR UE cell info for E2 Node ID = 30
+Could not find NR UE cell info for E2 Node ID = 31
+Could not find NR UE cell info for E2 Node ID = 32
+Could not find NR UE cell info for E2 Node ID = 33
+Could not find NR UE cell info for E2 Node ID = 34
+Could not find NR UE cell info for E2 Node ID = 35
+Could not find NR UE cell info for E2 Node ID = 36
+Could not find NR UE cell info for E2 Node ID = 37
+Could not find NR UE cell info for E2 Node ID = 38
+Could not find NR UE cell info for E2 Node ID = 39
+Could not find NR UE cell info for E2 Node ID = 40
+Could not find NR UE cell info for E2 Node ID = 41
+Could not find NR UE cell info for E2 Node ID = 42
+Could not find NR UE cell info for E2 Node ID = 43
+Could not find NR UE cell info for E2 Node ID = 44
+Could not find NR UE cell info for E2 Node ID = 45
+Could not find NR UE cell info for E2 Node ID = 46
+Could not find NR UE cell info for E2 Node ID = 47
+Could not find NR UE cell info for E2 Node ID = 48
+Could not find NR UE cell info for E2 Node ID = 49
+Could not find NR UE cell info for E2 Node ID = 50
+Could not find NR UE cell info for E2 Node ID = 51
+Could not find NR UE cell info for E2 Node ID = 52
+Could not find NR UE cell info for E2 Node ID = 53
+Could not find NR UE cell info for E2 Node ID = 54
+Could not find NR UE cell info for E2 Node ID = 55
+Could not find NR UE cell info for E2 Node ID = 56
+Could not find NR gNB location for E2 Node ID = 1
+Could not find NR gNB location for E2 Node ID = 2
+Could not find NR gNB location for E2 Node ID = 3
+Could not find NR gNB location for E2 Node ID = 4
+Could not find NR gNB location for E2 Node ID = 5
+Could not find NR gNB location for E2 Node ID = 6
+---- LOAD at t=4.5 ----
+---- LOAD at t=6.5 ----
+  cell 1 (TN) load=0/20
+  cell 2 (TN) load=2/20
+  cell 3 (TN) load=2/20
+  cell 4 (TN) load=2/20
+  cell 5 (NTN) load=3/10
+  cell 6 (NTN) load=5/10
+UE 25 TTT_WAIT target=4 elapsed=0s need=2s
+UE 36 TTT_WAIT target=2 elapsed=0s need=2s
+UE 40 TTT_WAIT target=4 elapsed=0s need=2s
+UE 55 TTT_WAIT target=6 elapsed=0s need=2s
+Could not find NR UE cell info for E2 Node ID = 57
+Could not find NR UE cell info for E2 Node ID = 58
+Could not find NR UE cell info for E2 Node ID = 59
+Could not find NR UE cell info for E2 Node ID = 60
+Could not find NR UE cell info for E2 Node ID = 61
+Could not find NR UE cell info for E2 Node ID = 62
+Could not find NR UE cell info for E2 Node ID = 63
+Could not find NR UE cell info for E2 Node ID = 64
+Could not find NR UE cell info for E2 Node ID = 65
+Could not find NR UE cell info for E2 Node ID = 66
+Could not find NR UE cell info for E2 Node ID = 67
+Could not find NR UE cell info for E2 Node ID = 68
+Could not find NR UE cell info for E2 Node ID = 69
+Could not find NR UE cell info for E2 Node ID = 70
+Could not find NR UE cell info for E2 Node ID = 71
+Could not find NR UE cell info for E2 Node ID = 72
+Could not find NR UE cell info for E2 Node ID = 73
+Could not find NR UE cell info for E2 Node ID = 74
+Could not find NR UE cell info for E2 Node ID = 75
+Could not find NR UE cell info for E2 Node ID = 76
+Could not find NR UE cell info for E2 Node ID = 77
+Could not find NR UE cell info for E2 Node ID = 78
+Could not find NR UE cell info for E2 Node ID = 79
+Could not find NR UE cell info for E2 Node ID = 80
+Could not find NR UE cell info for E2 Node ID = 81
+Could not find NR UE cell info for E2 Node ID = 82
+Could not find NR UE cell info for E2 Node ID = 83
+Could not find NR UE cell info for E2 Node ID = 84
+Could not find NR UE cell info for E2 Node ID = 85
+Could not find NR UE cell info for E2 Node ID = 86
+Could not find NR UE cell info for E2 Node ID = 87
+Could not find NR UE cell info for E2 Node ID = 88
+Could not find NR UE cell info for E2 Node ID = 89
+Could not find NR UE cell info for E2 Node ID = 90
+Could not find NR UE cell info for E2 Node ID = 91
+Could not find NR UE cell info for E2 Node ID = 92
+Could not find NR UE cell info for E2 Node ID = 93
+Could not find NR UE cell info for E2 Node ID = 94
+Could not find NR UE cell info for E2 Node ID = 95
+Could not find NR UE cell info for E2 Node ID = 96
+Could not find NR UE cell info for E2 Node ID = 97
+Could not find NR UE cell info for E2 Node ID = 98
+Could not find NR UE cell info for E2 Node ID = 99
+Could not find NR UE cell info for E2 Node ID = 100
+Could not find NR UE cell info for E2 Node ID = 101
+Could not find NR UE cell info for E2 Node ID = 102
+Could not find NR UE cell info for E2 Node ID = 103
+Could not find NR UE cell info for E2 Node ID = 104
+Could not find NR UE cell info for E2 Node ID = 105
+Could not find NR UE cell info for E2 Node ID = 106
+---- LOAD at t=8.5 ----
+  cell 1 (TN) load=0/20
+  cell 2 (TN) load=3/20
+  cell 3 (TN) load=2/20
+  cell 4 (TN) load=2/20
+  cell 5 (NTN) load=3/10
+  cell 6 (NTN) load=6/10
+UE 11 TTT_WAIT target=4 elapsed=0s need=2s
+UE 25 TTT_WAIT target=1 elapsed=0s need=2s
+UE 45 TTT_WAIT target=1 elapsed=0s need=2s
+UE 55 TTT_WAIT target=4 elapsed=0s need=2s
+---- LOAD at t=10.5 ----
+  cell 1 (TN) load=1/20
+  cell 2 (TN) load=6/20
+  cell 3 (TN) load=3/20
+  cell 4 (TN) load=5/20
+  cell 5 (NTN) load=4/10
+  cell 6 (NTN) load=9/10
+UE 11 TTT_WAIT target=5 elapsed=0s need=2s
+UE 12 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=28 currCell=6 candCell=5 candRsrp=-123.421 < min=-120
+UE 40 TTT_WAIT target=1 elapsed=0s need=2s
+UE 46 TTT_WAIT target=5 elapsed=0s need=2s
+UE 57 TTT_WAIT target=3 elapsed=0s need=2s
+UE 88 TTT_WAIT target=2 elapsed=0s need=2s
+---- LOAD at t=12.5 ----
+  cell 1 (TN) load=1/20
+  cell 2 (TN) load=6/20
+  cell 3 (TN) load=3/20
+  cell 4 (TN) load=5/20
+  cell 5 (NTN) load=7/10
+  cell 6 (NTN) load=9/10
+UE 11 TTT_WAIT target=2 elapsed=0s need=2s
+UE 12 TTT_WAIT target=3 elapsed=0s need=2s
+UE 25 TTT_WAIT target=6 elapsed=0s need=2s
+UE 28 TTT_WAIT target=4 elapsed=0s need=2s
+UE 30 TTT_WAIT target=1 elapsed=0s need=2s
+UE 36 TTT_WAIT target=5 elapsed=0s need=2s
+UE 40 TTT_WAIT target=2 elapsed=0s need=2s
+UE 45 TTT_WAIT target=1 elapsed=0s need=2s
+UE 46 TTT_WAIT target=3 elapsed=0s need=2s
+UE 55 TTT_WAIT target=2 elapsed=0s need=2s
+UE 57 TTT_WAIT target=2 elapsed=0s need=2s
+UE 59 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=88 rnti=63 6->2 type=TN servingRsrp=-119.224 targetRsrp=-98.5228 targetLoadReal=6/20 targetLoadEff=6/20
+UE 91 TTT_WAIT target=2 elapsed=0s need=2s
+UE 105 TTT_WAIT target=1 elapsed=0s need=2s
+---- LOAD at t=14.5 ----
+  cell 1 (TN) load=1/20
+  cell 2 (TN) load=7/20
+  cell 3 (TN) load=3/20
+  cell 4 (TN) load=5/20
+  cell 5 (NTN) load=8/10
+  cell 6 (NTN) load=8/10
+LM HO UE=11 rnti=61 6->2 type=TN servingRsrp=-123.442 targetRsrp=-96.5078 targetLoadReal=7/20 targetLoadEff=7/20
+LM HO UE=12 rnti=15 6->3 type=TN servingRsrp=-121.115 targetRsrp=-79.0019 targetLoadReal=3/20 targetLoadEff=3/20
+UE 21 TTT_WAIT target=1 elapsed=0s need=2s
+UE 45 TTT_WAIT target=4 elapsed=0s need=2s
+UE 59 TTT_WAIT target=2 elapsed=0s need=2s
+UE 63 TTT_WAIT target=3 elapsed=0s need=2s
+UE 81 TTT_WAIT target=1 elapsed=0s need=2s
+UE 88 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=100 currCell=5 candCell=6 candRsrp=-124.119 < min=-120
+UE 105 TTT_WAIT target=5 elapsed=0s need=2s
+---- LOAD at t=16.5 ----
+  cell 1 (TN) load=2/20
+  cell 2 (TN) load=8/20
+  cell 3 (TN) load=4/20
+  cell 4 (TN) load=5/20
+  cell 5 (NTN) load=9/10
+  cell 6 (NTN) load=6/10
+UE 8 TTT_WAIT target=3 elapsed=0s need=2s
+UE 9 TTT_WAIT target=5 elapsed=0s need=2s
+UE 12 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=21 currCell=2 candCell=4 candRsrp=-124.742 < min=-120
+UE 25 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=28 currCell=6 candCell=5 candRsrp=-130.24 < min=-120
+UE 31 TTT_WAIT target=2 elapsed=0s need=2s
+UE 36 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=46 currCell=2 candCell=4 candRsrp=-132.19 < min=-120
+UE 48 TTT_WAIT target=5 elapsed=0s need=2s
+UE 57 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=63 currCell=4 candCell=5 candRsrp=-128.222 < min=-120
+UE 81 TTT_WAIT target=6 elapsed=0s need=2s
+UE 88 TTT_WAIT target=5 elapsed=0s need=2s
+UE 91 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=97 currCell=3 candCell=6 candRsrp=-131.972 < min=-120
+UE 100 TTT_WAIT target=1 elapsed=0s need=2s
+UE 105 TTT_WAIT target=2 elapsed=0s need=2s
+---- LOAD at t=18.5 ----
+  cell 1 (TN) load=2/20
+  cell 2 (TN) load=9/20
+  cell 3 (TN) load=5/20
+  cell 4 (TN) load=5/20
+  cell 5 (NTN) load=9/10
+  cell 6 (NTN) load=6/10
+UE 8 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=9 rnti=8 3->5 type=NTN servingRsrp=-121.619 targetRsrp=-118.492 targetLoadReal=9/10 targetLoadEff=9/10
+LM HO_FAIL_LOW_RSRP UE=12 currCell=3 candCell=6 candRsrp=-129.322 < min=-120
+UE 14 TTT_WAIT target=6 elapsed=0s need=2s
+UE 21 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=25 currCell=2 candCell=6 candRsrp=-120.625 < min=-120
+LM HO_FAIL_LOW_RSRP UE=30 currCell=4 candCell=6 candRsrp=-126.57 < min=-120
+UE 31 TTT_WAIT target=4 elapsed=0s need=2s
+UE 45 TTT_WAIT target=1 elapsed=0s need=2s
+UE 46 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=55 currCell=3 candCell=6 candRsrp=-132.88 < min=-120
+UE 63 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=75 currCell=1 candCell=2 candRsrp=-125.464 < min=-120
+UE 76 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=81 currCell=2 candCell=6 candRsrp=-125.021 < min=-120
+LM HO_FAIL_LOW_RSRP UE=88 currCell=2 candCell=3 candRsrp=-127.447 < min=-120
+LM HO_FAIL_LOW_RSRP UE=90 currCell=5 candCell=6 candRsrp=-123.485 < min=-120
+UE 91 TTT_WAIT target=3 elapsed=0s need=2s
+UE 99 TTT_WAIT target=6 elapsed=0s need=2s
+UE 100 TTT_WAIT target=2 elapsed=0s need=2s
+UE 105 TTT_WAIT target=6 elapsed=0s need=2s
+---- LOAD at t=20.5 ----
+  cell 1 (TN) load=2/20
+  cell 2 (TN) load=9/20
+  cell 3 (TN) load=4/20
+  cell 4 (TN) load=5/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=6/10
+UE 9 TTT_WAIT target=3 elapsed=0s need=2s
+UE 11 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=14 rnti=15 5->6 type=NTN servingRsrp=-99.768 targetRsrp=-92.4525 targetLoadReal=6/10 targetLoadEff=6/10
+UE 21 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=25 currCell=2 candCell=6 candRsrp=-125.201 < min=-120
+UE 27 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=42 currCell=3 candCell=6 candRsrp=-137.335 < min=-120
+LM HO UE=45 rnti=23 2->1 type=TN servingRsrp=-134.058 targetRsrp=-111.484 targetLoadReal=2/20 targetLoadEff=2/20
+LM HO_FAIL_LOW_RSRP UE=48 currCell=4 candCell=6 candRsrp=-130.453 < min=-120
+LM HO_FAIL_LOW_RSRP UE=55 currCell=3 candCell=4 candRsrp=-138.113 < min=-120
+UE 57 TTT_WAIT target=4 elapsed=0s need=2s
+UE 59 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=63 currCell=4 candCell=1 candRsrp=-121.075 < min=-120
+UE 75 TTT_WAIT target=2 elapsed=0s need=2s
+UE 88 TTT_WAIT target=4 elapsed=0s need=2s
+UE 90 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=97 currCell=3 candCell=6 candRsrp=-135.385 < min=-120
+LM HO UE=105 rnti=32 4->6 type=NTN servingRsrp=-127.855 targetRsrp=-114.775 targetLoadReal=6/10 targetLoadEff=7/10
+---- LOAD at t=22.5 ----
+  cell 1 (TN) load=3/20
+  cell 2 (TN) load=8/20
+  cell 3 (TN) load=4/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=9/10
+  cell 6 (NTN) load=8/10
+LM HO UE=9 rnti=73 5->3 type=TN servingRsrp=-120.138 targetRsrp=-82.3456 targetLoadReal=4/20 targetLoadEff=4/20
+UE 11 TTT_WAIT target=6 elapsed=0s need=2s
+UE 14 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO UE=21 rnti=47 2->1 type=TN servingRsrp=-127.914 targetRsrp=-91.9234 targetLoadReal=3/20 targetLoadEff=3/20
+UE 24 TTT_WAIT target=1 elapsed=0s need=2s
+UE 25 TTT_WAIT target=6 elapsed=0s need=2s
+UE 27 TTT_WAIT target=1 elapsed=0s need=2s
+UE 31 TTT_WAIT target=1 elapsed=0s need=2s
+UE 55 TTT_WAIT target=4 elapsed=0s need=2s
+UE 57 TTT_WAIT target=5 elapsed=0s need=2s
+UE 59 TTT_WAIT target=2 elapsed=0s need=2s
+UE 75 TTT_WAIT target=6 elapsed=0s need=2s
+UE 76 TTT_WAIT target=1 elapsed=0s need=2s
+UE 88 TTT_WAIT target=3 elapsed=0s need=2s
+UE 90 TTT_WAIT target=3 elapsed=0s need=2s
+UE 91 TTT_WAIT target=2 elapsed=0s need=2s
+---- LOAD at t=24.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=7/20
+  cell 3 (TN) load=5/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=8/10
+  cell 6 (NTN) load=9/10
+UE 9 TTT_WAIT target=5 elapsed=0s need=2s
+UE 11 TTT_WAIT target=5 elapsed=0s need=2s
+UE 12 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=14 rnti=74 6->5 type=NTN servingRsrp=-117.321 targetRsrp=-95.4506 targetLoadReal=8/10 targetLoadEff=8/10
+UE 21 TTT_WAIT target=6 elapsed=0s need=2s
+UE 25 TTT_WAIT target=5 elapsed=0s need=2s
+UE 27 TTT_WAIT target=6 elapsed=0s need=2s
+UE 28 TTT_WAIT target=5 elapsed=0s need=2s
+UE 31 TTT_WAIT target=6 elapsed=0s need=2s
+UE 40 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=42 currCell=3 candCell=6 candRsrp=-131.073 < min=-120
+UE 45 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=46 currCell=2 candCell=3 candRsrp=-128.172 < min=-120
+UE 48 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=55 currCell=3 candCell=4 candRsrp=-136.502 < min=-120
+UE 57 TTT_WAIT target=2 elapsed=0s need=2s
+UE 63 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=81 currCell=2 candCell=6 candRsrp=-120.766 < min=-120
+UE 88 TTT_WAIT target=1 elapsed=0s need=2s
+UE 91 TTT_WAIT target=1 elapsed=0s need=2s
+UE 99 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=100 currCell=5 candCell=6 candRsrp=-122.343 < min=-120
+UE 105 TTT_WAIT target=5 elapsed=0s need=2s
+---- LOAD at t=26.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=7/20
+  cell 3 (TN) load=5/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=9/10
+  cell 6 (NTN) load=9/10
+UE 9 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=11 currCell=2 candCell=1 candRsrp=-126.735 < min=-120
+LM HO_FAIL_LOW_RSRP UE=12 currCell=3 candCell=6 candRsrp=-129.628 < min=-120
+UE 21 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=25 currCell=2 candCell=1 candRsrp=-129.242 < min=-120
+LM HO UE=27 rnti=58 2->6 type=NTN servingRsrp=-118.682 targetRsrp=-119.054 targetLoadReal=9/10 targetLoadEff=9/10
+LM HO UE=28 rnti=72 6->5 type=NTN servingRsrp=-134.91 targetRsrp=-117.713 targetLoadReal=9/10 targetLoadEff=9/10
+UE 31 TTT_WAIT target=4 elapsed=0s need=2s
+UE 45 TTT_WAIT target=2 elapsed=0s need=2s
+UE 57 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=63 currCell=4 candCell=1 candRsrp=-121.27 < min=-120
+UE 75 TTT_WAIT target=4 elapsed=0s need=2s
+UE 88 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=91 currCell=4 candCell=3 candRsrp=-127.621 < min=-120
+---- LOAD at t=28.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=6/20
+  cell 3 (TN) load=5/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=9/10
+LM HO_FAIL_LOW_RSRP UE=9 currCell=3 candCell=6 candRsrp=-127.356 < min=-120
+LM HO_FAIL_LOW_RSRP UE=11 currCell=2 candCell=1 candRsrp=-125.559 < min=-120
+UE 12 TTT_WAIT target=1 elapsed=0s need=2s
+UE 16 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=25 currCell=2 candCell=4 candRsrp=-126.31 < min=-120
+UE 27 TTT_WAIT target=2 elapsed=0s need=2s
+UE 30 TTT_WAIT target=6 elapsed=0s need=2s
+UE 31 TTT_WAIT target=2 elapsed=0s need=2s
+UE 42 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=45 rnti=17 1->2 type=TN servingRsrp=-127.529 targetRsrp=-92.9916 targetLoadReal=6/20 targetLoadEff=6/20
+UE 46 TTT_WAIT target=6 elapsed=0s need=2s
+UE 48 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=55 currCell=3 candCell=4 candRsrp=-124.271 < min=-120
+UE 63 TTT_WAIT target=3 elapsed=0s need=2s
+UE 75 TTT_WAIT target=6 elapsed=0s need=2s
+UE 76 TTT_WAIT target=1 elapsed=0s need=2s
+UE 81 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=88 currCell=2 candCell=3 candRsrp=-134.269 < min=-120
+LM HO_FAIL_LOW_RSRP UE=90 currCell=5 candCell=6 candRsrp=-133.275 < min=-120
+UE 91 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=97 currCell=3 candCell=6 candRsrp=-139.139 < min=-120
+UE 99 TTT_WAIT target=1 elapsed=0s need=2s
+---- LOAD at t=30.5 ----
+  cell 1 (TN) load=3/20
+  cell 2 (TN) load=8/20
+  cell 3 (TN) load=5/20
+  cell 4 (TN) load=5/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=9/10
+UE 8 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=9 currCell=3 candCell=6 candRsrp=-138.609 < min=-120
+LM HO UE=16 rnti=82 6->2 type=TN servingRsrp=-116.906 targetRsrp=-108.94 targetLoadReal=8/20 targetLoadEff=8/20
+UE 21 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO UE=27 rnti=91 6->2 type=TN servingRsrp=-116.179 targetRsrp=-97.318 targetLoadReal=8/20 targetLoadEff=9/20
+UE 40 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=42 currCell=3 candCell=6 candRsrp=-141.728 < min=-120
+UE 46 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=55 currCell=3 candCell=6 candRsrp=-131.484 < min=-120
+UE 57 TTT_WAIT target=6 elapsed=0s need=2s
+UE 63 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=75 rnti=16 1->6 type=NTN servingRsrp=-118.867 targetRsrp=-113.176 targetLoadReal=9/10 targetLoadEff=9/10
+LM HO UE=76 rnti=24 2->1 type=TN servingRsrp=-121.849 targetRsrp=-110.391 targetLoadReal=3/20 targetLoadEff=3/20
+UE 81 TTT_WAIT target=1 elapsed=0s need=2s
+UE 88 TTT_WAIT target=4 elapsed=0s need=2s
+UE 91 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=99 rnti=55 5->1 type=TN servingRsrp=-112.491 targetRsrp=-106.749 targetLoadReal=3/20 targetLoadEff=4/20
+UE 100 TTT_WAIT target=1 elapsed=0s need=2s
+---- LOAD at t=32.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=9/20
+  cell 3 (TN) load=6/20
+  cell 4 (TN) load=5/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=8/10
+UE 8 TTT_WAIT target=2 elapsed=0s need=2s
+UE 11 TTT_WAIT target=1 elapsed=0s need=2s
+UE 16 TTT_WAIT target=6 elapsed=0s need=2s
+UE 21 TTT_WAIT target=2 elapsed=0s need=2s
+UE 24 TTT_WAIT target=2 elapsed=0s need=2s
+UE 25 TTT_WAIT target=1 elapsed=0s need=2s
+UE 28 TTT_WAIT target=6 elapsed=0s need=2s
+UE 31 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=40 rnti=24 5->4 type=TN servingRsrp=-91.5751 targetRsrp=-76.7829 targetLoadReal=5/20 targetLoadEff=5/20
+UE 45 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=46 currCell=2 candCell=6 candRsrp=-134.88 < min=-120
+UE 55 TTT_WAIT target=4 elapsed=0s need=2s
+UE 57 TTT_WAIT target=3 elapsed=0s need=2s
+UE 75 TTT_WAIT target=1 elapsed=0s need=2s
+UE 76 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=88 rnti=49 2->4 type=TN servingRsrp=-130.38 targetRsrp=-113.749 targetLoadReal=5/20 targetLoadEff=6/20
+UE 90 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=91 rnti=40 4->3 type=TN servingRsrp=-114.505 targetRsrp=-72.8672 targetLoadReal=6/20 targetLoadEff=6/20
+UE 98 TTT_WAIT target=3 elapsed=0s need=2s
+UE 99 TTT_WAIT target=2 elapsed=0s need=2s
+UE 103 TTT_WAIT target=3 elapsed=0s need=2s
+UE 105 TTT_WAIT target=4 elapsed=0s need=2s
+---- LOAD at t=34.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=8/20
+  cell 3 (TN) load=7/20
+  cell 4 (TN) load=6/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=8/10
+UE 8 TTT_WAIT target=1 elapsed=0s need=2s
+UE 11 TTT_WAIT target=6 elapsed=0s need=2s
+UE 12 TTT_WAIT target=4 elapsed=0s need=2s
+UE 14 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO UE=21 rnti=18 1->2 type=TN servingRsrp=-111.25 targetRsrp=-87.2709 targetLoadReal=8/20 targetLoadEff=8/20
+UE 25 TTT_WAIT target=4 elapsed=0s need=2s
+UE 27 TTT_WAIT target=1 elapsed=0s need=2s
+UE 28 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=31 rnti=63 5->2 type=TN servingRsrp=-119.95 targetRsrp=-86.6197 targetLoadReal=8/20 targetLoadEff=9/20
+UE 40 TTT_WAIT target=1 elapsed=0s need=2s
+UE 55 TTT_WAIT target=1 elapsed=0s need=2s
+UE 57 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO UE=75 rnti=92 6->1 type=TN servingRsrp=-120.27 targetRsrp=-89.7527 targetLoadReal=4/20 targetLoadEff=4/20
+LM HO UE=90 rnti=72 5->3 type=TN servingRsrp=-137.052 targetRsrp=-91.4901 targetLoadReal=7/20 targetLoadEff=7/20
+UE 91 TTT_WAIT target=4 elapsed=0s need=2s
+UE 97 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=98 rnti=67 2->3 type=TN servingRsrp=-143.558 targetRsrp=-92.7769 targetLoadReal=7/20 targetLoadEff=8/20
+LM HO UE=99 rnti=20 1->2 type=TN servingRsrp=-135.313 targetRsrp=-101.379 targetLoadReal=8/20 targetLoadEff=10/20
+UE 100 TTT_WAIT target=6 elapsed=0s need=2s
+UE 103 TTT_WAIT target=1 elapsed=0s need=2s
+UE 105 TTT_WAIT target=3 elapsed=0s need=2s
+---- LOAD at t=36.5 ----
+  cell 1 (TN) load=3/20
+  cell 2 (TN) load=10/20
+  cell 3 (TN) load=9/20
+  cell 4 (TN) load=7/20
+  cell 5 (NTN) load=8/10
+  cell 6 (NTN) load=7/10
+LM HO_FAIL_LOW_RSRP UE=8 currCell=5 candCell=6 candRsrp=-122.033 < min=-120
+UE 9 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO UE=12 rnti=25 3->4 type=TN servingRsrp=-109.214 targetRsrp=-83.0595 targetLoadReal=7/20 targetLoadEff=7/20
+UE 28 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=40 rnti=50 4->1 type=TN servingRsrp=-97.6188 targetRsrp=-88.0397 targetLoadReal=3/20 targetLoadEff=3/20
+UE 42 TTT_WAIT target=4 elapsed=0s need=2s
+UE 44 TTT_WAIT target=3 elapsed=0s need=2s
+UE 45 TTT_WAIT target=3 elapsed=0s need=2s
+UE 46 TTT_WAIT target=6 elapsed=0s need=2s
+UE 48 TTT_WAIT target=3 elapsed=0s need=2s
+UE 55 TTT_WAIT target=4 elapsed=0s need=2s
+UE 57 TTT_WAIT target=2 elapsed=0s need=2s
+UE 77 TTT_WAIT target=2 elapsed=0s need=2s
+UE 81 TTT_WAIT target=1 elapsed=0s need=2s
+UE 88 TTT_WAIT target=3 elapsed=0s need=2s
+UE 90 TTT_WAIT target=1 elapsed=0s need=2s
+UE 91 TTT_WAIT target=1 elapsed=0s need=2s
+UE 98 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=99 currCell=2 candCell=5 candRsrp=-132.79 < min=-120
+LM HO UE=103 rnti=90 6->1 type=TN servingRsrp=-119.664 targetRsrp=-104.398 targetLoadReal=3/20 targetLoadEff=4/20
+---- LOAD at t=38.5 ----
+  cell 1 (TN) load=5/20
+  cell 2 (TN) load=10/20
+  cell 3 (TN) load=8/20
+  cell 4 (TN) load=8/20
+  cell 5 (NTN) load=8/10
+  cell 6 (NTN) load=6/10
+UE 8 TTT_WAIT target=2 elapsed=0s need=2s
+UE 11 TTT_WAIT target=5 elapsed=0s need=2s
+UE 12 TTT_WAIT target=3 elapsed=0s need=2s
+UE 14 TTT_WAIT target=2 elapsed=0s need=2s
+UE 16 TTT_WAIT target=1 elapsed=0s need=2s
+UE 21 TTT_WAIT target=1 elapsed=0s need=2s
+UE 24 TTT_WAIT target=1 elapsed=0s need=2s
+UE 25 TTT_WAIT target=5 elapsed=0s need=2s
+UE 27 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=28 currCell=5 candCell=6 candRsrp=-130.983 < min=-120
+UE 36 TTT_WAIT target=2 elapsed=0s need=2s
+UE 40 TTT_WAIT target=4 elapsed=0s need=2s
+UE 45 TTT_WAIT target=1 elapsed=0s need=2s
+UE 55 TTT_WAIT target=5 elapsed=0s need=2s
+UE 63 TTT_WAIT target=2 elapsed=0s need=2s
+UE 75 TTT_WAIT target=2 elapsed=0s need=2s
+UE 81 TTT_WAIT target=4 elapsed=0s need=2s
+UE 85 TTT_WAIT target=2 elapsed=0s need=2s
+UE 88 TTT_WAIT target=6 elapsed=0s need=2s
+UE 90 TTT_WAIT target=5 elapsed=0s need=2s
+UE 91 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=99 currCell=2 candCell=1 candRsrp=-126.288 < min=-120
+UE 102 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=103 currCell=1 candCell=2 candRsrp=-128.152 < min=-120
+UE 105 TTT_WAIT target=4 elapsed=0s need=2s
