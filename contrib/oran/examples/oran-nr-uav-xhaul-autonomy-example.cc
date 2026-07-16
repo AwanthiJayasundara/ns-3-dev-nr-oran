@@ -2475,15 +2475,20 @@ main(int argc, char* argv[])
     NetDeviceContainer satGwMonitorDevs = satMonP2p.Install(satNode.Get(0), gwNode.Get(0));
 
     // ------------------------------------------------------------
-    // Global BWP manager mapping is now safe again
+    // Service BWP mapping
     // ------------------------------------------------------------
+    // Keep BWP1/BWP2 available for NTN/REM experiments, but put the actual UE
+    // service flows on BWP0. The satellite in this scenario is the UAV backhaul
+    // fallback path, not the UE-facing NR access carrier. Mapping XR traffic to
+    // the NTN access BWPs makes the low-altitude UAV/UE data path unrealistically
+    // fragile and can leave the monitored DL flows with zero received packets.
     nrHelper->SetGnbBwpManagerAlgorithmAttribute("GBR_CONV_VOICE", UintegerValue(bwpTn));
-    nrHelper->SetGnbBwpManagerAlgorithmAttribute("GBR_CONV_VIDEO", UintegerValue(bwpNtnDl));
-    nrHelper->SetGnbBwpManagerAlgorithmAttribute("GBR_LIVE_UL_71", UintegerValue(bwpNtnUl));
+    nrHelper->SetGnbBwpManagerAlgorithmAttribute("GBR_CONV_VIDEO", UintegerValue(bwpTn));
+    nrHelper->SetGnbBwpManagerAlgorithmAttribute("GBR_LIVE_UL_71", UintegerValue(bwpTn));
 
     nrHelper->SetUeBwpManagerAlgorithmAttribute("GBR_CONV_VOICE", UintegerValue(bwpTn));
-    nrHelper->SetUeBwpManagerAlgorithmAttribute("GBR_CONV_VIDEO", UintegerValue(bwpNtnDl));
-    nrHelper->SetUeBwpManagerAlgorithmAttribute("GBR_LIVE_UL_71", UintegerValue(bwpNtnUl));
+    nrHelper->SetUeBwpManagerAlgorithmAttribute("GBR_CONV_VIDEO", UintegerValue(bwpTn));
+    nrHelper->SetUeBwpManagerAlgorithmAttribute("GBR_LIVE_UL_71", UintegerValue(bwpTn));
 
     // Install devices with ONE common BWP layout
     tnGnbNrDevs  = nrHelper->InstallGnbDevice(tnGnbNodes, allBwps);
@@ -2884,26 +2889,7 @@ main(int argc, char* argv[])
         ApplySatelliteBackhaulState(satBackhaulCtx.get(), false);
     }
 
-    // ---------------------------------------------------------------------
-    // Initial association
-    // ---------------------------------------------------------------------
-    // Before the O-RAN RIC starts making runtime decisions, each UE needs an
-    // initial serving cell. 5G-LENA selects the strongest RSRP candidate among
-    // all installed gNB devices, subject to the InitMinRsrpDbm and capacity
-    // constraints configured above.
-    //
-    // In deployment-mode=tn-only, allGnbNrDevs contains only TN cells.
-    // In deployment-mode=tn-uav or tn-uav-satellite, allGnbNrDevs also contains
-    // UAV cell nodes, so a UE may initially attach to a UAV if its access-link
-    // RSRP is strongest and the UAV has capacity.
-    nrHelper->AttachToMaxRsrpGnb(groundNrDevsS1, allGnbNrDevs);
-
-    // UES2 is attached later to create background load after the monitored UES1
-    // flows have started. This helps stress handover and load-aware decisions.
     Time tLateAttach = Seconds(groundAttachDelay);
-    Simulator::Schedule(tLateAttach, [nrHelper, groundNrDevsS2, allGnbNrDevs]() {
-        nrHelper->AttachToMaxRsrpGnb(groundNrDevsS2, allGnbNrDevs);
-    });
 
     if (enableSetupPrints)
     {
@@ -2967,6 +2953,20 @@ main(int argc, char* argv[])
             ipv4RoutingHelper.GetStaticRouting(ueNode->GetObject<Ipv4>());
         ueStaticRouting->SetDefaultRoute(epcHelper->GetUeDefaultGatewayAddress(), 1);
     }
+
+    // ---------------------------------------------------------------------
+    // Initial association
+    // ---------------------------------------------------------------------
+    // Attach after installing UE internet stacks, assigning UE IP addresses,
+    // and setting UE default routes. This follows the usual NR example order
+    // and ensures the monitored applications have a complete data path.
+    nrHelper->AttachToMaxRsrpGnb(groundNrDevsS1, allGnbNrDevs);
+
+    // UES2 is attached later to create background load after the monitored UES1
+    // flows have started. This helps stress handover and load-aware decisions.
+    Simulator::Schedule(tLateAttach, [nrHelper, groundNrDevsS2, allGnbNrDevs]() {
+        nrHelper->AttachToMaxRsrpGnb(groundNrDevsS2, allGnbNrDevs);
+    });
 
     // remoteHost IP address on the PGW-remoteHost point-to-point link
     Ipv4Address remoteHostIp = internetIpIfaces.GetAddress(1);
@@ -3052,21 +3052,25 @@ main(int argc, char* argv[])
         ulpf.direction       = NrQosRule::UPLINK;
         xrUlRule->Add(ulpf);
 
-        nrHelper->ActivateDedicatedQosFlow(groundNrDevsS1.Get(i), xrDlFlow, xrDlRule);
-        nrHelper->ActivateDedicatedQosFlow(groundNrDevsS1.Get(i), xrUlFlow, xrUlRule);
+        Ptr<NetDevice> ueDev = groundNrDevsS1.Get(i);
+        Simulator::Schedule(Seconds(2.0),
+            [nrHelper, ueDev, xrDlFlow, xrDlRule, xrUlFlow, xrUlRule]() {
+                nrHelper->ActivateDedicatedQosFlow(ueDev, xrDlFlow, xrDlRule);
+                nrHelper->ActivateDedicatedQosFlow(ueDev, xrUlFlow, xrUlRule);
+            });
     }
 
     // Start/stop times
     xrDlSinks.Start(Seconds(1.0));
     xrDlSinks.Stop(simulationStopTime);
 
-    xrDlSenders.Start(Seconds(2.0));
+    xrDlSenders.Start(Seconds(4.0));
     xrDlSenders.Stop(simulationStopTime);
 
     xrUlSinks.Start(Seconds(1.0));
     xrUlSinks.Stop(simulationStopTime);
 
-    xrUlSenders.Start(Seconds(3.0));
+    xrUlSenders.Start(Seconds(4.5));
     xrUlSenders.Stop(simulationStopTime);
 
     // Ground UEs traffic
