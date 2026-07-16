@@ -56,7 +56,6 @@ results/lte/
 results/nr/tn/
 results/nr/tn-ntn/ml_uav_final/
 docs/figures/
-results/nr/tn-ntn/
 libtorch/
 onnxruntime-linux-x64-1.14.1/
 .venv/

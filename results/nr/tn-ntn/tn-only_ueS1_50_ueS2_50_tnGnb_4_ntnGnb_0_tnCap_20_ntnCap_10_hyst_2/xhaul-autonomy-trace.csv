@@ -1,0 +1,1 @@
+Time,DeploymentMode,UavIndex,UavCellId,BestDonorCellId,XhaulRsrpDbm,XhaulState,XhaulDegradationActive,SatBackhaulDlSnrDb,SatBackhaulUlSnrDb,SatBackhaulHealthy,E2TxDelaySec,E2SendIntervalSec,LmQueryIntervalSec,UavMode
