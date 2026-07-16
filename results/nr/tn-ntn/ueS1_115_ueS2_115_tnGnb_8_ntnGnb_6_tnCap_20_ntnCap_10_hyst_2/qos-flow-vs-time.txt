@@ -1,0 +1,1 @@
+Time,FlowId,Dir,UeIp,Src,Dst,SrcPort,DstPort,TxPackets,RxPackets,RxBytes,Delay,Jitter,Throughput,PDR
