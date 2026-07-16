@@ -9,12 +9,12 @@
 
 *.cwnd
 *.dat
-*.log
+# *.log
 *.mob
 *.pcap
 *.plt
 *.routes
-*.tr
+# *.tr
 [D|U]l[A-Z][a-z]*Stats.txt
 
 \#*#

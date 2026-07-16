@@ -1,0 +1,1596 @@
+NR: trying ns3::NrMacSchedulerOfdmaPF
+NR: using ns3::NrMacSchedulerOfdmaPF
+---- INIT_ATTACH t=0 UE(imsi)=14 ----
+  candOK0 cell=6 rsrp=-117.028 occ=0/20 -> OK
+  SELECT cell=6 rsrp=-117.028 occ(afterReserve)=1/20
+  INIT_ATTACH_OK: UE(imsi)=14 -> cell=6
+---- INIT_ATTACH t=0 UE(imsi)=15 ----
+  candOK0 cell=3 rsrp=-116.739 occ=0/20 -> OK
+  SELECT cell=3 rsrp=-116.739 occ(afterReserve)=1/20
+  INIT_ATTACH_OK: UE(imsi)=15 -> cell=3
+---- INIT_ATTACH t=0 UE(imsi)=16 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=16 bestRsrp=-128.194 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=0 UE(imsi)=17 ----
+  candOK0 cell=9 rsrp=-119.866 occ=0/10 -> OK
+  SELECT cell=9 rsrp=-119.866 occ(afterReserve)=1/10
+  INIT_ATTACH_OK: UE(imsi)=17 -> cell=9
+---- INIT_ATTACH t=0 UE(imsi)=18 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=18 bestRsrp=-121.659 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=0 UE(imsi)=19 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=19 bestRsrp=-136.196 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=0 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-152.658 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=0 UE(imsi)=21 ----
+  candOK0 cell=12 rsrp=-118.848 occ=0/10 -> OK
+  SELECT cell=12 rsrp=-118.848 occ(afterReserve)=1/10
+  INIT_ATTACH_OK: UE(imsi)=21 -> cell=12
+---- INIT_ATTACH t=0 UE(imsi)=22 ----
+  candOK0 cell=6 rsrp=-106.339 occ=1/20 -> OK
+  SELECT cell=6 rsrp=-106.339 occ(afterReserve)=2/20
+  INIT_ATTACH_OK: UE(imsi)=22 -> cell=6
+---- INIT_ATTACH t=0 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-147.401 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=0 UE(imsi)=24 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=24 bestRsrp=-129.943 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=0 UE(imsi)=25 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=25 bestRsrp=-139.253 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=0 UE(imsi)=26 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=26 bestRsrp=-146.619 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=0 UE(imsi)=27 ----
+  candOK0 cell=9 rsrp=-88.9263 occ=1/10 -> OK
+  SELECT cell=9 rsrp=-88.9263 occ(afterReserve)=2/10
+  INIT_ATTACH_OK: UE(imsi)=27 -> cell=9
+---- INIT_ATTACH t=0 UE(imsi)=28 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=28 bestRsrp=-136.111 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=16 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=16 bestRsrp=-128.511 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=18 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=18 bestRsrp=-121.075 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=19 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=19 bestRsrp=-135.009 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-152.683 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-146.628 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=24 ----
+  candOK0 cell=6 rsrp=-105.191 occ=2/20 -> OK
+  SELECT cell=6 rsrp=-105.191 occ(afterReserve)=3/20
+  INIT_ATTACH_OK: UE(imsi)=24 -> cell=6
+---- INIT_ATTACH t=2 UE(imsi)=25 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=25 bestRsrp=-138.917 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=26 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=26 bestRsrp=-148.437 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=28 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=28 bestRsrp=-134.708 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-155.559 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=30 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=30 bestRsrp=-129.097 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=31 ----
+  candOK0 cell=3 rsrp=-113.6 occ=1/20 -> OK
+  SELECT cell=3 rsrp=-113.6 occ(afterReserve)=2/20
+  INIT_ATTACH_OK: UE(imsi)=31 -> cell=3
+---- INIT_ATTACH t=2 UE(imsi)=32 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=32 bestRsrp=-133.358 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=33 ----
+  candOK0 cell=8 rsrp=-100.82 occ=0/20 -> OK
+  candOK1 cell=4 rsrp=-108.802 occ=0/20 -> OK
+  SELECT cell=8 rsrp=-100.82 occ(afterReserve)=1/20
+  INIT_ATTACH_OK: UE(imsi)=33 -> cell=8
+---- INIT_ATTACH t=2 UE(imsi)=34 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=34 bestRsrp=-122.586 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=35 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=35 bestRsrp=-128.911 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=36 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=36 bestRsrp=-140.474 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=37 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=37 bestRsrp=-121.847 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-148.745 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=39 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=39 bestRsrp=-134.518 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-153.313 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=41 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=41 bestRsrp=-137.88 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=42 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=42 bestRsrp=-126.678 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=2 UE(imsi)=43 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=43 bestRsrp=-135.103 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=4 UE(imsi)=16 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=16 bestRsrp=-128.624 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=4 UE(imsi)=18 ----
+  candOK0 cell=10 rsrp=-117.763 occ=0/10 -> OK
+  SELECT cell=10 rsrp=-117.763 occ(afterReserve)=1/10
+  INIT_ATTACH_OK: UE(imsi)=18 -> cell=10
+---- INIT_ATTACH t=4 UE(imsi)=19 ----
+  candOK0 cell=1 rsrp=-108.316 occ=0/20 -> OK
+  SELECT cell=1 rsrp=-108.316 occ(afterReserve)=1/20
+  INIT_ATTACH_OK: UE(imsi)=19 -> cell=1
+---- INIT_ATTACH t=4 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-152.458 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=4 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-143.842 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=4 UE(imsi)=25 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=25 bestRsrp=-138.433 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=4 UE(imsi)=26 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=26 bestRsrp=-147.769 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=4 UE(imsi)=28 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=28 bestRsrp=-135.284 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=4 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-155.369 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=4 UE(imsi)=30 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=30 bestRsrp=-127.483 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=4 UE(imsi)=32 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=32 bestRsrp=-134.142 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=4 UE(imsi)=34 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=34 bestRsrp=-123.776 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=4 UE(imsi)=35 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=35 bestRsrp=-131.895 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=4 UE(imsi)=36 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=36 bestRsrp=-142.01 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=4 UE(imsi)=37 ----
+  candOK0 cell=13 rsrp=-93.5424 occ=0/10 -> OK
+  SELECT cell=13 rsrp=-93.5424 occ(afterReserve)=1/10
+  INIT_ATTACH_OK: UE(imsi)=37 -> cell=13
+---- INIT_ATTACH t=4 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-146.795 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=4 UE(imsi)=39 ----
+  candOK0 cell=10 rsrp=-101.035 occ=1/10 -> OK
+  SELECT cell=10 rsrp=-101.035 occ(afterReserve)=2/10
+  INIT_ATTACH_OK: UE(imsi)=39 -> cell=10
+---- INIT_ATTACH t=4 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-153.399 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=4 UE(imsi)=41 ----
+  candOK0 cell=14 rsrp=-104.662 occ=0/10 -> OK
+  SELECT cell=14 rsrp=-104.662 occ(afterReserve)=1/10
+  INIT_ATTACH_OK: UE(imsi)=41 -> cell=14
+---- INIT_ATTACH t=4 UE(imsi)=42 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=42 bestRsrp=-124.715 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=4 UE(imsi)=43 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=43 bestRsrp=-131.962 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=6 UE(imsi)=16 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=16 bestRsrp=-125.852 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=6 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-152.975 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=6 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-145.798 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=6 UE(imsi)=25 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=25 bestRsrp=-137.106 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=6 UE(imsi)=26 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=26 bestRsrp=-148.515 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=6 UE(imsi)=28 ----
+  candOK0 cell=2 rsrp=-111.431 occ=0/20 -> OK
+  candOK1 cell=11 rsrp=-113.981 occ=0/10 -> OK
+  SELECT cell=2 rsrp=-111.431 occ(afterReserve)=1/20
+  INIT_ATTACH_OK: UE(imsi)=28 -> cell=2
+---- INIT_ATTACH t=6 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-154.718 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=6 UE(imsi)=30 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=30 bestRsrp=-132.367 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=6 UE(imsi)=32 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=32 bestRsrp=-131.275 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=6 UE(imsi)=34 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=34 bestRsrp=-123.413 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=6 UE(imsi)=35 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=35 bestRsrp=-132.962 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=6 UE(imsi)=36 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=36 bestRsrp=-140.729 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=6 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-149.222 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=6 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-153.665 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=6 UE(imsi)=42 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=42 bestRsrp=-124.702 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=6 UE(imsi)=43 ----
+  candOK0 cell=6 rsrp=-116.433 occ=3/20 -> OK
+  SELECT cell=6 rsrp=-116.433 occ(afterReserve)=4/20
+  INIT_ATTACH_OK: UE(imsi)=43 -> cell=6
+Could not find NR UE cell info for E2 Node ID = 15
+Could not find NR UE cell info for E2 Node ID = 16
+Could not find NR UE cell info for E2 Node ID = 17
+Could not find NR UE cell info for E2 Node ID = 18
+Could not find NR UE cell info for E2 Node ID = 19
+Could not find NR UE cell info for E2 Node ID = 20
+Could not find NR UE cell info for E2 Node ID = 21
+Could not find NR UE cell info for E2 Node ID = 22
+Could not find NR UE cell info for E2 Node ID = 23
+Could not find NR UE cell info for E2 Node ID = 24
+Could not find NR UE cell info for E2 Node ID = 25
+Could not find NR UE cell info for E2 Node ID = 26
+Could not find NR UE cell info for E2 Node ID = 27
+Could not find NR UE cell info for E2 Node ID = 28
+Could not find NR UE cell info for E2 Node ID = 29
+Could not find NR UE cell info for E2 Node ID = 30
+Could not find NR UE cell info for E2 Node ID = 31
+Could not find NR UE cell info for E2 Node ID = 32
+Could not find NR UE cell info for E2 Node ID = 33
+Could not find NR UE cell info for E2 Node ID = 34
+Could not find NR UE cell info for E2 Node ID = 35
+Could not find NR UE cell info for E2 Node ID = 36
+Could not find NR UE cell info for E2 Node ID = 37
+Could not find NR UE cell info for E2 Node ID = 38
+Could not find NR UE cell info for E2 Node ID = 39
+Could not find NR UE cell info for E2 Node ID = 40
+Could not find NR UE cell info for E2 Node ID = 41
+Could not find NR UE cell info for E2 Node ID = 42
+Could not find NR UE cell info for E2 Node ID = 43
+Could not find NR UE cell info for E2 Node ID = 44
+Could not find NR gNB location for E2 Node ID = 1
+Could not find NR gNB location for E2 Node ID = 2
+Could not find NR gNB location for E2 Node ID = 3
+Could not find NR gNB location for E2 Node ID = 4
+Could not find NR gNB location for E2 Node ID = 5
+Could not find NR gNB location for E2 Node ID = 6
+Could not find NR gNB location for E2 Node ID = 7
+Could not find NR gNB location for E2 Node ID = 8
+Could not find NR gNB location for E2 Node ID = 9
+Could not find NR gNB location for E2 Node ID = 10
+Could not find NR gNB location for E2 Node ID = 11
+Could not find NR gNB location for E2 Node ID = 12
+Could not find NR gNB location for E2 Node ID = 13
+Could not find NR gNB location for E2 Node ID = 14
+---- LOAD at t=7.5 ----
+---- INIT_ATTACH t=8 UE(imsi)=16 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=16 bestRsrp=-130.716 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=8 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-151.316 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=8 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-148.901 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=8 UE(imsi)=25 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=25 bestRsrp=-136.612 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=8 UE(imsi)=26 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=26 bestRsrp=-147.519 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=8 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-154.409 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=8 UE(imsi)=30 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=30 bestRsrp=-128.451 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=8 UE(imsi)=32 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=32 bestRsrp=-133.321 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=8 UE(imsi)=34 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=34 bestRsrp=-126.91 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=8 UE(imsi)=35 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=35 bestRsrp=-132.002 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=8 UE(imsi)=36 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=36 bestRsrp=-139.551 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=8 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-148.966 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=8 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-154.555 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=8 UE(imsi)=42 ----
+  candOK0 cell=1 rsrp=-95.3017 occ=1/20 -> OK
+  SELECT cell=1 rsrp=-95.3017 occ(afterReserve)=2/20
+  INIT_ATTACH_OK: UE(imsi)=42 -> cell=1
+---- INIT_ATTACH t=10 UE(imsi)=16 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=16 bestRsrp=-129.623 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=10 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-151.725 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=10 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-144.258 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=10 UE(imsi)=25 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=25 bestRsrp=-137.925 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=10 UE(imsi)=26 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=26 bestRsrp=-147.277 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=10 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-153.818 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=10 UE(imsi)=30 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=30 bestRsrp=-128.962 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=10 UE(imsi)=32 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=32 bestRsrp=-133.382 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=10 UE(imsi)=34 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=34 bestRsrp=-126.286 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=10 UE(imsi)=35 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=35 bestRsrp=-132.496 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=10 UE(imsi)=36 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=36 bestRsrp=-141.283 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=10 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-147.96 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=10 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-154.354 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=12 UE(imsi)=16 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=16 bestRsrp=-129.457 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=12 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-151.797 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=12 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-123.945 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=12 UE(imsi)=25 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=25 bestRsrp=-140.155 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=12 UE(imsi)=26 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=26 bestRsrp=-145.687 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=12 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-152.851 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=12 UE(imsi)=30 ----
+  candOK0 cell=2 rsrp=-99.8058 occ=1/20 -> OK
+  SELECT cell=2 rsrp=-99.8058 occ(afterReserve)=2/20
+  INIT_ATTACH_OK: UE(imsi)=30 -> cell=2
+---- INIT_ATTACH t=12 UE(imsi)=32 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=32 bestRsrp=-131.856 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=12 UE(imsi)=34 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=34 bestRsrp=-124.445 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=12 UE(imsi)=35 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=35 bestRsrp=-131.527 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=12 UE(imsi)=36 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=36 bestRsrp=-139.219 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=12 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-147.908 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=12 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-153.23 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=12.5 ----
+  cell 1 (TN) load=2/20
+  cell 2 (TN) load=2/20
+  cell 3 (TN) load=2/20
+  cell 4 (TN) load=0/20
+  cell 5 (TN) load=0/20
+  cell 6 (TN) load=4/20
+  cell 7 (TN) load=0/20
+  cell 8 (TN) load=1/20
+  cell 9 (NTN) load=2/10
+  cell 10 (NTN) load=2/10
+  cell 11 (NTN) load=0/10
+  cell 12 (NTN) load=1/10
+  cell 13 (NTN) load=1/10
+  cell 14 (NTN) load=1/10
+UE 19 TTT_WAIT target=6 elapsed=0s need=2s
+UE 23 TTT_WAIT target=9 elapsed=0s need=2s
+UE 27 TTT_WAIT target=2 elapsed=0s need=2s
+UE 28 TTT_WAIT target=6 elapsed=0s need=2s
+UE 29 TTT_WAIT target=1 elapsed=0s need=2s
+UE 30 TTT_WAIT target=9 elapsed=0s need=2s
+UE 31 TTT_WAIT target=5 elapsed=0s need=2s
+UE 35 TTT_WAIT target=2 elapsed=0s need=2s
+UE 37 TTT_WAIT target=3 elapsed=0s need=2s
+UE 40 TTT_WAIT target=2 elapsed=0s need=2s
+---- INIT_ATTACH t=14 UE(imsi)=16 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=16 bestRsrp=-130.782 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=14 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-130.428 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=14 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-143.084 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=14 UE(imsi)=25 ----
+  candOK0 cell=11 rsrp=-109.43 occ=0/10 -> OK
+  SELECT cell=11 rsrp=-109.43 occ(afterReserve)=1/10
+  INIT_ATTACH_OK: UE(imsi)=25 -> cell=11
+---- INIT_ATTACH t=14 UE(imsi)=26 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=26 bestRsrp=-149.725 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=14 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-154.08 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=14 UE(imsi)=32 ----
+  candOK0 cell=10 rsrp=-107.202 occ=2/10 -> OK
+  SELECT cell=10 rsrp=-107.202 occ(afterReserve)=3/10
+  INIT_ATTACH_OK: UE(imsi)=32 -> cell=10
+---- INIT_ATTACH t=14 UE(imsi)=34 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=34 bestRsrp=-122.549 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=14 UE(imsi)=35 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=35 bestRsrp=-131.691 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=14 UE(imsi)=36 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=36 bestRsrp=-142.366 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=14 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-149.056 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=14 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-156.031 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=16 UE(imsi)=16 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=16 bestRsrp=-130.32 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=16 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-153.308 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=16 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-120.755 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=16 UE(imsi)=26 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=26 bestRsrp=-150.739 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=16 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-153.037 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=16 UE(imsi)=34 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=34 bestRsrp=-125.285 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=16 UE(imsi)=35 ----
+  candOK0 cell=7 rsrp=-115.34 occ=0/20 -> OK
+  SELECT cell=7 rsrp=-115.34 occ(afterReserve)=1/20
+  INIT_ATTACH_OK: UE(imsi)=35 -> cell=7
+---- INIT_ATTACH t=16 UE(imsi)=36 ----
+  candOK0 cell=11 rsrp=-111.193 occ=1/10 -> OK
+  SELECT cell=11 rsrp=-111.193 occ(afterReserve)=2/10
+  INIT_ATTACH_OK: UE(imsi)=36 -> cell=11
+---- INIT_ATTACH t=16 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-147.732 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=16 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-154.979 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=17.5 ----
+  cell 1 (TN) load=2/20
+  cell 2 (TN) load=2/20
+  cell 3 (TN) load=2/20
+  cell 4 (TN) load=0/20
+  cell 5 (TN) load=0/20
+  cell 6 (TN) load=4/20
+  cell 7 (TN) load=1/20
+  cell 8 (TN) load=1/20
+  cell 9 (NTN) load=2/10
+  cell 10 (NTN) load=3/10
+  cell 11 (NTN) load=2/10
+  cell 12 (NTN) load=1/10
+  cell 13 (NTN) load=1/10
+  cell 14 (NTN) load=1/10
+UE 17 TTT_WAIT target=1 elapsed=0s need=2s
+UE 18 TTT_WAIT target=3 elapsed=0s need=2s
+UE 19 TTT_WAIT target=4 elapsed=0s need=2s
+UE 21 TTT_WAIT target=1 elapsed=0s need=2s
+UE 22 TTT_WAIT target=3 elapsed=0s need=2s
+UE 27 TTT_WAIT target=3 elapsed=0s need=2s
+UE 31 TTT_WAIT target=11 elapsed=0s need=2s
+UE 35 TTT_WAIT target=6 elapsed=0s need=2s
+UE 37 TTT_WAIT target=6 elapsed=0s need=2s
+UE 40 TTT_WAIT target=9 elapsed=0s need=2s
+UE 41 TTT_WAIT target=1 elapsed=0s need=2s
+UE 43 TTT_WAIT target=6 elapsed=0s need=2s
+---- INIT_ATTACH t=18 UE(imsi)=16 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=16 bestRsrp=-128.502 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=18 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-152.153 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=18 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-146.046 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=18 UE(imsi)=26 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=26 bestRsrp=-148.551 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=18 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-154.953 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=18 UE(imsi)=34 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=34 bestRsrp=-125.301 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=18 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-146.275 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=18 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-153.943 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=20 UE(imsi)=16 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=16 bestRsrp=-129.153 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=20 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-151.919 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=20 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-144.561 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=20 UE(imsi)=26 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=26 bestRsrp=-148.32 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=20 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-153.577 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=20 UE(imsi)=34 ----
+  candOK0 cell=14 rsrp=-111.862 occ=1/10 -> OK
+  SELECT cell=14 rsrp=-111.862 occ(afterReserve)=2/10
+  INIT_ATTACH_OK: UE(imsi)=34 -> cell=14
+---- INIT_ATTACH t=20 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-149.669 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=20 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-154.319 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=22 UE(imsi)=16 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=16 bestRsrp=-130.148 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=22 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-153.912 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=22 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-145.729 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=22 UE(imsi)=26 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=26 bestRsrp=-147.04 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=22 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-154.413 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=22 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-148.001 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=22 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-153.091 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=22.5 ----
+  cell 1 (TN) load=2/20
+  cell 2 (TN) load=2/20
+  cell 3 (TN) load=2/20
+  cell 4 (TN) load=0/20
+  cell 5 (TN) load=0/20
+  cell 6 (TN) load=4/20
+  cell 7 (TN) load=1/20
+  cell 8 (TN) load=1/20
+  cell 9 (NTN) load=2/10
+  cell 10 (NTN) load=3/10
+  cell 11 (NTN) load=2/10
+  cell 12 (NTN) load=1/10
+  cell 13 (NTN) load=1/10
+  cell 14 (NTN) load=2/10
+UE 16 TTT_WAIT target=9 elapsed=0s need=2s
+UE 17 TTT_WAIT target=9 elapsed=0s need=2s
+UE 18 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=19 rnti=8 8->4 type=TN servingRsrp=-121.793 targetRsrp=-94.2728 targetLoadReal=0/20 targetLoadEff=0/20
+UE 20 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=21 rnti=8 7->1 type=TN servingRsrp=-124.353 targetRsrp=-84.0993 targetLoadReal=2/20 targetLoadEff=2/20
+UE 22 TTT_WAIT target=10 elapsed=0s need=2s
+LM HO UE=27 rnti=8 14->3 type=TN servingRsrp=-134.618 targetRsrp=-93.1874 targetLoadReal=2/20 targetLoadEff=2/20
+UE 28 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=31 rnti=8 3->11 type=NTN servingRsrp=-99.7003 targetRsrp=-79.5108 targetLoadReal=2/10 targetLoadEff=2/10
+UE 34 TTT_WAIT target=6 elapsed=0s need=2s
+UE 35 TTT_WAIT target=2 elapsed=0s need=2s
+UE 37 TTT_WAIT target=3 elapsed=0s need=2s
+UE 38 TTT_WAIT target=9 elapsed=0s need=2s
+UE 41 TTT_WAIT target=3 elapsed=0s need=2s
+UE 43 TTT_WAIT target=3 elapsed=0s need=2s
+UE 44 TTT_WAIT target=6 elapsed=0s need=2s
+---- INIT_ATTACH t=24 UE(imsi)=16 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=16 bestRsrp=-131.265 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=24 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-149.594 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=24 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-145.001 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=24 UE(imsi)=26 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=26 bestRsrp=-148.319 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=24 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-154.323 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=24 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-147.434 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=24 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-152.684 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=26 UE(imsi)=16 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=16 bestRsrp=-129.099 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=26 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-153.282 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=26 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-144.387 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=26 UE(imsi)=26 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=26 bestRsrp=-150.009 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=26 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-153.264 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=26 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-148.259 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=26 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-154.996 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=27.5 ----
+  cell 1 (TN) load=3/20
+  cell 2 (TN) load=2/20
+  cell 3 (TN) load=2/20
+  cell 4 (TN) load=1/20
+  cell 5 (TN) load=0/20
+  cell 6 (TN) load=4/20
+  cell 7 (TN) load=0/20
+  cell 8 (TN) load=0/20
+  cell 9 (NTN) load=2/10
+  cell 10 (NTN) load=3/10
+  cell 11 (NTN) load=3/10
+  cell 12 (NTN) load=1/10
+  cell 13 (NTN) load=1/10
+  cell 14 (NTN) load=1/10
+LM HO UE=16 rnti=16 2->9 type=NTN servingRsrp=-102.14 targetRsrp=-94.5237 targetLoadReal=2/10 targetLoadEff=2/10
+LM HO_FAIL_LOW_RSRP UE=17 currCell=3 candCell=5 candRsrp=-120.178 < min=-120
+UE 19 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO UE=20 rnti=16 14->1 type=TN servingRsrp=-148.82 targetRsrp=-82.4879 targetLoadReal=3/20 targetLoadEff=3/20
+UE 21 TTT_WAIT target=2 elapsed=0s need=2s
+UE 23 TTT_WAIT target=11 elapsed=0s need=2s
+UE 25 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=27 currCell=3 candCell=5 candRsrp=-122.421 < min=-120
+UE 28 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=29 currCell=6 candCell=9 candRsrp=-122.654 < min=-120
+UE 35 TTT_WAIT target=6 elapsed=0s need=2s
+UE 37 TTT_WAIT target=11 elapsed=0s need=2s
+UE 41 TTT_WAIT target=1 elapsed=0s need=2s
+UE 43 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO UE=44 rnti=8 2->6 type=TN servingRsrp=-117.716 targetRsrp=-82.1736 targetLoadReal=4/20 targetLoadEff=4/20
+---- INIT_ATTACH t=28 UE(imsi)=16 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=16 bestRsrp=-129.686 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=28 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-152.097 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=28 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-145.47 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=28 UE(imsi)=26 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=26 bestRsrp=-146.846 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=28 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-150.516 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=28 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-148.583 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=28 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-154.599 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=30 UE(imsi)=16 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=16 bestRsrp=-131.553 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=30 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-149.413 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=30 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-140.937 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=30 UE(imsi)=26 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=26 bestRsrp=-149.142 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=30 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-152.988 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=30 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-148.423 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=30 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-153.541 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=32 UE(imsi)=16 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=16 bestRsrp=-132.031 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=32 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-152.05 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=32 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-143.827 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=32 UE(imsi)=26 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=26 bestRsrp=-149.847 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=32 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-155.784 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=32 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-148.435 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=32 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-153.179 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=32.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=2/20
+  cell 4 (TN) load=1/20
+  cell 5 (TN) load=0/20
+  cell 6 (TN) load=5/20
+  cell 7 (TN) load=0/20
+  cell 8 (TN) load=0/20
+  cell 9 (NTN) load=3/10
+  cell 10 (NTN) load=3/10
+  cell 11 (NTN) load=3/10
+  cell 12 (NTN) load=1/10
+  cell 13 (NTN) load=1/10
+  cell 14 (NTN) load=0/10
+UE 16 TTT_WAIT target=2 elapsed=0s need=2s
+UE 18 TTT_WAIT target=1 elapsed=0s need=2s
+UE 19 TTT_WAIT target=9 elapsed=0s need=2s
+UE 20 TTT_WAIT target=6 elapsed=0s need=2s
+UE 21 TTT_WAIT target=7 elapsed=0s need=2s
+UE 27 TTT_WAIT target=1 elapsed=0s need=2s
+UE 29 TTT_WAIT target=5 elapsed=0s need=2s
+UE 31 TTT_WAIT target=3 elapsed=0s need=2s
+UE 35 TTT_WAIT target=12 elapsed=0s need=2s
+LM HO UE=37 rnti=8 12->11 type=NTN servingRsrp=-128.109 targetRsrp=-118.009 targetLoadReal=3/10 targetLoadEff=3/10
+UE 41 TTT_WAIT target=13 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=44 currCell=6 candCell=9 candRsrp=-122.298 < min=-120
+---- INIT_ATTACH t=34 UE(imsi)=16 ----
+  candOK0 cell=7 rsrp=-109.796 occ=0/20 -> OK
+  SELECT cell=7 rsrp=-109.796 occ(afterReserve)=1/20
+  INIT_ATTACH_OK: UE(imsi)=16 -> cell=7
+---- INIT_ATTACH t=34 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-151.942 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=34 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-142.595 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=34 UE(imsi)=26 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=26 bestRsrp=-150.058 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=34 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-151.213 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=34 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-148.47 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=34 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-154.376 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=36 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-151.975 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=36 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-144.027 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=36 UE(imsi)=26 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=26 bestRsrp=-147.631 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=36 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-154.329 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=36 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-146.663 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=36 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-153.217 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=37.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=2/20
+  cell 4 (TN) load=1/20
+  cell 5 (TN) load=0/20
+  cell 6 (TN) load=5/20
+  cell 7 (TN) load=1/20
+  cell 8 (TN) load=0/20
+  cell 9 (NTN) load=3/10
+  cell 10 (NTN) load=3/10
+  cell 11 (NTN) load=4/10
+  cell 12 (NTN) load=0/10
+  cell 13 (NTN) load=1/10
+  cell 14 (NTN) load=0/10
+LM HO UE=16 rnti=17 9->2 type=TN servingRsrp=-128.543 targetRsrp=-102.033 targetLoadReal=0/20 targetLoadEff=0/20
+LM HO_FAIL_LOW_RSRP UE=17 currCell=3 candCell=5 candRsrp=-123.526 < min=-120
+LM HO UE=18 rnti=24 10->1 type=TN servingRsrp=-118.239 targetRsrp=-89.8674 targetLoadReal=4/20 targetLoadEff=4/20
+LM HO UE=20 rnti=18 1->6 type=TN servingRsrp=-119.507 targetRsrp=-112.238 targetLoadReal=5/20 targetLoadEff=5/20
+LM HO UE=21 rnti=17 1->7 type=TN servingRsrp=-128.402 targetRsrp=-74.0963 targetLoadReal=1/20 targetLoadEff=1/20
+UE 22 TTT_WAIT target=10 elapsed=0s need=2s
+LM HO UE=27 rnti=17 3->1 type=TN servingRsrp=-135.617 targetRsrp=-96.0401 targetLoadReal=4/20 targetLoadEff=5/20
+UE 28 TTT_WAIT target=6 elapsed=0s need=2s
+UE 29 TTT_WAIT target=7 elapsed=0s need=2s
+UE 30 TTT_WAIT target=1 elapsed=0s need=2s
+UE 37 TTT_WAIT target=6 elapsed=0s need=2s
+UE 38 TTT_WAIT target=7 elapsed=0s need=2s
+UE 40 TTT_WAIT target=12 elapsed=0s need=2s
+UE 41 TTT_WAIT target=10 elapsed=0s need=2s
+UE 44 TTT_WAIT target=10 elapsed=0s need=2s
+---- INIT_ATTACH t=38 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-151.931 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=38 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-142.371 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=38 UE(imsi)=26 ----
+  candOK0 cell=14 rsrp=-117.639 occ=0/10 -> OK
+  SELECT cell=14 rsrp=-117.639 occ(afterReserve)=1/10
+  INIT_ATTACH_OK: UE(imsi)=26 -> cell=14
+---- INIT_ATTACH t=38 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-154.69 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=38 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-150 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=38 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-125.148 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=40 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-151.543 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=40 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-143.04 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=40 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-153.009 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=40 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-147.244 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=40 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-153.017 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=42 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-143.917 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=42 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-142.401 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=42 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-152.708 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=42 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-147.509 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=42 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-150.65 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=42.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=1/20
+  cell 3 (TN) load=1/20
+  cell 4 (TN) load=1/20
+  cell 5 (TN) load=0/20
+  cell 6 (TN) load=6/20
+  cell 7 (TN) load=2/20
+  cell 8 (TN) load=0/20
+  cell 9 (NTN) load=2/10
+  cell 10 (NTN) load=2/10
+  cell 11 (NTN) load=4/10
+  cell 12 (NTN) load=0/10
+  cell 13 (NTN) load=1/10
+  cell 14 (NTN) load=1/10
+UE 16 TTT_WAIT target=7 elapsed=0s need=2s
+UE 17 TTT_WAIT target=5 elapsed=0s need=2s
+UE 18 TTT_WAIT target=14 elapsed=0s need=2s
+UE 19 TTT_WAIT target=10 elapsed=0s need=2s
+UE 20 TTT_WAIT target=1 elapsed=0s need=2s
+UE 21 TTT_WAIT target=14 elapsed=0s need=2s
+UE 22 TTT_WAIT target=9 elapsed=0s need=2s
+UE 27 TTT_WAIT target=6 elapsed=0s need=2s
+UE 33 TTT_WAIT target=6 elapsed=0s need=2s
+UE 35 TTT_WAIT target=6 elapsed=0s need=2s
+UE 37 TTT_WAIT target=10 elapsed=0s need=2s
+LM HO UE=38 rnti=16 6->7 type=TN servingRsrp=-95.7604 targetRsrp=-88.9806 targetLoadReal=2/20 targetLoadEff=2/20
+UE 40 TTT_WAIT target=1 elapsed=0s need=2s
+UE 41 TTT_WAIT target=1 elapsed=0s need=2s
+UE 42 TTT_WAIT target=1 elapsed=0s need=2s
+---- INIT_ATTACH t=44 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-150.904 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=44 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-143.585 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=44 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-151.135 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=44 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-147.088 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=44 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-149.428 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=46 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-151.122 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=46 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-144.287 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=46 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-152.247 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=46 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-145.979 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=46 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-151.714 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=47.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=1/20
+  cell 3 (TN) load=1/20
+  cell 4 (TN) load=1/20
+  cell 5 (TN) load=0/20
+  cell 6 (TN) load=5/20
+  cell 7 (TN) load=3/20
+  cell 8 (TN) load=0/20
+  cell 9 (NTN) load=2/10
+  cell 10 (NTN) load=2/10
+  cell 11 (NTN) load=4/10
+  cell 12 (NTN) load=0/10
+  cell 13 (NTN) load=1/10
+  cell 14 (NTN) load=1/10
+UE 17 TTT_WAIT target=7 elapsed=0s need=2s
+UE 21 TTT_WAIT target=9 elapsed=0s need=2s
+UE 22 TTT_WAIT target=10 elapsed=0s need=2s
+UE 23 TTT_WAIT target=14 elapsed=0s need=2s
+LM HO UE=27 rnti=20 1->6 type=TN servingRsrp=-131.575 targetRsrp=-90.8299 targetLoadReal=5/20 targetLoadEff=5/20
+UE 28 TTT_WAIT target=6 elapsed=0s need=2s
+UE 29 TTT_WAIT target=7 elapsed=0s need=2s
+UE 30 TTT_WAIT target=10 elapsed=0s need=2s
+UE 32 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=33 rnti=15 9->6 type=TN servingRsrp=-98.2048 targetRsrp=-87.9892 targetLoadReal=5/20 targetLoadEff=6/20
+UE 34 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=35 rnti=8 1->6 type=TN servingRsrp=-113.962 targetRsrp=-108.625 targetLoadReal=5/20 targetLoadEff=7/20
+LM HO UE=37 rnti=18 11->10 type=NTN servingRsrp=-118.903 targetRsrp=-106.94 targetLoadReal=2/10 targetLoadEff=2/10
+UE 38 TTT_WAIT target=6 elapsed=0s need=2s
+UE 40 TTT_WAIT target=9 elapsed=0s need=2s
+UE 41 TTT_WAIT target=6 elapsed=0s need=2s
+UE 42 TTT_WAIT target=6 elapsed=0s need=2s
+UE 44 TTT_WAIT target=7 elapsed=0s need=2s
+---- INIT_ATTACH t=48 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-149.307 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=48 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-142.424 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=48 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-151.562 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=48 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-146.51 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=48 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-150.768 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=50 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-149.914 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=50 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-143.206 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=50 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-153.61 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=50 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-146.984 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=50 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-151.582 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=52 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-150.019 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=52 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-138.25 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=52 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-132.903 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=52 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-148.403 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=52 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-149.584 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=52.5 ----
+  cell 1 (TN) load=2/20
+  cell 2 (TN) load=1/20
+  cell 3 (TN) load=1/20
+  cell 4 (TN) load=1/20
+  cell 5 (TN) load=0/20
+  cell 6 (TN) load=8/20
+  cell 7 (TN) load=3/20
+  cell 8 (TN) load=0/20
+  cell 9 (NTN) load=1/10
+  cell 10 (NTN) load=3/10
+  cell 11 (NTN) load=3/10
+  cell 12 (NTN) load=0/10
+  cell 13 (NTN) load=1/10
+  cell 14 (NTN) load=1/10
+UE 17 TTT_WAIT target=5 elapsed=0s need=2s
+UE 18 TTT_WAIT target=8 elapsed=0s need=2s
+UE 19 TTT_WAIT target=9 elapsed=0s need=2s
+UE 21 TTT_WAIT target=6 elapsed=0s need=2s
+UE 25 TTT_WAIT target=9 elapsed=0s need=2s
+UE 27 TTT_WAIT target=7 elapsed=0s need=2s
+UE 30 TTT_WAIT target=9 elapsed=0s need=2s
+UE 31 TTT_WAIT target=7 elapsed=0s need=2s
+UE 33 TTT_WAIT target=9 elapsed=0s need=2s
+UE 35 TTT_WAIT target=14 elapsed=0s need=2s
+UE 37 TTT_WAIT target=11 elapsed=0s need=2s
+LM HO UE=38 rnti=18 7->6 type=TN servingRsrp=-133.586 targetRsrp=-105.469 targetLoadReal=8/20 targetLoadEff=8/20
+UE 40 TTT_WAIT target=7 elapsed=0s need=2s
+UE 41 TTT_WAIT target=7 elapsed=0s need=2s
+UE 43 TTT_WAIT target=14 elapsed=0s need=2s
+UE 44 TTT_WAIT target=9 elapsed=0s need=2s
+---- INIT_ATTACH t=54 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-150.123 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=54 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-143.75 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=54 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-151.467 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=54 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-146.365 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=54 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-149.316 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=56 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-149.295 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=56 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-143.129 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=56 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-151.447 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=56 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-143.269 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=56 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-150.125 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=57.5 ----
+  cell 1 (TN) load=2/20
+  cell 2 (TN) load=1/20
+  cell 3 (TN) load=1/20
+  cell 4 (TN) load=1/20
+  cell 5 (TN) load=0/20
+  cell 6 (TN) load=9/20
+  cell 7 (TN) load=2/20
+  cell 8 (TN) load=0/20
+  cell 9 (NTN) load=1/10
+  cell 10 (NTN) load=3/10
+  cell 11 (NTN) load=3/10
+  cell 12 (NTN) load=0/10
+  cell 13 (NTN) load=1/10
+  cell 14 (NTN) load=1/10
+LM HO UE=17 rnti=16 3->5 type=TN servingRsrp=-123.638 targetRsrp=-116.584 targetLoadReal=0/20 targetLoadEff=0/20
+UE 18 TTT_WAIT target=6 elapsed=0s need=2s
+UE 19 TTT_WAIT target=3 elapsed=0s need=2s
+UE 20 TTT_WAIT target=10 elapsed=0s need=2s
+UE 23 TTT_WAIT target=14 elapsed=0s need=2s
+UE 29 TTT_WAIT target=8 elapsed=0s need=2s
+UE 30 TTT_WAIT target=8 elapsed=0s need=2s
+UE 31 TTT_WAIT target=14 elapsed=0s need=2s
+LM HO UE=33 rnti=36 6->9 type=NTN servingRsrp=-122.616 targetRsrp=-109.268 targetLoadReal=1/10 targetLoadEff=1/10
+UE 34 TTT_WAIT target=7 elapsed=0s need=2s
+UE 35 TTT_WAIT target=1 elapsed=0s need=2s
+UE 37 TTT_WAIT target=14 elapsed=0s need=2s
+UE 38 TTT_WAIT target=10 elapsed=0s need=2s
+UE 42 TTT_WAIT target=6 elapsed=0s need=2s
+UE 44 TTT_WAIT target=7 elapsed=0s need=2s
+---- INIT_ATTACH t=58 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-149.591 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=58 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-138.424 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=58 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-149.203 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=58 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-148.379 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=58 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-150.026 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=60 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-148.941 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=60 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-140.982 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=60 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-152.45 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=60 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-148.271 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=60 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-149.717 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=62 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-146.924 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=62 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-138.408 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=62 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-151.508 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=62 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-147.422 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=62 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-126.055 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=62.5 ----
+  cell 1 (TN) load=2/20
+  cell 2 (TN) load=1/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=1/20
+  cell 5 (TN) load=1/20
+  cell 6 (TN) load=8/20
+  cell 7 (TN) load=2/20
+  cell 8 (TN) load=0/20
+  cell 9 (NTN) load=2/10
+  cell 10 (NTN) load=3/10
+  cell 11 (NTN) load=3/10
+  cell 12 (NTN) load=0/10
+  cell 13 (NTN) load=1/10
+  cell 14 (NTN) load=1/10
+UE 16 TTT_WAIT target=10 elapsed=0s need=2s
+UE 17 TTT_WAIT target=11 elapsed=0s need=2s
+UE 18 TTT_WAIT target=8 elapsed=0s need=2s
+UE 19 TTT_WAIT target=10 elapsed=0s need=2s
+UE 21 TTT_WAIT target=10 elapsed=0s need=2s
+LM HO UE=23 rnti=8 13->14 type=NTN servingRsrp=-119.65 targetRsrp=-83.1556 targetLoadReal=1/10 targetLoadEff=1/10
+UE 25 TTT_WAIT target=9 elapsed=0s need=2s
+UE 27 TTT_WAIT target=5 elapsed=0s need=2s
+UE 28 TTT_WAIT target=2 elapsed=0s need=2s
+UE 29 TTT_WAIT target=4 elapsed=0s need=2s
+UE 30 TTT_WAIT target=10 elapsed=0s need=2s
+UE 31 TTT_WAIT target=3 elapsed=0s need=2s
+UE 32 TTT_WAIT target=6 elapsed=0s need=2s
+UE 33 TTT_WAIT target=3 elapsed=0s need=2s
+UE 37 TTT_WAIT target=11 elapsed=0s need=2s
+UE 40 TTT_WAIT target=10 elapsed=0s need=2s
+UE 43 TTT_WAIT target=14 elapsed=0s need=2s
+LM HO UE=44 rnti=33 6->7 type=TN servingRsrp=-113.373 targetRsrp=-94.8713 targetLoadReal=2/20 targetLoadEff=2/20
+---- INIT_ATTACH t=64 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-146.844 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=64 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-139.62 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=64 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-152.86 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=64 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-146.765 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=64 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-150.553 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=66 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-147.991 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=66 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-139.681 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=66 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-151.39 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=66 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-145.51 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=66 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-147.511 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=67.5 ----
+  cell 1 (TN) load=2/20
+  cell 2 (TN) load=1/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=1/20
+  cell 5 (TN) load=1/20
+  cell 6 (TN) load=7/20
+  cell 7 (TN) load=3/20
+  cell 8 (TN) load=0/20
+  cell 9 (NTN) load=2/10
+  cell 10 (NTN) load=3/10
+  cell 11 (NTN) load=3/10
+  cell 12 (NTN) load=0/10
+  cell 13 (NTN) load=0/10
+  cell 14 (NTN) load=2/10
+LM HO UE=17 rnti=1 5->11 type=NTN servingRsrp=-117.108 targetRsrp=-83.4782 targetLoadReal=3/10 targetLoadEff=3/10
+UE 18 TTT_WAIT target=7 elapsed=0s need=2s
+UE 19 TTT_WAIT target=6 elapsed=0s need=2s
+UE 20 TTT_WAIT target=8 elapsed=0s need=2s
+LM HO UE=21 rnti=17 7->10 type=NTN servingRsrp=-112.114 targetRsrp=-105.06 targetLoadReal=3/10 targetLoadEff=3/10
+UE 22 TTT_WAIT target=10 elapsed=0s need=2s
+UE 23 TTT_WAIT target=7 elapsed=0s need=2s
+UE 25 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=27 currCell=6 candCell=5 candRsrp=-120.536 < min=-120
+UE 29 TTT_WAIT target=8 elapsed=0s need=2s
+UE 30 TTT_WAIT target=9 elapsed=0s need=2s
+UE 34 TTT_WAIT target=9 elapsed=0s need=2s
+UE 37 TTT_WAIT target=6 elapsed=0s need=2s
+UE 38 TTT_WAIT target=9 elapsed=0s need=2s
+UE 40 TTT_WAIT target=7 elapsed=0s need=2s
+UE 41 TTT_WAIT target=14 elapsed=0s need=2s
+UE 42 TTT_WAIT target=9 elapsed=0s need=2s
+UE 44 TTT_WAIT target=6 elapsed=0s need=2s
+---- INIT_ATTACH t=68 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-147.898 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=68 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-139.949 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=68 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-150.589 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=68 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-146.542 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=68 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-147.961 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=70 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-145.02 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=70 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-141.409 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=70 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-151.193 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=70 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-147.245 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=70 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-148.723 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=72 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-142.133 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=72 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-129.378 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=72 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-150.636 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=72 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-146.554 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=72 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-147.849 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=72.5 ----
+  cell 1 (TN) load=2/20
+  cell 2 (TN) load=1/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=1/20
+  cell 5 (TN) load=0/20
+  cell 6 (TN) load=7/20
+  cell 7 (TN) load=2/20
+  cell 8 (TN) load=0/20
+  cell 9 (NTN) load=2/10
+  cell 10 (NTN) load=4/10
+  cell 11 (NTN) load=4/10
+  cell 12 (NTN) load=0/10
+  cell 13 (NTN) load=0/10
+  cell 14 (NTN) load=2/10
+UE 17 TTT_WAIT target=14 elapsed=0s need=2s
+UE 18 TTT_WAIT target=8 elapsed=0s need=2s
+UE 19 TTT_WAIT target=14 elapsed=0s need=2s
+UE 20 TTT_WAIT target=10 elapsed=0s need=2s
+UE 23 TTT_WAIT target=4 elapsed=0s need=2s
+UE 25 TTT_WAIT target=9 elapsed=0s need=2s
+UE 27 TTT_WAIT target=5 elapsed=0s need=2s
+UE 28 TTT_WAIT target=7 elapsed=0s need=2s
+UE 29 TTT_WAIT target=9 elapsed=0s need=2s
+UE 35 TTT_WAIT target=7 elapsed=0s need=2s
+UE 37 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=38 rnti=38 6->9 type=NTN servingRsrp=-102.549 targetRsrp=-79.5886 targetLoadReal=2/10 targetLoadEff=2/10
+UE 40 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=44 rnti=19 7->6 type=TN servingRsrp=-136.701 targetRsrp=-89.6342 targetLoadReal=7/20 targetLoadEff=7/20
+---- INIT_ATTACH t=74 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-145.674 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=74 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-141.815 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=74 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-150.69 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=74 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-147.559 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=74 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-147.464 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=76 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-120.813 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=76 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-140.293 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=76 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-152.649 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=76 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-146.524 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=76 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-147.105 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=77.5 ----
+  cell 1 (TN) load=2/20
+  cell 2 (TN) load=1/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=1/20
+  cell 5 (TN) load=0/20
+  cell 6 (TN) load=7/20
+  cell 7 (TN) load=1/20
+  cell 8 (TN) load=0/20
+  cell 9 (NTN) load=3/10
+  cell 10 (NTN) load=4/10
+  cell 11 (NTN) load=4/10
+  cell 12 (NTN) load=0/10
+  cell 13 (NTN) load=0/10
+  cell 14 (NTN) load=2/10
+LM HO UE=18 rnti=19 1->8 type=TN servingRsrp=-139.89 targetRsrp=-111.737 targetLoadReal=0/20 targetLoadEff=0/20
+UE 20 TTT_WAIT target=4 elapsed=0s need=2s
+UE 21 TTT_WAIT target=7 elapsed=0s need=2s
+UE 27 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=28 rnti=16 1->7 type=TN servingRsrp=-108.189 targetRsrp=-92.4436 targetLoadReal=1/20 targetLoadEff=1/20
+UE 30 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=32 currCell=7 candCell=10 candRsrp=-130.851 < min=-120
+UE 37 TTT_WAIT target=6 elapsed=0s need=2s
+UE 38 TTT_WAIT target=10 elapsed=0s need=2s
+UE 40 TTT_WAIT target=7 elapsed=0s need=2s
+UE 42 TTT_WAIT target=7 elapsed=0s need=2s
+UE 44 TTT_WAIT target=9 elapsed=0s need=2s
+---- INIT_ATTACH t=78 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-144.474 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=78 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-139.473 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=78 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-150.372 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=78 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-137.484 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=78 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-147.519 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=80 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-144.789 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=80 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-141.448 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=80 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-150.84 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=80 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-146.451 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=80 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-142.822 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=82 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-146.531 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=82 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-139.645 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=82 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-151.237 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=82 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-146.939 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=82 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-143.785 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=82.5 ----
+  cell 1 (TN) load=0/20
+  cell 2 (TN) load=1/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=1/20
+  cell 5 (TN) load=0/20
+  cell 6 (TN) load=7/20
+  cell 7 (TN) load=2/20
+  cell 8 (TN) load=1/20
+  cell 9 (NTN) load=3/10
+  cell 10 (NTN) load=4/10
+  cell 11 (NTN) load=4/10
+  cell 12 (NTN) load=0/10
+  cell 13 (NTN) load=0/10
+  cell 14 (NTN) load=2/10
+UE 18 TTT_WAIT target=6 elapsed=0s need=2s
+UE 20 TTT_WAIT target=7 elapsed=0s need=2s
+UE 22 TTT_WAIT target=7 elapsed=0s need=2s
+UE 23 TTT_WAIT target=4 elapsed=0s need=2s
+UE 27 TTT_WAIT target=5 elapsed=0s need=2s
+UE 28 TTT_WAIT target=1 elapsed=0s need=2s
+UE 29 TTT_WAIT target=4 elapsed=0s need=2s
+UE 31 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=32 currCell=7 candCell=14 candRsrp=-125.992 < min=-120
+UE 37 TTT_WAIT target=11 elapsed=0s need=2s
+UE 38 TTT_WAIT target=6 elapsed=0s need=2s
+UE 40 TTT_WAIT target=10 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=42 currCell=14 candCell=9 candRsrp=-126.518 < min=-120
+LM HO UE=44 rnti=39 6->9 type=NTN servingRsrp=-113.188 targetRsrp=-86.027 targetLoadReal=3/10 targetLoadEff=3/10
+---- INIT_ATTACH t=84 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-144.945 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=84 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-140.584 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=84 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-150.679 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=84 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-146.456 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=84 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-139.758 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=86 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-143.153 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=86 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-140.196 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=86 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-149.415 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=86 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-146.403 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=86 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-136.082 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=87.5 ----
+  cell 1 (TN) load=0/20
+  cell 2 (TN) load=1/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=1/20
+  cell 5 (TN) load=0/20
+  cell 6 (TN) load=6/20
+  cell 7 (TN) load=2/20
+  cell 8 (TN) load=1/20
+  cell 9 (NTN) load=4/10
+  cell 10 (NTN) load=4/10
+  cell 11 (NTN) load=4/10
+  cell 12 (NTN) load=0/10
+  cell 13 (NTN) load=0/10
+  cell 14 (NTN) load=2/10
+UE 16 TTT_WAIT target=7 elapsed=0s need=2s
+UE 17 TTT_WAIT target=6 elapsed=0s need=2s
+UE 18 TTT_WAIT target=9 elapsed=0s need=2s
+UE 20 TTT_WAIT target=9 elapsed=0s need=2s
+UE 21 TTT_WAIT target=9 elapsed=0s need=2s
+LM HO UE=22 rnti=16 11->7 type=TN servingRsrp=-108.669 targetRsrp=-102.735 targetLoadReal=2/20 targetLoadEff=2/20
+UE 25 TTT_WAIT target=9 elapsed=0s need=2s
+LM HO UE=27 rnti=35 6->5 type=TN servingRsrp=-136.688 targetRsrp=-117.738 targetLoadReal=0/20 targetLoadEff=0/20
+LM HO UE=28 rnti=20 7->1 type=TN servingRsrp=-126.815 targetRsrp=-113.566 targetLoadReal=0/20 targetLoadEff=0/20
+UE 29 TTT_WAIT target=8 elapsed=0s need=2s
+UE 30 TTT_WAIT target=9 elapsed=0s need=2s
+UE 31 TTT_WAIT target=5 elapsed=0s need=2s
+UE 33 TTT_WAIT target=14 elapsed=0s need=2s
+UE 35 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=37 rnti=25 10->11 type=NTN servingRsrp=-141.793 targetRsrp=-82.1792 targetLoadReal=4/10 targetLoadEff=4/10
+UE 38 TTT_WAIT target=3 elapsed=0s need=2s
+UE 40 TTT_WAIT target=7 elapsed=0s need=2s
+UE 44 TTT_WAIT target=6 elapsed=0s need=2s
+---- INIT_ATTACH t=88 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-144.127 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=88 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-140.321 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=88 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-151.156 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=88 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-144.553 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=88 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-146.771 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=90 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-144.112 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=90 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-138.794 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=90 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-150.487 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=90 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-146.493 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=90 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-146.602 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=92 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-142.718 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=92 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-140.034 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=92 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-150.484 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=92 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-145.203 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=92 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-145.253 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=92.5 ----
+  cell 1 (TN) load=1/20
+  cell 2 (TN) load=1/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=1/20
+  cell 5 (TN) load=1/20
+  cell 6 (TN) load=5/20
+  cell 7 (TN) load=2/20
+  cell 8 (TN) load=1/20
+  cell 9 (NTN) load=4/10
+  cell 10 (NTN) load=3/10
+  cell 11 (NTN) load=4/10
+  cell 12 (NTN) load=0/10
+  cell 13 (NTN) load=0/10
+  cell 14 (NTN) load=2/10
+UE 16 TTT_WAIT target=6 elapsed=0s need=2s
+UE 17 TTT_WAIT target=7 elapsed=0s need=2s
+UE 19 TTT_WAIT target=9 elapsed=0s need=2s
+UE 20 TTT_WAIT target=7 elapsed=0s need=2s
+UE 21 TTT_WAIT target=7 elapsed=0s need=2s
+UE 22 TTT_WAIT target=10 elapsed=0s need=2s
+UE 23 TTT_WAIT target=13 elapsed=0s need=2s
+UE 27 TTT_WAIT target=14 elapsed=0s need=2s
+UE 28 TTT_WAIT target=10 elapsed=0s need=2s
+UE 29 TTT_WAIT target=4 elapsed=0s need=2s
+UE 32 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO UE=33 rnti=18 9->14 type=NTN servingRsrp=-101.846 targetRsrp=-98.424 targetLoadReal=2/10 targetLoadEff=2/10
+UE 38 TTT_WAIT target=6 elapsed=0s need=2s
+UE 40 TTT_WAIT target=8 elapsed=0s need=2s
+UE 42 TTT_WAIT target=10 elapsed=0s need=2s
+UE 43 TTT_WAIT target=10 elapsed=0s need=2s
+---- INIT_ATTACH t=94 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-142.546 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=94 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-140.047 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=94 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-146.797 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=94 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-146.137 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=94 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-147.754 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=96 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-142.956 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=96 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-138.987 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=96 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-148.185 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=96 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-145.285 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=96 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-144.771 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=97.5 ----
+  cell 1 (TN) load=1/20
+  cell 2 (TN) load=1/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=1/20
+  cell 5 (TN) load=1/20
+  cell 6 (TN) load=5/20
+  cell 7 (TN) load=2/20
+  cell 8 (TN) load=1/20
+  cell 9 (NTN) load=3/10
+  cell 10 (NTN) load=3/10
+  cell 11 (NTN) load=4/10
+  cell 12 (NTN) load=0/10
+  cell 13 (NTN) load=0/10
+  cell 14 (NTN) load=3/10
+UE 18 TTT_WAIT target=14 elapsed=0s need=2s
+UE 19 TTT_WAIT target=12 elapsed=0s need=2s
+UE 20 TTT_WAIT target=9 elapsed=0s need=2s
+UE 21 TTT_WAIT target=14 elapsed=0s need=2s
+UE 22 TTT_WAIT target=11 elapsed=0s need=2s
+UE 27 TTT_WAIT target=10 elapsed=0s need=2s
+UE 28 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO UE=29 rnti=32 6->4 type=TN servingRsrp=-118.921 targetRsrp=-102.598 targetLoadReal=1/20 targetLoadEff=1/20
+UE 30 TTT_WAIT target=10 elapsed=0s need=2s
+UE 31 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO UE=32 rnti=16 7->6 type=TN servingRsrp=-116.305 targetRsrp=-90.396 targetLoadReal=5/20 targetLoadEff=5/20
+UE 34 TTT_WAIT target=7 elapsed=0s need=2s
+UE 35 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=38 rnti=19 9->6 type=TN servingRsrp=-77.8231 targetRsrp=-70.7875 targetLoadReal=5/20 targetLoadEff=6/20
+UE 40 TTT_WAIT target=10 elapsed=0s need=2s
+UE 44 TTT_WAIT target=6 elapsed=0s need=2s
+---- INIT_ATTACH t=98 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-143.438 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=98 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-138.24 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=98 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-149.121 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=98 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-146.805 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=98 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-145.833 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=100 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-143.362 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=100 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-138.245 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=100 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-148.874 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=100 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-144.623 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=100 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-145.481 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=102 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-143.828 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=102 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-135.179 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=102 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-148.594 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=102 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-145.884 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=102 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-145.238 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=102.5 ----
+  cell 1 (TN) load=1/20
+  cell 2 (TN) load=1/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=2/20
+  cell 5 (TN) load=1/20
+  cell 6 (TN) load=6/20
+  cell 7 (TN) load=1/20
+  cell 8 (TN) load=1/20
+  cell 9 (NTN) load=2/10
+  cell 10 (NTN) load=3/10
+  cell 11 (NTN) load=4/10
+  cell 12 (NTN) load=0/10
+  cell 13 (NTN) load=0/10
+  cell 14 (NTN) load=3/10
+UE 17 TTT_WAIT target=6 elapsed=0s need=2s
+UE 18 TTT_WAIT target=11 elapsed=0s need=2s
+UE 19 TTT_WAIT target=2 elapsed=0s need=2s
+UE 20 TTT_WAIT target=2 elapsed=0s need=2s
+UE 22 TTT_WAIT target=6 elapsed=0s need=2s
+UE 23 TTT_WAIT target=10 elapsed=0s need=2s
+UE 27 TTT_WAIT target=9 elapsed=0s need=2s
+UE 28 TTT_WAIT target=2 elapsed=0s need=2s
+UE 29 TTT_WAIT target=6 elapsed=0s need=2s
+UE 30 TTT_WAIT target=2 elapsed=0s need=2s
+UE 32 TTT_WAIT target=7 elapsed=0s need=2s
+UE 34 TTT_WAIT target=14 elapsed=0s need=2s
+UE 37 TTT_WAIT target=9 elapsed=0s need=2s
+UE 38 TTT_WAIT target=9 elapsed=0s need=2s
+UE 44 TTT_WAIT target=14 elapsed=0s need=2s
+---- INIT_ATTACH t=104 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-143.025 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=104 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-138.349 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=104 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-149.839 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=104 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-143.926 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=104 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-145 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=106 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-142.262 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=106 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-138.281 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=106 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-149.668 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=106 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-145.855 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=106 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-143.035 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=107.5 ----
+  cell 1 (TN) load=1/20
+  cell 2 (TN) load=1/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=2/20
+  cell 5 (TN) load=1/20
+  cell 6 (TN) load=6/20
+  cell 7 (TN) load=1/20
+  cell 8 (TN) load=1/20
+  cell 9 (NTN) load=2/10
+  cell 10 (NTN) load=3/10
+  cell 11 (NTN) load=4/10
+  cell 12 (NTN) load=0/10
+  cell 13 (NTN) load=0/10
+  cell 14 (NTN) load=3/10
+UE 16 TTT_WAIT target=6 elapsed=0s need=2s
+UE 18 TTT_WAIT target=6 elapsed=0s need=2s
+UE 19 TTT_WAIT target=6 elapsed=0s need=2s
+UE 20 TTT_WAIT target=10 elapsed=0s need=2s
+UE 21 TTT_WAIT target=14 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=22 currCell=7 candCell=3 candRsrp=-133.169 < min=-120
+LM HO UE=23 rnti=25 14->10 type=NTN servingRsrp=-118.675 targetRsrp=-95.2381 targetLoadReal=3/10 targetLoadEff=3/10
+UE 25 TTT_WAIT target=9 elapsed=0s need=2s
+UE 27 TTT_WAIT target=10 elapsed=0s need=2s
+UE 28 TTT_WAIT target=6 elapsed=0s need=2s
+UE 29 TTT_WAIT target=14 elapsed=0s need=2s
+UE 30 TTT_WAIT target=9 elapsed=0s need=2s
+LM HO UE=32 rnti=40 6->7 type=TN servingRsrp=-128.543 targetRsrp=-115.995 targetLoadReal=1/20 targetLoadEff=1/20
+UE 33 TTT_WAIT target=9 elapsed=0s need=2s
+UE 38 TTT_WAIT target=14 elapsed=0s need=2s
+UE 42 TTT_WAIT target=11 elapsed=0s need=2s
+UE 44 TTT_WAIT target=6 elapsed=0s need=2s
+---- INIT_ATTACH t=108 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-130.589 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=108 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-136.055 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=108 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-150.248 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=108 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-124.584 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=108 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-145.004 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=110 UE(imsi)=20 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=20 bestRsrp=-140.827 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=110 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-138.98 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=110 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-123.479 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=110 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-145.051 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=110 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-145.286 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=112 UE(imsi)=20 ----
+  candOK0 cell=11 rsrp=-112.153 occ=4/10 -> OK
+  SELECT cell=11 rsrp=-112.153 occ(afterReserve)=5/10
+  INIT_ATTACH_OK: UE(imsi)=20 -> cell=11
+---- INIT_ATTACH t=112 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-137.937 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=112 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-128.508 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=112 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-143.716 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=112 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-145.192 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=112.5 ----
+  cell 1 (TN) load=1/20
+  cell 2 (TN) load=1/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=2/20
+  cell 5 (TN) load=1/20
+  cell 6 (TN) load=5/20
+  cell 7 (TN) load=2/20
+  cell 8 (TN) load=1/20
+  cell 9 (NTN) load=2/10
+  cell 10 (NTN) load=4/10
+  cell 11 (NTN) load=5/10
+  cell 12 (NTN) load=0/10
+  cell 13 (NTN) load=0/10
+  cell 14 (NTN) load=2/10
+UE 16 TTT_WAIT target=10 elapsed=0s need=2s
+LM HO UE=18 rnti=9 8->6 type=TN servingRsrp=-108.164 targetRsrp=-86.6387 targetLoadReal=5/20 targetLoadEff=5/20
+UE 19 TTT_WAIT target=10 elapsed=0s need=2s
+LM HO UE=21 rnti=26 10->14 type=NTN servingRsrp=-132.103 targetRsrp=-98.6188 targetLoadReal=2/10 targetLoadEff=2/10
+LM HO_FAIL_LOW_RSRP UE=22 currCell=7 candCell=5 candRsrp=-134.228 < min=-120
+UE 27 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO UE=28 rnti=21 1->6 type=TN servingRsrp=-115.332 targetRsrp=-76.2921 targetLoadReal=5/20 targetLoadEff=6/20
+UE 29 TTT_WAIT target=13 elapsed=0s need=2s
+UE 30 TTT_WAIT target=7 elapsed=0s need=2s
+UE 31 TTT_WAIT target=5 elapsed=0s need=2s
+UE 32 TTT_WAIT target=6 elapsed=0s need=2s
+UE 34 TTT_WAIT target=14 elapsed=0s need=2s
+UE 38 TTT_WAIT target=9 elapsed=0s need=2s
+UE 40 TTT_WAIT target=10 elapsed=0s need=2s
+UE 42 TTT_WAIT target=7 elapsed=0s need=2s
+UE 43 TTT_WAIT target=14 elapsed=0s need=2s
+LM HO UE=44 rnti=20 9->6 type=TN servingRsrp=-89.3374 targetRsrp=-81.5601 targetLoadReal=5/20 targetLoadEff=7/20
+---- INIT_ATTACH t=114 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-137.169 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=114 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-149.855 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=114 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-143.908 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=114 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-145.493 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=116 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-135.364 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=116 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-130.815 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=116 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-143.371 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=116 UE(imsi)=40 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=40 bestRsrp=-145.615 < min=-120 (all cells below threshold) retryIn=2s
+---- LOAD at t=117.5 ----
+  cell 1 (TN) load=0/20
+  cell 2 (TN) load=1/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=2/20
+  cell 5 (TN) load=1/20
+  cell 6 (TN) load=8/20
+  cell 7 (TN) load=2/20
+  cell 8 (TN) load=0/20
+  cell 9 (NTN) load=1/10
+  cell 10 (NTN) load=3/10
+  cell 11 (NTN) load=5/10
+  cell 12 (NTN) load=0/10
+  cell 13 (NTN) load=0/10
+  cell 14 (NTN) load=3/10
+UE 16 TTT_WAIT target=6 elapsed=0s need=2s
+UE 17 TTT_WAIT target=9 elapsed=0s need=2s
+UE 18 TTT_WAIT target=8 elapsed=0s need=2s
+UE 19 TTT_WAIT target=7 elapsed=0s need=2s
+UE 20 TTT_WAIT target=9 elapsed=0s need=2s
+UE 21 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=22 currCell=7 candCell=6 candRsrp=-134.4 < min=-120
+UE 23 TTT_WAIT target=9 elapsed=0s need=2s
+UE 25 TTT_WAIT target=9 elapsed=0s need=2s
+UE 27 TTT_WAIT target=9 elapsed=0s need=2s
+UE 28 TTT_WAIT target=7 elapsed=0s need=2s
+UE 29 TTT_WAIT target=6 elapsed=0s need=2s
+UE 30 TTT_WAIT target=9 elapsed=0s need=2s
+UE 33 TTT_WAIT target=9 elapsed=0s need=2s
+UE 34 TTT_WAIT target=7 elapsed=0s need=2s
+UE 35 TTT_WAIT target=10 elapsed=0s need=2s
+UE 36 TTT_WAIT target=9 elapsed=0s need=2s
+LM HO UE=38 rnti=41 6->9 type=NTN servingRsrp=-109.062 targetRsrp=-77.8861 targetLoadReal=1/10 targetLoadEff=1/10
+UE 40 TTT_WAIT target=12 elapsed=0s need=2s
+---- INIT_ATTACH t=118 UE(imsi)=23 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=23 bestRsrp=-120.782 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=118 UE(imsi)=29 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=29 bestRsrp=-147.641 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=118 UE(imsi)=38 ----
+  INIT_ATTACH_FAIL_ALL_LOW_RSRP: UE(imsi)=38 bestRsrp=-143.033 < min=-120 (all cells below threshold) retryIn=2s
+---- INIT_ATTACH t=118 UE(imsi)=40 ----
+  candOK0 cell=11 rsrp=-109.24 occ=5/10 -> OK
+  SELECT cell=11 rsrp=-109.24 occ(afterReserve)=6/10
+  INIT_ATTACH_OK: UE(imsi)=40 -> cell=11
