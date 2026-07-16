@@ -48,14 +48,15 @@ vcpkg/
 
 .vs/
 
+*.db
+
 # Ignore local cache used by e.g. clangd
 .cache/
-oran-repository-lte.db
-oran-repository.db
-oran-repository-uav.db
-oran-repository-nr-tn.db
 results/lte/
-results/nr/
+results/nr/tn/
+results/nr/tn-ntn/ml_uav_final/
+docs/figures/
+results/nr/tn-ntn/
 libtorch/
 onnxruntime-linux-x64-1.14.1/
 .venv/
