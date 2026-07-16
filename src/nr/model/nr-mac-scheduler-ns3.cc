@@ -2664,9 +2664,18 @@ NrMacSchedulerNs3::DoSchedUlSrInfoReq(
 {
     NS_LOG_FUNCTION(this);
 
-    // Merge RNTI in our current list
+    // Merge RNTIs into the current list. The MAC can report the same RNTI more
+    // than once during loaded mobility/handover periods; keep one pending SR
+    // per UE so the scheduler-side list remains stable.
+    std::unordered_set<uint16_t> uniqueSrRntis;
     for (const auto& ue : params.m_srList)
     {
+        if (!uniqueSrRntis.insert(ue).second)
+        {
+            NS_LOG_LOGIC("Duplicate SR for UE " << ue << " ignored");
+            continue;
+        }
+
         NS_LOG_INFO("UE " << ue << " asked for a SR ");
 
         auto it = std::find(m_srList.begin(), m_srList.end(), ue);
@@ -2675,7 +2684,11 @@ NrMacSchedulerNs3::DoSchedUlSrInfoReq(
             m_srList.push_back(ue);
         }
     }
-    NS_ASSERT(m_srList.size() >= params.m_srList.size());
+    if (m_srList.size() < uniqueSrRntis.size())
+    {
+        NS_LOG_WARN("SR merge produced fewer pending SRs than unique incoming RNTIs: pending="
+                    << m_srList.size() << " uniqueIncoming=" << uniqueSrRntis.size());
+    }
 }
 
 /**
