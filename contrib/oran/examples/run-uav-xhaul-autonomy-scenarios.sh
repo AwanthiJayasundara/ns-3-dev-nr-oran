@@ -5,11 +5,11 @@ set -euo pipefail
 #   bash contrib/oran/examples/run-uav-xhaul-autonomy-scenarios.sh
 #
 # Purpose:
-#   Compare the same 100-UE experiment under three deployment modes. All three
-#   scenarios use the same 15-30 s terrestrial infrastructure degradation window
-#   so the TN-only baseline visibly shows where terrestrial service becomes
-#   insufficient. The UAV scenarios also use a matching xHaul degradation window:
-#     1. TN only with degraded terrestrial infrastructure
+#   Compare the same 100-UE experiment under three deployment modes. The TN-only
+#   scenario is a clean rural/semi-urban terrestrial reference with no artificial
+#   disruption. The UAV scenarios use a 15-30 s terrestrial infrastructure
+#   degradation window and a matching UAV xHaul degradation window:
+#     1. TN only under healthy terrestrial infrastructure
 #     2. TN + UAV with degraded terrestrial infrastructure and degraded xHaul
 #     3. TN + UAV + satellite with the same degradation, plus satellite fallback
 #
@@ -20,6 +20,9 @@ set -euo pipefail
 #   --num-tn-gnbs=4       Four terrestrial gNBs over the study area.
 #   --num-ntn-gnbs=2      Two UAV cell nodes when UAVs are enabled.
 #   --rlc-mode=am         Use acknowledged-mode RLC for robust handover/load runs.
+#   --monitored-traffic=udp
+#                          Use small UDP KPI traffic so FlowMonitor receives
+#                          valid throughput/delay/PDR samples.
 #
 # Common outputs:
 #   qos-vs-time.txt             Delay, jitter, throughput, and PDR.
@@ -36,6 +39,14 @@ COMMON_ARGS="--sim-time=40 \
   --num-tn-gnbs=4 \
   --num-ntn-gnbs=2 \
   --rlc-mode=am \
+  --monitored-traffic=udp \
+  --monitored-dl-rate-mbps=1.0 \
+  --monitored-ul-rate-mbps=0.25 \
+  --monitored-packet-size=1000 \
+  --tn-tx-power-dbm=83 \
+  --uav-tx-power-dbm=78 \
+  --ue-tx-power-dbm=43 \
+  --init-min-rsrp=-160 \
   --enable-flow-monitor=1 \
   --enable-position-trace=1 \
   --enable-handover-trace=1 \
@@ -56,11 +67,11 @@ DEGRADED_XHAUL_ARGS="--xhaul-degradation-start=15 \
 #   ./ns3 configure --build-profile=optimized --enable-examples
 ./ns3 build oran-nr-uav-xhaul-autonomy-example
 
-# Scenario 1: UE + TN only with degraded terrestrial infrastructure.
-# This is the stressed terrestrial baseline. No UAV cells are installed, so the
-# xhaul-autonomy-trace.csv file will contain only the header, while
-# tn-infrastructure-trace.csv records the TN degradation window.
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-only ${COMMON_ARGS} ${DEGRADED_TN_ARGS}"
+# Scenario 1: UE + TN only with healthy terrestrial infrastructure.
+# This is the clean rural/semi-urban TN reference. No UAV cells are installed,
+# no satellite monitor is enabled, and no artificial TN/xHaul degradation is
+# applied. The xhaul-autonomy-trace.csv file will contain only the header.
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-only ${COMMON_ARGS}"
 
 # Scenario 2: UE + TN + UAV with degraded TN infrastructure and degraded xHaul.
 # UAVs are active cell nodes. The UAV-to-ground TN donor link is monitored as
