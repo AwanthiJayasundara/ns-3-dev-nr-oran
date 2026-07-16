@@ -1,0 +1,3 @@
+Time,DeploymentMode,UavIndex,UavCellId,BestDonorCellId,XhaulRsrpDbm,XhaulState,XhaulDegradationActive,SatBackhaulDlSnrDb,SatBackhaulUlSnrDb,SatBackhaulHealthy,BackhaulMode,E2TxDelaySec,E2SendIntervalSec,LmQueryIntervalSec,UavMode
+0.5,tn-uav-satellite,0,5,4,-60.8777,HEALTHY,0,13.3825,8.86193,1,TN_DIRECT,0.1,2,2,COVERAGE_EXTENSION
+1.5,tn-uav-satellite,0,5,4,-60.8777,HEALTHY,0,12.4428,7.92223,1,TN_DIRECT,0.1,2,2,COVERAGE_EXTENSION

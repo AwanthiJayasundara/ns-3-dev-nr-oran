@@ -1787,6 +1787,7 @@ main(int argc, char* argv[])
     bool enableDecisionCsv = true;
     bool enableOranAppLossReports = true;
     bool enableOranCellLoadReports = true;
+    bool enableDedicatedQosFlows = false;
     bool enablePdcpDiscarding = true;
     uint32_t discardTimerMs = 100;
     uint32_t reorderingTimerMs = 100;
@@ -1802,7 +1803,10 @@ main(int argc, char* argv[])
     uint8_t fixedMcs = 0;
     bool enableSrsInUlSlots = true;
     bool enableSrsInFSlots = true;
-    double initMinRsrpDbm = -120.0;
+    double txTnPower = 83.0;
+    double txNtnPower = 78.0;
+    double ueTxPower = 43.0;
+    double initMinRsrpDbm = -160.0;
     double initRetryIntervalSec = 2.0;
     bool remMode = false; // [0]: REM disabled; [1]: generate REM
     int32_t remRbId = -1; // kept for compatibility (not used by this REM helper)
@@ -1883,6 +1887,10 @@ main(int argc, char* argv[])
     double hysteresisDb = 2.0; // dB, for RSRP-based handover decisions (if used)
 
     std::string xrAppType = "VR";  // VR | AR | CG (Cloud Gaming)
+    std::string monitoredTraffic = "udp"; // udp | xr
+    double monitoredDlRateMbps = 1.0;
+    double monitoredUlRateMbps = 0.25;
+    uint32_t monitoredPacketSizeBytes = 1000;
 
     CommandLine cmd;
     cmd.AddValue("verbose", "Enable printing SQL queries results", verbose);
@@ -1962,6 +1970,10 @@ main(int argc, char* argv[])
     cmd.AddValue("enable-decision-csv", "Write per-candidate handover decision CSV", enableDecisionCsv);
     cmd.AddValue("enable-oran-app-loss-reports", "Enable O-RAN app-loss reporters", enableOranAppLossReports);
     cmd.AddValue("enable-oran-cell-load-reports", "Enable O-RAN gNB cell-load reporters", enableOranCellLoadReports);
+    cmd.AddValue("enable-dedicated-qos-flows",
+                 "Install dedicated QoS flows for monitored/background UDP traffic. "
+                 "Leave disabled for robust default-bearer KPI runs.",
+                 enableDedicatedQosFlows);
     cmd.AddValue("quiet-timing", "Disable optional logs/traces/prints for wall-clock timing runs", quietTiming);
     cmd.AddValue("enable-pdcp-discarding", "Enable PDCP discarding for bounded UDP/XR queues", enablePdcpDiscarding);
     cmd.AddValue("pdcp-discard-timer-ms", "PDCP discard timer in milliseconds", discardTimerMs);
@@ -1980,8 +1992,23 @@ main(int argc, char* argv[])
     cmd.AddValue("fixed-mcs", "Fixed MCS index used when --use-fixed-mcs=1", fixedMcs);
     cmd.AddValue("enable-srs-in-ul-slots", "Allow NR SRS scheduling in UL slots", enableSrsInUlSlots);
     cmd.AddValue("enable-srs-in-f-slots", "Allow NR SRS scheduling in flexible slots", enableSrsInFSlots);
+    cmd.AddValue("tn-tx-power-dbm", "TN gNB access-link transmit power in dBm", txTnPower);
+    cmd.AddValue("uav-tx-power-dbm", "UAV/NTN gNB access-link transmit power in dBm", txNtnPower);
+    cmd.AddValue("ue-tx-power-dbm", "UE access-link transmit power in dBm", ueTxPower);
     cmd.AddValue("init-min-rsrp", "Minimum RSRP for initial attach in dBm", initMinRsrpDbm);
     cmd.AddValue("init-retry-interval", "Initial attach retry interval in seconds", initRetryIntervalSec);
+    cmd.AddValue("monitored-traffic",
+                 "Traffic model for monitored UES1 flows: udp | xr",
+                 monitoredTraffic);
+    cmd.AddValue("monitored-dl-rate-mbps",
+                 "Downlink offered rate per monitored UE when --monitored-traffic=udp",
+                 monitoredDlRateMbps);
+    cmd.AddValue("monitored-ul-rate-mbps",
+                 "Uplink offered rate per monitored UE when --monitored-traffic=udp",
+                 monitoredUlRateMbps);
+    cmd.AddValue("monitored-packet-size",
+                 "UDP packet size in bytes when --monitored-traffic=udp",
+                 monitoredPacketSizeBytes);
     cmd.Parse(argc, argv);
 
     NS_ABORT_MSG_IF(deploymentMode != "tn-only" &&
@@ -2034,6 +2061,8 @@ main(int argc, char* argv[])
                     "which requires NR channel fading. Remove --enable-fading=0.");
     NS_ABORT_MSG_IF(rlcMode != "um" && rlcMode != "am",
                     "Unsupported --rlc-mode. Use um or am.");
+    NS_ABORT_MSG_IF(monitoredTraffic != "udp" && monitoredTraffic != "xr",
+                    "Unsupported --monitored-traffic. Use udp or xr.");
 
     Time simulationStopTime = simTime + Seconds(stopTailSeconds);
 
@@ -2244,9 +2273,6 @@ main(int argc, char* argv[])
     nrHelper->SetGnbDlAmcAttribute("AmcModel", EnumValue(NrAmc::ErrorModel));
     nrHelper->SetGnbUlAmcAttribute("AmcModel", EnumValue(NrAmc::ErrorModel));
 
-    double txTnPower = 43;
-    double txNtnPower = 38;
-    double ueTxPower = 23;
     bool enableHarqRetx = false;
 
     nrHelper->SetSchedulerAttribute("EnableHarqReTx", BooleanValue(enableHarqRetx));
@@ -2954,20 +2980,6 @@ main(int argc, char* argv[])
         ueStaticRouting->SetDefaultRoute(epcHelper->GetUeDefaultGatewayAddress(), 1);
     }
 
-    // ---------------------------------------------------------------------
-    // Initial association
-    // ---------------------------------------------------------------------
-    // Attach after installing UE internet stacks, assigning UE IP addresses,
-    // and setting UE default routes. This follows the usual NR example order
-    // and ensures the monitored applications have a complete data path.
-    nrHelper->AttachToMaxRsrpGnb(groundNrDevsS1, allGnbNrDevs);
-
-    // UES2 is attached later to create background load after the monitored UES1
-    // flows have started. This helps stress handover and load-aware decisions.
-    Simulator::Schedule(tLateAttach, [nrHelper, groundNrDevsS2, allGnbNrDevs]() {
-        nrHelper->AttachToMaxRsrpGnb(groundNrDevsS2, allGnbNrDevs);
-    });
-
     // remoteHost IP address on the PGW-remoteHost point-to-point link
     Ipv4Address remoteHostIp = internetIpIfaces.GetAddress(1);
 
@@ -2976,6 +2988,7 @@ main(int argc, char* argv[])
     ApplicationContainer xrUlSinks;
     ApplicationContainer xrDlSenders;
     ApplicationContainer xrUlSenders;
+    ApplicationContainer xrPingApps;
 
     // XR configuration type
     NrXrConfig dlConfig = VR_DL1;
@@ -2997,43 +3010,62 @@ main(int argc, char* argv[])
         uint16_t dlPort = 10000 + i;
         uint16_t ulPort = 12000 + i;
 
-        // DL sink on UE
-        PacketSinkHelper dlSink("ns3::UdpSocketFactory",
-                                InetSocketAddress(Ipv4Address::GetAny(), dlPort));
-        xrDlSinks.Add(dlSink.Install(groundUeNodesS1.Get(i)));
+        // Seed the EPC/ARP path before XR traffic starts. The 5G-LENA XR
+        // examples use the same workaround so the first application packets are
+        // not lost while neighbor/ARP state is still cold.
+        PingHelper ping(ueIpIfaceS1.GetAddress(i));
+        xrPingApps.Add(ping.Install(remoteHostContainer));
 
-        // XR DL traffic generator
-        XrTrafficMixerHelper xrDlHelper;
-        xrDlHelper.ConfigureXr(dlConfig);
+        if (monitoredTraffic == "udp")
+        {
+            UdpServerHelper dlServer(dlPort);
+            xrDlSinks.Add(dlServer.Install(groundUeNodesS1.Get(i)));
 
-        std::vector<Address> dlAddresses;
-        dlAddresses.push_back(InetSocketAddress(ueIpIfaceS1.GetAddress(i), dlPort));
+            UdpClientHelper dlClient(ueIpIfaceS1.GetAddress(i), dlPort);
+            dlClient.SetAttribute("MaxPackets", UintegerValue(0xFFFFFFFF));
+            dlClient.SetAttribute(
+                "Interval",
+                TimeValue(Seconds(static_cast<double>(monitoredPacketSizeBytes) * 8.0 /
+                                  (monitoredDlRateMbps * 1e6))));
+            dlClient.SetAttribute("PacketSize", UintegerValue(monitoredPacketSizeBytes));
+            xrDlSenders.Add(dlClient.Install(remoteHost));
 
-        ApplicationContainer dlApps =
-            xrDlHelper.Install("ns3::UdpSocketFactory",
-                            dlAddresses,
-                            remoteHost);
+            UdpServerHelper ulServer(ulPort);
+            xrUlSinks.Add(ulServer.Install(remoteHost));
 
-        xrDlSenders.Add(dlApps);
+            UdpClientHelper ulClient(remoteHostIp, ulPort);
+            ulClient.SetAttribute("MaxPackets", UintegerValue(0xFFFFFFFF));
+            ulClient.SetAttribute(
+                "Interval",
+                TimeValue(Seconds(static_cast<double>(monitoredPacketSizeBytes) * 8.0 /
+                                  (monitoredUlRateMbps * 1e6))));
+            ulClient.SetAttribute("PacketSize", UintegerValue(monitoredPacketSizeBytes));
+            xrUlSenders.Add(ulClient.Install(groundUeNodesS1.Get(i)));
+        }
+        else
+        {
+            PacketSinkHelper dlSink("ns3::UdpSocketFactory",
+                                    InetSocketAddress(Ipv4Address::GetAny(), dlPort));
+            xrDlSinks.Add(dlSink.Install(groundUeNodesS1.Get(i)));
 
-        // UL sink on remote host
-        PacketSinkHelper ulSink("ns3::UdpSocketFactory",
-                                InetSocketAddress(Ipv4Address::GetAny(), ulPort));
-        xrUlSinks.Add(ulSink.Install(remoteHost));
+            XrTrafficMixerHelper xrDlHelper;
+            xrDlHelper.ConfigureXr(dlConfig);
+            std::vector<Address> dlAddresses;
+            dlAddresses.push_back(InetSocketAddress(ueIpIfaceS1.GetAddress(i), dlPort));
+            xrDlSenders.Add(
+                xrDlHelper.Install("ns3::UdpSocketFactory", dlAddresses, remoteHost));
 
-        // XR UL traffic generator
-        XrTrafficMixerHelper xrUlHelper;
-        xrUlHelper.ConfigureXr(ulConfig);
+            PacketSinkHelper ulSink("ns3::UdpSocketFactory",
+                                    InetSocketAddress(Ipv4Address::GetAny(), ulPort));
+            xrUlSinks.Add(ulSink.Install(remoteHost));
 
-        std::vector<Address> ulAddresses;
-        ulAddresses.push_back(InetSocketAddress(remoteHostIp, ulPort));
-
-        ApplicationContainer ulApps =
-            xrUlHelper.Install("ns3::UdpSocketFactory",
-                            ulAddresses,
-                            groundUeNodesS1.Get(i));
-
-        xrUlSenders.Add(ulApps);
+            XrTrafficMixerHelper xrUlHelper;
+            xrUlHelper.ConfigureXr(ulConfig);
+            std::vector<Address> ulAddresses;
+            ulAddresses.push_back(InetSocketAddress(remoteHostIp, ulPort));
+            xrUlSenders.Add(
+                xrUlHelper.Install("ns3::UdpSocketFactory", ulAddresses, groundUeNodesS1.Get(i)));
+        }
 
         // Global/common BWP mapping
         NrQosFlow xrDlFlow(NrQosFlow::GBR_CONV_VIDEO);
@@ -3053,25 +3085,12 @@ main(int argc, char* argv[])
         xrUlRule->Add(ulpf);
 
         Ptr<NetDevice> ueDev = groundNrDevsS1.Get(i);
-        Simulator::Schedule(Seconds(2.0),
-            [nrHelper, ueDev, xrDlFlow, xrDlRule, xrUlFlow, xrUlRule]() {
-                nrHelper->ActivateDedicatedQosFlow(ueDev, xrDlFlow, xrDlRule);
-                nrHelper->ActivateDedicatedQosFlow(ueDev, xrUlFlow, xrUlRule);
-            });
+        if (enableDedicatedQosFlows)
+        {
+            nrHelper->ActivateDedicatedQosFlow(ueDev, xrDlFlow, xrDlRule);
+            nrHelper->ActivateDedicatedQosFlow(ueDev, xrUlFlow, xrUlRule);
+        }
     }
-
-    // Start/stop times
-    xrDlSinks.Start(Seconds(1.0));
-    xrDlSinks.Stop(simulationStopTime);
-
-    xrDlSenders.Start(Seconds(4.0));
-    xrDlSenders.Stop(simulationStopTime);
-
-    xrUlSinks.Start(Seconds(1.0));
-    xrUlSinks.Stop(simulationStopTime);
-
-    xrUlSenders.Start(Seconds(4.5));
-    xrUlSenders.Stop(simulationStopTime);
 
     // Ground UEs traffic
     uint16_t groundBasePort = 20000;
@@ -3090,10 +3109,10 @@ main(int argc, char* argv[])
         gdl.localPortEnd   = port;
         voiceRule->Add(gdl);
 
-        Simulator::Schedule(tLateAttach,
-            [nrHelper, gUeDev, voiceFlow, voiceRule]() {
-                nrHelper->ActivateDedicatedQosFlow(gUeDev, voiceFlow, voiceRule);
-            });
+        if (enableDedicatedQosFlows)
+        {
+            nrHelper->ActivateDedicatedQosFlow(gUeDev, voiceFlow, voiceRule);
+        }
 
         PacketSinkHelper dlSink("ns3::UdpSocketFactory",
                                 InetSocketAddress(Ipv4Address::GetAny(), port));
@@ -3106,6 +3125,36 @@ main(int argc, char* argv[])
         ApplicationContainer voiceApps = voiceHelper.Install(remoteHost);
         groundRemoteAppsS2.Add(voiceApps);
     }
+
+    // ---------------------------------------------------------------------
+    // Initial association
+    // ---------------------------------------------------------------------
+    // Dedicated QoS flows must be installed before initial attach because this
+    // NR stack does not implement activating new NAS QoS flows after the
+    // initial UE context has already been established.
+    nrHelper->AttachToMaxRsrpGnb(groundNrDevsS1, allGnbNrDevs);
+
+    // UES2 is attached later to create background load after the monitored UES1
+    // flows have started. This helps stress handover and load-aware decisions.
+    Simulator::Schedule(tLateAttach, [nrHelper, groundNrDevsS2, allGnbNrDevs]() {
+        nrHelper->AttachToMaxRsrpGnb(groundNrDevsS2, allGnbNrDevs);
+    });
+
+    // Start/stop times
+    xrDlSinks.Start(Seconds(1.0));
+    xrDlSinks.Stop(simulationStopTime);
+
+    xrPingApps.Start(Seconds(1.0));
+    xrPingApps.Stop(Seconds(3.8));
+
+    xrDlSenders.Start(Seconds(4.0));
+    xrDlSenders.Stop(simulationStopTime);
+
+    xrUlSinks.Start(Seconds(1.0));
+    xrUlSinks.Stop(simulationStopTime);
+
+    xrUlSenders.Start(Seconds(4.5));
+    xrUlSenders.Stop(simulationStopTime);
 
     ueAppsS2.Start(Seconds(1));
     groundRemoteAppsS2.Start(tLateAttach + Seconds(0.5));

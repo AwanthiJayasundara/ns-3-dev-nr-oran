@@ -1,0 +1,6 @@
+NR: trying ns3::NrMacSchedulerOfdmaPF
+NR: using ns3::NrMacSchedulerOfdmaPF
+---- INIT_ATTACH t=0 UE(imsi)=1 ----
+  candOK0 cell=1 rsrp=-147.005 occ=0/20 -> OK
+  SELECT cell=1 rsrp=-147.005 occ(afterReserve)=1/20
+  INIT_ATTACH_OK: UE(imsi)=1 -> cell=1
