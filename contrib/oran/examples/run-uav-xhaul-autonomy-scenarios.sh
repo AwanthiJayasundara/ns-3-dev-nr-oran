@@ -11,8 +11,8 @@ set -euo pipefail
 #   infrastructure degradation window and a matching UAV xHaul degradation
 #   window:
 #     1. TN only under healthy terrestrial infrastructure
-#     2. TN + UAV with degraded terrestrial infrastructure and degraded xHaul
-#     3. TN + UAV + satellite with the same degradation, plus satellite fallback
+#     2. TN + UAV with extra aerial access capacity and healthy TN xHaul
+#     3. TN + UAV + satellite with terrestrial/xHaul degradation plus fallback
 #
 # Scenario 1 experiment size:
 #   --num-uess1=20        20 monitored/mobile UEs available from the start.
@@ -41,6 +41,7 @@ COMMON_ARGS="--sim-time=40 \
   --uav-tx-power-dbm=78 \
   --ue-tx-power-dbm=43 \
   --init-min-rsrp=-160 \
+  --xhaul-max-donor-distance-m=10000 \
   --enable-flow-monitor=1 \
   --enable-rsrp-trace=1 \
   --enable-position-trace=1 \
@@ -58,10 +59,10 @@ TN_ONLY_ARGS="--num-uess1=20 \
 
 UAV_ARGS="--num-uess1=50 \
   --num-ground-ues=50 \
-  --ground-attach-delay=6 \
+  --ground-attach-delay=5 \
   --max-ues-tn=20 \
   --max-ues-ntn=10 \
-  --num-ntn-gnbs=2"
+  --num-ntn-gnbs=3"
 
 DEGRADED_TN_ARGS="--tn-degradation-start=15 \
   --tn-degradation-stop=30 \
@@ -81,10 +82,12 @@ DEGRADED_XHAUL_ARGS="--xhaul-degradation-start=15 \
 # applied. The xhaul-autonomy-trace.csv file will contain only the header.
 ./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-only ${COMMON_ARGS} ${TN_ONLY_ARGS}"
 
-# Scenario 2: UE + TN + UAV with degraded TN infrastructure and degraded xHaul.
-# UAVs are active cell nodes. The UAV-to-ground TN donor link is monitored as
-# xHaul using estimated RSRP/SINR health. Satellite backhaul is disabled.
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav ${COMMON_ARGS} ${UAV_ARGS} ${DEGRADED_TN_ARGS} ${DEGRADED_XHAUL_ARGS}"
+# Scenario 2: UE + TN + UAV with healthy terrestrial xHaul.
+# UAVs are active cell nodes. The TN layer has 80 UE capacity while 100 UEs are
+# present after 5 s, so UAV cells are expected to help with access capacity and
+# coverage. The UAV-to-ground TN donor link is monitored and should stay within
+# the 10 km terrestrial xHaul donor range. Satellite backhaul is disabled.
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav ${COMMON_ARGS} ${UAV_ARGS}"
 
 # Scenario 3: UE + TN + UAV + satellite with the same degradation.
 # Same TN+UAV deployment, but satellite backhaul monitoring is enabled so that

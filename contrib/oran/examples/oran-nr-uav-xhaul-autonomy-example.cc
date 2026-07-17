@@ -549,6 +549,7 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
                    Ptr<HybridSatEpcHelper> epcHelper,
                    double xhaulTxPowerDbm,
                    double xhaulFrequencyHz,
+                   double xhaulMaxDonorDistanceM,
                    double healthyThresholdDbm,
                    double degradedThresholdDbm,
                    double degradationStartSec,
@@ -586,6 +587,7 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
         }
 
         double bestRsrpDbm = -1e9;
+        double bestDonorDistanceM = -1.0;
         uint16_t bestDonorCellId = 0;
         for (uint32_t tnIdx = 0; tnIdx < tnGnbs.GetN(); ++tnIdx)
         {
@@ -598,6 +600,11 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
 
             const double distanceMeters =
                 CalculateDistance(uavMob->GetPosition(), tnMob->GetPosition());
+            if (distanceMeters > xhaulMaxDonorDistanceM)
+            {
+                continue;
+            }
+
             double rsrpDbm =
                 EstimateFreeSpaceRsrpDbm(xhaulTxPowerDbm, xhaulFrequencyHz, distanceMeters);
             if (degradationActive)
@@ -608,6 +615,7 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
             if (rsrpDbm > bestRsrpDbm)
             {
                 bestRsrpDbm = rsrpDbm;
+                bestDonorDistanceM = distanceMeters;
                 bestDonorCellId = tnDev->GetCellId();
             }
         }
@@ -615,8 +623,11 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
         Ptr<NrGnbNetDevice> uavDev = uavGnbNrDevs.Get(uavIdx)->GetObject<NrGnbNetDevice>();
         const uint16_t uavCellId = uavDev ? uavDev->GetCellId() : 0;
 
+        const bool xhaulConnected = bestDonorCellId != 0;
         const std::string xhaulState =
-            ClassifyXhaulState(bestRsrpDbm, healthyThresholdDbm, degradedThresholdDbm);
+            xhaulConnected
+                ? ClassifyXhaulState(bestRsrpDbm, healthyThresholdDbm, degradedThresholdDbm)
+                : "UNREACHABLE";
 
         double satDl = -999.0;
         double satUl = -999.0;
@@ -639,8 +650,9 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
 
         const bool useSatelliteBackhaul =
             g_deploymentMode == "tn-uav-satellite" && xhaulState != "HEALTHY" && satHealthy;
-        const std::string backhaulMode = useSatelliteBackhaul ? "SATELLITE_FALLBACK"
-                                                              : "TN_DIRECT";
+        const std::string backhaulMode = useSatelliteBackhaul
+                                             ? "SATELLITE_FALLBACK"
+                                             : (xhaulConnected ? "TN_DIRECT" : "TN_UNREACHABLE");
         if (epcHelper)
         {
             epcHelper->SetNtnBackhaulMode(uavCellId,
@@ -652,6 +664,8 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
             << uavIdx << ","
             << uavCellId << ","
             << bestDonorCellId << ","
+            << bestDonorDistanceM << ","
+            << (xhaulConnected ? 1 : 0) << ","
             << bestRsrpDbm << ","
             << xhaulState << ","
             << (degradationActive ? 1 : 0) << ","
@@ -674,6 +688,7 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
                         epcHelper,
                         xhaulTxPowerDbm,
                         xhaulFrequencyHz,
+                        xhaulMaxDonorDistanceM,
                         healthyThresholdDbm,
                         degradedThresholdDbm,
                         degradationStartSec,
@@ -1873,6 +1888,7 @@ main(int argc, char* argv[])
     double xhaulHealthyRsrpDbm = -95.0;
     double xhaulDegradedRsrpDbm = -115.0;
     double xhaulTraceIntervalSec = 1.0;
+    double xhaulMaxDonorDistanceM = 10000.0;
 
     // Optional synthetic degradation window for controlled experiments.
     // Example: start at 15 s, stop at 30 s, subtract 35 dB from the estimated
@@ -1952,6 +1968,9 @@ main(int argc, char* argv[])
     cmd.AddValue("xhaul-healthy-rsrp-dbm", "xHaul RSRP threshold for HEALTHY state", xhaulHealthyRsrpDbm);
     cmd.AddValue("xhaul-degraded-rsrp-dbm", "xHaul RSRP threshold for DEGRADED state", xhaulDegradedRsrpDbm);
     cmd.AddValue("xhaul-trace-interval", "xHaul/autonomy trace interval in seconds", xhaulTraceIntervalSec);
+    cmd.AddValue("xhaul-max-donor-distance-m",
+                 "Maximum UAV-to-TN donor distance for terrestrial xHaul connectivity",
+                 xhaulMaxDonorDistanceM);
     cmd.AddValue("xhaul-degradation-start",
                  "Start time for synthetic xHaul degradation; negative disables it",
                  xhaulDegradationStartSec);
@@ -3601,6 +3620,7 @@ main(int argc, char* argv[])
         //   3. TN + UAV + satellite.
         std::ofstream xhaulOut(s_xhaulAutonomyTraceFile, std::ios_base::trunc);
         xhaulOut << "Time,DeploymentMode,UavIndex,UavCellId,BestDonorCellId,"
+                 << "BestDonorDistanceM,XhaulConnected,"
                  << "XhaulRsrpDbm,XhaulState,XhaulDegradationActive,"
                  << "SatBackhaulDlSnrDb,SatBackhaulUlSnrDb,SatBackhaulHealthy,"
                  << "BackhaulMode,"
@@ -3619,6 +3639,7 @@ main(int argc, char* argv[])
                             epcHelper,
                             xhaulTxPowerDbm,
                             xhaulFrequencyHz,
+                            xhaulMaxDonorDistanceM,
                             xhaulHealthyRsrpDbm,
                             xhaulDegradedRsrpDbm,
                             xhaulDegradationStartSec,

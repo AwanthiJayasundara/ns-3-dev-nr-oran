@@ -218,6 +218,13 @@ NrAmc::CreateCqiFeedbackSiso(const SpectrumValue& sinr, uint8_t& mcs) const
             rbId += 1;
         }
 
+        if (rbMap.empty())
+        {
+            NS_LOG_DEBUG("No active RBs in SINR vector; returning CQI 0 and MCS 0");
+            mcs = 0;
+            return 0;
+        }
+
         mcs = 0;
         Ptr<NrErrorModelOutput> output;
         while (mcs <= m_errorModel->GetMaxMcs())

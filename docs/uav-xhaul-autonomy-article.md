@@ -114,6 +114,8 @@ UEs -> UAV cell -> terrestrial donor/core network
 
 The UAV improves radio access coverage, especially for UEs that are poorly served by ground cells. However, the UAV still depends on a UAV-to-ground TN donor connection. In this work, that donor connection is treated as the wireless xHaul link.
 
+Each UAV gNB selects the best available terrestrial donor gNB within a 10 km donor range. As the UAV moves, the xHaul monitor re-evaluates all TN gNBs and records the currently selected donor cell. If no TN donor is within this range, the UAV xHaul state is marked `UNREACHABLE`. In the TN + UAV scenario, the UAV is expected to remain connected through terrestrial xHaul; the unreachable case is mainly used later to motivate the satellite-assisted fallback scenario.
+
 The xHaul state is classified using the estimated UAV-to-TN donor RSRP:
 
 ```text
@@ -170,10 +172,12 @@ The current experiment uses the following settings:
 | UAV-scenario monitored UEs, UES1 | 50 |
 | UAV-scenario background/load UEs, UES2 | 50 |
 | UAV-scenario total UEs | 100 |
+| UAV-scenario UES2 attach time | 5 s |
 | Terrestrial gNBs | 4 |
-| UAV gNBs, when enabled | 2 |
+| UAV gNBs, when enabled | 3 |
 | TN cell capacity | 20 UEs per cell |
 | UAV/NTN cell capacity | 10 UEs |
+| UAV-to-TN donor range | 10 km |
 | Hysteresis | 2 dB |
 | RLC mode for comparison runs | AM |
 | Monitored traffic model | UDP |
@@ -181,10 +185,12 @@ The current experiment uses the following settings:
 | Monitored UL offered rate | 0.25 Mbps per UES1 UE |
 | Monitored packet size | 1000 bytes |
 | TN-only degradation window | None |
-| UAV-scenario TN degradation window | 15-30 s |
-| TN gNB TxPower penalty during UAV-scenario degradation | 15 dB |
-| UAV xHaul degradation window, UAV scenarios | 15-30 s |
-| UAV xHaul RSRP penalty during degradation | 35 dB |
+| TN + UAV degradation window | None |
+| TN + UAV xHaul condition | Healthy donor selected within 10 km |
+| Satellite-scenario TN degradation window | 15-30 s |
+| TN gNB TxPower penalty during satellite-scenario degradation | 15 dB |
+| Satellite-scenario UAV xHaul degradation window | 15-30 s |
+| UAV xHaul RSRP penalty during satellite-scenario degradation | 35 dB |
 
 Run all three scenarios with:
 
@@ -195,20 +201,20 @@ bash contrib/oran/examples/run-uav-xhaul-autonomy-scenarios.sh
 The three individual modes are:
 
 ```bash
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-only --sim-time=40 --num-uess1=20 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=0 --max-ues-tn=20 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=1.0 --monitored-ul-rate-mbps=0.25 --monitored-packet-size=1000 --tn-tx-power-dbm=83 --uav-tx-power-dbm=78 --ue-tx-power-dbm=43 --init-min-rsrp=-160 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1"
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-only --sim-time=40 --num-uess1=20 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=0 --max-ues-tn=20 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=1.0 --monitored-ul-rate-mbps=0.25 --monitored-packet-size=1000 --tn-tx-power-dbm=83 --uav-tx-power-dbm=78 --ue-tx-power-dbm=43 --init-min-rsrp=-160 --xhaul-max-donor-distance-m=10000 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1"
 
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --sim-time=40 --num-uess1=50 --num-ground-ues=50 --ground-attach-delay=6 --num-tn-gnbs=4 --num-ntn-gnbs=2 --max-ues-tn=20 --max-ues-ntn=10 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=1.0 --monitored-ul-rate-mbps=0.25 --monitored-packet-size=1000 --tn-tx-power-dbm=83 --uav-tx-power-dbm=78 --ue-tx-power-dbm=43 --init-min-rsrp=-160 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --tn-degradation-start=15 --tn-degradation-stop=30 --tn-degradation-penalty-db=15 --xhaul-degradation-start=15 --xhaul-degradation-stop=30 --xhaul-degradation-penalty-db=35"
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --sim-time=40 --num-uess1=50 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=3 --max-ues-tn=20 --max-ues-ntn=10 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=1.0 --monitored-ul-rate-mbps=0.25 --monitored-packet-size=1000 --tn-tx-power-dbm=83 --uav-tx-power-dbm=78 --ue-tx-power-dbm=43 --init-min-rsrp=-160 --xhaul-max-donor-distance-m=10000 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1"
 
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --sim-time=40 --num-uess1=50 --num-ground-ues=50 --ground-attach-delay=6 --num-tn-gnbs=4 --num-ntn-gnbs=2 --max-ues-tn=20 --max-ues-ntn=10 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=1.0 --monitored-ul-rate-mbps=0.25 --monitored-packet-size=1000 --tn-tx-power-dbm=83 --uav-tx-power-dbm=78 --ue-tx-power-dbm=43 --init-min-rsrp=-160 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --enable-sat-backhaul-monitor=1 --tn-degradation-start=15 --tn-degradation-stop=30 --tn-degradation-penalty-db=15 --xhaul-degradation-start=15 --xhaul-degradation-stop=30 --xhaul-degradation-penalty-db=35"
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --sim-time=40 --num-uess1=50 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=3 --max-ues-tn=20 --max-ues-ntn=10 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=1.0 --monitored-ul-rate-mbps=0.25 --monitored-packet-size=1000 --tn-tx-power-dbm=83 --uav-tx-power-dbm=78 --ue-tx-power-dbm=43 --init-min-rsrp=-160 --xhaul-max-donor-distance-m=10000 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --enable-sat-backhaul-monitor=1 --tn-degradation-start=15 --tn-degradation-stop=30 --tn-degradation-penalty-db=15 --xhaul-degradation-start=15 --xhaul-degradation-stop=30 --xhaul-degradation-penalty-db=35"
 ```
 
-The TN-only scenario is the clean reference and does not include artificial degradation. The UAV-assisted and satellite-assisted runs include a matching TN degradation and UAV-to-TN xHaul degradation interval:
+The TN-only scenario is the clean reference and does not include artificial degradation. The TN + UAV scenario adds aerial access cells under healthy terrestrial xHaul, so it tests whether UAVs help when the TN layer has limited capacity for the 100-UE load. The satellite-assisted run then adds a matching TN degradation and UAV-to-TN xHaul degradation interval:
 
 | Time interval | Infrastructure condition | Expected interpretation |
 |---|---|---|
 | 0-15 s | Healthy TN infrastructure and healthy UAV-to-TN xHaul | Normal operation |
-| 15-30 s | TN-only remains healthy; UAV scenarios have degraded TN infrastructure and degraded UAV-to-TN xHaul | UAV and satellite support are tested under infrastructure stress |
-| 30-40 s | UAV-scenario TN and xHaul recovery | Service should recover toward normal operation |
+| 15-30 s | TN-only and TN+UAV remain healthy; satellite scenario has degraded TN infrastructure and degraded UAV-to-TN xHaul | Satellite fallback is tested under infrastructure stress |
+| 30-40 s | Satellite-scenario TN and xHaul recovery | Service should recover toward normal operation |
 
 ## 7. Measured Outputs and KPIs
 
@@ -217,7 +223,7 @@ The main output files are:
 | Output file | Purpose |
 |---|---|
 | `qos-vs-time.txt` | Per-UE delay, jitter, throughput, and packet delivery ratio |
-| `xhaul-autonomy-trace.csv` | UAV xHaul RSRP, xHaul state, satellite health, selected backhaul mode, and UAV autonomy mode |
+| `xhaul-autonomy-trace.csv` | UAV xHaul donor cell, donor distance, connectivity flag, RSRP, xHaul state, satellite health, selected backhaul mode, and UAV autonomy mode |
 | `tn-infrastructure-trace.csv` | TN degradation state and applied TN gNB transmit power |
 | `handover-trace.tr` | Successful handover events |
 | `handover-failure-trace.tr` | NR RRC handover failure events |
@@ -242,7 +248,7 @@ The key comparison metrics are:
 
 ## 8. Comparison Method
 
-The scenarios use the same simulation time, monitored UDP traffic model, TN deployment, and trace collection style. The TN-only scenario is a clean reference with 20 monitored UEs plus 50 delayed background UEs. The UAV scenarios use a larger 50 monitored UE stress case unless otherwise specified. The intended difference is the infrastructure support level and whether the run includes the UAV-scenario degradation window:
+The scenarios use the same simulation time, monitored UDP traffic model, TN deployment, and trace collection style. The TN-only scenario is a clean reference with 20 monitored UEs plus 50 delayed background UEs. The TN+UAV and satellite scenarios use a larger 50 monitored UE stress case. The intended difference is the infrastructure support level and whether the run includes the satellite-scenario degradation window:
 
 | Scenario | Infrastructure support | Main role |
 |---|---|---|
@@ -254,11 +260,11 @@ The expected interpretation is:
 
 ```text
 TN-only gives the healthy terrestrial reference for semi-urban service.
-TN+UAV shows whether aerial access helps when TN infrastructure and UAV xHaul are stressed.
+TN+UAV shows whether aerial access helps when TN capacity/coverage is insufficient but UAV-to-TN xHaul remains available.
 TN+UAV+satellite shows whether continuity improves when UAV xHaul is weak but satellite fallback is available.
 ```
 
-The TN-only case is intentionally not degraded; it establishes the normal terrestrial service level. The UAV scenarios then introduce a controlled 15-30 s degradation interval: terrestrial gNB transmit power is reduced, and the UAV-to-TN donor xHaul RSRP estimate receives an additional penalty. This comparison separates the healthy terrestrial reference from stressed UAV-assisted operation and satellite-assisted continuity.
+The TN-only case is intentionally not degraded; it establishes the normal terrestrial service level. The TN+UAV case then adds three UAV/NTN cells under healthy terrestrial xHaul to test whether aerial cells relieve the 100-UE load. The satellite-assisted case introduces a controlled 15-30 s degradation interval: terrestrial gNB transmit power is reduced, and the UAV-to-TN donor xHaul RSRP estimate receives an additional penalty. This separates the healthy terrestrial reference, the healthy-xHaul UAV access improvement case, and the satellite-assisted continuity case.
 
 ### 8.1 Sample Figure Set
 
