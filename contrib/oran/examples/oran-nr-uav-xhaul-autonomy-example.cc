@@ -733,6 +733,20 @@ NotifyHandoverEndOkGnb(std::string context, uint64_t imsi, uint16_t targetCellId
       << " BackhaulDlSnr=" << bhDl
       << " BackhaulUlSnr=" << bhUl
       << "\n";
+
+    if (g_nsLogFile.is_open())
+    {
+        std::clog << "TRACE HO_SUCCESS"
+                  << " Time=" << Simulator::Now().GetSeconds()
+                  << " IMSI=" << imsi
+                  << " TargetCell=" << targetCellId
+                  << " Type=" << type
+                  << " TargetRSRP=" << targetRsrp
+                  << " ServingRSRP=" << servingRsrp
+                  << " BackhaulDlSnr=" << bhDl
+                  << " BackhaulUlSnr=" << bhUl
+                  << "\n";
+    }
 }
 
 void
@@ -751,6 +765,19 @@ NotifyHandoverFailureGnb(std::string reason,
       << " RNTI=" << rnti
       << " Context=" << context
       << "\n";
+
+    if (g_nsLogFile.is_open())
+    {
+        std::clog << "TRACE HO_FAILURE"
+                  << " Time=" << Simulator::Now().GetSeconds()
+                  << " Side=GNB"
+                  << " Reason=" << reason
+                  << " IMSI=" << imsi
+                  << " Cell=" << cellId
+                  << " RNTI=" << rnti
+                  << " Context=" << context
+                  << "\n";
+    }
 }
 
 void
@@ -765,6 +792,19 @@ NotifyHandoverEndErrorUe(std::string context, uint64_t imsi, uint16_t cellId, ui
       << " RNTI=" << rnti
       << " Context=" << context
       << "\n";
+
+    if (g_nsLogFile.is_open())
+    {
+        std::clog << "TRACE HO_FAILURE"
+                  << " Time=" << Simulator::Now().GetSeconds()
+                  << " Side=UE"
+                  << " Reason=HandoverEndError"
+                  << " IMSI=" << imsi
+                  << " Cell=" << cellId
+                  << " RNTI=" << rnti
+                  << " Context=" << context
+                  << "\n";
+    }
 }
 
 static void
