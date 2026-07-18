@@ -1,0 +1,7 @@
+UAV_AUTONOMY_XAPP Time=4.5 DeploymentMode=tn-uav UavIndex=0 UavCellId=3 BestDonorCellId=2 BestDonorDistanceM=1034.61 XhaulConnected=1 XhaulState=HEALTHY SatBackhaulHealthy=0 SatelliteRicAvailable=0 BackhaulMode=TN_DIRECT ControlPath=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+Could not find NR UE cell info for E2 Node ID = 4
+Could not find NR UE cell info for E2 Node ID = 5
+Could not find NR gNB location for E2 Node ID = 1
+Could not find NR gNB location for E2 Node ID = 2
+Could not find NR gNB location for E2 Node ID = 3
+---- LOAD at t=4.5 ----

@@ -124,14 +124,16 @@ uint32_t numNtnGnbs = 6; // e.g., uav gnbs for ntn area
 static const double g_refLat = 53.3498;   // Dublin city centre
 static const double g_refLon = -6.2603;
 
-static const double TN_GNB_HALF_W_M  = 2500.0;
-static const double TN_GNB_HALF_H_M  = 1200.0;
+static double TN_GNB_HALF_W_M  = 2500.0;
+static double TN_GNB_HALF_H_M  = 1200.0;
 
-static const double UAV_AREA_HALF_W_M = 3000.0;
-static const double UAV_AREA_HALF_H_M = 1500.0;
+static double UAV_AREA_HALF_W_M = 3000.0;
+static double UAV_AREA_HALF_H_M = 1500.0;
 
-static const double UE_AREA_HALF_W_M  = 3000.0;
-static const double UE_AREA_HALF_H_M  = 1500.0;
+static double UE_AREA_HALF_W_M  = 3000.0;
+static double UE_AREA_HALF_H_M  = 1500.0;
+static double g_uavSpeedMps = 10.0;
+static double g_uavMissionTargetScale = 1.0;
 
 //uint32_t maxUesPerCell = 20; // ORAN LM parameter: maximum number of UEs per cell (for load-aware handover decisions)
 uint32_t maxUesPerCellTn  = 20;
@@ -193,9 +195,41 @@ static std::set<uint16_t> g_ntnCellIds;
 static std::map<std::pair<uint16_t,uint16_t>, double> g_latestRsrp;
 
 static Ptr<OranLmNr2NrRsrpHandoverWithTnNtn> g_rsrpLm = nullptr;
+static Ptr<NormalRandomVariable> g_xhaulShadowingRv = CreateObject<NormalRandomVariable>();
+static Ptr<NormalRandomVariable> g_xhaulFadingRv = CreateObject<NormalRandomVariable>();
 
 static std::string g_deploymentMode = "tn-uav-satellite";
 static double g_satBackhaulMinSnrDb = 0.0;
+static bool g_enableOnboardUavRic = true;
+static bool g_enableXhaulChannelVariation = false;
+static double g_xhaulShadowingStddevDb = 0.0;
+static double g_xhaulFadingStddevDb = 0.0;
+
+struct UavAutonomyXappContext
+{
+    NodeContainer tnGnbs;
+    NodeContainer uavs;
+    NetDeviceContainer tnGnbNrDevs;
+    NetDeviceContainer uavGnbNrDevs;
+    Ptr<HybridSatEpcHelper> epcHelper;
+    double xhaulTxPowerDbm = 43.0;
+    double xhaulFrequencyHz = 4.0e9;
+    double xhaulMaxDonorDistanceM = 10000.0;
+    double healthyThresholdDbm = -95.0;
+    double degradedThresholdDbm = -115.0;
+    double degradationStartSec = -1.0;
+    double degradationStopSec = -1.0;
+    double degradationPenaltyDb = 0.0;
+    double e2TxDelaySec = 0.0;
+    double e2SendIntervalSec = 0.0;
+    double lmQueryIntervalSec = 0.0;
+    bool enableXhaulChannelVariation = false;
+    double xhaulShadowingStddevDb = 0.0;
+    double xhaulFadingStddevDb = 0.0;
+    bool enableOnboardUavRic = true;
+};
+
+static std::unique_ptr<UavAutonomyXappContext> g_uavAutonomyXappCtx;
 
 // --- ns-3 NS_LOG output redirection (LogComponentEnable -> file via std::clog) ---
 static std::ofstream g_nsLogFile;
@@ -515,30 +549,234 @@ SelectUavAutonomyMode(const std::string& deploymentMode,
                       const std::string& xhaulState,
                       bool satBackhaulHealthy)
 {
-    // Current autonomy state machine:
-    //   HEALTHY xHaul       -> UAV remains a coverage extension.
-    //   DEGRADED xHaul      -> UAV activates local/edge assistance.
-    //   UNREACHABLE xHaul   -> UAV enters emergency/autonomous operation.
-    // In tn-uav-satellite mode, satellite health also allows the EPC helper to
-    // switch the UAV S1-U backhaul route to the satellite fallback path. The
-    // xApp handover algorithm still remains independent from this route switch.
+    // UAV Autonomy xApp-like state machine:
+    //   HEALTHY xHaul:
+    //      terrestrial O-RAN/xApp control remains available and the UAV acts as
+    //      a normal coverage-extension gNB.
+    //   DEGRADED/UNREACHABLE xHaul + healthy satellite:
+    //      onboard UAV RIC/xApp control is activated and satellite fallback
+    //      keeps the UAV serviceable, so normal UE handover can remain enabled.
+    //   DEGRADED/UNREACHABLE xHaul without satellite:
+    //      the UAV may still offer access coverage, but normal UE handover to
+    //      it is blocked by setting its effective O-RAN cell capacity to 0.
     if (deploymentMode == "tn-only")
     {
         return "NO_UAV";
     }
     if (xhaulState == "HEALTHY")
     {
-        return "COVERAGE_EXTENSION";
+        return "TN_CONTROLLED_COVERAGE_EXTENSION";
+    }
+    if (xhaulState == "DEGRADED" &&
+        deploymentMode == "tn-uav-satellite" &&
+        satBackhaulHealthy)
+    {
+        return "ONBOARD_AUTONOMY_WITH_SATELLITE_BACKHAUL";
+    }
+    if (xhaulState == "UNREACHABLE" &&
+        deploymentMode == "tn-uav-satellite" &&
+        satBackhaulHealthy)
+    {
+        return "ONBOARD_EMERGENCY_CONTROL_WITH_SATELLITE_BACKHAUL";
     }
     if (xhaulState == "DEGRADED")
     {
-        return deploymentMode == "tn-uav-satellite" && satBackhaulHealthy
-                   ? "EDGE_ASSISTED_WITH_SATELLITE"
-                   : "EDGE_ASSISTED_LOCAL";
+        return "ONBOARD_LOCAL_AUTONOMY_SERVICE_LIMITED";
     }
-    return deploymentMode == "tn-uav-satellite" && satBackhaulHealthy
-               ? "SATELLITE_ASSISTED_EMERGENCY"
-               : "AUTONOMOUS_EMERGENCY_ISLAND";
+    return "AUTONOMOUS_LOCAL_ISLAND";
+}
+
+static void
+RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
+{
+    // Periodic cross-layer trace for the proposed article idea.
+    //
+    // Inputs recorded here:
+    //   - estimated UAV-to-TN donor xHaul RSRP,
+    //   - xHaul state: HEALTHY / DEGRADED / UNREACHABLE,
+    //   - optional satellite backhaul SNR state,
+    //   - E2 timing knobs used by the RIC control loop.
+    //
+    // Output:
+    //   - selected UAV autonomy mode.
+    //
+    // This trace is meant to be joined with qos-vs-time.txt, handover-trace.tr,
+    // handover-failure-trace.tr, and sat-backhaul-trace.txt during analysis.
+    std::ofstream out(s_xhaulAutonomyTraceFile, std::ios_base::app);
+    const double now = Simulator::Now().GetSeconds();
+    const bool degradationActive =
+        ctx.degradationStartSec >= 0.0 && now >= ctx.degradationStartSec &&
+        now <= ctx.degradationStopSec;
+
+    for (uint32_t uavIdx = 0; uavIdx < ctx.uavs.GetN(); ++uavIdx)
+    {
+        Ptr<MobilityModel> uavMob = ctx.uavs.Get(uavIdx)->GetObject<MobilityModel>();
+        if (!uavMob)
+        {
+            continue;
+        }
+
+        double bestRsrpDbm = -1e9;
+        double bestDonorDistanceM = -1.0;
+        double bestChannelVariationDb = 0.0;
+        uint16_t bestDonorCellId = 0;
+        for (uint32_t tnIdx = 0; tnIdx < ctx.tnGnbs.GetN(); ++tnIdx)
+        {
+            Ptr<MobilityModel> tnMob = ctx.tnGnbs.Get(tnIdx)->GetObject<MobilityModel>();
+            Ptr<NrGnbNetDevice> tnDev = ctx.tnGnbNrDevs.Get(tnIdx)->GetObject<NrGnbNetDevice>();
+            if (!tnMob || !tnDev)
+            {
+                continue;
+            }
+
+            const double distanceMeters =
+                CalculateDistance(uavMob->GetPosition(), tnMob->GetPosition());
+            if (distanceMeters > ctx.xhaulMaxDonorDistanceM)
+            {
+                continue;
+            }
+
+            double rsrpDbm =
+                EstimateFreeSpaceRsrpDbm(ctx.xhaulTxPowerDbm, ctx.xhaulFrequencyHz, distanceMeters);
+            double channelVariationDb = 0.0;
+            if (ctx.enableXhaulChannelVariation)
+            {
+                // Lightweight urban xHaul proxy. Shadowing is zero-mean in dB;
+                // fading is modeled as an additional non-negative fast loss.
+                // This avoids a hand-picked time-window penalty while still
+                // allowing donor RSRP to fluctuate due to channel conditions.
+                const double shadowingDb =
+                    g_xhaulShadowingRv->GetValue(0.0, ctx.xhaulShadowingStddevDb);
+                const double fadingLossDb =
+                    std::abs(g_xhaulFadingRv->GetValue(0.0, ctx.xhaulFadingStddevDb));
+                channelVariationDb = shadowingDb - fadingLossDb;
+                rsrpDbm += channelVariationDb;
+            }
+            if (degradationActive)
+            {
+                rsrpDbm -= ctx.degradationPenaltyDb;
+            }
+
+            if (rsrpDbm > bestRsrpDbm)
+            {
+                bestRsrpDbm = rsrpDbm;
+                bestDonorDistanceM = distanceMeters;
+                bestChannelVariationDb = channelVariationDb;
+                bestDonorCellId = tnDev->GetCellId();
+            }
+        }
+
+        Ptr<NrGnbNetDevice> uavDev = ctx.uavGnbNrDevs.Get(uavIdx)->GetObject<NrGnbNetDevice>();
+        const uint16_t uavCellId = uavDev ? uavDev->GetCellId() : 0;
+
+        const bool xhaulConnected = bestDonorCellId != 0;
+        const std::string xhaulState =
+            xhaulConnected
+                ? ClassifyXhaulState(bestRsrpDbm, ctx.healthyThresholdDbm, ctx.degradedThresholdDbm)
+                : "UNREACHABLE";
+
+        double satDl = -999.0;
+        double satUl = -999.0;
+        auto itDl = g_backhaulDlSnrDb.find(uavCellId);
+        auto itUl = g_backhaulUlSnrDb.find(uavCellId);
+        if (itDl != g_backhaulDlSnrDb.end())
+        {
+            satDl = itDl->second;
+        }
+        if (itUl != g_backhaulUlSnrDb.end())
+        {
+            satUl = itUl->second;
+        }
+        const bool satHealthy =
+            itDl != g_backhaulDlSnrDb.end() && itUl != g_backhaulUlSnrDb.end() &&
+            std::min(satDl, satUl) >= g_satBackhaulMinSnrDb;
+        const bool onboardUavRicAvailable =
+            ctx.enableOnboardUavRic && g_deploymentMode == "tn-uav-satellite";
+        const bool onboardUavRicActive =
+            onboardUavRicAvailable && xhaulState != "HEALTHY";
+
+        const bool useSatelliteBackhaul =
+            onboardUavRicActive && satHealthy;
+        const std::string uavMode =
+            SelectUavAutonomyMode(g_deploymentMode, xhaulState, useSatelliteBackhaul);
+        const bool allowNormalUeHandover =
+            xhaulState == "HEALTHY" || useSatelliteBackhaul;
+        const std::string backhaulMode = useSatelliteBackhaul
+                                             ? "SATELLITE_FALLBACK"
+                                             : (xhaulConnected ? "TN_DIRECT" : "TN_UNREACHABLE");
+        const std::string controlPath =
+            xhaulState == "HEALTHY"
+                ? "TN_E2"
+                : (onboardUavRicActive
+                       ? (satHealthy ? "ONBOARD_LOCAL_CONTROL_WITH_SAT_FEEDBACK"
+                                     : "ONBOARD_LOCAL_CONTROL")
+                       : "LOCAL_AUTONOMY");
+        const std::string activeUavRic =
+            xhaulState == "HEALTHY"
+                ? "TN_NEAR_RT_RIC"
+                : (onboardUavRicActive ? "ONBOARD_UAV_RIC" : "LOCAL_UAV_AUTONOMY");
+        const std::string onboardUavRicState =
+            onboardUavRicAvailable ? (onboardUavRicActive ? "ACTIVE" : "STANDBY") : "DISABLED";
+        if (ctx.epcHelper)
+        {
+            ctx.epcHelper->SetNtnBackhaulMode(uavCellId,
+                                              useSatelliteBackhaul ? "satellite" : "tn");
+        }
+        if (g_rsrpLm)
+        {
+            g_rsrpLm->SetCellCapacity(uavCellId,
+                                      allowNormalUeHandover ? maxUesPerCellNtn : 0);
+            g_rsrpLm->SetCellBackhaulDlSnrDb(uavCellId, satDl);
+            g_rsrpLm->SetCellBackhaulUlSnrDb(uavCellId, satUl);
+        }
+        if (g_nsLogFile.is_open())
+        {
+            std::clog << "UAV_AUTONOMY_XAPP"
+                      << " Time=" << now
+                      << " DeploymentMode=" << g_deploymentMode
+                      << " UavIndex=" << uavIdx
+                      << " UavCellId=" << uavCellId
+                      << " BestDonorCellId=" << bestDonorCellId
+                      << " BestDonorDistanceM=" << bestDonorDistanceM
+                      << " XhaulConnected=" << (xhaulConnected ? 1 : 0)
+                      << " XhaulChannelVariationDb=" << bestChannelVariationDb
+                      << " XhaulState=" << xhaulState
+                      << " SatBackhaulHealthy=" << (satHealthy ? 1 : 0)
+                      << " OnboardUavRicAvailable=" << (onboardUavRicAvailable ? 1 : 0)
+                      << " OnboardUavRicState=" << onboardUavRicState
+                      << " BackhaulMode=" << backhaulMode
+                      << " ControlPath=" << controlPath
+                      << " ActiveUavRic=" << activeUavRic
+                      << " NormalUeHandoverAllowed=" << (allowNormalUeHandover ? 1 : 0)
+                      << " UavMode=" << uavMode
+                      << "\n";
+        }
+
+        out << now << ","
+            << g_deploymentMode << ","
+            << uavIdx << ","
+            << uavCellId << ","
+            << bestDonorCellId << ","
+            << bestDonorDistanceM << ","
+            << (xhaulConnected ? 1 : 0) << ","
+            << bestChannelVariationDb << ","
+            << bestRsrpDbm << ","
+            << xhaulState << ","
+            << (degradationActive ? 1 : 0) << ","
+            << satDl << ","
+            << satUl << ","
+            << (satHealthy ? 1 : 0) << ","
+            << (onboardUavRicAvailable ? 1 : 0) << ","
+            << onboardUavRicState << ","
+            << backhaulMode << ","
+            << controlPath << ","
+            << activeUavRic << ","
+            << (allowNormalUeHandover ? 1 : 0) << ","
+            << ctx.e2TxDelaySec << ","
+            << ctx.e2SendIntervalSec << ","
+            << ctx.lmQueryIntervalSec << ","
+            << uavMode << "\n";
+    }
 }
 
 void
@@ -560,124 +798,29 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
                    double lmQueryIntervalSec,
                    double sampleIntervalSec)
 {
-    // Periodic cross-layer trace for the proposed article idea.
-    //
-    // Inputs recorded here:
-    //   - estimated UAV-to-TN donor xHaul RSRP,
-    //   - xHaul state: HEALTHY / DEGRADED / UNREACHABLE,
-    //   - optional satellite backhaul SNR state,
-    //   - E2 timing knobs used by the RIC control loop.
-    //
-    // Output:
-    //   - selected UAV autonomy mode.
-    //
-    // This trace is meant to be joined with qos-vs-time.txt, handover-trace.tr,
-    // handover-failure-trace.tr, and sat-backhaul-trace.txt during analysis.
-    std::ofstream out(s_xhaulAutonomyTraceFile, std::ios_base::app);
-    const double now = Simulator::Now().GetSeconds();
-    const bool degradationActive =
-        degradationStartSec >= 0.0 && now >= degradationStartSec && now <= degradationStopSec;
+    UavAutonomyXappContext ctx;
+    ctx.tnGnbs = tnGnbs;
+    ctx.uavs = uavs;
+    ctx.tnGnbNrDevs = tnGnbNrDevs;
+    ctx.uavGnbNrDevs = uavGnbNrDevs;
+    ctx.epcHelper = epcHelper;
+    ctx.xhaulTxPowerDbm = xhaulTxPowerDbm;
+    ctx.xhaulFrequencyHz = xhaulFrequencyHz;
+    ctx.xhaulMaxDonorDistanceM = xhaulMaxDonorDistanceM;
+    ctx.healthyThresholdDbm = healthyThresholdDbm;
+    ctx.degradedThresholdDbm = degradedThresholdDbm;
+    ctx.degradationStartSec = degradationStartSec;
+    ctx.degradationStopSec = degradationStopSec;
+    ctx.degradationPenaltyDb = degradationPenaltyDb;
+    ctx.e2TxDelaySec = e2TxDelaySec;
+    ctx.e2SendIntervalSec = e2SendIntervalSec;
+    ctx.lmQueryIntervalSec = lmQueryIntervalSec;
+    ctx.enableXhaulChannelVariation = g_enableXhaulChannelVariation;
+    ctx.xhaulShadowingStddevDb = g_xhaulShadowingStddevDb;
+    ctx.xhaulFadingStddevDb = g_xhaulFadingStddevDb;
+    ctx.enableOnboardUavRic = g_enableOnboardUavRic;
 
-    for (uint32_t uavIdx = 0; uavIdx < uavs.GetN(); ++uavIdx)
-    {
-        Ptr<MobilityModel> uavMob = uavs.Get(uavIdx)->GetObject<MobilityModel>();
-        if (!uavMob)
-        {
-            continue;
-        }
-
-        double bestRsrpDbm = -1e9;
-        double bestDonorDistanceM = -1.0;
-        uint16_t bestDonorCellId = 0;
-        for (uint32_t tnIdx = 0; tnIdx < tnGnbs.GetN(); ++tnIdx)
-        {
-            Ptr<MobilityModel> tnMob = tnGnbs.Get(tnIdx)->GetObject<MobilityModel>();
-            Ptr<NrGnbNetDevice> tnDev = tnGnbNrDevs.Get(tnIdx)->GetObject<NrGnbNetDevice>();
-            if (!tnMob || !tnDev)
-            {
-                continue;
-            }
-
-            const double distanceMeters =
-                CalculateDistance(uavMob->GetPosition(), tnMob->GetPosition());
-            if (distanceMeters > xhaulMaxDonorDistanceM)
-            {
-                continue;
-            }
-
-            double rsrpDbm =
-                EstimateFreeSpaceRsrpDbm(xhaulTxPowerDbm, xhaulFrequencyHz, distanceMeters);
-            if (degradationActive)
-            {
-                rsrpDbm -= degradationPenaltyDb;
-            }
-
-            if (rsrpDbm > bestRsrpDbm)
-            {
-                bestRsrpDbm = rsrpDbm;
-                bestDonorDistanceM = distanceMeters;
-                bestDonorCellId = tnDev->GetCellId();
-            }
-        }
-
-        Ptr<NrGnbNetDevice> uavDev = uavGnbNrDevs.Get(uavIdx)->GetObject<NrGnbNetDevice>();
-        const uint16_t uavCellId = uavDev ? uavDev->GetCellId() : 0;
-
-        const bool xhaulConnected = bestDonorCellId != 0;
-        const std::string xhaulState =
-            xhaulConnected
-                ? ClassifyXhaulState(bestRsrpDbm, healthyThresholdDbm, degradedThresholdDbm)
-                : "UNREACHABLE";
-
-        double satDl = -999.0;
-        double satUl = -999.0;
-        auto itDl = g_backhaulDlSnrDb.find(uavCellId);
-        auto itUl = g_backhaulUlSnrDb.find(uavCellId);
-        if (itDl != g_backhaulDlSnrDb.end())
-        {
-            satDl = itDl->second;
-        }
-        if (itUl != g_backhaulUlSnrDb.end())
-        {
-            satUl = itUl->second;
-        }
-        const bool satHealthy =
-            itDl != g_backhaulDlSnrDb.end() && itUl != g_backhaulUlSnrDb.end() &&
-            std::min(satDl, satUl) >= g_satBackhaulMinSnrDb;
-
-        const std::string uavMode =
-            SelectUavAutonomyMode(g_deploymentMode, xhaulState, satHealthy);
-
-        const bool useSatelliteBackhaul =
-            g_deploymentMode == "tn-uav-satellite" && xhaulState != "HEALTHY" && satHealthy;
-        const std::string backhaulMode = useSatelliteBackhaul
-                                             ? "SATELLITE_FALLBACK"
-                                             : (xhaulConnected ? "TN_DIRECT" : "TN_UNREACHABLE");
-        if (epcHelper)
-        {
-            epcHelper->SetNtnBackhaulMode(uavCellId,
-                                          useSatelliteBackhaul ? "satellite" : "tn");
-        }
-
-        out << now << ","
-            << g_deploymentMode << ","
-            << uavIdx << ","
-            << uavCellId << ","
-            << bestDonorCellId << ","
-            << bestDonorDistanceM << ","
-            << (xhaulConnected ? 1 : 0) << ","
-            << bestRsrpDbm << ","
-            << xhaulState << ","
-            << (degradationActive ? 1 : 0) << ","
-            << satDl << ","
-            << satUl << ","
-            << (satHealthy ? 1 : 0) << ","
-            << backhaulMode << ","
-            << e2TxDelaySec << ","
-            << e2SendIntervalSec << ","
-            << lmQueryIntervalSec << ","
-            << uavMode << "\n";
-    }
+    RunUavAutonomyXappPolicy(ctx);
 
     Simulator::Schedule(Seconds(sampleIntervalSec),
                         &TraceXhaulAutonomy,
@@ -698,6 +841,52 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
                         e2SendIntervalSec,
                         lmQueryIntervalSec,
                         sampleIntervalSec);
+}
+
+class OranLmUavAutonomyControl : public OranLm
+{
+  public:
+    static TypeId GetTypeId();
+    OranLmUavAutonomyControl();
+
+  private:
+    std::vector<Ptr<OranCommand>> Run() override;
+};
+
+NS_OBJECT_ENSURE_REGISTERED(OranLmUavAutonomyControl);
+
+TypeId
+OranLmUavAutonomyControl::GetTypeId()
+{
+    static TypeId tid = TypeId("OranLmUavAutonomyControl")
+                            .SetParent<OranLm>()
+                            .AddConstructor<OranLmUavAutonomyControl>();
+    return tid;
+}
+
+OranLmUavAutonomyControl::OranLmUavAutonomyControl()
+    : OranLm()
+{
+    m_name = "UAV_AUTONOMY_XAPP";
+}
+
+std::vector<Ptr<OranCommand>>
+OranLmUavAutonomyControl::Run()
+{
+    NS_ABORT_MSG_IF(m_nearRtRic == nullptr,
+                    "Attempting to run LM (" + m_name + ") with NULL Near-RT RIC");
+
+    if (g_uavAutonomyXappCtx)
+    {
+        RunUavAutonomyXappPolicy(*g_uavAutonomyXappCtx);
+        LogLogicToRepository("UAV Autonomy xApp updated UAV backhaul/control path state");
+    }
+    else
+    {
+        LogLogicToRepository("UAV Autonomy xApp skipped: no UAV context");
+    }
+
+    return {};
 }
 
 void
@@ -1251,6 +1440,11 @@ UpdateUavTargetsFromUnderservedUes(NodeContainer groundUeNodesS1,
 
     uint32_t k = std::min<uint32_t>(availableUavs.size(), underservedPts.size());
     std::vector<LocalPoint2d> centroids = RunKMeans(underservedPts, k, 10);
+    for (auto& centroid : centroids)
+    {
+        centroid.eastM *= g_uavMissionTargetScale;
+        centroid.northM *= g_uavMissionTargetScale;
+    }
 
     // 3) assign each available UAV to one centroid (greedy nearest)
     std::vector<bool> centroidUsed(centroids.size(), false);
@@ -1370,7 +1564,7 @@ install_mobility_geocentric(NodeContainer staticNodes,
         st->fixedAltM = uavAlt;
         st->halfWidthM = UAV_AREA_HALF_W_M;
         st->halfHeightM = UAV_AREA_HALF_H_M;
-        st->speedMps = 10.0;
+        st->speedMps = g_uavSpeedMps;
 
         LocalPoint2d initLocal = GeoToLocal(initGeo, g_refLat, g_refLon);
         st->targetEastM = initLocal.eastM;
@@ -1897,6 +2091,9 @@ main(int argc, char* argv[])
     double xhaulDegradationStartSec = -1.0;
     double xhaulDegradationStopSec = -1.0;
     double xhaulDegradationPenaltyDb = 25.0;
+    bool enableXhaulChannelVariation = false;
+    double xhaulShadowingStddevDb = 0.0;
+    double xhaulFadingStddevDb = 0.0;
 
     // Optional TN access/infrastructure degradation window.
     // This reduces terrestrial gNB transmit power during the configured period.
@@ -1908,6 +2105,7 @@ main(int argc, char* argv[])
     double tnDegradationPenaltyDb = 15.0;
 
     bool enableSatBackhaulMonitor = true;
+    bool enableOnboardUavRic = true;
     double satBackhaulLogStepMs = 500.0;
     double satBackhaulMinSnrDb = 0.0;
 
@@ -1947,6 +2145,9 @@ main(int argc, char* argv[])
     double monitoredDlRateMbps = 1.0;
     double monitoredUlRateMbps = 0.25;
     uint32_t monitoredPacketSizeBytes = 1000;
+    double uavControlStartSec = 7.0;
+    double uavControlPeriodSec = 2.0;
+    double underservedRsrpThreshDbm = -120.0;
 
     CommandLine cmd;
     cmd.AddValue("verbose", "Enable printing SQL queries results", verbose);
@@ -1980,6 +2181,15 @@ main(int argc, char* argv[])
     cmd.AddValue("xhaul-degradation-penalty-db",
                  "RSRP penalty applied during synthetic xHaul degradation",
                  xhaulDegradationPenaltyDb);
+    cmd.AddValue("enable-xhaul-channel-variation",
+                 "Enable stochastic xHaul shadowing/fading variation in the UAV-to-TN donor RSRP proxy",
+                 enableXhaulChannelVariation);
+    cmd.AddValue("xhaul-shadowing-stddev-db",
+                 "Standard deviation of xHaul log-normal shadowing in dB",
+                 xhaulShadowingStddevDb);
+    cmd.AddValue("xhaul-fading-stddev-db",
+                 "Standard deviation of xHaul fast-fading loss proxy in dB",
+                 xhaulFadingStddevDb);
     cmd.AddValue("tn-degradation-start",
                  "Start time for synthetic TN access degradation; negative disables it",
                  tnDegradationStartSec);
@@ -2000,9 +2210,22 @@ main(int argc, char* argv[])
     cmd.AddValue("ground-attach-delay", "Delay before attaching ground UEs (s)", groundAttachDelay);
     cmd.AddValue("max-ues-tn",  "Max UEs per TN cell",  maxUesPerCellTn);
     cmd.AddValue("max-ues-ntn", "Max UEs per NTN cell", maxUesPerCellNtn);
+    cmd.AddValue("tn-area-half-w-m", "Half-width of the terrestrial gNB placement area in meters", TN_GNB_HALF_W_M);
+    cmd.AddValue("tn-area-half-h-m", "Half-height of the terrestrial gNB placement area in meters", TN_GNB_HALF_H_M);
+    cmd.AddValue("uav-area-half-w-m", "Half-width of the UAV initial/mobility area in meters", UAV_AREA_HALF_W_M);
+    cmd.AddValue("uav-area-half-h-m", "Half-height of the UAV initial/mobility area in meters", UAV_AREA_HALF_H_M);
+    cmd.AddValue("ue-area-half-w-m", "Half-width of the UE mobility area in meters", UE_AREA_HALF_W_M);
+    cmd.AddValue("ue-area-half-h-m", "Half-height of the UE mobility area in meters", UE_AREA_HALF_H_M);
+    cmd.AddValue("uav-speed-mps", "UAV movement speed in meters per second", g_uavSpeedMps);
+    cmd.AddValue("uav-mission-target-scale",
+                 "Scale applied to underserved-UE cluster centroids when assigning UAV mission targets",
+                 g_uavMissionTargetScale);
     cmd.AddValue("enable-sat-backhaul-monitor",
                  "Enable parallel satellite backhaul monitor for NTN/UAV gNBs",
                  enableSatBackhaulMonitor);
+    cmd.AddValue("enable-onboard-uav-ric",
+                 "Enable a separate simulated onboard UAV Near-RT RIC for UAV autonomy",
+                 enableOnboardUavRic);
     cmd.AddValue("sat-backhaul-log-step-ms",
                  "Satellite backhaul logging period in ms",
                  satBackhaulLogStepMs);
@@ -2068,6 +2291,15 @@ main(int argc, char* argv[])
     cmd.AddValue("monitored-packet-size",
                  "UDP packet size in bytes when --monitored-traffic=udp",
                  monitoredPacketSizeBytes);
+    cmd.AddValue("uav-control-start",
+                 "Time when the UAV autonomy movement policy starts moving UAVs toward underserved UEs",
+                 uavControlStartSec);
+    cmd.AddValue("uav-control-period",
+                 "Period of the UAV autonomy movement policy in seconds",
+                 uavControlPeriodSec);
+    cmd.AddValue("uav-underserved-rsrp-thresh-dbm",
+                 "UE RSRP threshold below which the UAV autonomy policy treats a UE as underserved",
+                 underservedRsrpThreshDbm);
     cmd.Parse(argc, argv);
 
     NS_ABORT_MSG_IF(deploymentMode != "tn-only" &&
@@ -2076,19 +2308,26 @@ main(int argc, char* argv[])
                     "Unsupported --deployment-mode. Use tn-only, tn-uav, or tn-uav-satellite.");
     g_deploymentMode = deploymentMode;
     g_satBackhaulMinSnrDb = satBackhaulMinSnrDb;
+    g_enableOnboardUavRic = enableOnboardUavRic;
+    g_enableXhaulChannelVariation = enableXhaulChannelVariation;
+    g_xhaulShadowingStddevDb = xhaulShadowingStddevDb;
+    g_xhaulFadingStddevDb = xhaulFadingStddevDb;
     if (deploymentMode == "tn-only")
     {
         numNtnGnbs = 0;
         enableSatBackhaulMonitor = false;
+        enableOnboardUavRic = false;
     }
     else if (deploymentMode == "tn-uav")
     {
         enableSatBackhaulMonitor = false;
+        enableOnboardUavRic = false;
     }
     else
     {
         enableSatBackhaulMonitor = true;
     }
+    g_enableOnboardUavRic = enableOnboardUavRic;
 
     if (quietTiming)
     {
@@ -2106,9 +2345,11 @@ main(int argc, char* argv[])
         enableOranAppLossReports = false;
         enableOranCellLoadReports = false;
         enableSatBackhaulMonitor = false;
+        enableOnboardUavRic = false;
         enableFhControl = false;
         remMode = false;
     }
+    g_enableOnboardUavRic = enableOnboardUavRic;
 
     NS_ABORT_MSG_IF(useOran == false && (useOnnx || useTorch || useRsrp),
                     "Cannot use ML LM or RSRP LM without enabling O-RAN.");
@@ -2579,11 +2820,11 @@ main(int argc, char* argv[])
     tnGnbNrDevs  = nrHelper->InstallGnbDevice(tnGnbNodes, allBwps);
     ntnGnbNrDevs = nrHelper->InstallGnbDevice(ntnGnbNodes, allBwps);
 
-    double uavControlPeriodSec = 2.0;
-    double underservedRsrpThreshDbm = -120.0;
-
-    // Start after measurements and initial attach have had a little time to appear
-    Simulator::Schedule(Seconds(7.0),
+    // Start after measurements and initial attach have had a little time to appear.
+    // For the satellite-assisted natural-degradation scenario this can be set
+    // to 15 s, making 15-30 s the mission period where UAVs move toward weak
+    // UE clusters and the UAV-to-TN donor xHaul can naturally weaken.
+    Simulator::Schedule(Seconds(uavControlStartSec),
                         &UpdateUavTargetsFromUnderservedUes,
                         groundUeNodesS1,
                         groundUeNodesS2,
@@ -3222,6 +3463,32 @@ main(int argc, char* argv[])
     ueAppsS2.Stop(simulationStopTime);
 
 
+    g_uavAutonomyXappCtx.reset();
+    if (ntnGnbNrDevs.GetN() > 0)
+    {
+        g_uavAutonomyXappCtx = std::make_unique<UavAutonomyXappContext>();
+        g_uavAutonomyXappCtx->tnGnbs = tnGnbNodes;
+        g_uavAutonomyXappCtx->uavs = ntnGnbNodes;
+        g_uavAutonomyXappCtx->tnGnbNrDevs = tnGnbNrDevs;
+        g_uavAutonomyXappCtx->uavGnbNrDevs = ntnGnbNrDevs;
+        g_uavAutonomyXappCtx->epcHelper = epcHelper;
+        g_uavAutonomyXappCtx->xhaulTxPowerDbm = xhaulTxPowerDbm;
+        g_uavAutonomyXappCtx->xhaulFrequencyHz = xhaulFrequencyHz;
+        g_uavAutonomyXappCtx->xhaulMaxDonorDistanceM = xhaulMaxDonorDistanceM;
+        g_uavAutonomyXappCtx->healthyThresholdDbm = xhaulHealthyRsrpDbm;
+        g_uavAutonomyXappCtx->degradedThresholdDbm = xhaulDegradedRsrpDbm;
+        g_uavAutonomyXappCtx->degradationStartSec = xhaulDegradationStartSec;
+        g_uavAutonomyXappCtx->degradationStopSec = xhaulDegradationStopSec;
+        g_uavAutonomyXappCtx->degradationPenaltyDb = xhaulDegradationPenaltyDb;
+        g_uavAutonomyXappCtx->e2TxDelaySec = txDelay;
+        g_uavAutonomyXappCtx->e2SendIntervalSec = e2SendInterval;
+        g_uavAutonomyXappCtx->lmQueryIntervalSec = lmQueryInterval;
+        g_uavAutonomyXappCtx->enableXhaulChannelVariation = enableXhaulChannelVariation;
+        g_uavAutonomyXappCtx->xhaulShadowingStddevDb = xhaulShadowingStddevDb;
+        g_uavAutonomyXappCtx->xhaulFadingStddevDb = xhaulFadingStddevDb;
+        g_uavAutonomyXappCtx->enableOnboardUavRic = enableOnboardUavRic;
+    }
+
 
     // ORAN BEGIN
     if (useOran == true)
@@ -3335,8 +3602,15 @@ main(int argc, char* argv[])
         defaultLm->SetAttribute("HysteresisDb", DoubleValue(hysteresisDb)); // default is 2 dbm
 
         dataRepository->SetAttribute("DatabaseFile", StringValue(dbFileName));
+        defaultLm->SetName("UE_MOBILITY_XAPP");
         defaultLm->SetAttribute("Verbose", BooleanValue(verbose));
         defaultLm->SetAttribute("NearRtRic", PointerValue(nearRtRic));
+
+        const bool useSeparateOnboardUavRic =
+            enableOnboardUavRic && deploymentMode == "tn-uav-satellite" && ntnGnbNrDevs.GetN() > 0;
+
+        Ptr<OranLmUavAutonomyControl> uavAutonomyLm = CreateObject<OranLmUavAutonomyControl>();
+        uavAutonomyLm->SetAttribute("Verbose", BooleanValue(verbose));
 
         cmm->SetAttribute("NearRtRic", PointerValue(nearRtRic));
 
@@ -3346,10 +3620,20 @@ main(int argc, char* argv[])
             "TransmissionDelayRv",
             StringValue("ns3::ConstantRandomVariable[Constant=" + std::to_string(txDelay) + "]"));
 
-        // Attach the LM, CMM, E2 terminator, and repository to the RIC.
-        // E2 tx-delay and e2-send-interval can be varied to study stale/late
-        // control behavior, but the handover policy remains the same.
-        nearRtRic->SetAttribute("DefaultLogicModule", PointerValue(defaultLm));
+        // Terrestrial Near-RT RIC. In the satellite-assisted case this RIC
+        // keeps the UE Mobility xApp, while a separate onboard-UAV RIC below
+        // runs UAV autonomy. In non-satellite UAV scenarios, both xApps remain
+        // in this RIC and autonomy runs first.
+        if (useSeparateOnboardUavRic)
+        {
+            nearRtRic->SetAttribute("DefaultLogicModule", PointerValue(defaultLm));
+        }
+        else
+        {
+            uavAutonomyLm->SetAttribute("NearRtRic", PointerValue(nearRtRic));
+            nearRtRic->SetAttribute("DefaultLogicModule", PointerValue(uavAutonomyLm));
+            nearRtRic->AddLogicModule(defaultLm);
+        }
         nearRtRic->SetAttribute("E2Terminator", PointerValue(nearRtRicE2Terminator));
         nearRtRic->SetAttribute("DataRepository", PointerValue(dataRepository));
         nearRtRic->SetAttribute("LmQueryInterval", TimeValue(Seconds(lmQueryInterval)));
@@ -3362,6 +3646,52 @@ main(int argc, char* argv[])
                                 TimeValue(Seconds(maxWaitTime))); // 0 means wait for all LMs to finish
         nearRtRic->SetAttribute("LmQueryLateCommandPolicy", StringValue(lateCommandPolicy));
 
+
+        if (useSeparateOnboardUavRic)
+        {
+            std::string onboardUavRicDbFile = ns3_dir + "onboard-uav-ric-repository.db";
+            ::remove(onboardUavRicDbFile.c_str());
+
+            Ptr<OranDataRepository> onboardUavDataRepository =
+                CreateObject<OranDataRepositorySqlite>();
+            Ptr<OranCmm> onboardUavCmm = CreateObject<OranCmmHandover>();
+            Ptr<OranNearRtRic> onboardUavRic = CreateObject<OranNearRtRic>();
+            Ptr<OranNearRtRicE2Terminator> onboardUavE2Terminator =
+                CreateObject<OranNearRtRicE2Terminator>();
+
+            onboardUavDataRepository->SetAttribute("DatabaseFile",
+                                                   StringValue(onboardUavRicDbFile));
+            uavAutonomyLm->SetAttribute("NearRtRic", PointerValue(onboardUavRic));
+            onboardUavCmm->SetAttribute("NearRtRic", PointerValue(onboardUavRic));
+            onboardUavE2Terminator->SetAttribute("NearRtRic", PointerValue(onboardUavRic));
+            onboardUavE2Terminator->SetAttribute("DataRepository",
+                                                 PointerValue(onboardUavDataRepository));
+            onboardUavE2Terminator->SetAttribute(
+                "TransmissionDelayRv",
+                StringValue("ns3::ConstantRandomVariable[Constant=" +
+                            std::to_string(txDelay) + "]"));
+
+            onboardUavRic->SetAttribute("DefaultLogicModule", PointerValue(uavAutonomyLm));
+            onboardUavRic->SetAttribute("E2Terminator", PointerValue(onboardUavE2Terminator));
+            onboardUavRic->SetAttribute("DataRepository",
+                                        PointerValue(onboardUavDataRepository));
+            onboardUavRic->SetAttribute("LmQueryInterval",
+                                        TimeValue(Seconds(lmQueryInterval)));
+            onboardUavRic->SetAttribute("ConflictMitigationModule",
+                                        PointerValue(onboardUavCmm));
+            onboardUavRic->SetAttribute("E2NodeInactivityThreshold", TimeValue(Seconds(2)));
+            onboardUavRic->SetAttribute("E2NodeInactivityIntervalRv",
+                                        StringValue("ns3::ConstantRandomVariable[Constant=2]"));
+            onboardUavRic->SetAttribute("LmQueryMaxWaitTime",
+                                        TimeValue(Seconds(maxWaitTime)));
+            onboardUavRic->SetAttribute("LmQueryLateCommandPolicy",
+                                        StringValue(lateCommandPolicy));
+
+            // Start the onboard UAV RIC slightly before the terrestrial RIC so
+            // UAV availability is updated before UE mobility decisions in the
+            // same nominal RIC control cycle.
+            Simulator::Schedule(Seconds(2.4), &OranNearRtRic::Start, onboardUavRic);
+        }
 
         Simulator::Schedule(Seconds(2.5), &OranNearRtRic::Start, nearRtRic);
 
@@ -3621,15 +3951,18 @@ main(int argc, char* argv[])
         std::ofstream xhaulOut(s_xhaulAutonomyTraceFile, std::ios_base::trunc);
         xhaulOut << "Time,DeploymentMode,UavIndex,UavCellId,BestDonorCellId,"
                  << "BestDonorDistanceM,XhaulConnected,"
-                 << "XhaulRsrpDbm,XhaulState,XhaulDegradationActive,"
+                 << "XhaulChannelVariationDb,XhaulRsrpDbm,XhaulState,XhaulDegradationActive,"
                  << "SatBackhaulDlSnrDb,SatBackhaulUlSnrDb,SatBackhaulHealthy,"
-                 << "BackhaulMode,"
+                 << "OnboardUavRicAvailable,OnboardUavRicState,"
+                 << "BackhaulMode,ControlPath,ActiveUavRic,"
+                 << "NormalUeHandoverAllowed,"
                  << "E2TxDelaySec,E2SendIntervalSec,LmQueryIntervalSec,UavMode\n";
     }
-    if (ntnGnbNrDevs.GetN() > 0)
+    if (ntnGnbNrDevs.GetN() > 0 && !useOran)
     {
         // Start the UAV-to-TN xHaul health monitor only when UAV cells exist.
-        // In tn-only mode there is no UAV, so the CSV contains only the header.
+        // With O-RAN enabled, the UAV Autonomy xApp writes the same trace from
+        // the RIC query loop. This timer is the non-O-RAN fallback path.
         Simulator::Schedule(Seconds(0.5),
                             &TraceXhaulAutonomy,
                             tnGnbNodes,

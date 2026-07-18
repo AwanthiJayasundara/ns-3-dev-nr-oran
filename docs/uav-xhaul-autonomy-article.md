@@ -69,13 +69,13 @@ Runtime handover is controlled through the O-RAN logic module rather than the na
 NrNoOpHandoverAlgorithm
 ```
 
-This ensures that handover decisions are issued by the O-RAN control logic. The default logic module is:
+This ensures that runtime UE handover decisions are issued by the O-RAN control logic. The UE Mobility xApp/logic module is:
 
 ```text
 OranLmNr2NrRsrpHandoverWithTnNtn
 ```
 
-This module uses UE-reported RSRP, hysteresis, minimum acceptable RSRP, cell capacity, TN/NTN cell type, and optional backhaul health information. The command management module is:
+This module uses UE-reported RSRP, hysteresis, minimum acceptable RSRP, cell capacity, TN/NTN cell type, and optional backhaul health information. A second RIC logic module, `OranLmUavAutonomyControl`, monitors UAV xHaul and satellite health, selects the active UAV control authority, updates the UAV backhaul/control-path state, and exposes UAV availability to the UE Mobility xApp through the effective UAV cell capacity. In the satellite-assisted scenario, this UAV Autonomy xApp is hosted by a separate simulated onboard UAV Near-RT RIC object that starts slightly before the terrestrial UE Mobility RIC in each nominal control cycle. The command management module is:
 
 ```text
 OranCmmHandover
@@ -83,7 +83,42 @@ OranCmmHandover
 
 It executes the selected NR-to-NR handover command after the logic module chooses a target cell.
 
-In the current implementation, the xHaul/autonomy trace is deliberately separated from the handover decision path. It records the evidence needed to compare the three scenarios and, in the satellite-assisted mode, switches the UAV S1-U backhaul route between direct TN backhaul and satellite fallback. It does not yet force UE handovers based on xHaul RSRP, which keeps the O-RAN/xApp handover process clean for baseline comparison.
+The current implementation therefore uses two coupled RIC control authorities. In the TN+UAV+satellite scenario, the simulated onboard UAV Near-RT RIC runs the UAV Autonomy xApp and decides whether each UAV cell is controlled by the terrestrial Near-RT RIC, by the onboard UAV RIC, or by local UAV autonomy. The terrestrial Near-RT RIC runs the UE Mobility xApp, which then selects UE handover targets using the UAV availability state produced by the autonomy xApp. Therefore, a UAV cell remains a valid UE handover target only when terrestrial xHaul is healthy or onboard UAV RIC fallback with satellite backhaul is available.
+
+In ns-O-RAN, E2 reporting and command delivery are represented by virtual interfaces between E2 terminators and the Near-RT RIC rather than by physical IP packets. Therefore, this scenario records the intended control path as a control-state decision:
+
+```text
+TN_E2
+ONBOARD_LOCAL_CONTROL_WITH_SAT_FEEDBACK
+ONBOARD_LOCAL_CONTROL
+LOCAL_AUTONOMY
+```
+
+The trace also records the active UAV control authority:
+
+```text
+TN_NEAR_RT_RIC
+ONBOARD_UAV_RIC
+LOCAL_UAV_AUTONOMY
+```
+
+The `ActiveUavRic` field should be read as "who is currently responsible for controlling the UAV cell":
+
+| `ActiveUavRic` value | Meaning | When it appears |
+|---|---|---|
+| `TN_NEAR_RT_RIC` | The terrestrial Near-RT RIC is responsible for UAV control. The UAV uses terrestrial xHaul and behaves as a normal aerial coverage-extension cell. The onboard UAV RIC/xApp is standby. | UAV-to-TN xHaul is healthy |
+| `ONBOARD_UAV_RIC` | The onboard UAV RIC/xApp becomes active and controls the UAV locally. If satellite backhaul is healthy, the UAV also switches user/core backhaul to `SATELLITE_FALLBACK`. | xHaul is bad, onboard UAV RIC is enabled, and `--enable-onboard-uav-ric=1` |
+| `LOCAL_UAV_AUTONOMY` | No usable TN control path or onboard-RIC fallback policy is available. The UAV is treated as a local autonomous island, and normal UE handover to it is blocked. | xHaul is bad and onboard UAV RIC fallback is unavailable |
+
+This means the simulation models whether UAV control is terrestrial, onboard-UAV-RIC-assisted, or local/autonomous. The satellite-assisted case uses a separate simulated onboard UAV RIC object for UAV autonomy decisions. However, the actual ns-O-RAN E2 message delivery still uses simulator object interfaces rather than packet-level E2 transport over the satellite link.
+
+The onboard UAV RIC authority is only enabled in the `tn-uav-satellite` scenario using:
+
+```text
+--enable-onboard-uav-ric=1
+```
+
+It is disabled automatically for `tn-only` and `tn-uav`. Therefore, the onboard-RIC fallback logic does not alter the clean terrestrial baseline or the healthy-xHaul TN+UAV case.
 
 ## 5. Deployment Scenarios
 
@@ -101,7 +136,7 @@ There are no UAV cells and no satellite support. UEs can only connect to terrest
 How well does the terrestrial network perform by itself?
 ```
 
-Expected observations include the baseline delay, throughput, packet delivery ratio, and handover behavior under only terrestrial coverage. In the current comparison script, this scenario is run without artificial TN degradation so it represents a clean semi-urban terrestrial reference.
+Expected observations include the baseline delay, throughput, packet delivery ratio, and handover behavior under only terrestrial coverage. In the current comparison script, this scenario is run without artificial TN degradation so it represents a clean semi-urban terrestrial reference. No UAV cells are installed, the satellite monitor is disabled, and the onboard UAV RIC authority is disabled.
 
 ### 5.2 Scenario 2: UE + TN + UAV
 
@@ -116,6 +151,17 @@ The UAV improves radio access coverage, especially for UEs that are poorly serve
 
 Each UAV gNB selects the best available terrestrial donor gNB within a 10 km donor range. As the UAV moves, the xHaul monitor re-evaluates all TN gNBs and records the currently selected donor cell. If no TN donor is within this range, the UAV xHaul state is marked `UNREACHABLE`. In the TN + UAV scenario, the UAV is expected to remain connected through terrestrial xHaul; the unreachable case is mainly used later to motivate the satellite-assisted fallback scenario.
 
+In this scenario, satellite support is disabled. Therefore, when UAV xHaul is healthy the expected control state is:
+
+```text
+BackhaulMode = TN_DIRECT
+ControlPath = TN_E2
+ActiveUavRic = TN_NEAR_RT_RIC
+NormalUeHandoverAllowed = 1
+```
+
+This means UAV access and UE handover remain controlled through the terrestrial Near-RT RIC.
+
 The xHaul state is classified using the estimated UAV-to-TN donor RSRP:
 
 ```text
@@ -127,11 +173,27 @@ UNREACHABLE
 The UAV autonomy mode is then selected as:
 
 ```text
-COVERAGE_EXTENSION
-EDGE_ASSISTED_LOCAL
-EDGE_ASSISTED_WITH_SATELLITE
-AUTONOMOUS_EMERGENCY_ISLAND
-SATELLITE_ASSISTED_EMERGENCY
+TN_CONTROLLED_COVERAGE_EXTENSION
+ONBOARD_AUTONOMY_WITH_SATELLITE_BACKHAUL
+ONBOARD_EMERGENCY_CONTROL_WITH_SATELLITE_BACKHAUL
+ONBOARD_LOCAL_AUTONOMY_SERVICE_LIMITED
+AUTONOMOUS_LOCAL_ISLAND
+```
+
+The UE mobility and UAV autonomy policies are coupled through one rule:
+
+```text
+Healthy xHaul:
+    UAV remains available for normal UE handover.
+
+Degraded or unreachable xHaul with healthy satellite:
+    onboard UAV RIC/xApp becomes active, the UAV switches to satellite
+    fallback, and the UAV remains available for UE handover.
+
+Degraded or unreachable xHaul without satellite:
+    UAV is treated as a local/autonomous island for normal service, and
+    ordinary UE handover to that UAV cell is blocked by setting its effective
+    O-RAN cell capacity to 0.
 ```
 
 This scenario answers:
@@ -151,6 +213,17 @@ UEs -> UAV cell -> terrestrial donor/core network
 ```
 
 The satellite path is used as a fallback UAV backhaul route when terrestrial xHaul is degraded or unavailable. In normal conditions, the satellite may not significantly improve UE access coverage because the UAV already serves as the aerial radio node. Its main value appears when terrestrial xHaul or infrastructure reachability becomes unreliable. In the simulation, this fallback is represented by switching the UAV S1-U route from the direct TN/core path to the UAV gNB -> SAT -> GW -> core path.
+
+The same degradation event also changes the logical UAV control authority. During healthy xHaul, the UAV remains controlled by the terrestrial Near-RT RIC. During degraded or unreachable xHaul with healthy satellite support, the UAV autonomy trace records:
+
+```text
+BackhaulMode = SATELLITE_FALLBACK
+ControlPath = ONBOARD_LOCAL_CONTROL_WITH_SAT_FEEDBACK
+ActiveUavRic = ONBOARD_UAV_RIC
+NormalUeHandoverAllowed = 1
+```
+
+This represents the article-level idea of an onboard UAV RIC/xApp executing autonomy control when the terrestrial control/xHaul link fails. In the current ns-O-RAN implementation, the onboard UAV RIC is a separate simulated RIC object, but its local/E2-like interaction is still not transported as physical packets over an onboard control bus. The satellite path supports UAV backhaul and optional remote coordination.
 
 This scenario answers:
 
@@ -187,10 +260,20 @@ The current experiment uses the following settings:
 | TN-only degradation window | None |
 | TN + UAV degradation window | None |
 | TN + UAV xHaul condition | Healthy donor selected within 10 km |
-| Satellite-scenario TN degradation window | 15-30 s |
-| TN gNB TxPower penalty during satellite-scenario degradation | 15 dB |
-| Satellite-scenario UAV xHaul degradation window | 15-30 s |
-| UAV xHaul RSRP penalty during satellite-scenario degradation | 35 dB |
+| Satellite-scenario TN degradation window | None |
+| TN gNB TxPower penalty during satellite scenario | 0 dB |
+| Satellite-scenario mission movement start | 15 s |
+| UAV underserved-UE RSRP threshold | -105 dBm |
+| UAV mission mobility half-width, satellite scenario | 16 km |
+| UAV mission mobility half-height, satellite scenario | 8 km |
+| UAV mission target scale, satellite scenario | 4 |
+| UAV mission speed, satellite scenario | 500 m/s |
+| Satellite-scenario UAV xHaul degradation method | Donor distance + channel variation |
+| xHaul healthy RSRP threshold, satellite scenario | -72 dBm |
+| xHaul degraded RSRP threshold, satellite scenario | -82 dBm |
+| xHaul shadowing standard deviation | 6 dB |
+| xHaul fading-loss standard deviation | 4 dB |
+| Synthetic xHaul penalty | Disabled |
 
 Run all three scenarios with:
 
@@ -205,15 +288,15 @@ The three individual modes are:
 
 ./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --sim-time=40 --num-uess1=50 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=3 --max-ues-tn=20 --max-ues-ntn=10 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=1.0 --monitored-ul-rate-mbps=0.25 --monitored-packet-size=1000 --tn-tx-power-dbm=83 --uav-tx-power-dbm=78 --ue-tx-power-dbm=43 --init-min-rsrp=-160 --xhaul-max-donor-distance-m=10000 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1"
 
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --sim-time=40 --num-uess1=50 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=3 --max-ues-tn=20 --max-ues-ntn=10 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=1.0 --monitored-ul-rate-mbps=0.25 --monitored-packet-size=1000 --tn-tx-power-dbm=83 --uav-tx-power-dbm=78 --ue-tx-power-dbm=43 --init-min-rsrp=-160 --xhaul-max-donor-distance-m=10000 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --enable-sat-backhaul-monitor=1 --tn-degradation-start=15 --tn-degradation-stop=30 --tn-degradation-penalty-db=15 --xhaul-degradation-start=15 --xhaul-degradation-stop=30 --xhaul-degradation-penalty-db=35"
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --sim-time=40 --num-uess1=50 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=3 --max-ues-tn=20 --max-ues-ntn=10 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=1.0 --monitored-ul-rate-mbps=0.25 --monitored-packet-size=1000 --tn-tx-power-dbm=83 --uav-tx-power-dbm=78 --ue-tx-power-dbm=43 --init-min-rsrp=-160 --xhaul-max-donor-distance-m=10000 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --enable-sat-backhaul-monitor=1 --enable-onboard-uav-ric=1 --tn-degradation-start=-1 --tn-degradation-stop=-1 --tn-degradation-penalty-db=0 --uav-control-start=15 --uav-control-period=2 --uav-underserved-rsrp-thresh-dbm=-105 --uav-area-half-w-m=16000 --uav-area-half-h-m=8000 --uav-mission-target-scale=4 --uav-speed-mps=500 --xhaul-degradation-start=-1 --xhaul-degradation-stop=-1 --xhaul-degradation-penalty-db=0 --xhaul-healthy-rsrp-dbm=-72 --xhaul-degraded-rsrp-dbm=-82 --enable-xhaul-channel-variation=1 --xhaul-shadowing-stddev-db=6 --xhaul-fading-stddev-db=4 --channel-update-ms=100 --channel-condition-update-ms=200"
 ```
 
-The TN-only scenario is the clean reference and does not include artificial degradation. The TN + UAV scenario adds aerial access cells under healthy terrestrial xHaul, so it tests whether UAVs help when the TN layer has limited capacity for the 100-UE load. The satellite-assisted run then adds a matching TN degradation and UAV-to-TN xHaul degradation interval:
+The TN-only scenario is the clean reference and does not include artificial degradation. The TN + UAV scenario adds aerial access cells under healthy terrestrial xHaul, so it tests whether UAVs help when the TN layer has limited capacity for the 100-UE load. The satellite-assisted run uses a natural mission period starting at 15 s: UAVs move toward underserved UE clusters, and the UAV-to-TN xHaul may degrade because the donor distance increases and the urban channel fluctuates. No fixed time-window RSRP penalty is applied:
 
 | Time interval | Infrastructure condition | Expected interpretation |
 |---|---|---|
 | 0-15 s | Healthy TN infrastructure and healthy UAV-to-TN xHaul | Normal operation |
-| 15-30 s | TN-only and TN+UAV remain healthy; satellite scenario has degraded TN infrastructure and degraded UAV-to-TN xHaul | Satellite fallback is tested under infrastructure stress |
+| 15-30 s | TN-only and TN+UAV remain healthy; satellite scenario enters a UAV mission movement period toward underserved UEs; UAV-to-TN xHaul may become degraded/unreachable according to donor distance and channel variation | Satellite fallback is tested under natural mission stress |
 | 30-40 s | Satellite-scenario TN and xHaul recovery | Service should recover toward normal operation |
 
 ## 7. Measured Outputs and KPIs
@@ -223,12 +306,12 @@ The main output files are:
 | Output file | Purpose |
 |---|---|
 | `qos-vs-time.txt` | Per-UE delay, jitter, throughput, and packet delivery ratio |
-| `xhaul-autonomy-trace.csv` | UAV xHaul donor cell, donor distance, connectivity flag, RSRP, xHaul state, satellite health, selected backhaul mode, and UAV autonomy mode |
+| `xhaul-autonomy-trace.csv` | UAV xHaul donor cell, donor distance, connectivity flag, RSRP, xHaul state, satellite health, onboard UAV RIC availability/state, selected backhaul mode, control path, active UAV RIC, normal-handover permission, and UAV autonomy mode |
 | `tn-infrastructure-trace.csv` | TN degradation state and applied TN gNB transmit power |
 | `handover-trace.tr` | Successful handover events |
 | `handover-failure-trace.tr` | NR RRC handover failure events |
 | `ml-ho-dataset.csv` | Candidate-level O-RAN decision records |
-| `ns3-oran-lm.log` | Verbose O-RAN logic-module INFO log, including `TRACE HO_SUCCESS`, `TRACE HO_FAILURE`, and logic-module rejection lines such as low-RSRP handover candidates |
+| `ns3-oran-lm.log` | Verbose O-RAN logic-module INFO log, including `TRACE HO_SUCCESS`, `TRACE HO_FAILURE`, `UAV_AUTONOMY_XAPP`, and logic-module rejection lines such as low-RSRP or xHaul-blocked handover candidates |
 | `uav-position-trace.tr` | UAV movement and position evidence |
 | `ues1-position-trace.tr` | Monitored UE position trace |
 | `ues2-position-trace.tr` | Background UE position trace |
@@ -264,7 +347,7 @@ TN+UAV shows whether aerial access helps when TN capacity/coverage is insufficie
 TN+UAV+satellite shows whether continuity improves when UAV xHaul is weak but satellite fallback is available.
 ```
 
-The TN-only case is intentionally not degraded; it establishes the normal terrestrial service level. The TN+UAV case then adds three UAV/NTN cells under healthy terrestrial xHaul to test whether aerial cells relieve the 100-UE load. The satellite-assisted case introduces a controlled 15-30 s degradation interval: terrestrial gNB transmit power is reduced, and the UAV-to-TN donor xHaul RSRP estimate receives an additional penalty. This separates the healthy terrestrial reference, the healthy-xHaul UAV access improvement case, and the satellite-assisted continuity case.
+The TN-only case is intentionally not degraded; it establishes the normal terrestrial service level. The TN+UAV case then adds three UAV/NTN cells under healthy terrestrial xHaul to test whether aerial cells relieve the 100-UE load. The satellite-assisted case introduces a natural mission movement period from 15 s onward. During this period, UAVs move toward scaled underserved-UE mission targets and are allowed to move beyond the 10 km terrestrial donor range. The selected donor distance, donor-range test, urban shadowing/fading variation, and xHaul RSRP thresholds determine whether the UAV remains TN-controlled or switches to onboard autonomy with satellite fallback. This separates the healthy terrestrial reference, the healthy-xHaul UAV access improvement case, and the satellite-assisted continuity case.
 
 ### 8.1 Sample Figure Set
 
@@ -303,12 +386,12 @@ Satellite assistance is most valuable when terrestrial xHaul or control reachabi
 
 ## 10. Current Limitation and Next Step
 
-The current simulation records xHaul health, satellite backhaul health, and the selected UAV backhaul mode. In the satellite-assisted scenario, the UAV S1-U route can switch from direct TN backhaul to a satellite fallback path when terrestrial xHaul is degraded or unreachable. The remaining limitation is that UE handover decisions are still based on the O-RAN RSRP/capacity policy rather than directly using xHaul state.
+The current simulation records xHaul health, satellite backhaul health, onboard UAV RIC availability/state, the selected UAV backhaul mode, the intended control path, the active UAV control authority, and whether normal UE handover to a UAV cell is allowed. In the satellite-assisted scenario, the UAV S1-U route can switch from direct TN backhaul to a satellite fallback path when terrestrial xHaul is degraded or unreachable. The UAV Autonomy xApp influences the UE Mobility xApp by setting the effective UAV cell capacity to 0 when the UAV has degraded or unreachable xHaul and no onboard-RIC/satellite-backhaul fallback.
 
-The next improvement is to close the control loop:
+The remaining limitation is transport realism: although the satellite-assisted scenario uses a separate simulated onboard UAV RIC object for UAV autonomy, ns-O-RAN E2 messages still use simulator object interfaces rather than packet-level TN E2 transport or an explicit onboard control-bus model. The satellite backhaul itself is represented as the `UAV gNB -> SAT -> GW -> core` fallback path. The next improvement is to make the policy richer and the transport model more explicit:
 
-1. Use xHaul state inside the O-RAN logic module.
-2. Penalize or avoid UAV cells when their xHaul is unreachable.
+1. Model packet-level E2/control-plane transport delay and loss over TN and satellite paths.
+2. Make UAV movement objectives, donor selection, and UE handover decisions jointly optimized.
 3. Prefer UAV/satellite-supported service when terrestrial infrastructure is degraded.
 4. Add service-specific policies for emergency traffic, video traffic, and background traffic.
 5. Compare against a baseline that ignores xHaul health and selects cells using only UE-facing RSRP.

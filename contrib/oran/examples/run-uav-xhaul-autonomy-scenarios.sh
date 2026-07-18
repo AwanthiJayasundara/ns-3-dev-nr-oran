@@ -7,12 +7,15 @@ set -euo pipefail
 # Purpose:
 #   Compare terrestrial, UAV-assisted, and satellite-assisted service. The
 #   TN-only scenario is a clean semi-urban terrestrial reference with no
-#   artificial disruption. The UAV scenarios use a 15-30 s terrestrial
-#   infrastructure degradation window and a matching UAV xHaul degradation
-#   window:
+#   artificial disruption. The TN+UAV scenario adds aerial cells under healthy
+#   terrestrial xHaul. The satellite-assisted scenario uses a 15-30 s
+#   natural mission period from 15-30 s where UAVs move toward underserved UEs.
+#   UAV-to-TN xHaul degradation is driven by donor distance, stricter RSRP
+#   thresholds, and stochastic channel variation:
 #     1. TN only under healthy terrestrial infrastructure
 #     2. TN + UAV with extra aerial access capacity and healthy TN xHaul
-#     3. TN + UAV + satellite with terrestrial/xHaul degradation plus fallback
+#     3. TN + UAV + satellite with terrestrial/xHaul degradation and a separate
+#        simulated onboard UAV Near-RT RIC/autonomy xApp fallback
 #
 # Scenario 1 experiment size:
 #   --num-uess1=20        20 monitored/mobile UEs available from the start.
@@ -23,7 +26,8 @@ set -euo pipefail
 #
 # Common outputs:
 #   qos-vs-time.txt             Delay, jitter, throughput, and PDR.
-#   xhaul-autonomy-trace.csv    UAV xHaul RSRP, xHaul state, and UAV mode.
+#   xhaul-autonomy-trace.csv    UAV xHaul RSRP, xHaul state, active UAV RIC,
+#                               control path, and UAV mode.
 #   handover-trace.tr           Successful handover events.
 #   handover-failure-trace.tr   Failed handover events.
 #   tn-infrastructure-trace.csv TN degradation state and TN gNB TxPower.
@@ -64,13 +68,26 @@ UAV_ARGS="--num-uess1=50 \
   --max-ues-ntn=10 \
   --num-ntn-gnbs=3"
 
-DEGRADED_TN_ARGS="--tn-degradation-start=15 \
-  --tn-degradation-stop=30 \
-  --tn-degradation-penalty-db=15"
-
-DEGRADED_XHAUL_ARGS="--xhaul-degradation-start=15 \
-  --xhaul-degradation-stop=30 \
-  --xhaul-degradation-penalty-db=35"
+NATURAL_MISSION_ARGS="--tn-degradation-start=-1 \
+  --tn-degradation-stop=-1 \
+  --tn-degradation-penalty-db=0 \
+  --uav-control-start=15 \
+  --uav-control-period=2 \
+  --uav-underserved-rsrp-thresh-dbm=-105 \
+  --uav-area-half-w-m=16000 \
+  --uav-area-half-h-m=8000 \
+  --uav-mission-target-scale=4 \
+  --uav-speed-mps=500 \
+  --xhaul-degradation-start=-1 \
+  --xhaul-degradation-stop=-1 \
+  --xhaul-degradation-penalty-db=0 \
+  --xhaul-healthy-rsrp-dbm=-72 \
+  --xhaul-degraded-rsrp-dbm=-82 \
+  --enable-xhaul-channel-variation=1 \
+  --xhaul-shadowing-stddev-db=6 \
+  --xhaul-fading-stddev-db=4 \
+  --channel-update-ms=100 \
+  --channel-condition-update-ms=200"
 
 # Build only the new example target. Configure first if this is a fresh build tree:
 #   ./ns3 configure --build-profile=optimized --enable-examples
@@ -89,7 +106,10 @@ DEGRADED_XHAUL_ARGS="--xhaul-degradation-start=15 \
 # the 10 km terrestrial xHaul donor range. Satellite backhaul is disabled.
 ./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav ${COMMON_ARGS} ${UAV_ARGS}"
 
-# Scenario 3: UE + TN + UAV + satellite with the same degradation.
-# Same TN+UAV deployment, but satellite backhaul monitoring is enabled so that
-# UAV service continuity can be compared under terrestrial/xHaul degradation.
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite ${COMMON_ARGS} ${UAV_ARGS} --enable-sat-backhaul-monitor=1 ${DEGRADED_TN_ARGS} ${DEGRADED_XHAUL_ARGS}"
+# Scenario 3: UE + TN + UAV + satellite with a natural mission-period stress.
+# Same TN+UAV deployment, but satellite backhaul monitoring is enabled. From
+# 15 s onward, UAVs move toward underserved UE clusters. The UAV-to-TN xHaul is
+# not weakened with a hand-set dB penalty; donor distance, urban
+# shadowing/fading variation, and xHaul RSRP thresholds decide whether onboard
+# UAV RIC control and satellite fallback are needed.
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite ${COMMON_ARGS} ${UAV_ARGS} --enable-sat-backhaul-monitor=1 --enable-onboard-uav-ric=1 ${NATURAL_MISSION_ARGS}"

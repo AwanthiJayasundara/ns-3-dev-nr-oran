@@ -660,6 +660,14 @@ std::vector<Ptr<OranCommand>> commands;
                 }
                 if (!CapacityOk(c.cellId, effectiveLoad))
                 {
+                    if (c.isNtn && GetCellCap(c.cellId) == 0)
+                    {
+                        NS_LOG_INFO("LM HO_FAIL_XHAUL_BLOCKED UE=" << ueInfo.nodeId
+                                      << " currCell=" << servingCellId
+                                      << " candCell=" << c.cellId
+                                      << " candRsrp=" << c.rsrp
+                                      << " reason=UAV_AUTONOMY_CAPACITY_0");
+                    }
                     if (m_tryNextBest)
                     {
                         continue;

@@ -213,9 +213,18 @@ OranNearRtRicE2Terminator::ReceiveDeregistrationRequest(uint64_t e2NodeId)
 
         uint64_t deregisteredE2NodeId = m_data->DeregisterNode(e2NodeId);
 
+        auto it = m_nodeTerminators.find(e2NodeId);
+        if (it == m_nodeTerminators.end() || it->second == nullptr)
+        {
+            NS_LOG_WARN("RIC_E2Terminator: Dropping deregistration response for unknown "
+                        "E2NodeId="
+                        << e2NodeId);
+            return;
+        }
+
         Simulator::Schedule(Seconds(m_transmissionDelayRv->GetValue()),
                             &OranE2NodeTerminator::ReceiveDeregistrationResponse,
-                            m_nodeTerminators[e2NodeId],
+                            it->second,
                             deregisteredE2NodeId);
     }
 }
@@ -344,9 +353,17 @@ OranNearRtRicE2Terminator::SendCommand(Ptr<OranCommand> command)
 
         m_data->LogCommandE2Terminator(command);
 
+        auto it = m_nodeTerminators.find(command->GetTargetE2NodeId());
+        if (it == m_nodeTerminators.end() || it->second == nullptr)
+        {
+            NS_LOG_WARN("RIC_E2Terminator: Dropping command for unknown E2NodeId="
+                        << command->GetTargetE2NodeId());
+            return;
+        }
+
         Simulator::Schedule(Seconds(m_transmissionDelayRv->GetValue()),
                             &OranE2NodeTerminator::ReceiveCommand,
-                            m_nodeTerminators[command->GetTargetE2NodeId()],
+                            it->second,
                             command);
     }
 }
