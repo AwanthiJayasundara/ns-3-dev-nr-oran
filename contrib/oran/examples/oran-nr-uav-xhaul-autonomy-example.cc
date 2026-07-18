@@ -129,6 +129,8 @@ static double TN_GNB_HALF_H_M  = 1200.0;
 
 static double UAV_AREA_HALF_W_M = 3000.0;
 static double UAV_AREA_HALF_H_M = 1500.0;
+static double UAV_INITIAL_AREA_HALF_W_M = 3000.0;
+static double UAV_INITIAL_AREA_HALF_H_M = 1500.0;
 
 static double UE_AREA_HALF_W_M  = 3000.0;
 static double UE_AREA_HALF_H_M  = 1500.0;
@@ -1547,8 +1549,8 @@ install_mobility_geocentric(NodeContainer staticNodes,
         Vector initGeo = RandomGeoFromCenter(g_refLat,
                                              g_refLon,
                                              uavAlt,
-                                             UAV_AREA_HALF_W_M,
-                                             UAV_AREA_HALF_H_M,
+                                             UAV_INITIAL_AREA_HALF_W_M,
+                                             UAV_INITIAL_AREA_HALF_H_M,
                                              eastRv,
                                              northRv);
 
@@ -2214,6 +2216,12 @@ main(int argc, char* argv[])
     cmd.AddValue("tn-area-half-h-m", "Half-height of the terrestrial gNB placement area in meters", TN_GNB_HALF_H_M);
     cmd.AddValue("uav-area-half-w-m", "Half-width of the UAV initial/mobility area in meters", UAV_AREA_HALF_W_M);
     cmd.AddValue("uav-area-half-h-m", "Half-height of the UAV initial/mobility area in meters", UAV_AREA_HALF_H_M);
+    cmd.AddValue("uav-initial-area-half-w-m",
+                 "Half-width of the UAV initial placement area in meters. This can be smaller than the mission area so the run starts with healthy TN xHaul.",
+                 UAV_INITIAL_AREA_HALF_W_M);
+    cmd.AddValue("uav-initial-area-half-h-m",
+                 "Half-height of the UAV initial placement area in meters. This can be smaller than the mission area so the run starts with healthy TN xHaul.",
+                 UAV_INITIAL_AREA_HALF_H_M);
     cmd.AddValue("ue-area-half-w-m", "Half-width of the UE mobility area in meters", UE_AREA_HALF_W_M);
     cmd.AddValue("ue-area-half-h-m", "Half-height of the UE mobility area in meters", UE_AREA_HALF_H_M);
     cmd.AddValue("uav-speed-mps", "UAV movement speed in meters per second", g_uavSpeedMps);

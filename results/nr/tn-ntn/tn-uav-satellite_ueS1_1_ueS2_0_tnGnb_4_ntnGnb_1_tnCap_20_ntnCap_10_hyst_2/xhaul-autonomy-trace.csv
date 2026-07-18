@@ -1,3 +1,6 @@
-Time,DeploymentMode,UavIndex,UavCellId,BestDonorCellId,XhaulRsrpDbm,XhaulState,XhaulDegradationActive,SatBackhaulDlSnrDb,SatBackhaulUlSnrDb,SatBackhaulHealthy,BackhaulMode,E2TxDelaySec,E2SendIntervalSec,LmQueryIntervalSec,UavMode
-0.5,tn-uav-satellite,0,5,4,-60.8777,HEALTHY,0,13.3825,8.86193,1,TN_DIRECT,0.1,2,2,COVERAGE_EXTENSION
-1.5,tn-uav-satellite,0,5,4,-60.8777,HEALTHY,0,12.4428,7.92223,1,TN_DIRECT,0.1,2,2,COVERAGE_EXTENSION
+Time,DeploymentMode,UavIndex,UavCellId,BestDonorCellId,BestDonorDistanceM,XhaulConnected,XhaulChannelVariationDb,XhaulRsrpDbm,XhaulState,XhaulDegradationActive,SatBackhaulDlSnrDb,SatBackhaulUlSnrDb,SatBackhaulHealthy,OnboardUavRicAvailable,OnboardUavRicState,BackhaulMode,ControlPath,ActiveUavRic,NormalUeHandoverAllowed,E2TxDelaySec,E2SendIntervalSec,LmQueryIntervalSec,UavMode
+4.4,tn-uav-satellite,0,5,1,1451.84,1,0.434841,-64.2447,HEALTHY,0,13.7535,9.23294,1,1,STANDBY,TN_DIRECT,TN_E2,TN_NEAR_RT_RIC,1,0.1,2,2,TN_CONTROLLED_COVERAGE_EXTENSION
+6.4,tn-uav-satellite,0,5,2,1906.06,1,1.23823,-65.8057,HEALTHY,0,12.1534,7.63276,1,1,STANDBY,TN_DIRECT,TN_E2,TN_NEAR_RT_RIC,1,0.1,2,2,TN_CONTROLLED_COVERAGE_EXTENSION
+8.4,tn-uav-satellite,0,5,1,1451.84,1,0.698548,-63.981,HEALTHY,0,14.0579,9.53733,1,1,STANDBY,TN_DIRECT,TN_E2,TN_NEAR_RT_RIC,1,0.1,2,2,TN_CONTROLLED_COVERAGE_EXTENSION
+10.4,tn-uav-satellite,0,5,2,1906.06,1,1.30698,-65.7369,HEALTHY,0,14.2352,9.71457,1,1,STANDBY,TN_DIRECT,TN_E2,TN_NEAR_RT_RIC,1,0.1,2,2,TN_CONTROLLED_COVERAGE_EXTENSION
+12.4,tn-uav-satellite,0,5,2,1906.06,1,-2.30211,-69.346,HEALTHY,0,13.3241,8.8035,1,1,STANDBY,TN_DIRECT,TN_E2,TN_NEAR_RT_RIC,1,0.1,2,2,TN_CONTROLLED_COVERAGE_EXTENSION

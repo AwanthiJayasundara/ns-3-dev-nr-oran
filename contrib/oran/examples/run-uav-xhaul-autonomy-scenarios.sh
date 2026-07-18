@@ -38,8 +38,8 @@ COMMON_ARGS="--sim-time=40 \
   --num-tn-gnbs=4 \
   --rlc-mode=am \
   --monitored-traffic=udp \
-  --monitored-dl-rate-mbps=1.0 \
-  --monitored-ul-rate-mbps=0.25 \
+  --monitored-dl-rate-mbps=0.2 \
+  --monitored-ul-rate-mbps=0.05 \
   --monitored-packet-size=1000 \
   --tn-tx-power-dbm=83 \
   --uav-tx-power-dbm=78 \
@@ -74,6 +74,8 @@ NATURAL_MISSION_ARGS="--tn-degradation-start=-1 \
   --uav-control-start=15 \
   --uav-control-period=2 \
   --uav-underserved-rsrp-thresh-dbm=-105 \
+  --uav-initial-area-half-w-m=3000 \
+  --uav-initial-area-half-h-m=1500 \
   --uav-area-half-w-m=16000 \
   --uav-area-half-h-m=8000 \
   --uav-mission-target-scale=4 \

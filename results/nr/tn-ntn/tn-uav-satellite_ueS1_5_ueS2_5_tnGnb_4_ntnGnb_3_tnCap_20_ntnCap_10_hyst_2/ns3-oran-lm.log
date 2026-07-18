@@ -1,0 +1,29 @@
+UAV_AUTONOMY_XAPP Time=4.4 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1451.84 XhaulConnected=1 XhaulChannelVariationDb=0.434841 XhaulState=HEALTHY SatBackhaulHealthy=1 OnboardUavRicAvailable=1 OnboardUavRicState=STANDBY BackhaulMode=TN_DIRECT ControlPath=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=4.4 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=629.258 XhaulConnected=1 XhaulChannelVariationDb=-2.28216 XhaulState=HEALTHY SatBackhaulHealthy=1 OnboardUavRicAvailable=1 OnboardUavRicState=STANDBY BackhaulMode=TN_DIRECT ControlPath=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=4.4 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=765.017 XhaulConnected=1 XhaulChannelVariationDb=-0.793916 XhaulState=HEALTHY SatBackhaulHealthy=1 OnboardUavRicAvailable=1 OnboardUavRicState=STANDBY BackhaulMode=TN_DIRECT ControlPath=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+Could not find NR UE cell info for E2 Node ID = 8
+Could not find NR UE cell info for E2 Node ID = 9
+Could not find NR UE cell info for E2 Node ID = 10
+Could not find NR UE cell info for E2 Node ID = 11
+Could not find NR UE cell info for E2 Node ID = 12
+Could not find NR gNB location for E2 Node ID = 1
+Could not find NR gNB location for E2 Node ID = 2
+Could not find NR gNB location for E2 Node ID = 3
+Could not find NR gNB location for E2 Node ID = 4
+Could not find NR gNB location for E2 Node ID = 5
+Could not find NR gNB location for E2 Node ID = 6
+Could not find NR gNB location for E2 Node ID = 7
+---- LOAD at t=4.5 ----
+UAV_AUTONOMY_XAPP Time=6.4 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=2 BestDonorDistanceM=1906.06 XhaulConnected=1 XhaulChannelVariationDb=1.30698 XhaulState=HEALTHY SatBackhaulHealthy=1 OnboardUavRicAvailable=1 OnboardUavRicState=STANDBY BackhaulMode=TN_DIRECT ControlPath=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=6.4 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=629.258 XhaulConnected=1 XhaulChannelVariationDb=-3.9027 XhaulState=HEALTHY SatBackhaulHealthy=1 OnboardUavRicAvailable=1 OnboardUavRicState=STANDBY BackhaulMode=TN_DIRECT ControlPath=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=6.4 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=765.017 XhaulConnected=1 XhaulChannelVariationDb=-0.170944 XhaulState=HEALTHY SatBackhaulHealthy=1 OnboardUavRicAvailable=1 OnboardUavRicState=STANDBY BackhaulMode=TN_DIRECT ControlPath=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=6.5 ----
+  cell 1 (TN) load=0/20
+  cell 2 (TN) load=2/20
+  cell 3 (TN) load=1/20
+  cell 4 (TN) load=0/20
+  cell 5 (NTN) load=1/10
+  cell 6 (NTN) load=1/10
+  cell 7 (NTN) load=0/10
+UE 9 TTT_WAIT target=1 elapsed=0s need=2s
+UE 11 TTT_WAIT target=2 elapsed=0s need=2s

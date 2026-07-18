@@ -254,8 +254,8 @@ The current experiment uses the following settings:
 | Hysteresis | 2 dB |
 | RLC mode for comparison runs | AM |
 | Monitored traffic model | UDP |
-| Monitored DL offered rate | 1 Mbps per UES1 UE |
-| Monitored UL offered rate | 0.25 Mbps per UES1 UE |
+| Monitored DL offered rate | 0.2 Mbps per UES1 UE |
+| Monitored UL offered rate | 0.05 Mbps per UES1 UE |
 | Monitored packet size | 1000 bytes |
 | TN-only degradation window | None |
 | TN + UAV degradation window | None |
@@ -264,6 +264,8 @@ The current experiment uses the following settings:
 | TN gNB TxPower penalty during satellite scenario | 0 dB |
 | Satellite-scenario mission movement start | 15 s |
 | UAV underserved-UE RSRP threshold | -105 dBm |
+| UAV initial placement half-width, satellite scenario | 3 km |
+| UAV initial placement half-height, satellite scenario | 1.5 km |
 | UAV mission mobility half-width, satellite scenario | 16 km |
 | UAV mission mobility half-height, satellite scenario | 8 km |
 | UAV mission target scale, satellite scenario | 4 |
@@ -284,11 +286,11 @@ bash contrib/oran/examples/run-uav-xhaul-autonomy-scenarios.sh
 The three individual modes are:
 
 ```bash
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-only --sim-time=40 --num-uess1=20 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=0 --max-ues-tn=20 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=1.0 --monitored-ul-rate-mbps=0.25 --monitored-packet-size=1000 --tn-tx-power-dbm=83 --uav-tx-power-dbm=78 --ue-tx-power-dbm=43 --init-min-rsrp=-160 --xhaul-max-donor-distance-m=10000 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1"
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-only --sim-time=40 --num-uess1=20 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=0 --max-ues-tn=20 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=0.2 --monitored-ul-rate-mbps=0.05 --monitored-packet-size=1000 --tn-tx-power-dbm=83 --uav-tx-power-dbm=78 --ue-tx-power-dbm=43 --init-min-rsrp=-160 --xhaul-max-donor-distance-m=10000 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1"
 
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --sim-time=40 --num-uess1=50 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=3 --max-ues-tn=20 --max-ues-ntn=10 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=1.0 --monitored-ul-rate-mbps=0.25 --monitored-packet-size=1000 --tn-tx-power-dbm=83 --uav-tx-power-dbm=78 --ue-tx-power-dbm=43 --init-min-rsrp=-160 --xhaul-max-donor-distance-m=10000 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1"
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --sim-time=40 --num-uess1=50 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=3 --max-ues-tn=20 --max-ues-ntn=10 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=0.2 --monitored-ul-rate-mbps=0.05 --monitored-packet-size=1000 --tn-tx-power-dbm=83 --uav-tx-power-dbm=78 --ue-tx-power-dbm=43 --init-min-rsrp=-160 --xhaul-max-donor-distance-m=10000 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1"
 
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --sim-time=40 --num-uess1=50 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=3 --max-ues-tn=20 --max-ues-ntn=10 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=1.0 --monitored-ul-rate-mbps=0.25 --monitored-packet-size=1000 --tn-tx-power-dbm=83 --uav-tx-power-dbm=78 --ue-tx-power-dbm=43 --init-min-rsrp=-160 --xhaul-max-donor-distance-m=10000 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --enable-sat-backhaul-monitor=1 --enable-onboard-uav-ric=1 --tn-degradation-start=-1 --tn-degradation-stop=-1 --tn-degradation-penalty-db=0 --uav-control-start=15 --uav-control-period=2 --uav-underserved-rsrp-thresh-dbm=-105 --uav-area-half-w-m=16000 --uav-area-half-h-m=8000 --uav-mission-target-scale=4 --uav-speed-mps=500 --xhaul-degradation-start=-1 --xhaul-degradation-stop=-1 --xhaul-degradation-penalty-db=0 --xhaul-healthy-rsrp-dbm=-72 --xhaul-degraded-rsrp-dbm=-82 --enable-xhaul-channel-variation=1 --xhaul-shadowing-stddev-db=6 --xhaul-fading-stddev-db=4 --channel-update-ms=100 --channel-condition-update-ms=200"
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --sim-time=40 --num-uess1=50 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=3 --max-ues-tn=20 --max-ues-ntn=10 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=0.2 --monitored-ul-rate-mbps=0.05 --monitored-packet-size=1000 --tn-tx-power-dbm=83 --uav-tx-power-dbm=78 --ue-tx-power-dbm=43 --init-min-rsrp=-160 --xhaul-max-donor-distance-m=10000 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --enable-sat-backhaul-monitor=1 --enable-onboard-uav-ric=1 --tn-degradation-start=-1 --tn-degradation-stop=-1 --tn-degradation-penalty-db=0 --uav-control-start=15 --uav-control-period=2 --uav-underserved-rsrp-thresh-dbm=-105 --uav-initial-area-half-w-m=3000 --uav-initial-area-half-h-m=1500 --uav-area-half-w-m=16000 --uav-area-half-h-m=8000 --uav-mission-target-scale=4 --uav-speed-mps=500 --xhaul-degradation-start=-1 --xhaul-degradation-stop=-1 --xhaul-degradation-penalty-db=0 --xhaul-healthy-rsrp-dbm=-72 --xhaul-degraded-rsrp-dbm=-82 --enable-xhaul-channel-variation=1 --xhaul-shadowing-stddev-db=6 --xhaul-fading-stddev-db=4 --channel-update-ms=100 --channel-condition-update-ms=200"
 ```
 
 The TN-only scenario is the clean reference and does not include artificial degradation. The TN + UAV scenario adds aerial access cells under healthy terrestrial xHaul, so it tests whether UAVs help when the TN layer has limited capacity for the 100-UE load. The satellite-assisted run uses a natural mission period starting at 15 s: UAVs move toward underserved UE clusters, and the UAV-to-TN xHaul may degrade because the donor distance increases and the urban channel fluctuates. No fixed time-window RSRP penalty is applied:
