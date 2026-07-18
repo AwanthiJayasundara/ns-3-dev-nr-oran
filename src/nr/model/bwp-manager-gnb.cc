@@ -54,12 +54,22 @@ BwpManagerGnb::SetBwpManagerAlgorithm(const Ptr<BwpManagerAlgorithm>& algorithm)
 uint8_t
 BwpManagerGnb::GetResourceType(NrMacSapProvider::BufferStatusReportParameters params)
 {
-    NS_ASSERT_MSG(m_ueInfo.find(params.rnti) != m_ueInfo.end(),
-                  "Trying to check the QoS of unknown UE");
-    NS_ASSERT_MSG(m_ueInfo.at(params.rnti).m_rlcLcInstantiated.find(params.lcid) !=
-                      m_ueInfo.at(params.rnti).m_rlcLcInstantiated.end(),
-                  "Trying to check the QoS of unknown logical channel");
-    return (m_ueInfo[params.rnti].m_rlcLcInstantiated[params.lcid]).resourceType;
+    auto ueIt = m_ueInfo.find(params.rnti);
+    if (ueIt == m_ueInfo.end())
+    {
+        NS_LOG_INFO("Unknown UE while checking QoS for RNTI " << params.rnti);
+        return 0;
+    }
+
+    auto lcIt = ueIt->second.m_rlcLcInstantiated.find(params.lcid);
+    if (lcIt == ueIt->second.m_rlcLcInstantiated.end())
+    {
+        NS_LOG_INFO("Unknown LCID " << static_cast<uint32_t>(params.lcid)
+                                    << " while checking QoS for RNTI " << params.rnti);
+        return 0;
+    }
+
+    return lcIt->second.resourceType;
 }
 
 std::vector<NrCcmRrcSapProvider::LcsConfig>
@@ -82,12 +92,22 @@ BwpManagerGnb::GetBwpIndex(uint16_t rnti, uint8_t lcid)
 {
     NS_LOG_FUNCTION(this);
     NS_ASSERT(m_algorithm != nullptr);
-    NS_ASSERT_MSG(m_ueInfo.find(rnti) != m_ueInfo.end(), "Unknown UE");
-    NS_ASSERT_MSG(m_ueInfo.at(rnti).m_rlcLcInstantiated.find(lcid) !=
-                      m_ueInfo.at(rnti).m_rlcLcInstantiated.end(),
-                  "Unknown logical channel of UE");
+    auto ueIt = m_ueInfo.find(rnti);
+    if (ueIt == m_ueInfo.end())
+    {
+        NS_LOG_INFO("Unknown UE for RNTI " << rnti << "; using BWP 0");
+        return 0;
+    }
 
-    uint8_t fiveQi = m_ueInfo[rnti].m_rlcLcInstantiated[lcid].fiveQi;
+    auto lcIt = ueIt->second.m_rlcLcInstantiated.find(lcid);
+    if (lcIt == ueIt->second.m_rlcLcInstantiated.end())
+    {
+        NS_LOG_INFO("Unknown LCID " << static_cast<uint32_t>(lcid)
+                                    << " for RNTI " << rnti << "; using BWP 0");
+        return 0;
+    }
+
+    uint8_t fiveQi = lcIt->second.fiveQi;
 
     // Force a conversion between the uint8_t type that comes from the LcInfo
     // struct (yeah, using the NrQosFlow::FiveQi type was too hard ...)
@@ -100,12 +120,22 @@ BwpManagerGnb::PeekBwpIndex(uint16_t rnti, uint8_t lcid) const
     NS_LOG_FUNCTION(this);
     NS_ASSERT(m_algorithm != nullptr);
     // For the moment, Get and Peek are the same, but they'll change
-    NS_ASSERT_MSG(m_ueInfo.find(rnti) != m_ueInfo.end(), "Unknown UE");
-    NS_ASSERT_MSG(m_ueInfo.at(rnti).m_rlcLcInstantiated.find(lcid) !=
-                      m_ueInfo.at(rnti).m_rlcLcInstantiated.end(),
-                  "Unknown logical channel of UE");
+    auto ueIt = m_ueInfo.find(rnti);
+    if (ueIt == m_ueInfo.end())
+    {
+        NS_LOG_INFO("Unknown UE for RNTI " << rnti << "; peeking BWP 0");
+        return 0;
+    }
 
-    uint8_t fiveQi = m_ueInfo.at(rnti).m_rlcLcInstantiated.at(lcid).fiveQi;
+    auto lcIt = ueIt->second.m_rlcLcInstantiated.find(lcid);
+    if (lcIt == ueIt->second.m_rlcLcInstantiated.end())
+    {
+        NS_LOG_INFO("Unknown LCID " << static_cast<uint32_t>(lcid)
+                                    << " for RNTI " << rnti << "; peeking BWP 0");
+        return 0;
+    }
+
+    uint8_t fiveQi = lcIt->second.fiveQi;
 
     // Force a conversion between the uint8_t type that comes from the LcInfo
     // struct (yeah, using the NrQosFlow::FiveQi type was too hard ...)
@@ -159,6 +189,22 @@ BwpManagerGnb::DoTransmitBufferStatusReport(NrMacSapProvider::BufferStatusReport
 {
     NS_LOG_FUNCTION(this);
 
+    auto ueIt = m_ueInfo.find(params.rnti);
+    if (ueIt == m_ueInfo.end())
+    {
+        NS_LOG_INFO("Dropping stale gNB BSR for unknown RNTI " << params.rnti);
+        return;
+    }
+
+    if (ueIt->second.m_rlcLcInstantiated.find(params.lcid) ==
+        ueIt->second.m_rlcLcInstantiated.end())
+    {
+        NS_LOG_INFO("Dropping stale gNB BSR for RNTI " << params.rnti
+                                                       << " LCID "
+                                                       << static_cast<uint32_t>(params.lcid));
+        return;
+    }
+
     uint8_t bwpIndex = GetBwpIndex(params.rnti, params.lcid);
 
     if (m_macSapProvidersMap.find(bwpIndex) != m_macSapProvidersMap.end())
@@ -192,20 +238,27 @@ BwpManagerGnb::DoUlReceiveMacCe(nr::MacCeListElement_s bsr, uint8_t componentCar
     NS_ASSERT(m_algorithm != nullptr);
     NS_ASSERT_MSG(bsr.m_macCeType == nr::MacCeListElement_s::BSR,
                   "Received a Control Message not allowed " << bsr.m_macCeType);
-    NS_ASSERT_MSG(m_ccmMacSapProviderMap.find(componentCarrierId) != m_ccmMacSapProviderMap.end(),
-                  "Mac sap provider does not exist.");
+
+    if (m_ueInfo.find(bsr.m_rnti) == m_ueInfo.end())
+    {
+        NS_LOG_INFO("Dropping stale gNB BSR for unknown RNTI " << bsr.m_rnti);
+        return;
+    }
+
+    auto sapIt = m_ccmMacSapProviderMap.find(componentCarrierId);
+    if (sapIt == m_ccmMacSapProviderMap.end())
+    {
+        NS_LOG_INFO("Dropping BSR for RNTI " << bsr.m_rnti
+                                            << " because component carrier "
+                                            << static_cast<uint32_t>(componentCarrierId)
+                                            << " has no MAC SAP provider");
+        return;
+    }
 
     NS_LOG_DEBUG("Routing BSR for UE " << bsr.m_rnti << " to source CC id "
                                        << static_cast<uint32_t>(componentCarrierId));
 
-    if (m_ccmMacSapProviderMap.find(componentCarrierId) != m_ccmMacSapProviderMap.end())
-    {
-        m_ccmMacSapProviderMap.find(componentCarrierId)->second->ReportMacCeToScheduler(bsr);
-    }
-    else
-    {
-        NS_ABORT_MSG("Bwp index not valid.");
-    }
+    sapIt->second->ReportMacCeToScheduler(bsr);
 }
 
 void
@@ -217,10 +270,23 @@ BwpManagerGnb::DoUlReceiveSr(uint16_t rnti, uint8_t componentCarrierId)
     NS_LOG_DEBUG("Routing SR for UE " << rnti << " to source CC id "
                                       << static_cast<uint32_t>(componentCarrierId));
 
-    auto it = m_ccmMacSapProviderMap.find(componentCarrierId);
-    NS_ABORT_IF(it == m_ccmMacSapProviderMap.end());
+    if (m_ueInfo.find(rnti) == m_ueInfo.end())
+    {
+        NS_LOG_INFO("Dropping stale gNB SR for unknown RNTI " << rnti);
+        return;
+    }
 
-    m_ccmMacSapProviderMap.find(componentCarrierId)->second->ReportSrToScheduler(rnti);
+    auto it = m_ccmMacSapProviderMap.find(componentCarrierId);
+    if (it == m_ccmMacSapProviderMap.end())
+    {
+        NS_LOG_INFO("Dropping SR for RNTI " << rnti
+                                           << " because component carrier "
+                                           << static_cast<uint32_t>(componentCarrierId)
+                                           << " has no MAC SAP provider");
+        return;
+    }
+
+    it->second->ReportSrToScheduler(rnti);
 }
 
 } // end of namespace ns3

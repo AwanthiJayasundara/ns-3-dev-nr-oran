@@ -55,14 +55,39 @@ BwpManagerUe::DoTransmitBufferStatusReport(NrMacSapProvider::BufferStatusReportP
     NS_LOG_FUNCTION(this);
     NS_ASSERT(m_algorithm != nullptr);
 
-    uint8_t bwpIndex = m_algorithm->GetBwpForQosFlow(m_lcToFlowMap.at(params.lcid));
+    auto flowIt = m_lcToFlowMap.find(params.lcid);
+    if (flowIt == m_lcToFlowMap.end())
+    {
+        NS_LOG_INFO("Dropping stale UE BSR for unknown LCID = "
+                    << static_cast<uint32_t>(params.lcid));
+        return;
+    }
+
+    uint8_t bwpIndex = m_algorithm->GetBwpForQosFlow(flowIt->second);
 
     NS_LOG_DEBUG("BSR of size " << params.txQueueSize
                                 << " from RLC for LCID = " << static_cast<uint32_t>(params.lcid)
-                                << " traffic type " << m_lcToFlowMap.at(params.lcid)
+                                << " traffic type " << flowIt->second
                                 << " reported to CcId " << static_cast<uint32_t>(bwpIndex));
 
-    m_componentCarrierLcMap.at(bwpIndex).at(params.lcid)->BufferStatusReport(params);
+    auto bwpIt = m_componentCarrierLcMap.find(bwpIndex);
+    if (bwpIt == m_componentCarrierLcMap.end())
+    {
+        NS_LOG_INFO("Dropping stale UE BSR for unmapped BWP = "
+                    << static_cast<uint32_t>(bwpIndex));
+        return;
+    }
+
+    auto lcIt = bwpIt->second.find(params.lcid);
+    if (lcIt == bwpIt->second.end())
+    {
+        NS_LOG_INFO("Dropping stale UE BSR for LCID = "
+                    << static_cast<uint32_t>(params.lcid)
+                    << " on BWP = " << static_cast<uint32_t>(bwpIndex));
+        return;
+    }
+
+    lcIt->second->BufferStatusReport(params);
 }
 
 std::vector<NrUeCcmRrcSapProvider::LcsConfig>

@@ -239,7 +239,16 @@ BwpManagerAlgorithmStatic::GetTypeId()
 uint8_t
 BwpManagerAlgorithmStatic::GetBwpForQosFlow(const NrQosFlow::FiveQi& v) const
 {
-    return m_fiveQiToBwpMap.at(v == 0 ? 1 : v);
+    const auto fiveQi = v == 0 ? NrQosFlow::GBR_CONV_VOICE : v;
+    auto it = m_fiveQiToBwpMap.find(fiveQi);
+    if (it != m_fiveQiToBwpMap.end())
+    {
+        return it->second;
+    }
+
+    NS_LOG_INFO("No BWP mapping for 5QI " << static_cast<uint32_t>(fiveQi)
+                                          << "; using BWP 0");
+    return 0;
 }
 
 } // namespace ns3

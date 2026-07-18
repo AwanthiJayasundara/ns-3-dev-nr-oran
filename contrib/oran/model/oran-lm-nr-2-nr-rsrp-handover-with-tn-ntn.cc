@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <cfloat>
+#include <cmath>
 #include <limits>
 #include <map>
 #include <string>
@@ -332,6 +333,13 @@ auto GetCellCap = [&](uint16_t cellId) -> uint32_t {
 };
 
 auto CapacityOk = [&](uint16_t cellId, const std::map<uint16_t, uint32_t>& loadMap) -> bool {
+    auto lit = loadMap.find(cellId);
+    if (lit == loadMap.end())
+    {
+        NS_LOG_INFO("LM HO_FAIL_UNKNOWN_CELL_LOAD cell=" << cellId);
+        return false;
+    }
+
     auto it = m_cellCapacityMap.find(cellId);
 
     // Explicit per-cell capacity exists
@@ -346,7 +354,7 @@ auto CapacityOk = [&](uint16_t cellId, const std::map<uint16_t, uint32_t>& loadM
             return false;
         }
 
-        return loadMap.at(cellId) < cap;
+        return lit->second < cap;
     }
 
     // No per-cell entry: use global fallback
@@ -358,7 +366,11 @@ auto CapacityOk = [&](uint16_t cellId, const std::map<uint16_t, uint32_t>& loadM
         return true;
     }
 
-    return loadMap.at(cellId) < cap;
+    return lit->second < cap;
+};
+
+auto IsValidRsrp = [](double rsrp) -> bool {
+    return std::isfinite(rsrp) && rsrp > -500.0;
 };
 
 auto IsNtnCell = [&](uint16_t cellId) -> bool {
@@ -542,6 +554,11 @@ std::vector<Ptr<OranCommand>> commands;
             bool isServing;
             std::tie(rnti, cellId, rsrp, rsrq, isServing, ccId) = m;
 
+            if (!IsValidRsrp(rsrp))
+            {
+                continue;
+            }
+
             // Keep best observed RSRP per cell across all BWPs / CCs
             auto it = bestRsrpPerCell.find(cellId);
             if (it == bestRsrpPerCell.end() || rsrp > it->second)
@@ -558,7 +575,7 @@ std::vector<Ptr<OranCommand>> commands;
             }
         }
 
-        if (servingCellId == 0 || servingRnti == 0)
+        if (servingCellId == 0 || servingRnti == 0 || !IsValidRsrp(servingRsrp))
         {
             continue;
         }
@@ -582,6 +599,10 @@ std::vector<Ptr<OranCommand>> commands;
         for (const auto& kv : bestRsrpPerCell)
         {
             if (!CellKnown(kv.first))
+            {
+                continue;
+            }
+            if (!IsValidRsrp(kv.second))
             {
                 continue;
             }

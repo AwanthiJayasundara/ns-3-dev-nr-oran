@@ -392,7 +392,14 @@ NrRrComponentCarrierManager::DoTransmitBufferStatusReport(
 {
     NS_LOG_FUNCTION(this);
 
-    uint32_t numberOfCarriersForUe = m_ueInfo.at(params.rnti).m_enabledComponentCarrier;
+    auto ueIt = m_ueInfo.find(params.rnti);
+    if (ueIt == m_ueInfo.end())
+    {
+        NS_LOG_INFO("Dropping stale BSR for unknown RNTI " << params.rnti);
+        return;
+    }
+
+    uint32_t numberOfCarriersForUe = ueIt->second.m_enabledComponentCarrier;
     if (params.lcid == 0 || params.lcid == 1 || numberOfCarriersForUe == 1)
     {
         NS_LOG_INFO("Buffer status forwarded to the primary carrier.");
@@ -424,7 +431,14 @@ NrRrComponentCarrierManager::DoUlReceiveMacCe(nr::MacCeListElement_s bsr,
                   "Received a Control Message not allowed " << bsr.m_macCeType);
 
     // split traffic in uplink equally among carriers
-    uint32_t numberOfCarriersForUe = m_ueInfo.at(bsr.m_rnti).m_enabledComponentCarrier;
+    auto ueIt = m_ueInfo.find(bsr.m_rnti);
+    if (ueIt == m_ueInfo.end())
+    {
+        NS_LOG_INFO("Dropping stale UL MAC CE for unknown RNTI " << bsr.m_rnti);
+        return;
+    }
+
+    uint32_t numberOfCarriersForUe = ueIt->second.m_enabledComponentCarrier;
 
     if (bsr.m_macCeType == nr::MacCeListElement_s::BSR)
     {
@@ -472,9 +486,25 @@ NrRrComponentCarrierManager::DoUlReceiveSr(uint16_t rnti, uint8_t /* componentCa
 {
     NS_LOG_FUNCTION(this);
     // split traffic in uplink equally among carriers
-    uint32_t numberOfCarriersForUe = m_ueInfo.at(rnti).m_enabledComponentCarrier;
+    auto ueIt = m_ueInfo.find(rnti);
+    if (ueIt == m_ueInfo.end())
+    {
+        NS_LOG_INFO("Dropping stale SR for unknown RNTI " << rnti);
+        return;
+    }
 
-    m_ccmMacSapProviderMap.find(m_lastCcIdForSr)->second->ReportSrToScheduler(rnti);
+    uint32_t numberOfCarriersForUe = ueIt->second.m_enabledComponentCarrier;
+
+    auto sapIt = m_ccmMacSapProviderMap.find(m_lastCcIdForSr);
+    if (sapIt == m_ccmMacSapProviderMap.end())
+    {
+        NS_LOG_INFO("Dropping SR for RNTI " << rnti
+                    << " because component carrier " << m_lastCcIdForSr
+                    << " has no MAC SAP provider");
+        return;
+    }
+
+    sapIt->second->ReportSrToScheduler(rnti);
 
     m_lastCcIdForSr++;
     if (m_lastCcIdForSr > numberOfCarriersForUe - 1)
