@@ -195,6 +195,7 @@ static std::map<uint16_t, double> g_backhaulUlSnrDb;
 
 static std::set<uint16_t> g_ntnCellIds;
 static std::map<std::pair<uint16_t,uint16_t>, double> g_latestRsrp;
+static std::map<std::pair<uint64_t,uint16_t>, double> g_latestRsrpByImsiCell;
 
 static Ptr<OranLmNr2NrRsrpHandoverWithTnNtn> g_rsrpLm = nullptr;
 static Ptr<NormalRandomVariable> g_xhaulShadowingRv = CreateObject<NormalRandomVariable>();
@@ -292,6 +293,33 @@ TraceRsrpRsrqSinr(Ptr<OutputStreamWrapper> stream,
                   uint8_t componentCarrierId)
 {
     g_latestRsrp[{rnti,cellId}] = rsrp;
+}
+
+void
+TraceRsrpRsrqSinrForImsi(Ptr<OutputStreamWrapper> stream,
+                         uint64_t imsi,
+                         uint16_t rnti,
+                         uint16_t cellId,
+                         double rsrp,
+                         double rsrq,
+                         bool servingCell,
+                         uint8_t componentCarrierId)
+{
+    TraceRsrpRsrqSinr(stream, rnti, cellId, rsrp, rsrq, servingCell, componentCarrierId);
+    g_latestRsrpByImsiCell[{imsi, cellId}] = rsrp;
+}
+
+std::string
+FormatOptionalTraceDouble(bool valid, double value)
+{
+    if (!valid)
+    {
+        return "NA";
+    }
+
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
 }
 
 
@@ -894,20 +922,65 @@ OranLmUavAutonomyControl::Run()
 void
 NotifyHandoverEndOkGnb(std::string context, uint64_t imsi, uint16_t targetCellId, uint16_t rnti)
 {
-    double targetRsrp = -1e9;
-    double servingRsrp = -1e9;
+    double targetRsrp = 0.0;
+    double servingRsrp = 0.0;
+    bool hasTargetRsrp = false;
+    bool hasServingRsrp = false;
 
-    auto it = g_latestRsrp.find({rnti,targetCellId});
-    if (it != g_latestRsrp.end())
-        targetRsrp = it->second;
-
-    for (auto &kv : g_latestRsrp)
+    auto itByImsi = g_latestRsrpByImsiCell.find({imsi, targetCellId});
+    if (itByImsi != g_latestRsrpByImsiCell.end())
     {
-        if (kv.first.first == rnti &&
-            kv.first.second != targetCellId)
+        targetRsrp = itByImsi->second;
+        hasTargetRsrp = true;
+    }
+    else
+    {
+        auto it = g_latestRsrp.find({rnti, targetCellId});
+        if (it != g_latestRsrp.end())
         {
-            servingRsrp = std::max(servingRsrp, kv.second);
+            targetRsrp = it->second;
+            hasTargetRsrp = true;
         }
+    }
+
+    for (auto &kv : g_latestRsrpByImsiCell)
+    {
+        if (kv.first.first == imsi &&
+            kv.first.second != targetCellId &&
+            (!hasServingRsrp || kv.second > servingRsrp))
+        {
+            servingRsrp = kv.second;
+            hasServingRsrp = true;
+        }
+    }
+
+    if (!hasServingRsrp)
+    {
+        for (auto &kv : g_latestRsrp)
+        {
+            if (kv.first.first == rnti &&
+                kv.first.second != targetCellId &&
+                (!hasServingRsrp || kv.second > servingRsrp))
+            {
+                servingRsrp = kv.second;
+                hasServingRsrp = true;
+            }
+        }
+    }
+
+    const std::string targetRsrpText = FormatOptionalTraceDouble(hasTargetRsrp, targetRsrp);
+    const std::string servingRsrpText = FormatOptionalTraceDouble(hasServingRsrp, servingRsrp);
+
+    if ((!hasTargetRsrp || !hasServingRsrp) && g_nsLogFile.is_open())
+    {
+        std::clog << "TRACE HO_SUCCESS_RSRP_UNAVAILABLE"
+                  << " Time=" << Simulator::Now().GetSeconds()
+                  << " IMSI=" << imsi
+                  << " TargetCell=" << targetCellId
+                  << " RNTI=" << rnti
+                  << " HasTargetRSRP=" << hasTargetRsrp
+                  << " HasServingRSRP=" << hasServingRsrp
+                  << "\n";
     }
 
     double bhDl = -999.0;
@@ -934,8 +1007,8 @@ NotifyHandoverEndOkGnb(std::string context, uint64_t imsi, uint16_t targetCellId
       << " IMSI=" << imsi
       << " TargetCell=" << targetCellId
       << " Type=" << type
-      << " TargetRSRP=" << targetRsrp
-      << " ServingRSRP=" << servingRsrp
+      << " TargetRSRP=" << targetRsrpText
+      << " ServingRSRP=" << servingRsrpText
       << " BackhaulDlSnr=" << bhDl
       << " BackhaulUlSnr=" << bhUl
       << "\n";
@@ -947,8 +1020,8 @@ NotifyHandoverEndOkGnb(std::string context, uint64_t imsi, uint16_t targetCellId
                   << " IMSI=" << imsi
                   << " TargetCell=" << targetCellId
                   << " Type=" << type
-                  << " TargetRSRP=" << targetRsrp
-                  << " ServingRSRP=" << servingRsrp
+                  << " TargetRSRP=" << targetRsrpText
+                  << " ServingRSRP=" << servingRsrpText
                   << " BackhaulDlSnr=" << bhDl
                   << " BackhaulUlSnr=" << bhUl
                   << "\n";
@@ -2074,6 +2147,7 @@ main(int argc, char* argv[])
     //   tn-uav          : UE + terrestrial cells + UAV cell nodes. No satellite monitor.
     //   tn-uav-satellite: UE + terrestrial cells + UAV cell nodes + satellite backhaul monitor.
     std::string deploymentMode = "tn-uav-satellite"; // tn-only | tn-uav | tn-uav-satellite
+    std::string runLabel;
 
     // xHaul monitor parameters. This first version estimates the UAV-to-ground-donor
     // RSRP from geometry and free-space path loss. It is a policy/trace monitor, not a
@@ -2166,6 +2240,9 @@ main(int argc, char* argv[])
     cmd.AddValue("deployment-mode",
                  "Deployment baseline: tn-only | tn-uav | tn-uav-satellite",
                  deploymentMode);
+    cmd.AddValue("run-label",
+                 "Optional label appended to the output folder name, e.g., healthy or natural-xhaul-no-sat",
+                 runLabel);
     cmd.AddValue("xhaul-tx-power-dbm", "TN donor transmit power used by xHaul RSRP monitor", xhaulTxPowerDbm);
     cmd.AddValue("xhaul-frequency-hz", "Carrier frequency used by xHaul RSRP monitor", xhaulFrequencyHz);
     cmd.AddValue("xhaul-healthy-rsrp-dbm", "xHaul RSRP threshold for HEALTHY state", xhaulHealthyRsrpDbm);
@@ -2376,6 +2453,10 @@ main(int argc, char* argv[])
 
     std::ostringstream runTag;
     runTag << deploymentMode << "_ueS1_" << numGroundUesS1 << "_ueS2_" << numGroundUesS2 << "_tnGnb_" << numTnGnbs << "_ntnGnb_" << numNtnGnbs << "_tnCap_" << maxUesPerCellTn << "_ntnCap_" << maxUesPerCellNtn << "_hyst_" << hysteresisDb;
+    if (!runLabel.empty())
+    {
+        runTag << "_" << runLabel;
+    }
 
     // Base output folder for this run
     ns3_dir = "results/nr/tn-ntn/" + runTag.str() + "/";
@@ -4048,6 +4129,7 @@ main(int argc, char* argv[])
 
             if (nrUeDevice)
             {
+                const uint64_t imsi = nrUeDevice->GetImsi();
                 for (uint32_t b = 0; b < ueNumBwps; ++b)
                 {
                     Ptr<NrUePhy> uePhy = nrUeDevice->GetPhy(b);
@@ -4055,7 +4137,9 @@ main(int argc, char* argv[])
                     {
                         uePhy->TraceConnectWithoutContext(
                             "ReportUeMeasurements",
-                            MakeBoundCallback(&TraceRsrpRsrqSinr, rsrpRsrqSinrTraceStream));
+                            MakeBoundCallback(&TraceRsrpRsrqSinrForImsi,
+                                              rsrpRsrqSinrTraceStream,
+                                              imsi));
                     }
                 }
             }
@@ -4068,6 +4152,7 @@ main(int argc, char* argv[])
 
             if (nrUeDevice)
             {
+                const uint64_t imsi = nrUeDevice->GetImsi();
                 for (uint32_t b = 0; b < ueNumBwps; ++b)
                 {
                     Ptr<NrUePhy> uePhy = nrUeDevice->GetPhy(b);
@@ -4075,7 +4160,9 @@ main(int argc, char* argv[])
                     {
                         uePhy->TraceConnectWithoutContext(
                             "ReportUeMeasurements",
-                            MakeBoundCallback(&TraceRsrpRsrqSinr, rsrpRsrqSinrTraceStream));
+                            MakeBoundCallback(&TraceRsrpRsrqSinrForImsi,
+                                              rsrpRsrqSinrTraceStream,
+                                              imsi));
                     }
                 }
             }

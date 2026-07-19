@@ -1,0 +1,4 @@
+Time,DeploymentMode,UavIndex,UavCellId,BestDonorCellId,BestDonorDistanceM,XhaulConnected,XhaulChannelVariationDb,XhaulRsrpDbm,XhaulState,XhaulDegradationActive,SatBackhaulDlSnrDb,SatBackhaulUlSnrDb,SatBackhaulHealthy,OnboardUavRicAvailable,OnboardUavRicState,BackhaulMode,ControlPath,ActiveUavRic,NormalUeHandoverAllowed,E2TxDelaySec,E2SendIntervalSec,LmQueryIntervalSec,UavMode
+4.5,tn-uav,0,5,1,1451.84,1,0.434841,-64.2447,HEALTHY,0,-999,-999,0,0,DISABLED,TN_DIRECT,TN_E2,TN_NEAR_RT_RIC,1,0.1,2,2,TN_CONTROLLED_COVERAGE_EXTENSION
+4.5,tn-uav,1,6,4,629.258,1,-2.28216,-59.6999,HEALTHY,0,-999,-999,0,0,DISABLED,TN_DIRECT,TN_E2,TN_NEAR_RT_RIC,1,0.1,2,2,TN_CONTROLLED_COVERAGE_EXTENSION
+4.5,tn-uav,2,7,2,765.017,1,-0.793916,-59.9085,HEALTHY,0,-999,-999,0,0,DISABLED,TN_DIRECT,TN_E2,TN_NEAR_RT_RIC,1,0.1,2,2,TN_CONTROLLED_COVERAGE_EXTENSION
