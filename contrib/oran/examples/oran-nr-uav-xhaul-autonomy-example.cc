@@ -68,7 +68,7 @@ NS_LOG_COMPONENT_DEFINE("OranNrUavXhaulAutonomyExample");
  * placed around a Dublin reference point. UES1 UEs generate monitored traffic
  * and can be handed over, while UES2 UEs add background load. UAV gNBs are
  * dynamic cell nodes; depending on the deployment mode, they may operate only
- * with terrestrial xHaul or with both terrestrial xHaul and satellite support.
+ * with terrestrial donor backhaul or with both terrestrial donor backhaul and satellite support.
  *
  * Handover mechanism used in this scenario:
  *   1. Initial attachment is performed by 5G-LENA's AttachToMaxRsrpGnb().
@@ -85,9 +85,9 @@ NS_LOG_COMPONENT_DEFINE("OranNrUavXhaulAutonomyExample");
  *      handover command after the logic module chooses a target cell.
  *
  * The xHaul/autonomy part is deliberately separated from the basic handover
- * path. The xhaul-autonomy-trace.csv estimates the UAV-to-ground-donor xHaul
- * RSRP, maps it to UAV autonomy modes, and records the active UAV backhaul mode.
- * In TN+UAV+satellite mode, degraded or unreachable xHaul can switch the UAV
+ * path. The xhaul-autonomy-trace.csv estimates a UAV-to-ground-donor wireless
+ * backhaul RSRP proxy, maps it to UAV autonomy modes, and records the active UAV backhaul mode.
+ * In TN+UAV+satellite mode, degraded or unreachable donor backhaul can switch the UAV
  * S1-U route from direct TN backhaul to satellite fallback while leaving the
  * O-RAN/xApp handover decision process unchanged.
  *
@@ -546,11 +546,12 @@ void TraceUavPositions(NodeContainer uavs)
 static double
 EstimateFreeSpaceRsrpDbm(double txPowerDbm, double frequencyHz, double distanceMeters)
 {
-    // This is a lightweight xHaul health proxy:
+    // This is a lightweight UAV-to-TN donor-backhaul/xHaul-health proxy:
     //   best TN donor gNB transmit power - free-space path loss.
-    // It is intentionally simple so that the first comparison isolates the
-    // effect of xHaul-aware UAV autonomy. It should be described as an
-    // estimated xHaul RSRP, not as a full measured NR donor-link RSRP.
+    // It is intentionally simple so that the comparison isolates the effect of
+    // xHaul-aware UAV autonomy. It should be described as an estimated
+    // donor-backhaul health RSRP, not as a full measured NR donor-link RSRP or
+    // a full 3GPP IAB implementation.
     const double d = std::max(distanceMeters, 1.0);
     const double fGhz = frequencyHz / 1e9;
     const double fsplDb = 32.4 + 20.0 * std::log10(fGhz) + 20.0 * std::log10(d);
@@ -560,7 +561,7 @@ EstimateFreeSpaceRsrpDbm(double txPowerDbm, double frequencyHz, double distanceM
 static std::string
 ClassifyXhaulState(double rsrpDbm, double healthyThresholdDbm, double degradedThresholdDbm)
 {
-    // Three-state xHaul health model used by the UAV autonomy policy.
+    // Three-state donor-backhaul/xHaul-health model used by the UAV autonomy policy.
     // Thresholds are configurable so the paper can test optimistic and harsh
     // donor-link assumptions without recompiling the scenario.
     if (rsrpDbm >= healthyThresholdDbm)
@@ -580,13 +581,13 @@ SelectUavAutonomyMode(const std::string& deploymentMode,
                       bool satBackhaulHealthy)
 {
     // UAV Autonomy xApp-like state machine:
-    //   HEALTHY xHaul:
+    //   HEALTHY donor backhaul:
     //      terrestrial O-RAN/xApp control remains available and the UAV acts as
     //      a normal coverage-extension gNB.
-    //   DEGRADED/UNREACHABLE xHaul + healthy satellite:
+    //   DEGRADED/UNREACHABLE donor backhaul + healthy satellite:
     //      onboard UAV RIC/xApp control is activated and satellite fallback
     //      keeps the UAV serviceable, so normal UE handover can remain enabled.
-    //   DEGRADED/UNREACHABLE xHaul without satellite:
+    //   DEGRADED/UNREACHABLE donor backhaul without satellite:
     //      the UAV may still offer access coverage, but normal UE handover to
     //      it is blocked by setting its effective O-RAN cell capacity to 0.
     if (deploymentMode == "tn-only")
@@ -622,8 +623,8 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
     // Periodic cross-layer trace for the proposed article idea.
     //
     // Inputs recorded here:
-    //   - estimated UAV-to-TN donor xHaul RSRP,
-    //   - xHaul state: HEALTHY / DEGRADED / UNREACHABLE,
+    //   - estimated UAV-to-TN donor-backhaul RSRP,
+    //   - xHaul-health state: HEALTHY / DEGRADED / UNREACHABLE,
     //   - optional satellite backhaul SNR state,
     //   - E2 timing knobs used by the RIC control loop.
     //
@@ -671,7 +672,7 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
             double channelVariationDb = 0.0;
             if (ctx.enableXhaulChannelVariation)
             {
-                // Lightweight urban xHaul proxy. Shadowing is zero-mean in dB;
+                // Lightweight urban donor-backhaul proxy. Shadowing is zero-mean in dB;
                 // fading is modeled as an additional non-negative fast loss.
                 // This avoids a hand-picked time-window penalty while still
                 // allowing donor RSRP to fluctuate due to channel conditions.
@@ -2249,7 +2250,7 @@ main(int argc, char* argv[])
     cmd.AddValue("xhaul-degraded-rsrp-dbm", "xHaul RSRP threshold for DEGRADED state", xhaulDegradedRsrpDbm);
     cmd.AddValue("xhaul-trace-interval", "xHaul/autonomy trace interval in seconds", xhaulTraceIntervalSec);
     cmd.AddValue("xhaul-max-donor-distance-m",
-                 "Maximum UAV-to-TN donor distance for terrestrial xHaul connectivity",
+                 "Maximum UAV-to-TN donor distance for terrestrial donor-backhaul connectivity",
                  xhaulMaxDonorDistanceM);
     cmd.AddValue("xhaul-degradation-start",
                  "Start time for synthetic xHaul degradation; negative disables it",
@@ -4049,7 +4050,7 @@ main(int argc, char* argv[])
     }
     if (ntnGnbNrDevs.GetN() > 0 && !useOran)
     {
-        // Start the UAV-to-TN xHaul health monitor only when UAV cells exist.
+        // Start the UAV-to-TN donor-backhaul/xHaul-health monitor only when UAV cells exist.
         // With O-RAN enabled, the UAV Autonomy xApp writes the same trace from
         // the RIC query loop. This timer is the non-O-RAN fallback path.
         Simulator::Schedule(Seconds(0.5),

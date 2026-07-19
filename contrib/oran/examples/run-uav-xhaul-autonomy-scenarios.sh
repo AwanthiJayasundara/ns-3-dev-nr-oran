@@ -8,16 +8,16 @@ set -euo pipefail
 #   Compare terrestrial, UAV-assisted, and satellite-assisted service. The
 #   TN-only scenario is a clean semi-urban terrestrial reference with no
 #   artificial disruption. The first TN+UAV scenario adds aerial cells under
-#   healthy terrestrial xHaul. The second TN+UAV scenario uses the same natural
-#   mission/xHaul degradation as the satellite case, but without satellite
+#   healthy terrestrial donor backhaul. The second TN+UAV scenario uses the same natural
+#   mission donor-backhaul degradation as the satellite case, but without satellite
 #   fallback. The satellite-assisted scenario uses a natural mission period
 #   starting at 15 s where UAVs move toward underserved UEs.
-#   UAV-to-TN xHaul degradation is driven by donor distance, stricter RSRP
+#   UAV-to-TN donor-backhaul degradation is driven by donor distance, stricter RSRP
 #   thresholds, and stochastic channel variation:
 #     1. TN only under healthy terrestrial infrastructure
-#     2. TN + UAV with extra aerial access capacity and healthy TN xHaul
-#     3. TN + UAV with natural xHaul degradation and no satellite fallback
-#     4. TN + UAV + satellite with terrestrial/xHaul degradation and a separate
+#     2. TN + UAV with extra aerial access capacity and healthy TN donor backhaul
+#     3. TN + UAV with natural donor-backhaul degradation and no satellite fallback
+#     4. TN + UAV + satellite with terrestrial donor-backhaul degradation and a separate
 #        simulated onboard UAV Near-RT RIC/autonomy xApp fallback
 #
 # Scenario 1 experiment size:
@@ -29,7 +29,7 @@ set -euo pipefail
 #
 # Common outputs:
 #   qos-vs-time.txt             Delay, jitter, throughput, and PDR.
-#   xhaul-autonomy-trace.csv    UAV xHaul RSRP, xHaul state, active UAV RIC,
+#   xhaul-autonomy-trace.csv    UAV donor-backhaul RSRP, xHaul-health state, active UAV RIC,
 #                               control path, and UAV mode.
 #   handover-trace.tr           Successful handover events.
 #   handover-failure-trace.tr   Failed handover events.
@@ -100,29 +100,29 @@ NATURAL_MISSION_ARGS="--tn-degradation-start=-1 \
 
 # Scenario 1: UE + TN only with healthy terrestrial infrastructure.
 # This is the clean semi-urban TN reference. No UAV cells are installed,
-# no satellite monitor is enabled, and no artificial TN/xHaul degradation is
+# no satellite monitor is enabled, and no artificial TN/donor-backhaul degradation is
 # applied. The xhaul-autonomy-trace.csv file will contain only the header.
 ./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-only --run-label=clean ${COMMON_ARGS} ${TN_ONLY_ARGS}"
 
-# Scenario 2: UE + TN + UAV with healthy terrestrial xHaul.
+# Scenario 2: UE + TN + UAV with healthy terrestrial donor backhaul.
 # UAVs are active cell nodes. The TN layer has 80 UE capacity while 100 UEs are
 # present after 5 s, so UAV cells are expected to help with access capacity and
 # coverage. The UAV-to-ground TN donor link is monitored and should stay within
-# the 10 km terrestrial xHaul donor range. Satellite backhaul is disabled.
+# the 10 km terrestrial donor-backhaul range. Satellite backhaul is disabled.
 ./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --run-label=healthy-xhaul ${COMMON_ARGS} ${UAV_ARGS}"
 
-# Scenario 3: UE + TN + UAV with natural mission-period xHaul stress, but no
+# Scenario 3: UE + TN + UAV with natural mission-period donor-backhaul stress, but no
 # satellite fallback. This is the fair no-satellite degraded baseline. The UAVs
-# follow the same mission behavior and xHaul classification thresholds as the
-# satellite case. When xHaul is degraded/unreachable, normal UE handover to the
+# follow the same mission behavior and donor-backhaul classification thresholds as the
+# satellite case. When donor backhaul is degraded/unreachable, normal UE handover to the
 # affected UAV cell is blocked because no satellite/onboard fallback is enabled.
 ./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --run-label=natural-xhaul-no-sat ${COMMON_ARGS} ${UAV_ARGS} ${NATURAL_MISSION_ARGS}"
 
 # Scenario 4: UE + TN + UAV + satellite with a natural mission-period stress.
 # Same TN+UAV deployment, but satellite backhaul monitoring is enabled. From
 # 15 s onward, UAVs move toward underserved UE clusters with a moderated mission
-# speed/area so UAV-to-UE access remains useful. The UAV-to-TN xHaul is
+# speed/area so UAV-to-UE access remains useful. The UAV-to-TN donor backhaul is
 # not weakened with a hand-set dB penalty; donor distance, urban
-# shadowing/fading variation, and xHaul RSRP thresholds decide whether onboard
+# shadowing/fading variation, and donor-backhaul RSRP thresholds decide whether onboard
 # UAV RIC control and satellite fallback are needed.
 ./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --run-label=natural-xhaul-sat ${COMMON_ARGS} ${UAV_ARGS} --enable-sat-backhaul-monitor=1 --enable-onboard-uav-ric=1 ${NATURAL_MISSION_ARGS}"
