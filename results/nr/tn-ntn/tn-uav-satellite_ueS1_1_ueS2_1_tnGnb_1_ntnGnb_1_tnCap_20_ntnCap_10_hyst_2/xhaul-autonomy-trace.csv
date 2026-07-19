@@ -1,3 +1,0 @@
-Time,DeploymentMode,UavIndex,UavCellId,BestDonorCellId,XhaulRsrpDbm,XhaulState,XhaulDegradationActive,SatBackhaulDlSnrDb,SatBackhaulUlSnrDb,SatBackhaulHealthy,BackhaulMode,E2TxDelaySec,E2SendIntervalSec,LmQueryIntervalSec,UavMode
-0.5,tn-uav-satellite,0,2,1,-97.0244,DEGRADED,1,13.0679,8.54731,1,SATELLITE_FALLBACK,0.1,2,2,EDGE_ASSISTED_WITH_SATELLITE
-1.5,tn-uav-satellite,0,2,1,-97.0244,DEGRADED,1,11.7189,7.19834,1,SATELLITE_FALLBACK,0.1,2,2,EDGE_ASSISTED_WITH_SATELLITE
