@@ -36,6 +36,11 @@ set -euo pipefail
 #   tn-infrastructure-trace.csv TN degradation state and TN gNB TxPower.
 #   ml-ho-dataset.csv           Candidate/decision records from the RIC logic module.
 #   ns3-oran-lm.log             Verbose O-RAN logic-module INFO log.
+#
+# Channel model convention used by the example:
+#   TN UE access:                 3GPP UMa
+#   UAV/NTN UE access:            3GPP NTN-Urban
+#   Satellite fallback/backhaul:  3GPP NTN-Suburban
 
 COMMON_ARGS="--sim-time=40 \
   --num-tn-gnbs=4 \
@@ -56,6 +61,7 @@ COMMON_ARGS="--sim-time=40 \
   --enable-handover-failure-trace=1 \
   --enable-decision-csv=1 \
   --enable-oran-info-log=1 \
+  --sat-backhaul-scenario=NTN-Suburban \
   --enable-progress=1"
 
 TN_ONLY_ARGS="--num-uess1=20 \
