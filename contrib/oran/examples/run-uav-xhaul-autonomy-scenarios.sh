@@ -7,17 +7,15 @@ set -euo pipefail
 # Purpose:
 #   Compare terrestrial, UAV-assisted, and satellite-assisted service. The
 #   TN-only scenario is a clean semi-urban terrestrial reference with no
-#   artificial disruption. The first TN+UAV scenario adds aerial cells under
-#   healthy terrestrial donor backhaul. The second TN+UAV scenario uses the same natural
-#   mission donor-backhaul degradation as the satellite case, but without satellite
-#   fallback. The satellite-assisted scenario uses a natural mission period
-#   starting at 15 s where UAVs move toward underserved UEs.
-#   UAV-to-TN donor-backhaul degradation is driven by donor distance, stricter RSRP
-#   thresholds, and stochastic channel variation:
+#   artificial disruption. The TN+UAV scenario adds aerial cells under healthy
+#   terrestrial donor backhaul. The satellite-assisted scenario uses a natural
+#   mission period starting at 15 s where UAVs move toward underserved UEs.
+#   In the satellite case, the TN donor/CPE path is unavailable from 15-25 s,
+#   representing a mission segment outside donor coverage or with blocked TN
+#   donor reachability. No hand-set RSRP penalty is used.
 #     1. TN only under healthy terrestrial infrastructure
 #     2. TN + UAV with extra aerial access capacity and healthy TN donor backhaul
-#     3. TN + UAV with natural donor-backhaul degradation and no satellite fallback
-#     4. TN + UAV + satellite with terrestrial donor-backhaul degradation and a separate
+#     3. TN + UAV + satellite with terrestrial donor-backhaul degradation and a separate
 #        simulated onboard UAV Near-RT RIC/autonomy xApp fallback
 #
 # Scenario 1 experiment size:
@@ -85,13 +83,15 @@ NATURAL_MISSION_ARGS="--tn-degradation-start=-1 \
   --uav-underserved-rsrp-thresh-dbm=-105 \
   --uav-initial-area-half-w-m=3000 \
   --uav-initial-area-half-h-m=1500 \
-  --uav-area-half-w-m=9000 \
-  --uav-area-half-h-m=4500 \
-  --uav-mission-target-scale=2.2 \
-  --uav-speed-mps=220 \
+  --uav-area-half-w-m=16000 \
+  --uav-area-half-h-m=8000 \
+  --uav-mission-target-scale=4 \
+  --uav-speed-mps=25 \
   --xhaul-degradation-start=-1 \
   --xhaul-degradation-stop=-1 \
   --xhaul-degradation-penalty-db=0 \
+  --xhaul-donor-unavailable-start=15 \
+  --xhaul-donor-unavailable-stop=25 \
   --xhaul-healthy-rsrp-dbm=-72 \
   --xhaul-degraded-rsrp-dbm=-82 \
   --enable-xhaul-channel-variation=1 \
@@ -117,18 +117,11 @@ NATURAL_MISSION_ARGS="--tn-degradation-start=-1 \
 # the 10 km terrestrial donor-backhaul range. Satellite backhaul is disabled.
 ./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --run-label=healthy-xhaul ${COMMON_ARGS} ${UAV_ARGS}"
 
-# Scenario 3: UE + TN + UAV with natural mission-period donor-backhaul stress, but no
-# satellite fallback. This is the fair no-satellite degraded baseline. The UAVs
-# follow the same mission behavior and donor-backhaul classification thresholds as the
-# satellite case. When donor backhaul is degraded/unreachable, normal UE handover to the
-# affected UAV cell is blocked because no satellite/onboard fallback is enabled.
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --run-label=natural-xhaul-no-sat ${COMMON_ARGS} ${UAV_ARGS} ${NATURAL_MISSION_ARGS}"
-
-# Scenario 4: UE + TN + UAV + satellite with a natural mission-period stress.
+# Scenario 3: UE + TN + UAV + satellite with a natural mission-period stress.
 # Same TN+UAV deployment, but satellite backhaul monitoring is enabled. From
-# 15 s onward, UAVs move toward underserved UE clusters with a moderated mission
-# speed/area so UAV-to-UE access remains useful. The UAV-to-TN donor backhaul is
-# not weakened with a hand-set dB penalty; donor distance, urban
-# shadowing/fading variation, and donor-backhaul RSRP thresholds decide whether onboard
-# UAV RIC control and satellite fallback are needed.
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --run-label=natural-xhaul-sat ${COMMON_ARGS} ${UAV_ARGS} --enable-sat-backhaul-monitor=1 --enable-onboard-uav-ric=1 ${NATURAL_MISSION_ARGS}"
+# 15 s onward, UAVs move toward underserved UE clusters with a realistic speed.
+# During 15-25 s, the TN donor/CPE path is unavailable, representing that the UAV
+# is outside the usable donor-link coverage region or the terrestrial donor path
+# is blocked. No artificial RSRP penalty is applied; the trace records this as
+# DonorUnavailableActive=1 and XhaulState=UNREACHABLE.
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --run-label=donor-unavailable-sat ${COMMON_ARGS} ${UAV_ARGS} --enable-sat-backhaul-monitor=1 --enable-onboard-uav-ric=1 ${NATURAL_MISSION_ARGS}"

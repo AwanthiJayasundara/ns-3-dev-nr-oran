@@ -223,6 +223,8 @@ struct UavAutonomyXappContext
     double degradationStartSec = -1.0;
     double degradationStopSec = -1.0;
     double degradationPenaltyDb = 0.0;
+    double donorUnavailableStartSec = -1.0;
+    double donorUnavailableStopSec = -1.0;
     double e2TxDelaySec = 0.0;
     double e2SendIntervalSec = 0.0;
     double lmQueryIntervalSec = 0.0;
@@ -638,6 +640,9 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
     const bool degradationActive =
         ctx.degradationStartSec >= 0.0 && now >= ctx.degradationStartSec &&
         now <= ctx.degradationStopSec;
+    const bool donorUnavailableActive =
+        ctx.donorUnavailableStartSec >= 0.0 && now >= ctx.donorUnavailableStartSec &&
+        now <= ctx.donorUnavailableStopSec;
 
     for (uint32_t uavIdx = 0; uavIdx < ctx.uavs.GetN(); ++uavIdx)
     {
@@ -651,7 +656,7 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
         double bestDonorDistanceM = -1.0;
         double bestChannelVariationDb = 0.0;
         uint16_t bestDonorCellId = 0;
-        for (uint32_t tnIdx = 0; tnIdx < ctx.tnGnbs.GetN(); ++tnIdx)
+        for (uint32_t tnIdx = 0; !donorUnavailableActive && tnIdx < ctx.tnGnbs.GetN(); ++tnIdx)
         {
             Ptr<MobilityModel> tnMob = ctx.tnGnbs.Get(tnIdx)->GetObject<MobilityModel>();
             Ptr<NrGnbNetDevice> tnDev = ctx.tnGnbNrDevs.Get(tnIdx)->GetObject<NrGnbNetDevice>();
@@ -772,6 +777,7 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
                       << " XhaulConnected=" << (xhaulConnected ? 1 : 0)
                       << " XhaulChannelVariationDb=" << bestChannelVariationDb
                       << " XhaulState=" << xhaulState
+                      << " DonorUnavailableActive=" << (donorUnavailableActive ? 1 : 0)
                       << " SatBackhaulHealthy=" << (satHealthy ? 1 : 0)
                       << " OnboardUavRicAvailable=" << (onboardUavRicAvailable ? 1 : 0)
                       << " OnboardUavRicState=" << onboardUavRicState
@@ -794,6 +800,7 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
             << bestRsrpDbm << ","
             << xhaulState << ","
             << (degradationActive ? 1 : 0) << ","
+            << (donorUnavailableActive ? 1 : 0) << ","
             << satDl << ","
             << satUl << ","
             << (satHealthy ? 1 : 0) << ","
@@ -824,6 +831,8 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
                    double degradationStartSec,
                    double degradationStopSec,
                    double degradationPenaltyDb,
+                   double donorUnavailableStartSec,
+                   double donorUnavailableStopSec,
                    double e2TxDelaySec,
                    double e2SendIntervalSec,
                    double lmQueryIntervalSec,
@@ -843,6 +852,8 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
     ctx.degradationStartSec = degradationStartSec;
     ctx.degradationStopSec = degradationStopSec;
     ctx.degradationPenaltyDb = degradationPenaltyDb;
+    ctx.donorUnavailableStartSec = donorUnavailableStartSec;
+    ctx.donorUnavailableStopSec = donorUnavailableStopSec;
     ctx.e2TxDelaySec = e2TxDelaySec;
     ctx.e2SendIntervalSec = e2SendIntervalSec;
     ctx.lmQueryIntervalSec = lmQueryIntervalSec;
@@ -868,6 +879,8 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
                         degradationStartSec,
                         degradationStopSec,
                         degradationPenaltyDb,
+                        donorUnavailableStartSec,
+                        donorUnavailableStopSec,
                         e2TxDelaySec,
                         e2SendIntervalSec,
                         lmQueryIntervalSec,
@@ -2168,6 +2181,8 @@ main(int argc, char* argv[])
     double xhaulDegradationStartSec = -1.0;
     double xhaulDegradationStopSec = -1.0;
     double xhaulDegradationPenaltyDb = 25.0;
+    double xhaulDonorUnavailableStartSec = -1.0;
+    double xhaulDonorUnavailableStopSec = -1.0;
     bool enableXhaulChannelVariation = false;
     double xhaulShadowingStddevDb = 0.0;
     double xhaulFadingStddevDb = 0.0;
@@ -2261,6 +2276,12 @@ main(int argc, char* argv[])
     cmd.AddValue("xhaul-degradation-penalty-db",
                  "RSRP penalty applied during synthetic xHaul degradation",
                  xhaulDegradationPenaltyDb);
+    cmd.AddValue("xhaul-donor-unavailable-start",
+                 "Start time when the TN donor/CPE path is unavailable; negative disables it",
+                 xhaulDonorUnavailableStartSec);
+    cmd.AddValue("xhaul-donor-unavailable-stop",
+                 "Stop time when the TN donor/CPE path becomes available again",
+                 xhaulDonorUnavailableStopSec);
     cmd.AddValue("enable-xhaul-channel-variation",
                  "Enable stochastic xHaul shadowing/fading variation in the UAV-to-TN donor RSRP proxy",
                  enableXhaulChannelVariation);
@@ -3570,6 +3591,8 @@ main(int argc, char* argv[])
         g_uavAutonomyXappCtx->degradationStartSec = xhaulDegradationStartSec;
         g_uavAutonomyXappCtx->degradationStopSec = xhaulDegradationStopSec;
         g_uavAutonomyXappCtx->degradationPenaltyDb = xhaulDegradationPenaltyDb;
+        g_uavAutonomyXappCtx->donorUnavailableStartSec = xhaulDonorUnavailableStartSec;
+        g_uavAutonomyXappCtx->donorUnavailableStopSec = xhaulDonorUnavailableStopSec;
         g_uavAutonomyXappCtx->e2TxDelaySec = txDelay;
         g_uavAutonomyXappCtx->e2SendIntervalSec = e2SendInterval;
         g_uavAutonomyXappCtx->lmQueryIntervalSec = lmQueryInterval;
@@ -4042,6 +4065,7 @@ main(int argc, char* argv[])
         xhaulOut << "Time,DeploymentMode,UavIndex,UavCellId,BestDonorCellId,"
                  << "BestDonorDistanceM,XhaulConnected,"
                  << "XhaulChannelVariationDb,XhaulRsrpDbm,XhaulState,XhaulDegradationActive,"
+                 << "DonorUnavailableActive,"
                  << "SatBackhaulDlSnrDb,SatBackhaulUlSnrDb,SatBackhaulHealthy,"
                  << "OnboardUavRicAvailable,OnboardUavRicState,"
                  << "BackhaulMode,ControlPath,ActiveUavRic,"
@@ -4068,6 +4092,8 @@ main(int argc, char* argv[])
                             xhaulDegradationStartSec,
                             xhaulDegradationStopSec,
                             xhaulDegradationPenaltyDb,
+                            xhaulDonorUnavailableStartSec,
+                            xhaulDonorUnavailableStopSec,
                             txDelay,
                             e2SendInterval,
                             lmQueryInterval,
