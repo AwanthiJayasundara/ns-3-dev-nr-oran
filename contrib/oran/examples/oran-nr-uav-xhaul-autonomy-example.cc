@@ -217,7 +217,7 @@ struct UavAutonomyXappContext
     Ptr<HybridSatEpcHelper> epcHelper;
     double xhaulTxPowerDbm = 43.0;
     double xhaulFrequencyHz = 4.0e9;
-    double xhaulMaxDonorDistanceM = 10000.0;
+    double xhaulMaxDonorDistanceM = -1.0;
     double healthyThresholdDbm = -95.0;
     double degradedThresholdDbm = -115.0;
     double degradationStartSec = -1.0;
@@ -563,16 +563,14 @@ EstimateFreeSpaceRsrpDbm(double txPowerDbm, double frequencyHz, double distanceM
 static std::string
 ClassifyXhaulState(double rsrpDbm, double healthyThresholdDbm, double degradedThresholdDbm)
 {
-    // Three-state donor-backhaul/xHaul-health model used by the UAV autonomy policy.
-    // Thresholds are configurable so the paper can test optimistic and harsh
-    // donor-link assumptions without recompiling the scenario.
+    // Two-state donor-backhaul model used by the final UAV TN/satellite switching
+    // scenario. The donor path is considered usable when the best TN donor RSRP
+    // is above the configured policy threshold; otherwise it is treated as
+    // unreachable and satellite fallback can be selected if available.
+    (void)degradedThresholdDbm;
     if (rsrpDbm >= healthyThresholdDbm)
     {
         return "HEALTHY";
-    }
-    if (rsrpDbm >= degradedThresholdDbm)
-    {
-        return "DEGRADED";
     }
     return "UNREACHABLE";
 }
@@ -586,11 +584,11 @@ SelectUavAutonomyMode(const std::string& deploymentMode,
     //   HEALTHY donor backhaul:
     //      terrestrial O-RAN/xApp control remains available and the UAV acts as
     //      a normal coverage-extension gNB.
-    //   DEGRADED/UNREACHABLE donor backhaul + healthy satellite:
+    //   UNREACHABLE donor backhaul + healthy satellite:
     //      the Near-RT RIC UAV TN/satellite switching xApp selects satellite
     //      fallback, so the UAV remains serviceable and normal UE handover can
     //      remain enabled.
-    //   DEGRADED/UNREACHABLE donor backhaul without satellite:
+    //   UNREACHABLE donor backhaul without satellite:
     //      the UAV may still offer access coverage, but normal UE handover to
     //      it is blocked by setting its effective O-RAN cell capacity to 0.
     if (deploymentMode == "tn-only")
@@ -601,21 +599,11 @@ SelectUavAutonomyMode(const std::string& deploymentMode,
     {
         return "TN_CONTROLLED_COVERAGE_EXTENSION";
     }
-    if (xhaulState == "DEGRADED" &&
-        deploymentMode == "tn-uav-satellite" &&
-        satBackhaulHealthy)
-    {
-        return "NEAR_RT_RIC_SWITCHING_WITH_SATELLITE_BACKHAUL";
-    }
     if (xhaulState == "UNREACHABLE" &&
         deploymentMode == "tn-uav-satellite" &&
         satBackhaulHealthy)
     {
         return "NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL";
-    }
-    if (xhaulState == "DEGRADED")
-    {
-        return "NEAR_RT_RIC_SERVICE_LIMITED_NO_SATELLITE_BACKHAUL";
     }
     return "AUTONOMOUS_LOCAL_ISLAND";
 }
@@ -627,7 +615,7 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
     //
     // Inputs recorded here:
     //   - estimated UAV-to-TN donor-backhaul RSRP,
-    //   - xHaul-health state: HEALTHY / DEGRADED / UNREACHABLE,
+    //   - xHaul-health state: HEALTHY / UNREACHABLE,
     //   - optional satellite backhaul SNR state,
     //   - E2 timing knobs used by the RIC control loop.
     //
@@ -668,7 +656,8 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
 
             const double distanceMeters =
                 CalculateDistance(uavMob->GetPosition(), tnMob->GetPosition());
-            if (distanceMeters > ctx.xhaulMaxDonorDistanceM)
+            if (ctx.xhaulMaxDonorDistanceM > 0.0 &&
+                distanceMeters > ctx.xhaulMaxDonorDistanceM)
             {
                 continue;
             }
@@ -743,16 +732,13 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
         const std::string epcBackhaulMode =
             useSatelliteBackhaul ? "satellite" : (directTnBackhaulUsable ? "tn" : "unavailable");
         const std::string backhaulMode =
-            useSatelliteBackhaul
-                ? "SATELLITE_FALLBACK"
-                : (directTnBackhaulUsable
-                       ? "TN_DIRECT"
-                       : (xhaulConnected ? "TN_DEGRADED_BLOCKED" : "TN_UNREACHABLE"));
-        const std::string controlPath =
+            useSatelliteBackhaul ? "SATELLITE_FALLBACK"
+                                 : (directTnBackhaulUsable ? "TN_DIRECT" : "NO_BACKHAUL_AVAILABLE");
+        const std::string ricControlState =
             xhaulState == "HEALTHY"
                 ? "TN_E2"
                 : (uavSwitchingXappActive
-                       ? (useSatelliteBackhaul ? "SATELLITE_BACKHAUL_CONTROL"
+                       ? (useSatelliteBackhaul ? "NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL"
                                                : "NEAR_RT_RIC_SWITCHING_NO_SATELLITE_BACKHAUL")
                        : "LOCAL_AUTONOMY");
         const std::string activeUavRic =
@@ -788,7 +774,7 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
                       << " UavSwitchingXappAvailable=" << (uavSwitchingXappAvailable ? 1 : 0)
                       << " UavSwitchingXappState=" << uavSwitchingXappState
                       << " BackhaulMode=" << backhaulMode
-                      << " ControlPath=" << controlPath
+                      << " RicControlState=" << ricControlState
                       << " ActiveUavRic=" << activeUavRic
                       << " NormalUeHandoverAllowed=" << (allowNormalUeHandover ? 1 : 0)
                       << " UavMode=" << uavMode
@@ -813,7 +799,7 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
             << (uavSwitchingXappAvailable ? 1 : 0) << ","
             << uavSwitchingXappState << ","
             << backhaulMode << ","
-            << controlPath << ","
+            << ricControlState << ","
             << activeUavRic << ","
             << (allowNormalUeHandover ? 1 : 0) << ","
             << ctx.e2TxDelaySec << ","
@@ -2178,7 +2164,7 @@ main(int argc, char* argv[])
     double xhaulHealthyRsrpDbm = -90.0;
     double xhaulDegradedRsrpDbm = -110.0;
     double xhaulTraceIntervalSec = 1.0;
-    double xhaulMaxDonorDistanceM = 10000.0;
+    double xhaulMaxDonorDistanceM = -1.0;
 
     // Optional synthetic degradation window for controlled experiments.
     // Example: start at 15 s, stop at 30 s, subtract 35 dB from the estimated
@@ -2272,12 +2258,12 @@ main(int argc, char* argv[])
                  "3GPP defines measurement/reporting behavior, not this service-continuity cutoff",
                  xhaulHealthyRsrpDbm);
     cmd.AddValue("xhaul-degraded-rsrp-dbm",
-                 "Policy threshold for classifying the UAV-to-TN donor RSRP as DEGRADED; "
-                 "below this value the donor path is treated as UNREACHABLE",
+                 "Deprecated compatibility threshold. The final switching policy uses "
+                 "--xhaul-healthy-rsrp-dbm as the usable/unreachable donor cutoff.",
                  xhaulDegradedRsrpDbm);
     cmd.AddValue("xhaul-trace-interval", "xHaul/autonomy trace interval in seconds", xhaulTraceIntervalSec);
     cmd.AddValue("xhaul-max-donor-distance-m",
-                 "Maximum UAV-to-TN donor distance for terrestrial donor-backhaul connectivity",
+                 "Maximum UAV-to-TN donor search distance; <= 0 disables the hard distance cutoff",
                  xhaulMaxDonorDistanceM);
     cmd.AddValue("xhaul-degradation-start",
                  "Start time for synthetic xHaul degradation; negative disables it",
@@ -4031,7 +4017,7 @@ main(int argc, char* argv[])
                  << "DonorUnavailableActive,"
                  << "SatBackhaulDlSnrDb,SatBackhaulUlSnrDb,SatBackhaulHealthy,"
                  << "UavSwitchingXappAvailable,UavSwitchingXappState,"
-                 << "BackhaulMode,ControlPath,ActiveUavRic,"
+                 << "BackhaulMode,RicControlState,ActiveUavRic,"
                  << "NormalUeHandoverAllowed,"
                  << "E2TxDelaySec,E2SendIntervalSec,LmQueryIntervalSec,UavMode\n";
     }

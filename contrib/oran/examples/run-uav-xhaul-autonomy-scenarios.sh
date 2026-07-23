@@ -15,8 +15,8 @@ set -euo pipefail
 #   donor reachability. No hand-set RSRP penalty is used.
 #     1. TN only under healthy terrestrial infrastructure
 #     2. TN + UAV with extra aerial access capacity and healthy TN donor backhaul
-#     3. TN + UAV with the same donor-backhaul degradation but no satellite fallback
-#     4. TN + UAV + satellite with terrestrial donor-backhaul degradation and a
+#     3. TN + UAV with the same donor-backhaul outage but no satellite fallback
+#     4. TN + UAV + satellite with terrestrial donor-backhaul outage and a
 #        Near-RT RIC UAV TN/satellite switching xApp fallback
 #
 # Scenario 1 experiment size:
@@ -52,7 +52,6 @@ COMMON_ARGS="--sim-time=120 \
   --uav-tx-power-dbm=78 \
   --ue-tx-power-dbm=43 \
   --init-min-rsrp=-160 \
-  --xhaul-max-donor-distance-m=10000 \
   --enable-flow-monitor=1 \
   --enable-rsrp-trace=1 \
   --enable-position-trace=1 \
@@ -60,7 +59,6 @@ COMMON_ARGS="--sim-time=120 \
   --enable-handover-failure-trace=1 \
   --enable-decision-csv=1 \
   --enable-oran-info-log=1 \
-  --sat-backhaul-scenario=NTN-Suburban \
   --enable-progress=1"
 
 TN_ONLY_ARGS="--num-uess1=20 \
@@ -76,10 +74,7 @@ UAV_ARGS="--num-uess1=50 \
   --max-ues-ntn=10 \
   --num-ntn-gnbs=3"
 
-NATURAL_MISSION_ARGS="--tn-degradation-start=-1 \
-  --tn-degradation-stop=-1 \
-  --tn-degradation-penalty-db=0 \
-  --uav-control-start=30 \
+NATURAL_MISSION_ARGS="--uav-control-start=30 \
   --uav-control-period=2 \
   --uav-underserved-rsrp-thresh-dbm=-110 \
   --uav-initial-area-half-w-m=3000 \
@@ -88,13 +83,9 @@ NATURAL_MISSION_ARGS="--tn-degradation-start=-1 \
   --uav-area-half-h-m=8000 \
   --uav-mission-target-scale=4 \
   --uav-speed-mps=25 \
-  --xhaul-degradation-start=-1 \
-  --xhaul-degradation-stop=-1 \
-  --xhaul-degradation-penalty-db=0 \
   --xhaul-donor-unavailable-start=30 \
   --xhaul-donor-unavailable-stop=75 \
-  --xhaul-healthy-rsrp-dbm=-90 \
-  --xhaul-degraded-rsrp-dbm=-110 \
+  --xhaul-healthy-rsrp-dbm=-110 \
   --enable-xhaul-channel-variation=1 \
   --xhaul-shadowing-stddev-db=6 \
   --xhaul-fading-stddev-db=4 \
@@ -114,8 +105,9 @@ NATURAL_MISSION_ARGS="--tn-degradation-start=-1 \
 # Scenario 2: UE + TN + UAV with healthy terrestrial donor backhaul.
 # UAVs are active cell nodes. The TN layer has 80 UE capacity while 100 UEs are
 # present after 5 s, so UAV cells are expected to help with access capacity and
-# coverage. The UAV-to-ground TN donor link is monitored and should stay within
-# the 10 km terrestrial donor-backhaul range. Satellite backhaul is disabled.
+# coverage. The UAV-to-ground TN donor link is monitored using the best donor
+# RSRP; the final comparison disables the hard donor-distance cutoff. Satellite
+# backhaul is disabled.
 ./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --run-label=healthy-xhaul ${COMMON_ARGS} ${UAV_ARGS}"
 
 # Scenario 3: UE + TN + UAV with donor-backhaul stress but no satellite fallback.
@@ -134,4 +126,4 @@ NATURAL_MISSION_ARGS="--tn-degradation-start=-1 \
 # DonorUnavailableActive=1 and XhaulState=UNREACHABLE. If satellite SNR is
 # healthy, the Near-RT RIC switching xApp switches the core path to
 # UAV->SAT->GW->core.
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --run-label=donor-unavailable-sat ${COMMON_ARGS} ${UAV_ARGS} --enable-sat-backhaul-monitor=1 --enable-uav-switching-xapp=1 ${NATURAL_MISSION_ARGS}"
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --run-label=donor-unavailable-sat ${COMMON_ARGS} ${UAV_ARGS} --sat-backhaul-scenario=NTN-Suburban --enable-sat-backhaul-monitor=1 --enable-uav-switching-xapp=1 ${NATURAL_MISSION_ARGS}"
