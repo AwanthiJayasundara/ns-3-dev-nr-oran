@@ -518,15 +518,21 @@ UE -> UAV gNB -> SAT -> GW -> core network
 
 The Near-RT RIC/xApp is used to decide when the UAV should use the TN donor path, when it should switch to satellite fallback, and when UAV handover should be blocked because no valid backhaul exists. The RIC/E2 control connection is modeled as the simulator's normal logical O-RAN control interface to the UAV gNB, while the satellite route is used for UE user/core traffic.
 
-The next improvement is to make the policy richer:
+The current implementation uses rule-based xApp logic: donor RSRP, donor outage state, satellite SNR, and cell-capacity limits determine whether the UAV uses TN backhaul, satellite fallback, or no normal service. A useful future extension is to replace or augment these fixed rules with an AI/RL-based UAV TN/NTN switching xApp.
 
-1. Make UAV movement objectives, donor selection, and UE handover decisions jointly optimized.
-2. Prefer UAV/satellite-supported service when terrestrial infrastructure is degraded.
-3. Add service-specific policies for emergency traffic, video traffic, and background traffic.
-4. Compare against a baseline that ignores donor-backhaul health and selects cells using only UE-facing RSRP.
-5. Optionally add more detailed RIC/E2 timing analysis later if the research question is extended to RIC control performance.
+Future work can therefore focus on:
 
-This would turn the current monitoring framework into a stronger AI-native or policy-driven control framework.
+1. Learning UAV movement and satellite-fallback decisions from observed QoS, donor RSRP, satellite SNR, and handover outcomes.
+2. Adding service-specific policies for emergency traffic, video traffic, and background traffic.
+3. Training the UAV switching xApp to balance access coverage, backhaul availability, delay, packet delivery ratio, and handover stability.
+
+Suitable AI models for this future extension include:
+
+1. A supervised classifier such as Random Forest, XGBoost, or a small neural network to predict `TN_DIRECT`, `SATELLITE_FALLBACK`, or `NO_BACKHAUL_AVAILABLE` from donor RSRP, satellite SNR, UE load, delay, and PDR.
+2. A reinforcement-learning agent such as DQN or PPO to learn switching and UAV repositioning actions from rewards based on PDR, delay, handover stability, and backhaul availability.
+3. A multi-agent RL approach such as MAPPO if multiple UAVs coordinate movement and backhaul selection together.
+
+This would move the current rule-based framework toward a stronger AI-native UAV O-RAN control framework.
 
 ## 11. Conclusion
 
