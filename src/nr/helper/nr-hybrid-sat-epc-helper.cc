@@ -411,7 +411,8 @@ void
 HybridSatEpcHelper::ApplyNtnDualBackhaulMode(NtnDualBackhaulRouteInfo& info,
                                              const std::string& mode)
 {
-    const std::string normalizedMode = (mode == "satellite") ? "satellite" : "tn";
+    const std::string normalizedMode =
+        (mode == "satellite") ? "satellite" : ((mode == "unavailable" || mode == "blocked") ? "unavailable" : "tn");
     if (info.mode == normalizedMode)
     {
         return;
@@ -434,11 +435,13 @@ HybridSatEpcHelper::ApplyNtnDualBackhaulMode(NtnDualBackhaulRouteInfo& info,
         AddGatewayHostRoute(info.gw, info.gnbTnAddr, info.satToGwAddr, info.gwIfToSat);
         AddGatewayHostRoute(info.sat, info.gnbTnAddr, info.gnbSatAddr, info.satIfToGnb);
     }
-    else
+    else if (normalizedMode == "tn")
     {
         AddDirectHostRoute(info.gnb, info.sgwTnAddr, info.gnbTnIf);
         AddDirectHostRoute(info.sgw, info.gnbTnAddr, info.sgwTnIf);
     }
+    // unavailable: leave the S1-U endpoint routes removed. This models a UAV
+    // donor/backhaul outage when no satellite fallback path is allowed.
 
     info.mode = normalizedMode;
     NS_LOG_INFO("NTN_BACKHAUL_MODE cell=" << info.cellId
