@@ -1920,3 +1920,1642 @@ TRACE HO_SUCCESS Time=66.6151 IMSI=23 TargetCell=3 Type=TN TargetRSRP=-62.2866 S
 TRACE HO_SUCCESS Time=66.6151 IMSI=64 TargetCell=5 Type=NTN TargetRSRP=-90.3508 ServingRSRP=-47.2463 BackhaulDlSnr=14.4259 BackhaulUlSnr=9.90525
 TRACE HO_SUCCESS Time=66.6151 IMSI=76 TargetCell=7 Type=NTN TargetRSRP=-89.9131 ServingRSRP=-39.0036 BackhaulDlSnr=11.924 BackhaulUlSnr=7.40335
 TRACE HO_SUCCESS Time=66.6151 IMSI=84 TargetCell=7 Type=NTN TargetRSRP=-86.708 ServingRSRP=-67.3925 BackhaulDlSnr=11.924 BackhaulUlSnr=7.40335
+UAV_AUTONOMY_XAPP Time=68.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=0 BestDonorDistanceM=-1 XhaulConnected=0 XhaulChannelVariationDb=0 XhaulState=UNREACHABLE DonorUnavailableActive=1 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=68.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=0 BestDonorDistanceM=-1 XhaulConnected=0 XhaulChannelVariationDb=0 XhaulState=UNREACHABLE DonorUnavailableActive=1 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=68.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=0 BestDonorDistanceM=-1 XhaulConnected=0 XhaulChannelVariationDb=0 XhaulState=UNREACHABLE DonorUnavailableActive=1 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=68.5 ----
+  cell 1 (TN) load=17/20
+  cell 2 (TN) load=19/20
+  cell 3 (TN) load=20/20
+  cell 4 (TN) load=18/20
+  cell 5 (NTN) load=9/10
+  cell 6 (NTN) load=9/10
+  cell 7 (NTN) load=8/10
+UE 8 TTT_WAIT target=2 elapsed=0s need=2s
+UE 11 TTT_WAIT target=6 elapsed=0s need=2s
+UE 12 TTT_WAIT target=7 elapsed=0s need=2s
+UE 13 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=17 rnti=204 3->4 type=TN servingRsrp=-91.0154 targetRsrp=-52.3832 targetLoadReal=18/20 targetLoadEff=18/20
+UE 19 TTT_WAIT target=2 elapsed=0s need=2s
+UE 22 TTT_WAIT target=5 elapsed=0s need=2s
+UE 23 TTT_WAIT target=2 elapsed=0s need=2s
+UE 24 TTT_WAIT target=1 elapsed=0s need=2s
+UE 25 TTT_WAIT target=2 elapsed=0s need=2s
+UE 26 TTT_WAIT target=1 elapsed=0s need=2s
+UE 28 TTT_WAIT target=1 elapsed=0s need=2s
+UE 30 TTT_WAIT target=1 elapsed=0s need=2s
+UE 35 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=36 rnti=91 6->4 type=TN servingRsrp=-79.5511 targetRsrp=-74.5148 targetLoadReal=18/20 targetLoadEff=19/20
+UE 39 TTT_WAIT target=1 elapsed=0s need=2s
+UE 42 TTT_WAIT target=2 elapsed=0s need=2s
+UE 44 TTT_WAIT target=1 elapsed=0s need=2s
+UE 45 TTT_WAIT target=2 elapsed=0s need=2s
+UE 50 TTT_WAIT target=1 elapsed=0s need=2s
+UE 51 TTT_WAIT target=2 elapsed=0s need=2s
+UE 53 TTT_WAIT target=2 elapsed=0s need=2s
+UE 54 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO UE=55 rnti=77 6->5 type=NTN servingRsrp=-88.7644 targetRsrp=-51.5967 targetLoadReal=9/10 targetLoadEff=9/10
+UE 56 TTT_WAIT target=1 elapsed=0s need=2s
+UE 57 TTT_WAIT target=7 elapsed=0s need=2s
+UE 58 TTT_WAIT target=1 elapsed=0s need=2s
+UE 60 TTT_WAIT target=1 elapsed=0s need=2s
+UE 64 TTT_WAIT target=7 elapsed=0s need=2s
+UE 65 TTT_WAIT target=1 elapsed=0s need=2s
+UE 66 TTT_WAIT target=2 elapsed=0s need=2s
+UE 72 TTT_WAIT target=1 elapsed=0s need=2s
+UE 74 TTT_WAIT target=1 elapsed=0s need=2s
+UE 77 TTT_WAIT target=6 elapsed=0s need=2s
+UE 81 TTT_WAIT target=1 elapsed=0s need=2s
+UE 87 TTT_WAIT target=1 elapsed=0s need=2s
+UE 98 TTT_WAIT target=1 elapsed=0s need=2s
+UE 100 TTT_WAIT target=1 elapsed=0s need=2s
+UE 102 TTT_WAIT target=1 elapsed=0s need=2s
+UE 103 TTT_WAIT target=2 elapsed=0s need=2s
+UE 104 TTT_WAIT target=1 elapsed=0s need=2s
+UE 105 TTT_WAIT target=2 elapsed=0s need=2s
+UE 106 TTT_WAIT target=1 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=68.6151 IMSI=16 TargetCell=4 Type=TN TargetRSRP=-81.0631 ServingRSRP=-55.0942 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=68.6151 IMSI=35 TargetCell=4 Type=TN TargetRSRP=-35.8557 ServingRSRP=-63.498 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=68.6151 IMSI=54 TargetCell=5 Type=NTN TargetRSRP=-91.3586 ServingRSRP=-62.1235 BackhaulDlSnr=12.8586 BackhaulUlSnr=8.33799
+UAV_AUTONOMY_XAPP Time=70.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=0 BestDonorDistanceM=-1 XhaulConnected=0 XhaulChannelVariationDb=0 XhaulState=UNREACHABLE DonorUnavailableActive=1 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=70.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=0 BestDonorDistanceM=-1 XhaulConnected=0 XhaulChannelVariationDb=0 XhaulState=UNREACHABLE DonorUnavailableActive=1 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=70.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=0 BestDonorDistanceM=-1 XhaulConnected=0 XhaulChannelVariationDb=0 XhaulState=UNREACHABLE DonorUnavailableActive=1 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=70.5 ----
+  cell 1 (TN) load=17/20
+  cell 2 (TN) load=19/20
+  cell 3 (TN) load=19/20
+  cell 4 (TN) load=20/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=7/10
+  cell 7 (NTN) load=8/10
+LM HO UE=8 rnti=190 1->2 type=TN servingRsrp=-82.6652 targetRsrp=-57.2199 targetLoadReal=19/20 targetLoadEff=19/20
+UE 9 TTT_WAIT target=3 elapsed=0s need=2s
+UE 10 TTT_WAIT target=1 elapsed=0s need=2s
+UE 11 TTT_WAIT target=3 elapsed=0s need=2s
+UE 12 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=13 rnti=125 2->1 type=TN servingRsrp=-46.5021 targetRsrp=-27.9944 targetLoadReal=17/20 targetLoadEff=17/20
+UE 16 TTT_WAIT target=3 elapsed=0s need=2s
+UE 17 TTT_WAIT target=3 elapsed=0s need=2s
+UE 19 TTT_WAIT target=3 elapsed=0s need=2s
+UE 20 TTT_WAIT target=7 elapsed=0s need=2s
+UE 23 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=24 rnti=207 3->1 type=TN servingRsrp=-86.7571 targetRsrp=-74.2353 targetLoadReal=17/20 targetLoadEff=18/20
+UE 25 TTT_WAIT target=1 elapsed=0s need=2s
+UE 26 TTT_WAIT target=3 elapsed=0s need=2s
+UE 27 TTT_WAIT target=3 elapsed=0s need=2s
+UE 28 TTT_WAIT target=6 elapsed=0s need=2s
+UE 29 TTT_WAIT target=3 elapsed=0s need=2s
+UE 33 TTT_WAIT target=3 elapsed=0s need=2s
+UE 34 TTT_WAIT target=7 elapsed=0s need=2s
+UE 36 TTT_WAIT target=6 elapsed=0s need=2s
+UE 37 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=39 rnti=127 2->1 type=TN servingRsrp=-69.8239 targetRsrp=-41.3889 targetLoadReal=17/20 targetLoadEff=19/20
+UE 41 TTT_WAIT target=3 elapsed=0s need=2s
+UE 42 TTT_WAIT target=6 elapsed=0s need=2s
+UE 47 TTT_WAIT target=3 elapsed=0s need=2s
+UE 54 TTT_WAIT target=6 elapsed=0s need=2s
+UE 55 TTT_WAIT target=7 elapsed=0s need=2s
+UE 57 TTT_WAIT target=3 elapsed=0s need=2s
+UE 58 TTT_WAIT target=7 elapsed=0s need=2s
+UE 61 TTT_WAIT target=7 elapsed=0s need=2s
+UE 63 TTT_WAIT target=7 elapsed=0s need=2s
+UE 65 TTT_WAIT target=7 elapsed=0s need=2s
+UE 69 TTT_WAIT target=6 elapsed=0s need=2s
+UE 72 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=77 rnti=86 7->6 type=NTN servingRsrp=-88.7518 targetRsrp=-73.8883 targetLoadReal=7/10 targetLoadEff=7/10
+UE 81 TTT_WAIT target=6 elapsed=0s need=2s
+UE 84 TTT_WAIT target=3 elapsed=0s need=2s
+UE 85 TTT_WAIT target=6 elapsed=0s need=2s
+UE 89 TTT_WAIT target=7 elapsed=0s need=2s
+UE 90 TTT_WAIT target=7 elapsed=0s need=2s
+UE 91 TTT_WAIT target=6 elapsed=0s need=2s
+UE 94 TTT_WAIT target=3 elapsed=0s need=2s
+UE 97 TTT_WAIT target=3 elapsed=0s need=2s
+UE 98 TTT_WAIT target=7 elapsed=0s need=2s
+UE 101 TTT_WAIT target=3 elapsed=0s need=2s
+UE 102 TTT_WAIT target=7 elapsed=0s need=2s
+UE 103 TTT_WAIT target=3 elapsed=0s need=2s
+UE 106 TTT_WAIT target=6 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=70.6151 IMSI=38 TargetCell=1 Type=TN TargetRSRP=-81.1595 ServingRSRP=-69.0698 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=70.6151 IMSI=12 TargetCell=1 Type=TN TargetRSRP=-58.7761 ServingRSRP=-73.0184 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=70.6151 IMSI=23 TargetCell=1 Type=TN TargetRSRP=-78.5911 ServingRSRP=-57.3285 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=70.6151 IMSI=7 TargetCell=2 Type=TN TargetRSRP=-82.6411 ServingRSRP=-79.8177 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=70.6151 IMSI=76 TargetCell=6 Type=NTN TargetRSRP=-85.2367 ServingRSRP=-38.8264 BackhaulDlSnr=9.36051 BackhaulUlSnr=4.83991
+UAV_AUTONOMY_XAPP Time=72.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=0 BestDonorDistanceM=-1 XhaulConnected=0 XhaulChannelVariationDb=0 XhaulState=UNREACHABLE DonorUnavailableActive=1 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=72.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=0 BestDonorDistanceM=-1 XhaulConnected=0 XhaulChannelVariationDb=0 XhaulState=UNREACHABLE DonorUnavailableActive=1 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=72.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=0 BestDonorDistanceM=-1 XhaulConnected=0 XhaulChannelVariationDb=0 XhaulState=UNREACHABLE DonorUnavailableActive=1 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=72.5 ----
+  cell 1 (TN) load=19/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=18/20
+  cell 4 (TN) load=20/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=8/10
+  cell 7 (NTN) load=7/10
+UE 8 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=9 rnti=177 4->3 type=TN servingRsrp=-82.4711 targetRsrp=-52.3288 targetLoadReal=18/20 targetLoadEff=18/20
+LM HO UE=10 rnti=182 3->1 type=TN servingRsrp=-67.7737 targetRsrp=-58.654 targetLoadReal=19/20 targetLoadEff=19/20
+UE 11 TTT_WAIT target=7 elapsed=0s need=2s
+UE 13 TTT_WAIT target=2 elapsed=0s need=2s
+UE 17 TTT_WAIT target=6 elapsed=0s need=2s
+UE 19 TTT_WAIT target=2 elapsed=0s need=2s
+UE 22 TTT_WAIT target=6 elapsed=0s need=2s
+UE 23 TTT_WAIT target=2 elapsed=0s need=2s
+UE 24 TTT_WAIT target=3 elapsed=0s need=2s
+UE 25 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=26 rnti=99 2->3 type=TN servingRsrp=-93.4638 targetRsrp=-44.6558 targetLoadReal=18/20 targetLoadEff=19/20
+UE 27 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=28 rnti=126 2->6 type=NTN servingRsrp=-100.45 targetRsrp=-76.9749 targetLoadReal=8/10 targetLoadEff=8/10
+UE 29 TTT_WAIT target=7 elapsed=0s need=2s
+UE 30 TTT_WAIT target=2 elapsed=0s need=2s
+UE 36 TTT_WAIT target=2 elapsed=0s need=2s
+UE 42 TTT_WAIT target=2 elapsed=0s need=2s
+UE 44 TTT_WAIT target=7 elapsed=0s need=2s
+UE 45 TTT_WAIT target=2 elapsed=0s need=2s
+UE 47 TTT_WAIT target=2 elapsed=0s need=2s
+UE 50 TTT_WAIT target=6 elapsed=0s need=2s
+UE 54 TTT_WAIT target=7 elapsed=0s need=2s
+UE 56 TTT_WAIT target=7 elapsed=0s need=2s
+UE 57 TTT_WAIT target=2 elapsed=0s need=2s
+UE 60 TTT_WAIT target=2 elapsed=0s need=2s
+UE 63 TTT_WAIT target=2 elapsed=0s need=2s
+UE 65 TTT_WAIT target=2 elapsed=0s need=2s
+UE 68 TTT_WAIT target=2 elapsed=0s need=2s
+UE 69 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=72 rnti=172 3->7 type=NTN servingRsrp=-89.6696 targetRsrp=-57.915 targetLoadReal=7/10 targetLoadEff=7/10
+UE 74 TTT_WAIT target=6 elapsed=0s need=2s
+UE 76 TTT_WAIT target=2 elapsed=0s need=2s
+UE 80 TTT_WAIT target=2 elapsed=0s need=2s
+UE 82 TTT_WAIT target=2 elapsed=0s need=2s
+UE 83 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=85 rnti=87 7->6 type=NTN servingRsrp=-89.8534 targetRsrp=-84.8762 targetLoadReal=8/10 targetLoadEff=9/10
+UE 87 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=90 rnti=113 2->7 type=NTN servingRsrp=-67.9491 targetRsrp=-45.5768 targetLoadReal=7/10 targetLoadEff=8/10
+UE 92 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=98 rnti=92 6->7 type=NTN servingRsrp=-79.4698 targetRsrp=-38.0806 targetLoadReal=7/10 targetLoadEff=9/10
+UE 106 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=72.6151 IMSI=9 TargetCell=1 Type=TN TargetRSRP=-63.1666 ServingRSRP=-70.569 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=72.6151 IMSI=25 TargetCell=3 Type=TN TargetRSRP=-43.663 ServingRSRP=-55.3434 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=72.6151 IMSI=8 TargetCell=3 Type=TN TargetRSRP=-94.5074 ServingRSRP=-41.3645 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=72.6151 IMSI=27 TargetCell=6 Type=NTN TargetRSRP=-95.7766 ServingRSRP=-43.0242 BackhaulDlSnr=13.8037 BackhaulUlSnr=9.28306
+TRACE HO_SUCCESS Time=72.6151 IMSI=84 TargetCell=6 Type=NTN TargetRSRP=-89.405 ServingRSRP=-58.6879 BackhaulDlSnr=13.8037 BackhaulUlSnr=9.28306
+TRACE HO_SUCCESS Time=72.6151 IMSI=89 TargetCell=7 Type=NTN TargetRSRP=-78.4754 ServingRSRP=-64.8025 BackhaulDlSnr=12.4883 BackhaulUlSnr=7.96772
+TRACE HO_SUCCESS Time=72.6151 IMSI=71 TargetCell=7 Type=NTN TargetRSRP=-90.3007 ServingRSRP=-56.0376 BackhaulDlSnr=12.4883 BackhaulUlSnr=7.96772
+TRACE HO_SUCCESS Time=72.6151 IMSI=97 TargetCell=7 Type=NTN TargetRSRP=-67.615 ServingRSRP=-56.5699 BackhaulDlSnr=12.4883 BackhaulUlSnr=7.96772
+UAV_AUTONOMY_XAPP Time=74.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=0 BestDonorDistanceM=-1 XhaulConnected=0 XhaulChannelVariationDb=0 XhaulState=UNREACHABLE DonorUnavailableActive=1 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=74.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=0 BestDonorDistanceM=-1 XhaulConnected=0 XhaulChannelVariationDb=0 XhaulState=UNREACHABLE DonorUnavailableActive=1 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=74.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=0 BestDonorDistanceM=-1 XhaulConnected=0 XhaulChannelVariationDb=0 XhaulState=UNREACHABLE DonorUnavailableActive=1 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=74.5 ----
+  cell 1 (TN) load=20/20
+  cell 2 (TN) load=15/20
+  cell 3 (TN) load=18/20
+  cell 4 (TN) load=19/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=9/10
+  cell 7 (NTN) load=9/10
+UE 10 TTT_WAIT target=2 elapsed=0s need=2s
+UE 11 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=13 rnti=192 1->2 type=TN servingRsrp=-66.3352 targetRsrp=-56.7715 targetLoadReal=15/20 targetLoadEff=15/20
+LM HO UE=19 rnti=181 4->2 type=TN servingRsrp=-108.3 targetRsrp=-89.886 targetLoadReal=15/20 targetLoadEff=16/20
+UE 20 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=23 rnti=200 3->2 type=TN servingRsrp=-83.7328 targetRsrp=-61.1769 targetLoadReal=15/20 targetLoadEff=17/20
+UE 25 TTT_WAIT target=6 elapsed=0s need=2s
+UE 29 TTT_WAIT target=3 elapsed=0s need=2s
+UE 31 TTT_WAIT target=4 elapsed=0s need=2s
+UE 34 TTT_WAIT target=4 elapsed=0s need=2s
+UE 35 TTT_WAIT target=2 elapsed=0s need=2s
+UE 39 TTT_WAIT target=2 elapsed=0s need=2s
+UE 40 TTT_WAIT target=4 elapsed=0s need=2s
+UE 42 TTT_WAIT target=3 elapsed=0s need=2s
+UE 44 TTT_WAIT target=4 elapsed=0s need=2s
+UE 48 TTT_WAIT target=4 elapsed=0s need=2s
+UE 51 TTT_WAIT target=4 elapsed=0s need=2s
+UE 52 TTT_WAIT target=2 elapsed=0s need=2s
+UE 54 TTT_WAIT target=3 elapsed=0s need=2s
+UE 55 TTT_WAIT target=3 elapsed=0s need=2s
+UE 56 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO UE=57 rnti=185 1->2 type=TN servingRsrp=-88.3052 targetRsrp=-53.2949 targetLoadReal=15/20 targetLoadEff=18/20
+UE 58 TTT_WAIT target=2 elapsed=0s need=2s
+UE 59 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=60 rnti=205 3->2 type=TN servingRsrp=-84.654 targetRsrp=-59.0856 targetLoadReal=15/20 targetLoadEff=19/20
+UE 62 TTT_WAIT target=3 elapsed=0s need=2s
+UE 63 TTT_WAIT target=3 elapsed=0s need=2s
+UE 65 TTT_WAIT target=7 elapsed=0s need=2s
+UE 66 TTT_WAIT target=7 elapsed=0s need=2s
+UE 79 TTT_WAIT target=6 elapsed=0s need=2s
+UE 83 TTT_WAIT target=7 elapsed=0s need=2s
+UE 84 TTT_WAIT target=3 elapsed=0s need=2s
+UE 85 TTT_WAIT target=4 elapsed=0s need=2s
+UE 87 TTT_WAIT target=6 elapsed=0s need=2s
+UE 88 TTT_WAIT target=3 elapsed=0s need=2s
+UE 91 TTT_WAIT target=3 elapsed=0s need=2s
+UE 92 TTT_WAIT target=3 elapsed=0s need=2s
+UE 94 TTT_WAIT target=3 elapsed=0s need=2s
+UE 99 TTT_WAIT target=7 elapsed=0s need=2s
+UE 100 TTT_WAIT target=3 elapsed=0s need=2s
+UE 103 TTT_WAIT target=3 elapsed=0s need=2s
+UE 105 TTT_WAIT target=6 elapsed=0s need=2s
+UE 106 TTT_WAIT target=3 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=74.6151 IMSI=56 TargetCell=2 Type=TN TargetRSRP=-89.3249 ServingRSRP=-88.7325 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=74.6151 IMSI=12 TargetCell=2 Type=TN TargetRSRP=-64.2118 ServingRSRP=-63.7477 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=74.6151 IMSI=22 TargetCell=2 Type=TN TargetRSRP=-58.5798 ServingRSRP=-42.7556 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=74.6151 IMSI=59 TargetCell=2 Type=TN TargetRSRP=-86.4127 ServingRSRP=-70.4579 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=74.6151 IMSI=18 TargetCell=2 Type=TN TargetRSRP=-102.418 ServingRSRP=-56.8688 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=76.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=2 BestDonorDistanceM=1663.27 XhaulConnected=1 XhaulChannelVariationDb=3.95538 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=76.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=497.966 XhaulConnected=1 XhaulChannelVariationDb=-3.40917 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=76.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=935.009 XhaulConnected=1 XhaulChannelVariationDb=1.23778 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=76.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=20/20
+  cell 3 (TN) load=16/20
+  cell 4 (TN) load=18/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=9/10
+  cell 7 (NTN) load=9/10
+UE 9 TTT_WAIT target=4 elapsed=0s need=2s
+UE 10 TTT_WAIT target=3 elapsed=0s need=2s
+UE 11 TTT_WAIT target=7 elapsed=0s need=2s
+UE 12 TTT_WAIT target=4 elapsed=0s need=2s
+UE 17 TTT_WAIT target=1 elapsed=0s need=2s
+UE 19 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=20 rnti=92 5->3 type=TN servingRsrp=-76.4427 targetRsrp=-63.168 targetLoadReal=16/20 targetLoadEff=16/20
+UE 21 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO UE=25 rnti=173 4->6 type=NTN servingRsrp=-84.1395 targetRsrp=-78.7389 targetLoadReal=9/10 targetLoadEff=9/10
+UE 26 TTT_WAIT target=1 elapsed=0s need=2s
+UE 29 TTT_WAIT target=7 elapsed=0s need=2s
+UE 30 TTT_WAIT target=1 elapsed=0s need=2s
+UE 35 TTT_WAIT target=4 elapsed=0s need=2s
+UE 37 TTT_WAIT target=7 elapsed=0s need=2s
+UE 40 TTT_WAIT target=7 elapsed=0s need=2s
+UE 41 TTT_WAIT target=3 elapsed=0s need=2s
+UE 44 TTT_WAIT target=1 elapsed=0s need=2s
+UE 46 TTT_WAIT target=1 elapsed=0s need=2s
+UE 50 TTT_WAIT target=4 elapsed=0s need=2s
+UE 54 TTT_WAIT target=1 elapsed=0s need=2s
+UE 55 TTT_WAIT target=1 elapsed=0s need=2s
+UE 56 TTT_WAIT target=7 elapsed=0s need=2s
+UE 57 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=59 rnti=96 5->3 type=TN servingRsrp=-84.8938 targetRsrp=-49.0535 targetLoadReal=16/20 targetLoadEff=17/20
+UE 60 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=63 rnti=175 1->3 type=TN servingRsrp=-85.3532 targetRsrp=-63.8336 targetLoadReal=16/20 targetLoadEff=18/20
+UE 65 TTT_WAIT target=4 elapsed=0s need=2s
+UE 74 TTT_WAIT target=3 elapsed=0s need=2s
+UE 76 TTT_WAIT target=1 elapsed=0s need=2s
+UE 79 TTT_WAIT target=3 elapsed=0s need=2s
+UE 81 TTT_WAIT target=4 elapsed=0s need=2s
+UE 83 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=85 rnti=96 6->4 type=TN servingRsrp=-92.2488 targetRsrp=-52.7783 targetLoadReal=18/20 targetLoadEff=18/20
+UE 90 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=91 rnti=107 2->3 type=TN servingRsrp=-85.5166 targetRsrp=-49.8065 targetLoadReal=16/20 targetLoadEff=19/20
+UE 92 TTT_WAIT target=1 elapsed=0s need=2s
+UE 94 TTT_WAIT target=1 elapsed=0s need=2s
+UE 97 TTT_WAIT target=1 elapsed=0s need=2s
+UE 101 TTT_WAIT target=1 elapsed=0s need=2s
+UE 103 TTT_WAIT target=4 elapsed=0s need=2s
+UE 104 TTT_WAIT target=1 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=76.6151 IMSI=62 TargetCell=3 Type=TN TargetRSRP=-90.8426 ServingRSRP=-73.1844 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=76.6151 IMSI=90 TargetCell=3 Type=TN TargetRSRP=-85.4142 ServingRSRP=-49.7879 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=76.6151 IMSI=58 TargetCell=3 Type=TN TargetRSRP=-84.7343 ServingRSRP=-57.2837 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=76.6151 IMSI=19 TargetCell=3 Type=TN TargetRSRP=-74.6592 ServingRSRP=-44.697 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=76.6151 IMSI=84 TargetCell=4 Type=TN TargetRSRP=-56.9816 ServingRSRP=-87.1072 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=76.6151 IMSI=24 TargetCell=6 Type=NTN TargetRSRP=-78.2715 ServingRSRP=-46.3624 BackhaulDlSnr=10.0359 BackhaulUlSnr=5.51531
+UAV_AUTONOMY_XAPP Time=78.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1216.36 XhaulConnected=1 XhaulChannelVariationDb=-0.64891 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=78.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=519.845 XhaulConnected=1 XhaulChannelVariationDb=-2.55936 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=78.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=885.419 XhaulConnected=1 XhaulChannelVariationDb=0.381982 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=78.5 ----
+  cell 1 (TN) load=17/20
+  cell 2 (TN) load=19/20
+  cell 3 (TN) load=20/20
+  cell 4 (TN) load=18/20
+  cell 5 (NTN) load=8/10
+  cell 6 (NTN) load=9/10
+  cell 7 (NTN) load=9/10
+UE 8 TTT_WAIT target=1 elapsed=0s need=2s
+UE 10 TTT_WAIT target=2 elapsed=0s need=2s
+UE 11 TTT_WAIT target=5 elapsed=0s need=2s
+UE 13 TTT_WAIT target=1 elapsed=0s need=2s
+UE 18 TTT_WAIT target=5 elapsed=0s need=2s
+UE 20 TTT_WAIT target=1 elapsed=0s need=2s
+UE 25 TTT_WAIT target=4 elapsed=0s need=2s
+UE 27 TTT_WAIT target=5 elapsed=0s need=2s
+UE 28 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=30 rnti=83 7->1 type=TN servingRsrp=-109.598 targetRsrp=-97.2166 targetLoadReal=17/20 targetLoadEff=17/20
+UE 31 TTT_WAIT target=2 elapsed=0s need=2s
+UE 33 TTT_WAIT target=1 elapsed=0s need=2s
+UE 34 TTT_WAIT target=2 elapsed=0s need=2s
+UE 36 TTT_WAIT target=6 elapsed=0s need=2s
+UE 38 TTT_WAIT target=1 elapsed=0s need=2s
+UE 39 TTT_WAIT target=7 elapsed=0s need=2s
+UE 40 TTT_WAIT target=4 elapsed=0s need=2s
+UE 41 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO UE=44 rnti=90 2->1 type=TN servingRsrp=-81.5251 targetRsrp=-61.0427 targetLoadReal=17/20 targetLoadEff=18/20
+UE 46 TTT_WAIT target=7 elapsed=0s need=2s
+UE 50 TTT_WAIT target=5 elapsed=0s need=2s
+UE 52 TTT_WAIT target=2 elapsed=0s need=2s
+UE 53 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=54 rnti=123 2->1 type=TN servingRsrp=-78.4669 targetRsrp=-61.1931 targetLoadReal=17/20 targetLoadEff=19/20
+UE 55 TTT_WAIT target=6 elapsed=0s need=2s
+UE 56 TTT_WAIT target=2 elapsed=0s need=2s
+UE 59 TTT_WAIT target=7 elapsed=0s need=2s
+UE 60 TTT_WAIT target=7 elapsed=0s need=2s
+UE 62 TTT_WAIT target=2 elapsed=0s need=2s
+UE 63 TTT_WAIT target=4 elapsed=0s need=2s
+UE 65 TTT_WAIT target=2 elapsed=0s need=2s
+UE 68 TTT_WAIT target=2 elapsed=0s need=2s
+UE 70 TTT_WAIT target=6 elapsed=0s need=2s
+UE 72 TTT_WAIT target=5 elapsed=0s need=2s
+UE 73 TTT_WAIT target=7 elapsed=0s need=2s
+UE 74 TTT_WAIT target=5 elapsed=0s need=2s
+UE 75 TTT_WAIT target=5 elapsed=0s need=2s
+UE 76 TTT_WAIT target=7 elapsed=0s need=2s
+UE 79 TTT_WAIT target=2 elapsed=0s need=2s
+UE 81 TTT_WAIT target=2 elapsed=0s need=2s
+UE 83 TTT_WAIT target=2 elapsed=0s need=2s
+UE 85 TTT_WAIT target=6 elapsed=0s need=2s
+UE 88 TTT_WAIT target=6 elapsed=0s need=2s
+UE 90 TTT_WAIT target=2 elapsed=0s need=2s
+UE 91 TTT_WAIT target=5 elapsed=0s need=2s
+UE 95 TTT_WAIT target=7 elapsed=0s need=2s
+UE 96 TTT_WAIT target=5 elapsed=0s need=2s
+UE 97 TTT_WAIT target=7 elapsed=0s need=2s
+UE 100 TTT_WAIT target=5 elapsed=0s need=2s
+UE 101 TTT_WAIT target=2 elapsed=0s need=2s
+UE 104 TTT_WAIT target=2 elapsed=0s need=2s
+UE 106 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=78.6151 IMSI=43 TargetCell=1 Type=TN TargetRSRP=-84.2049 ServingRSRP=-86.4633 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=78.6151 IMSI=53 TargetCell=1 Type=TN TargetRSRP=-90.5196 ServingRSRP=-77.2692 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=78.6151 IMSI=29 TargetCell=1 Type=TN TargetRSRP=-108.837 ServingRSRP=-58.9781 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=80.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1209.75 XhaulConnected=1 XhaulChannelVariationDb=1.48981 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=80.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=541.288 XhaulConnected=1 XhaulChannelVariationDb=-0.447712 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=80.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=850.731 XhaulConnected=1 XhaulChannelVariationDb=1.3569 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=80.5 ----
+  cell 1 (TN) load=20/20
+  cell 2 (TN) load=17/20
+  cell 3 (TN) load=20/20
+  cell 4 (TN) load=18/20
+  cell 5 (NTN) load=8/10
+  cell 6 (NTN) load=9/10
+  cell 7 (NTN) load=8/10
+UE 8 TTT_WAIT target=7 elapsed=0s need=2s
+UE 10 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=11 rnti=89 2->5 type=NTN servingRsrp=-77.697 targetRsrp=-60.2185 targetLoadReal=8/10 targetLoadEff=8/10
+UE 17 TTT_WAIT target=2 elapsed=0s need=2s
+UE 18 TTT_WAIT target=2 elapsed=0s need=2s
+UE 19 TTT_WAIT target=5 elapsed=0s need=2s
+UE 21 TTT_WAIT target=6 elapsed=0s need=2s
+UE 24 TTT_WAIT target=5 elapsed=0s need=2s
+UE 27 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=28 rnti=95 6->4 type=TN servingRsrp=-102.062 targetRsrp=-89.0724 targetLoadReal=18/20 targetLoadEff=18/20
+UE 29 TTT_WAIT target=2 elapsed=0s need=2s
+UE 30 TTT_WAIT target=5 elapsed=0s need=2s
+UE 33 TTT_WAIT target=4 elapsed=0s need=2s
+UE 34 TTT_WAIT target=7 elapsed=0s need=2s
+UE 35 TTT_WAIT target=5 elapsed=0s need=2s
+UE 37 TTT_WAIT target=5 elapsed=0s need=2s
+UE 40 TTT_WAIT target=2 elapsed=0s need=2s
+UE 41 TTT_WAIT target=7 elapsed=0s need=2s
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+UE 48 TTT_WAIT target=2 elapsed=0s need=2s
+UE 49 TTT_WAIT target=6 elapsed=0s need=2s
+UE 54 TTT_WAIT target=2 elapsed=0s need=2s
+UE 55 TTT_WAIT target=4 elapsed=0s need=2s
+UE 56 TTT_WAIT target=4 elapsed=0s need=2s
+UE 58 TTT_WAIT target=2 elapsed=0s need=2s
+UE 59 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=60 rnti=136 2->7 type=NTN servingRsrp=-88.2339 targetRsrp=-70.3334 targetLoadReal=8/10 targetLoadEff=8/10
+LM HO UE=63 rnti=213 3->4 type=TN servingRsrp=-98.9604 targetRsrp=-71.0728 targetLoadReal=18/20 targetLoadEff=19/20
+UE 65 TTT_WAIT target=7 elapsed=0s need=2s
+UE 66 TTT_WAIT target=2 elapsed=0s need=2s
+UE 67 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=68 rnti=179 1->2 type=TN servingRsrp=-96.4661 targetRsrp=-90.1879 targetLoadReal=17/20 targetLoadEff=17/20
+UE 74 TTT_WAIT target=2 elapsed=0s need=2s
+UE 80 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=81 rnti=181 3->2 type=TN servingRsrp=-87.4968 targetRsrp=-84.8304 targetLoadReal=17/20 targetLoadEff=18/20
+LM HO UE=83 rnti=143 1->2 type=TN servingRsrp=-91.5423 targetRsrp=-60.4122 targetLoadReal=17/20 targetLoadEff=19/20
+LM HO UE=88 rnti=147 4->6 type=NTN servingRsrp=-71.9068 targetRsrp=-54.0146 targetLoadReal=9/10 targetLoadEff=9/10
+LM HO UE=91 rnti=214 3->5 type=NTN servingRsrp=-88.3783 targetRsrp=-69.5819 targetLoadReal=8/10 targetLoadEff=9/10
+UE 101 TTT_WAIT target=7 elapsed=0s need=2s
+UE 103 TTT_WAIT target=7 elapsed=0s need=2s
+UE 105 TTT_WAIT target=7 elapsed=0s need=2s
+UE 106 TTT_WAIT target=7 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=80.6151 IMSI=82 TargetCell=2 Type=TN TargetRSRP=-50.3372 ServingRSRP=-64.8849 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=80.6151 IMSI=67 TargetCell=2 Type=TN TargetRSRP=-88.8574 ServingRSRP=-72.256 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=80.6151 IMSI=80 TargetCell=2 Type=TN TargetRSRP=-86.6424 ServingRSRP=-58.9398 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=80.6151 IMSI=62 TargetCell=4 Type=TN TargetRSRP=-101.112 ServingRSRP=-62.5287 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=80.6151 IMSI=27 TargetCell=4 Type=TN TargetRSRP=-88.472 ServingRSRP=-66.9867 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=80.6151 IMSI=10 TargetCell=5 Type=NTN TargetRSRP=-88.3379 ServingRSRP=-65.7667 BackhaulDlSnr=13.7067 BackhaulUlSnr=9.1861
+TRACE HO_SUCCESS Time=80.6151 IMSI=90 TargetCell=5 Type=NTN TargetRSRP=-102.547 ServingRSRP=-45.0523 BackhaulDlSnr=13.7067 BackhaulUlSnr=9.1861
+TRACE HO_SUCCESS Time=80.6151 IMSI=87 TargetCell=6 Type=NTN TargetRSRP=-81.9407 ServingRSRP=-35.4519 BackhaulDlSnr=12.5802 BackhaulUlSnr=8.05958
+TRACE HO_SUCCESS Time=80.6151 IMSI=59 TargetCell=7 Type=NTN TargetRSRP=-55.8533 ServingRSRP=-46.3203 BackhaulDlSnr=10.421 BackhaulUlSnr=5.9004
+UAV_AUTONOMY_XAPP Time=82.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=2 BestDonorDistanceM=1638.82 XhaulConnected=1 XhaulChannelVariationDb=-2.90212 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=82.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=561.074 XhaulConnected=1 XhaulChannelVariationDb=-0.163872 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=82.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=864.187 XhaulConnected=1 XhaulChannelVariationDb=-2.04926 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=82.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=17/20
+  cell 4 (TN) load=19/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=9/10
+  cell 7 (NTN) load=9/10
+UE 8 TTT_WAIT target=6 elapsed=0s need=2s
+UE 9 TTT_WAIT target=4 elapsed=0s need=2s
+UE 10 TTT_WAIT target=2 elapsed=0s need=2s
+UE 11 TTT_WAIT target=4 elapsed=0s need=2s
+UE 12 TTT_WAIT target=1 elapsed=0s need=2s
+UE 16 TTT_WAIT target=2 elapsed=0s need=2s
+UE 17 TTT_WAIT target=1 elapsed=0s need=2s
+UE 19 TTT_WAIT target=1 elapsed=0s need=2s
+UE 22 TTT_WAIT target=2 elapsed=0s need=2s
+UE 23 TTT_WAIT target=1 elapsed=0s need=2s
+UE 24 TTT_WAIT target=3 elapsed=0s need=2s
+UE 25 TTT_WAIT target=4 elapsed=0s need=2s
+UE 26 TTT_WAIT target=2 elapsed=0s need=2s
+UE 27 TTT_WAIT target=6 elapsed=0s need=2s
+UE 28 TTT_WAIT target=1 elapsed=0s need=2s
+UE 29 TTT_WAIT target=3 elapsed=0s need=2s
+UE 30 TTT_WAIT target=3 elapsed=0s need=2s
+UE 35 TTT_WAIT target=2 elapsed=0s need=2s
+UE 37 TTT_WAIT target=6 elapsed=0s need=2s
+UE 39 TTT_WAIT target=2 elapsed=0s need=2s
+UE 40 TTT_WAIT target=4 elapsed=0s need=2s
+UE 41 TTT_WAIT target=3 elapsed=0s need=2s
+UE 42 TTT_WAIT target=4 elapsed=0s need=2s
+UE 44 TTT_WAIT target=2 elapsed=0s need=2s
+UE 47 TTT_WAIT target=3 elapsed=0s need=2s
+UE 48 TTT_WAIT target=4 elapsed=0s need=2s
+UE 51 TTT_WAIT target=4 elapsed=0s need=2s
+UE 52 TTT_WAIT target=2 elapsed=0s need=2s
+UE 53 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=54 rnti=198 1->2 type=TN servingRsrp=-90.0644 targetRsrp=-83.0569 targetLoadReal=18/20 targetLoadEff=18/20
+UE 55 TTT_WAIT target=2 elapsed=0s need=2s
+UE 56 TTT_WAIT target=1 elapsed=0s need=2s
+UE 57 TTT_WAIT target=3 elapsed=0s need=2s
+UE 59 TTT_WAIT target=2 elapsed=0s need=2s
+UE 60 TTT_WAIT target=2 elapsed=0s need=2s
+UE 61 TTT_WAIT target=2 elapsed=0s need=2s
+UE 62 TTT_WAIT target=2 elapsed=0s need=2s
+UE 63 TTT_WAIT target=1 elapsed=0s need=2s
+UE 64 TTT_WAIT target=2 elapsed=0s need=2s
+UE 65 TTT_WAIT target=1 elapsed=0s need=2s
+UE 68 TTT_WAIT target=7 elapsed=0s need=2s
+UE 72 TTT_WAIT target=3 elapsed=0s need=2s
+UE 73 TTT_WAIT target=6 elapsed=0s need=2s
+UE 74 TTT_WAIT target=3 elapsed=0s need=2s
+UE 76 TTT_WAIT target=2 elapsed=0s need=2s
+UE 79 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO UE=80 rnti=194 3->2 type=TN servingRsrp=-74.4475 targetRsrp=-51.9379 targetLoadReal=18/20 targetLoadEff=19/20
+UE 81 TTT_WAIT target=1 elapsed=0s need=2s
+UE 82 TTT_WAIT target=4 elapsed=0s need=2s
+UE 83 TTT_WAIT target=3 elapsed=0s need=2s
+UE 86 TTT_WAIT target=4 elapsed=0s need=2s
+UE 88 TTT_WAIT target=1 elapsed=0s need=2s
+UE 89 TTT_WAIT target=4 elapsed=0s need=2s
+UE 91 TTT_WAIT target=4 elapsed=0s need=2s
+UE 92 TTT_WAIT target=4 elapsed=0s need=2s
+UE 94 TTT_WAIT target=1 elapsed=0s need=2s
+UE 95 TTT_WAIT target=7 elapsed=0s need=2s
+UE 96 TTT_WAIT target=4 elapsed=0s need=2s
+UE 97 TTT_WAIT target=3 elapsed=0s need=2s
+UE 99 TTT_WAIT target=3 elapsed=0s need=2s
+UE 100 TTT_WAIT target=7 elapsed=0s need=2s
+UE 102 TTT_WAIT target=4 elapsed=0s need=2s
+UE 103 TTT_WAIT target=4 elapsed=0s need=2s
+UE 104 TTT_WAIT target=1 elapsed=0s need=2s
+UE 106 TTT_WAIT target=1 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=82.6151 IMSI=53 TargetCell=2 Type=TN TargetRSRP=-86.6914 ServingRSRP=-68.9575 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=82.6151 IMSI=79 TargetCell=2 Type=TN TargetRSRP=-79.7673 ServingRSRP=-72.7946 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=84.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1194.91 XhaulConnected=1 XhaulChannelVariationDb=4.33644 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=84.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=593.54 XhaulConnected=1 XhaulChannelVariationDb=2.52106 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=84.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=1 BestDonorDistanceM=1363.57 XhaulConnected=1 XhaulChannelVariationDb=0.704911 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=84.5 ----
+  cell 1 (TN) load=17/20
+  cell 2 (TN) load=20/20
+  cell 3 (TN) load=16/20
+  cell 4 (TN) load=19/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=9/10
+  cell 7 (NTN) load=9/10
+UE 8 TTT_WAIT target=3 elapsed=0s need=2s
+UE 9 TTT_WAIT target=6 elapsed=0s need=2s
+UE 10 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=11 rnti=101 5->4 type=TN servingRsrp=-97.6131 targetRsrp=-79.3811 targetLoadReal=19/20 targetLoadEff=19/20
+LM HO UE=12 rnti=116 2->1 type=TN servingRsrp=-98.1292 targetRsrp=-53.0351 targetLoadReal=17/20 targetLoadEff=17/20
+UE 13 TTT_WAIT target=1 elapsed=0s need=2s
+UE 21 TTT_WAIT target=7 elapsed=0s need=2s
+UE 22 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO UE=23 rnti=134 2->1 type=TN servingRsrp=-61.5206 targetRsrp=-45.9747 targetLoadReal=17/20 targetLoadEff=18/20
+LM HO UE=29 rnti=51 1->3 type=TN servingRsrp=-70.1965 targetRsrp=-45.6103 targetLoadReal=16/20 targetLoadEff=16/20
+UE 31 TTT_WAIT target=6 elapsed=0s need=2s
+UE 32 TTT_WAIT target=6 elapsed=0s need=2s
+UE 40 TTT_WAIT target=6 elapsed=0s need=2s
+UE 42 TTT_WAIT target=3 elapsed=0s need=2s
+UE 45 TTT_WAIT target=3 elapsed=0s need=2s
+UE 46 TTT_WAIT target=1 elapsed=0s need=2s
+UE 51 TTT_WAIT target=7 elapsed=0s need=2s
+UE 52 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=53 rnti=202 3->7 type=NTN servingRsrp=-83.8918 targetRsrp=-66.0683 targetLoadReal=9/10 targetLoadEff=9/10
+UE 54 TTT_WAIT target=1 elapsed=0s need=2s
+UE 55 TTT_WAIT target=6 elapsed=0s need=2s
+UE 60 TTT_WAIT target=3 elapsed=0s need=2s
+UE 65 TTT_WAIT target=3 elapsed=0s need=2s
+UE 67 TTT_WAIT target=6 elapsed=0s need=2s
+UE 68 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=72 rnti=88 7->3 type=TN servingRsrp=-61.7794 targetRsrp=-53.1889 targetLoadReal=16/20 targetLoadEff=17/20
+UE 75 TTT_WAIT target=1 elapsed=0s need=2s
+UE 76 TTT_WAIT target=1 elapsed=0s need=2s
+UE 80 TTT_WAIT target=3 elapsed=0s need=2s
+UE 81 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=83 rnti=139 2->3 type=TN servingRsrp=-86.1439 targetRsrp=-55.4303 targetLoadReal=16/20 targetLoadEff=18/20
+UE 84 TTT_WAIT target=3 elapsed=0s need=2s
+UE 87 TTT_WAIT target=1 elapsed=0s need=2s
+UE 89 TTT_WAIT target=6 elapsed=0s need=2s
+UE 90 TTT_WAIT target=3 elapsed=0s need=2s
+UE 91 TTT_WAIT target=1 elapsed=0s need=2s
+UE 92 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=94 rnti=129 2->1 type=TN servingRsrp=-59.8379 targetRsrp=-45.7809 targetLoadReal=17/20 targetLoadEff=19/20
+UE 100 TTT_WAIT target=3 elapsed=0s need=2s
+UE 101 TTT_WAIT target=3 elapsed=0s need=2s
+UE 104 TTT_WAIT target=3 elapsed=0s need=2s
+UE 106 TTT_WAIT target=3 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=84.6151 IMSI=11 TargetCell=1 Type=TN TargetRSRP=-62.4833 ServingRSRP=-59.283 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=84.6151 IMSI=93 TargetCell=1 Type=TN TargetRSRP=-56.1371 ServingRSRP=-58.5583 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=84.6151 IMSI=22 TargetCell=1 Type=TN TargetRSRP=-76.1591 ServingRSRP=-43.3825 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=84.6151 IMSI=28 TargetCell=3 Type=TN TargetRSRP=-81.6875 ServingRSRP=-69.5472 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=84.6151 IMSI=82 TargetCell=3 Type=TN TargetRSRP=-60.5691 ServingRSRP=-54.2347 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=84.6151 IMSI=71 TargetCell=3 Type=TN TargetRSRP=-80.8553 ServingRSRP=-83.2472 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=84.6151 IMSI=10 TargetCell=4 Type=TN TargetRSRP=-106.272 ServingRSRP=-82.6331 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=84.6151 IMSI=52 TargetCell=7 Type=NTN TargetRSRP=-97.7197 ServingRSRP=-71.6058 BackhaulDlSnr=10.8672 BackhaulUlSnr=6.34657
+UAV_AUTONOMY_XAPP Time=86.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1194.91 XhaulConnected=1 XhaulChannelVariationDb=-1.7948 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=86.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=628.302 XhaulConnected=1 XhaulChannelVariationDb=-1.15315 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=86.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=955.063 XhaulConnected=1 XhaulChannelVariationDb=1.00142 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=86.5 ----
+  cell 1 (TN) load=19/20
+  cell 2 (TN) load=16/20
+  cell 3 (TN) load=18/20
+  cell 4 (TN) load=20/20
+  cell 5 (NTN) load=9/10
+  cell 6 (NTN) load=9/10
+  cell 7 (NTN) load=9/10
+LM HO UE=8 rnti=131 2->3 type=TN servingRsrp=-60.0464 targetRsrp=-49.3841 targetLoadReal=18/20 targetLoadEff=18/20
+UE 9 TTT_WAIT target=2 elapsed=0s need=2s
+UE 11 TTT_WAIT target=2 elapsed=0s need=2s
+UE 12 TTT_WAIT target=2 elapsed=0s need=2s
+UE 17 TTT_WAIT target=1 elapsed=0s need=2s
+UE 19 TTT_WAIT target=5 elapsed=0s need=2s
+UE 21 TTT_WAIT target=6 elapsed=0s need=2s
+UE 22 TTT_WAIT target=1 elapsed=0s need=2s
+UE 23 TTT_WAIT target=2 elapsed=0s need=2s
+UE 24 TTT_WAIT target=3 elapsed=0s need=2s
+UE 26 TTT_WAIT target=2 elapsed=0s need=2s
+UE 30 TTT_WAIT target=5 elapsed=0s need=2s
+UE 33 TTT_WAIT target=7 elapsed=0s need=2s
+UE 35 TTT_WAIT target=3 elapsed=0s need=2s
+UE 36 TTT_WAIT target=1 elapsed=0s need=2s
+UE 37 TTT_WAIT target=3 elapsed=0s need=2s
+UE 39 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=40 rnti=183 1->6 type=NTN servingRsrp=-51.8123 targetRsrp=-46.9341 targetLoadReal=9/10 targetLoadEff=9/10
+UE 41 TTT_WAIT target=1 elapsed=0s need=2s
+UE 42 TTT_WAIT target=5 elapsed=0s need=2s
+UE 44 TTT_WAIT target=5 elapsed=0s need=2s
+UE 45 TTT_WAIT target=2 elapsed=0s need=2s
+UE 47 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=51 rnti=185 3->7 type=NTN servingRsrp=-63.753 targetRsrp=-58.2349 targetLoadReal=9/10 targetLoadEff=9/10
+UE 53 TTT_WAIT target=2 elapsed=0s need=2s
+UE 55 TTT_WAIT target=1 elapsed=0s need=2s
+UE 56 TTT_WAIT target=1 elapsed=0s need=2s
+UE 57 TTT_WAIT target=3 elapsed=0s need=2s
+UE 58 TTT_WAIT target=2 elapsed=0s need=2s
+UE 59 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO UE=60 rnti=91 7->3 type=TN servingRsrp=-93.2792 targetRsrp=-59.075 targetLoadReal=18/20 targetLoadEff=19/20
+UE 62 TTT_WAIT target=2 elapsed=0s need=2s
+UE 63 TTT_WAIT target=1 elapsed=0s need=2s
+UE 65 TTT_WAIT target=2 elapsed=0s need=2s
+UE 66 TTT_WAIT target=1 elapsed=0s need=2s
+UE 67 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=68 rnti=137 2->1 type=TN servingRsrp=-91.1072 targetRsrp=-82.9366 targetLoadReal=19/20 targetLoadEff=19/20
+UE 72 TTT_WAIT target=2 elapsed=0s need=2s
+UE 74 TTT_WAIT target=2 elapsed=0s need=2s
+UE 75 TTT_WAIT target=2 elapsed=0s need=2s
+UE 85 TTT_WAIT target=2 elapsed=0s need=2s
+UE 87 TTT_WAIT target=2 elapsed=0s need=2s
+UE 88 TTT_WAIT target=5 elapsed=0s need=2s
+UE 90 TTT_WAIT target=2 elapsed=0s need=2s
+UE 91 TTT_WAIT target=2 elapsed=0s need=2s
+UE 92 TTT_WAIT target=5 elapsed=0s need=2s
+UE 94 TTT_WAIT target=2 elapsed=0s need=2s
+UE 99 TTT_WAIT target=2 elapsed=0s need=2s
+UE 102 TTT_WAIT target=5 elapsed=0s need=2s
+UE 103 TTT_WAIT target=2 elapsed=0s need=2s
+UE 105 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=86.6151 IMSI=67 TargetCell=1 Type=TN TargetRSRP=-55.4325 ServingRSRP=-87.744 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=86.6151 IMSI=7 TargetCell=3 Type=TN TargetRSRP=-89.7101 ServingRSRP=-44.0624 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=86.6151 IMSI=59 TargetCell=3 Type=TN TargetRSRP=-69.2569 ServingRSRP=-69.01 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=86.6151 IMSI=39 TargetCell=6 Type=NTN TargetRSRP=-86.3102 ServingRSRP=-54.7396 BackhaulDlSnr=14.7156 BackhaulUlSnr=10.195
+TRACE HO_SUCCESS Time=86.6151 IMSI=50 TargetCell=7 Type=NTN TargetRSRP=-91.7191 ServingRSRP=-72.552 BackhaulDlSnr=14.0346 BackhaulUlSnr=9.514
+UAV_AUTONOMY_XAPP Time=88.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=2 BestDonorDistanceM=1638.82 XhaulConnected=1 XhaulChannelVariationDb=0.0476279 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=88.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=653.807 XhaulConnected=1 XhaulChannelVariationDb=1.42404 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=88.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1001.15 XhaulConnected=1 XhaulChannelVariationDb=-0.426974 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=88.5 ----
+  cell 1 (TN) load=19/20
+  cell 2 (TN) load=14/20
+  cell 3 (TN) load=19/20
+  cell 4 (TN) load=20/20
+  cell 5 (NTN) load=9/10
+  cell 6 (NTN) load=10/10
+  cell 7 (NTN) load=9/10
+UE 8 TTT_WAIT target=2 elapsed=0s need=2s
+UE 9 TTT_WAIT target=1 elapsed=0s need=2s
+UE 10 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=11 rnti=187 4->2 type=TN servingRsrp=-93.3395 targetRsrp=-65.4442 targetLoadReal=14/20 targetLoadEff=14/20
+LM HO UE=12 rnti=199 1->2 type=TN servingRsrp=-89.4427 targetRsrp=-65.9437 targetLoadReal=14/20 targetLoadEff=15/20
+UE 16 TTT_WAIT target=2 elapsed=0s need=2s
+UE 17 TTT_WAIT target=7 elapsed=0s need=2s
+UE 18 TTT_WAIT target=2 elapsed=0s need=2s
+UE 19 TTT_WAIT target=1 elapsed=0s need=2s
+UE 20 TTT_WAIT target=1 elapsed=0s need=2s
+UE 23 TTT_WAIT target=3 elapsed=0s need=2s
+UE 24 TTT_WAIT target=5 elapsed=0s need=2s
+UE 27 TTT_WAIT target=2 elapsed=0s need=2s
+UE 28 TTT_WAIT target=5 elapsed=0s need=2s
+UE 29 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=30 rnti=196 1->5 type=NTN servingRsrp=-68.1437 targetRsrp=-30.3261 targetLoadReal=9/10 targetLoadEff=9/10
+UE 35 TTT_WAIT target=2 elapsed=0s need=2s
+UE 38 TTT_WAIT target=3 elapsed=0s need=2s
+UE 39 TTT_WAIT target=3 elapsed=0s need=2s
+UE 40 TTT_WAIT target=1 elapsed=0s need=2s
+UE 42 TTT_WAIT target=2 elapsed=0s need=2s
+UE 44 TTT_WAIT target=3 elapsed=0s need=2s
+UE 46 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=47 rnti=164 1->2 type=TN servingRsrp=-66.7972 targetRsrp=-51.6753 targetLoadReal=14/20 targetLoadEff=16/20
+UE 51 TTT_WAIT target=3 elapsed=0s need=2s
+UE 52 TTT_WAIT target=2 elapsed=0s need=2s
+UE 53 TTT_WAIT target=1 elapsed=0s need=2s
+UE 54 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=55 rnti=100 5->1 type=TN servingRsrp=-85.8739 targetRsrp=-77.5317 targetLoadReal=19/20 targetLoadEff=19/20
+LM HO UE=58 rnti=203 3->2 type=TN servingRsrp=-68.625 targetRsrp=-48.241 targetLoadReal=14/20 targetLoadEff=17/20
+LM HO UE=62 rnti=181 1->2 type=TN servingRsrp=-78.8489 targetRsrp=-56.0327 targetLoadReal=14/20 targetLoadEff=18/20
+UE 63 TTT_WAIT target=3 elapsed=0s need=2s
+UE 64 TTT_WAIT target=7 elapsed=0s need=2s
+UE 65 TTT_WAIT target=3 elapsed=0s need=2s
+UE 66 TTT_WAIT target=2 elapsed=0s need=2s
+UE 68 TTT_WAIT target=3 elapsed=0s need=2s
+UE 74 TTT_WAIT target=3 elapsed=0s need=2s
+UE 76 TTT_WAIT target=2 elapsed=0s need=2s
+UE 80 TTT_WAIT target=3 elapsed=0s need=2s
+UE 84 TTT_WAIT target=7 elapsed=0s need=2s
+UE 86 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=87 rnti=68 7->2 type=TN servingRsrp=-74.9775 targetRsrp=-61.1043 targetLoadReal=14/20 targetLoadEff=19/20
+UE 89 TTT_WAIT target=3 elapsed=0s need=2s
+UE 90 TTT_WAIT target=3 elapsed=0s need=2s
+UE 91 TTT_WAIT target=3 elapsed=0s need=2s
+UE 95 TTT_WAIT target=7 elapsed=0s need=2s
+UE 96 TTT_WAIT target=3 elapsed=0s need=2s
+UE 99 TTT_WAIT target=3 elapsed=0s need=2s
+UE 101 TTT_WAIT target=3 elapsed=0s need=2s
+UE 103 TTT_WAIT target=3 elapsed=0s need=2s
+UE 104 TTT_WAIT target=3 elapsed=0s need=2s
+UE 106 TTT_WAIT target=3 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=88.6151 IMSI=54 TargetCell=1 Type=TN TargetRSRP=-76.4638 ServingRSRP=-56.7338 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=88.6151 IMSI=46 TargetCell=2 Type=TN TargetRSRP=-78.878 ServingRSRP=-75.7323 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=88.6151 IMSI=61 TargetCell=2 Type=TN TargetRSRP=-47.4322 ServingRSRP=-61.6463 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=88.6151 IMSI=11 TargetCell=2 Type=TN TargetRSRP=-86.2298 ServingRSRP=-59.1021 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=88.6151 IMSI=57 TargetCell=2 Type=TN TargetRSRP=-80.45 ServingRSRP=-84.77 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=88.6151 IMSI=10 TargetCell=2 Type=TN TargetRSRP=-86.3224 ServingRSRP=-53.6353 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=88.6151 IMSI=86 TargetCell=2 Type=TN TargetRSRP=-73.8019 ServingRSRP=-69.9694 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=88.6151 IMSI=29 TargetCell=5 Type=NTN TargetRSRP=-39.4139 ServingRSRP=-83.6833 BackhaulDlSnr=11.4852 BackhaulUlSnr=6.96457
+UAV_AUTONOMY_XAPP Time=90.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1194.91 XhaulConnected=1 XhaulChannelVariationDb=1.47148 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=90.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=653.807 XhaulConnected=1 XhaulChannelVariationDb=-1.83449 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=90.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=3 BestDonorDistanceM=1753.6 XhaulConnected=1 XhaulChannelVariationDb=1.84641 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=90.5 ----
+  cell 1 (TN) load=16/20
+  cell 2 (TN) load=20/20
+  cell 3 (TN) load=18/20
+  cell 4 (TN) load=19/20
+  cell 5 (NTN) load=9/10
+  cell 6 (NTN) load=10/10
+  cell 7 (NTN) load=8/10
+UE 8 TTT_WAIT target=1 elapsed=0s need=2s
+UE 9 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=10 rnti=195 1->3 type=TN servingRsrp=-84.0752 targetRsrp=-31.876 targetLoadReal=18/20 targetLoadEff=18/20
+UE 11 TTT_WAIT target=4 elapsed=0s need=2s
+UE 17 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=19 rnti=133 2->1 type=TN servingRsrp=-95.5197 targetRsrp=-54.7416 targetLoadReal=16/20 targetLoadEff=16/20
+LM HO UE=24 rnti=193 1->5 type=NTN servingRsrp=-72.9757 targetRsrp=-41.4451 targetLoadReal=9/10 targetLoadEff=9/10
+UE 25 TTT_WAIT target=4 elapsed=0s need=2s
+UE 27 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=29 rnti=216 3->1 type=TN servingRsrp=-86.8755 targetRsrp=-67.0263 targetLoadReal=16/20 targetLoadEff=17/20
+UE 35 TTT_WAIT target=3 elapsed=0s need=2s
+UE 37 TTT_WAIT target=1 elapsed=0s need=2s
+UE 40 TTT_WAIT target=4 elapsed=0s need=2s
+UE 41 TTT_WAIT target=4 elapsed=0s need=2s
+UE 42 TTT_WAIT target=4 elapsed=0s need=2s
+UE 47 TTT_WAIT target=1 elapsed=0s need=2s
+UE 48 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=51 rnti=93 7->3 type=TN servingRsrp=-58.4169 targetRsrp=-46.3046 targetLoadReal=18/20 targetLoadEff=19/20
+UE 53 TTT_WAIT target=4 elapsed=0s need=2s
+UE 54 TTT_WAIT target=7 elapsed=0s need=2s
+UE 55 TTT_WAIT target=4 elapsed=0s need=2s
+UE 57 TTT_WAIT target=1 elapsed=0s need=2s
+UE 58 TTT_WAIT target=1 elapsed=0s need=2s
+UE 61 TTT_WAIT target=4 elapsed=0s need=2s
+UE 63 TTT_WAIT target=1 elapsed=0s need=2s
+UE 64 TTT_WAIT target=4 elapsed=0s need=2s
+UE 65 TTT_WAIT target=1 elapsed=0s need=2s
+UE 67 TTT_WAIT target=7 elapsed=0s need=2s
+UE 68 TTT_WAIT target=4 elapsed=0s need=2s
+UE 72 TTT_WAIT target=1 elapsed=0s need=2s
+UE 74 TTT_WAIT target=1 elapsed=0s need=2s
+UE 76 TTT_WAIT target=1 elapsed=0s need=2s
+UE 82 TTT_WAIT target=4 elapsed=0s need=2s
+UE 83 TTT_WAIT target=1 elapsed=0s need=2s
+UE 86 TTT_WAIT target=1 elapsed=0s need=2s
+UE 88 TTT_WAIT target=4 elapsed=0s need=2s
+UE 89 TTT_WAIT target=4 elapsed=0s need=2s
+UE 91 TTT_WAIT target=4 elapsed=0s need=2s
+UE 94 TTT_WAIT target=7 elapsed=0s need=2s
+UE 101 TTT_WAIT target=1 elapsed=0s need=2s
+UE 104 TTT_WAIT target=1 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=90.6151 IMSI=18 TargetCell=1 Type=TN TargetRSRP=-74.4261 ServingRSRP=-59.4461 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=90.6151 IMSI=28 TargetCell=1 Type=TN TargetRSRP=-70.1247 ServingRSRP=-76.1315 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=90.6151 IMSI=9 TargetCell=3 Type=TN TargetRSRP=-72.8929 ServingRSRP=-64.6191 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=90.6151 IMSI=50 TargetCell=3 Type=TN TargetRSRP=-85.3495 ServingRSRP=-86.0269 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=90.6151 IMSI=23 TargetCell=5 Type=NTN TargetRSRP=-38.0068 ServingRSRP=-51.5776 BackhaulDlSnr=13.5638 BackhaulUlSnr=9.04322
+UAV_AUTONOMY_XAPP Time=92.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1194.91 XhaulConnected=1 XhaulChannelVariationDb=-1.54565 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=92.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=653.807 XhaulConnected=1 XhaulChannelVariationDb=0.503886 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=92.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1084.52 XhaulConnected=1 XhaulChannelVariationDb=0.0998728 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=92.5 ----
+  cell 1 (TN) load=16/20
+  cell 2 (TN) load=19/20
+  cell 3 (TN) load=19/20
+  cell 4 (TN) load=19/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=10/10
+  cell 7 (NTN) load=7/10
+UE 9 TTT_WAIT target=2 elapsed=0s need=2s
+UE 10 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=11 rnti=142 2->4 type=TN servingRsrp=-92.4226 targetRsrp=-89.448 targetLoadReal=19/20 targetLoadEff=19/20
+UE 12 TTT_WAIT target=1 elapsed=0s need=2s
+UE 17 TTT_WAIT target=1 elapsed=0s need=2s
+UE 22 TTT_WAIT target=2 elapsed=0s need=2s
+UE 26 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=27 rnti=180 4->1 type=TN servingRsrp=-74.9545 targetRsrp=-60.7792 targetLoadReal=16/20 targetLoadEff=16/20
+UE 28 TTT_WAIT target=2 elapsed=0s need=2s
+UE 29 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=35 rnti=189 1->3 type=TN servingRsrp=-95.4891 targetRsrp=-68.1688 targetLoadReal=19/20 targetLoadEff=19/20
+LM HO UE=37 rnti=174 4->1 type=TN servingRsrp=-71.8976 targetRsrp=-66.5942 targetLoadReal=16/20 targetLoadEff=17/20
+UE 40 TTT_WAIT target=2 elapsed=0s need=2s
+UE 44 TTT_WAIT target=2 elapsed=0s need=2s
+UE 45 TTT_WAIT target=7 elapsed=0s need=2s
+UE 46 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=47 rnti=146 2->1 type=TN servingRsrp=-77.7192 targetRsrp=-44.0766 targetLoadReal=16/20 targetLoadEff=18/20
+UE 48 TTT_WAIT target=7 elapsed=0s need=2s
+UE 50 TTT_WAIT target=7 elapsed=0s need=2s
+UE 51 TTT_WAIT target=1 elapsed=0s need=2s
+UE 52 TTT_WAIT target=1 elapsed=0s need=2s
+UE 54 TTT_WAIT target=1 elapsed=0s need=2s
+UE 56 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=57 rnti=135 2->1 type=TN servingRsrp=-93.2764 targetRsrp=-51.03 targetLoadReal=16/20 targetLoadEff=19/20
+UE 60 TTT_WAIT target=7 elapsed=0s need=2s
+UE 63 TTT_WAIT target=2 elapsed=0s need=2s
+UE 64 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=67 rnti=157 3->7 type=NTN servingRsrp=-81.2858 targetRsrp=-68.4043 targetLoadReal=7/10 targetLoadEff=7/10
+UE 68 TTT_WAIT target=2 elapsed=0s need=2s
+UE 74 TTT_WAIT target=2 elapsed=0s need=2s
+UE 76 TTT_WAIT target=2 elapsed=0s need=2s
+UE 90 TTT_WAIT target=2 elapsed=0s need=2s
+UE 92 TTT_WAIT target=7 elapsed=0s need=2s
+UE 93 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=94 rnti=201 1->7 type=NTN servingRsrp=-69.4134 targetRsrp=-62.2303 targetLoadReal=7/10 targetLoadEff=8/10
+UE 95 TTT_WAIT target=7 elapsed=0s need=2s
+UE 96 TTT_WAIT target=7 elapsed=0s need=2s
+UE 99 TTT_WAIT target=2 elapsed=0s need=2s
+UE 102 TTT_WAIT target=7 elapsed=0s need=2s
+UE 103 TTT_WAIT target=2 elapsed=0s need=2s
+UE 104 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=92.6151 IMSI=46 TargetCell=1 Type=TN TargetRSRP=-58.7844 ServingRSRP=-67.6765 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=92.6151 IMSI=56 TargetCell=1 Type=TN TargetRSRP=-89.3805 ServingRSRP=-49.7824 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=92.6151 IMSI=36 TargetCell=1 Type=TN TargetRSRP=-86.1168 ServingRSRP=-71.7716 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=92.6151 IMSI=26 TargetCell=1 Type=TN TargetRSRP=-89.9124 ServingRSRP=-45.4486 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=92.6151 IMSI=34 TargetCell=3 Type=TN TargetRSRP=-66.3657 ServingRSRP=-68.8465 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=92.6151 IMSI=10 TargetCell=4 Type=TN TargetRSRP=-95.249 ServingRSRP=-52.0871 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=92.6151 IMSI=93 TargetCell=7 Type=NTN TargetRSRP=-94.027 ServingRSRP=-46.1007 BackhaulDlSnr=12.0517 BackhaulUlSnr=7.53112
+TRACE HO_SUCCESS Time=92.6151 IMSI=66 TargetCell=7 Type=NTN TargetRSRP=-57.4972 ServingRSRP=-45.7139 BackhaulDlSnr=12.0517 BackhaulUlSnr=7.53112
+UAV_AUTONOMY_XAPP Time=94.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1194.91 XhaulConnected=1 XhaulChannelVariationDb=0.346395 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=94.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=653.807 XhaulConnected=1 XhaulChannelVariationDb=-2.42649 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=94.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1100.02 XhaulConnected=1 XhaulChannelVariationDb=2.32842 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=94.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=16/20
+  cell 3 (TN) load=19/20
+  cell 4 (TN) load=18/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=10/10
+  cell 7 (NTN) load=9/10
+UE 8 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=9 rnti=210 3->2 type=TN servingRsrp=-89.3749 targetRsrp=-41.9483 targetLoadReal=16/20 targetLoadEff=16/20
+UE 11 TTT_WAIT target=2 elapsed=0s need=2s
+UE 12 TTT_WAIT target=7 elapsed=0s need=2s
+UE 20 TTT_WAIT target=1 elapsed=0s need=2s
+UE 22 TTT_WAIT target=1 elapsed=0s need=2s
+UE 24 TTT_WAIT target=1 elapsed=0s need=2s
+UE 27 TTT_WAIT target=2 elapsed=0s need=2s
+UE 28 TTT_WAIT target=1 elapsed=0s need=2s
+UE 32 TTT_WAIT target=7 elapsed=0s need=2s
+UE 34 TTT_WAIT target=4 elapsed=0s need=2s
+UE 35 TTT_WAIT target=1 elapsed=0s need=2s
+UE 37 TTT_WAIT target=2 elapsed=0s need=2s
+UE 38 TTT_WAIT target=3 elapsed=0s need=2s
+UE 40 TTT_WAIT target=7 elapsed=0s need=2s
+UE 42 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=44 rnti=197 1->2 type=TN servingRsrp=-85.5639 targetRsrp=-60.4702 targetLoadReal=16/20 targetLoadEff=17/20
+UE 46 TTT_WAIT target=2 elapsed=0s need=2s
+UE 47 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=48 rnti=76 6->7 type=NTN servingRsrp=-80.1997 targetRsrp=-63.5082 targetLoadReal=9/10 targetLoadEff=9/10
+LM HO UE=51 rnti=222 3->1 type=TN servingRsrp=-84.4344 targetRsrp=-62.1261 targetLoadReal=18/20 targetLoadEff=18/20
+UE 53 TTT_WAIT target=3 elapsed=0s need=2s
+UE 54 TTT_WAIT target=3 elapsed=0s need=2s
+UE 55 TTT_WAIT target=2 elapsed=0s need=2s
+UE 57 TTT_WAIT target=3 elapsed=0s need=2s
+UE 58 TTT_WAIT target=3 elapsed=0s need=2s
+UE 60 TTT_WAIT target=2 elapsed=0s need=2s
+UE 64 TTT_WAIT target=2 elapsed=0s need=2s
+UE 65 TTT_WAIT target=2 elapsed=0s need=2s
+UE 67 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=68 rnti=202 1->2 type=TN servingRsrp=-85.4778 targetRsrp=-71.2786 targetLoadReal=16/20 targetLoadEff=18/20
+UE 70 TTT_WAIT target=1 elapsed=0s need=2s
+UE 72 TTT_WAIT target=1 elapsed=0s need=2s
+UE 74 TTT_WAIT target=1 elapsed=0s need=2s
+UE 75 TTT_WAIT target=1 elapsed=0s need=2s
+UE 79 TTT_WAIT target=3 elapsed=0s need=2s
+UE 80 TTT_WAIT target=3 elapsed=0s need=2s
+UE 81 TTT_WAIT target=3 elapsed=0s need=2s
+UE 82 TTT_WAIT target=4 elapsed=0s need=2s
+UE 83 TTT_WAIT target=4 elapsed=0s need=2s
+UE 84 TTT_WAIT target=2 elapsed=0s need=2s
+UE 88 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=90 rnti=89 7->2 type=TN servingRsrp=-79.4247 targetRsrp=-50.5342 targetLoadReal=16/20 targetLoadEff=19/20
+UE 91 TTT_WAIT target=3 elapsed=0s need=2s
+UE 93 TTT_WAIT target=3 elapsed=0s need=2s
+UE 94 TTT_WAIT target=3 elapsed=0s need=2s
+UE 97 TTT_WAIT target=3 elapsed=0s need=2s
+UE 102 TTT_WAIT target=1 elapsed=0s need=2s
+UE 104 TTT_WAIT target=3 elapsed=0s need=2s
+UE 106 TTT_WAIT target=1 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=94.6151 IMSI=50 TargetCell=1 Type=TN TargetRSRP=-87.4076 ServingRSRP=-66.1867 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=94.6151 IMSI=43 TargetCell=2 Type=TN TargetRSRP=-63.261 ServingRSRP=-83.5994 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=94.6151 IMSI=67 TargetCell=2 Type=TN TargetRSRP=-91.523 ServingRSRP=-84.5482 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=94.6151 IMSI=8 TargetCell=2 Type=TN TargetRSRP=-58.7737 ServingRSRP=-49.3316 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=94.6151 IMSI=89 TargetCell=2 Type=TN TargetRSRP=-64.2947 ServingRSRP=-64.2765 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=94.6151 IMSI=47 TargetCell=7 Type=NTN TargetRSRP=-99.1831 ServingRSRP=-79.8797 BackhaulDlSnr=11.0138 BackhaulUlSnr=6.49315
+UAV_AUTONOMY_XAPP Time=96.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1194.91 XhaulConnected=1 XhaulChannelVariationDb=-2.84896 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=96.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=653.807 XhaulConnected=1 XhaulChannelVariationDb=-0.891564 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=96.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1117.54 XhaulConnected=1 XhaulChannelVariationDb=0.960632 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=96.5 ----
+  cell 1 (TN) load=17/20
+  cell 2 (TN) load=20/20
+  cell 3 (TN) load=17/20
+  cell 4 (TN) load=18/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=9/10
+  cell 7 (NTN) load=9/10
+UE 8 TTT_WAIT target=1 elapsed=0s need=2s
+UE 9 TTT_WAIT target=3 elapsed=0s need=2s
+UE 11 TTT_WAIT target=7 elapsed=0s need=2s
+UE 12 TTT_WAIT target=1 elapsed=0s need=2s
+UE 15 TTT_WAIT target=1 elapsed=0s need=2s
+UE 16 TTT_WAIT target=6 elapsed=0s need=2s
+UE 17 TTT_WAIT target=1 elapsed=0s need=2s
+UE 19 TTT_WAIT target=4 elapsed=0s need=2s
+UE 23 TTT_WAIT target=7 elapsed=0s need=2s
+UE 24 TTT_WAIT target=6 elapsed=0s need=2s
+UE 27 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=28 rnti=185 4->1 type=TN servingRsrp=-95.108 targetRsrp=-57.4319 targetLoadReal=17/20 targetLoadEff=17/20
+UE 29 TTT_WAIT target=7 elapsed=0s need=2s
+UE 31 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=34 rnti=73 6->4 type=TN servingRsrp=-78.2424 targetRsrp=-43.9601 targetLoadReal=18/20 targetLoadEff=18/20
+UE 35 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=38 rnti=94 5->3 type=TN servingRsrp=-72.1611 targetRsrp=-54.9929 targetLoadReal=17/20 targetLoadEff=17/20
+LM HO UE=40 rnti=99 6->7 type=NTN servingRsrp=-83.0147 targetRsrp=-77.3909 targetLoadReal=9/10 targetLoadEff=9/10
+LM HO UE=42 rnti=177 1->4 type=TN servingRsrp=-88.2126 targetRsrp=-85.3689 targetLoadReal=18/20 targetLoadEff=19/20
+UE 44 TTT_WAIT target=3 elapsed=0s need=2s
+UE 46 TTT_WAIT target=1 elapsed=0s need=2s
+UE 48 TTT_WAIT target=6 elapsed=0s need=2s
+UE 51 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=53 rnti=92 7->3 type=TN servingRsrp=-99.8047 targetRsrp=-73.3367 targetLoadReal=17/20 targetLoadEff=18/20
+UE 54 TTT_WAIT target=1 elapsed=0s need=2s
+UE 55 TTT_WAIT target=6 elapsed=0s need=2s
+UE 58 TTT_WAIT target=1 elapsed=0s need=2s
+UE 59 TTT_WAIT target=1 elapsed=0s need=2s
+UE 62 TTT_WAIT target=1 elapsed=0s need=2s
+UE 63 TTT_WAIT target=1 elapsed=0s need=2s
+UE 64 TTT_WAIT target=1 elapsed=0s need=2s
+UE 65 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=67 rnti=94 7->3 type=TN servingRsrp=-94.7005 targetRsrp=-80.9655 targetLoadReal=17/20 targetLoadEff=19/20
+LM HO UE=70 rnti=140 4->1 type=TN servingRsrp=-74.8144 targetRsrp=-61.1201 targetLoadReal=17/20 targetLoadEff=18/20
+LM HO UE=72 rnti=217 3->1 type=TN servingRsrp=-88.9491 targetRsrp=-84.865 targetLoadReal=17/20 targetLoadEff=19/20
+UE 93 TTT_WAIT target=6 elapsed=0s need=2s
+UE 99 TTT_WAIT target=6 elapsed=0s need=2s
+UE 104 TTT_WAIT target=6 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=96.6151 IMSI=71 TargetCell=1 Type=TN TargetRSRP=-48.2281 ServingRSRP=-82.4803 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=96.6151 IMSI=69 TargetCell=1 Type=TN TargetRSRP=-92.2216 ServingRSRP=-51.113 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=96.6151 IMSI=27 TargetCell=1 Type=TN TargetRSRP=-94.7117 ServingRSRP=-71.9564 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=96.6151 IMSI=37 TargetCell=3 Type=TN TargetRSRP=-77.8124 ServingRSRP=-76.6366 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=96.6151 IMSI=66 TargetCell=3 Type=TN TargetRSRP=-82.91 ServingRSRP=-60.2342 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=96.6151 IMSI=52 TargetCell=3 Type=TN TargetRSRP=-43.3148 ServingRSRP=-59.3318 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=96.6151 IMSI=41 TargetCell=4 Type=TN TargetRSRP=-87.4823 ServingRSRP=-85.5025 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=96.6151 IMSI=33 TargetCell=4 Type=TN TargetRSRP=-80.4248 ServingRSRP=-81.6097 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=96.6151 IMSI=39 TargetCell=7 Type=NTN TargetRSRP=-69.2831 ServingRSRP=-42.0176 BackhaulDlSnr=9.75118 BackhaulUlSnr=5.23058
+UAV_AUTONOMY_XAPP Time=98.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1194.91 XhaulConnected=1 XhaulChannelVariationDb=0.894557 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=98.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=653.807 XhaulConnected=1 XhaulChannelVariationDb=-1.13077 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=98.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1136.98 XhaulConnected=1 XhaulChannelVariationDb=-1.29739 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=98.5 ----
+  cell 1 (TN) load=19/20
+  cell 2 (TN) load=20/20
+  cell 3 (TN) load=19/20
+  cell 4 (TN) load=18/20
+  cell 5 (NTN) load=9/10
+  cell 6 (NTN) load=7/10
+  cell 7 (NTN) load=8/10
+LM HO UE=8 rnti=219 3->1 type=TN servingRsrp=-85.7175 targetRsrp=-58.3519 targetLoadReal=19/20 targetLoadEff=19/20
+UE 9 TTT_WAIT target=6 elapsed=0s need=2s
+UE 11 TTT_WAIT target=5 elapsed=0s need=2s
+UE 12 TTT_WAIT target=4 elapsed=0s need=2s
+UE 17 TTT_WAIT target=3 elapsed=0s need=2s
+UE 19 TTT_WAIT target=7 elapsed=0s need=2s
+UE 23 TTT_WAIT target=3 elapsed=0s need=2s
+UE 24 TTT_WAIT target=3 elapsed=0s need=2s
+UE 25 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO UE=27 rnti=206 1->4 type=TN servingRsrp=-91.862 targetRsrp=-89.3819 targetLoadReal=18/20 targetLoadEff=18/20
+UE 28 TTT_WAIT target=5 elapsed=0s need=2s
+UE 29 TTT_WAIT target=3 elapsed=0s need=2s
+UE 33 TTT_WAIT target=7 elapsed=0s need=2s
+UE 34 TTT_WAIT target=7 elapsed=0s need=2s
+UE 35 TTT_WAIT target=5 elapsed=0s need=2s
+UE 37 TTT_WAIT target=4 elapsed=0s need=2s
+UE 38 TTT_WAIT target=5 elapsed=0s need=2s
+UE 39 TTT_WAIT target=3 elapsed=0s need=2s
+UE 40 TTT_WAIT target=4 elapsed=0s need=2s
+UE 42 TTT_WAIT target=5 elapsed=0s need=2s
+UE 45 TTT_WAIT target=3 elapsed=0s need=2s
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+UE 48 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=51 rnti=210 1->3 type=TN servingRsrp=-100.321 targetRsrp=-69.7693 targetLoadReal=19/20 targetLoadEff=19/20
+UE 53 TTT_WAIT target=7 elapsed=0s need=2s
+UE 54 TTT_WAIT target=7 elapsed=0s need=2s
+UE 55 TTT_WAIT target=4 elapsed=0s need=2s
+UE 61 TTT_WAIT target=4 elapsed=0s need=2s
+UE 62 TTT_WAIT target=5 elapsed=0s need=2s
+UE 64 TTT_WAIT target=4 elapsed=0s need=2s
+UE 65 TTT_WAIT target=4 elapsed=0s need=2s
+UE 66 TTT_WAIT target=7 elapsed=0s need=2s
+UE 68 TTT_WAIT target=5 elapsed=0s need=2s
+UE 70 TTT_WAIT target=4 elapsed=0s need=2s
+UE 72 TTT_WAIT target=7 elapsed=0s need=2s
+UE 73 TTT_WAIT target=5 elapsed=0s need=2s
+UE 74 TTT_WAIT target=5 elapsed=0s need=2s
+UE 81 TTT_WAIT target=5 elapsed=0s need=2s
+UE 84 TTT_WAIT target=5 elapsed=0s need=2s
+UE 85 TTT_WAIT target=5 elapsed=0s need=2s
+UE 86 TTT_WAIT target=6 elapsed=0s need=2s
+UE 88 TTT_WAIT target=4 elapsed=0s need=2s
+UE 89 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=93 rnti=179 4->6 type=NTN servingRsrp=-68.5833 targetRsrp=-65.3279 targetLoadReal=7/10 targetLoadEff=7/10
+UE 94 TTT_WAIT target=5 elapsed=0s need=2s
+UE 97 TTT_WAIT target=7 elapsed=0s need=2s
+UE 102 TTT_WAIT target=4 elapsed=0s need=2s
+UE 103 TTT_WAIT target=4 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=98.6151 IMSI=7 TargetCell=1 Type=TN TargetRSRP=-87.3228 ServingRSRP=-52.6928 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=98.6151 IMSI=50 TargetCell=3 Type=TN TargetRSRP=-84.4642 ServingRSRP=-77.0356 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=98.6151 IMSI=26 TargetCell=4 Type=TN TargetRSRP=-91.7606 ServingRSRP=-64.3384 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=98.6151 IMSI=92 TargetCell=6 Type=NTN TargetRSRP=-46.2546 ServingRSRP=-67.9527 BackhaulDlSnr=12.6411 BackhaulUlSnr=8.12045
+UAV_AUTONOMY_XAPP Time=100.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=1500.12 XhaulConnected=1 XhaulChannelVariationDb=1.93205 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=100.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=653.807 XhaulConnected=1 XhaulChannelVariationDb=0.0282538 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=100.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1158.25 XhaulConnected=1 XhaulChannelVariationDb=1.78599 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=100.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=20/20
+  cell 3 (TN) load=19/20
+  cell 4 (TN) load=18/20
+  cell 5 (NTN) load=9/10
+  cell 6 (NTN) load=8/10
+  cell 7 (NTN) load=8/10
+UE 8 TTT_WAIT target=4 elapsed=0s need=2s
+UE 9 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=12 rnti=143 2->4 type=TN servingRsrp=-87.9276 targetRsrp=-81.2874 targetLoadReal=18/20 targetLoadEff=18/20
+UE 15 TTT_WAIT target=5 elapsed=0s need=2s
+UE 17 TTT_WAIT target=1 elapsed=0s need=2s
+UE 18 TTT_WAIT target=7 elapsed=0s need=2s
+UE 20 TTT_WAIT target=5 elapsed=0s need=2s
+UE 21 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=25 rnti=97 6->5 type=NTN servingRsrp=-79.9527 targetRsrp=-74.039 targetLoadReal=9/10 targetLoadEff=9/10
+UE 27 TTT_WAIT target=1 elapsed=0s need=2s
+UE 33 TTT_WAIT target=3 elapsed=0s need=2s
+UE 34 TTT_WAIT target=6 elapsed=0s need=2s
+UE 35 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=37 rnti=208 1->4 type=TN servingRsrp=-85.1946 targetRsrp=-75.1969 targetLoadReal=18/20 targetLoadEff=19/20
+LM HO UE=39 rnti=194 1->3 type=TN servingRsrp=-74.652 targetRsrp=-56.5552 targetLoadReal=19/20 targetLoadEff=19/20
+UE 41 TTT_WAIT target=6 elapsed=0s need=2s
+UE 46 TTT_WAIT target=1 elapsed=0s need=2s
+UE 48 TTT_WAIT target=6 elapsed=0s need=2s
+UE 52 TTT_WAIT target=1 elapsed=0s need=2s
+UE 54 TTT_WAIT target=1 elapsed=0s need=2s
+UE 56 TTT_WAIT target=1 elapsed=0s need=2s
+UE 57 TTT_WAIT target=7 elapsed=0s need=2s
+UE 58 TTT_WAIT target=7 elapsed=0s need=2s
+UE 59 TTT_WAIT target=1 elapsed=0s need=2s
+UE 60 TTT_WAIT target=1 elapsed=0s need=2s
+UE 61 TTT_WAIT target=7 elapsed=0s need=2s
+UE 65 TTT_WAIT target=1 elapsed=0s need=2s
+UE 68 TTT_WAIT target=1 elapsed=0s need=2s
+UE 69 TTT_WAIT target=7 elapsed=0s need=2s
+UE 73 TTT_WAIT target=6 elapsed=0s need=2s
+UE 74 TTT_WAIT target=1 elapsed=0s need=2s
+UE 76 TTT_WAIT target=1 elapsed=0s need=2s
+UE 79 TTT_WAIT target=1 elapsed=0s need=2s
+UE 81 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=86 rnti=128 2->6 type=NTN servingRsrp=-84.8295 targetRsrp=-70.8262 targetLoadReal=8/10 targetLoadEff=8/10
+UE 87 TTT_WAIT target=7 elapsed=0s need=2s
+UE 88 TTT_WAIT target=7 elapsed=0s need=2s
+UE 92 TTT_WAIT target=1 elapsed=0s need=2s
+UE 94 TTT_WAIT target=1 elapsed=0s need=2s
+UE 97 TTT_WAIT target=6 elapsed=0s need=2s
+UE 101 TTT_WAIT target=1 elapsed=0s need=2s
+UE 102 TTT_WAIT target=1 elapsed=0s need=2s
+UE 105 TTT_WAIT target=6 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=100.615 IMSI=38 TargetCell=3 Type=TN TargetRSRP=-75.8541 ServingRSRP=-43.3844 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=100.615 IMSI=36 TargetCell=4 Type=TN TargetRSRP=-71.8139 ServingRSRP=-69.3947 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=100.615 IMSI=11 TargetCell=4 Type=TN TargetRSRP=-101.219 ServingRSRP=-56.2053 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=100.615 IMSI=24 TargetCell=5 Type=NTN TargetRSRP=-105.508 ServingRSRP=-55.4938 BackhaulDlSnr=13.8315 BackhaulUlSnr=9.31088
+TRACE HO_SUCCESS Time=100.615 IMSI=85 TargetCell=6 Type=NTN TargetRSRP=-78.9884 ServingRSRP=-84.5812 BackhaulDlSnr=12.5234 BackhaulUlSnr=8.00279
+UAV_AUTONOMY_XAPP Time=102.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1194.91 XhaulConnected=1 XhaulChannelVariationDb=-2.57584 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=102.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=653.807 XhaulConnected=1 XhaulChannelVariationDb=0.969229 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=102.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1181.25 XhaulConnected=1 XhaulChannelVariationDb=1.24914 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=102.5 ----
+  cell 1 (TN) load=16/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=20/20
+  cell 4 (TN) load=20/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=8/10
+  cell 7 (NTN) load=8/10
+UE 8 TTT_WAIT target=7 elapsed=0s need=2s
+UE 10 TTT_WAIT target=2 elapsed=0s need=2s
+UE 11 TTT_WAIT target=6 elapsed=0s need=2s
+UE 18 TTT_WAIT target=2 elapsed=0s need=2s
+UE 19 TTT_WAIT target=6 elapsed=0s need=2s
+UE 21 TTT_WAIT target=6 elapsed=0s need=2s
+UE 22 TTT_WAIT target=6 elapsed=0s need=2s
+UE 23 TTT_WAIT target=2 elapsed=0s need=2s
+UE 24 TTT_WAIT target=2 elapsed=0s need=2s
+UE 25 TTT_WAIT target=2 elapsed=0s need=2s
+UE 26 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO UE=34 rnti=189 4->6 type=NTN servingRsrp=-48.4911 targetRsrp=-42.6633 targetLoadReal=8/10 targetLoadEff=8/10
+LM HO UE=35 rnti=223 3->1 type=TN servingRsrp=-100.827 targetRsrp=-76.2495 targetLoadReal=16/20 targetLoadEff=16/20
+UE 38 TTT_WAIT target=2 elapsed=0s need=2s
+UE 40 TTT_WAIT target=1 elapsed=0s need=2s
+UE 44 TTT_WAIT target=1 elapsed=0s need=2s
+UE 45 TTT_WAIT target=2 elapsed=0s need=2s
+UE 46 TTT_WAIT target=2 elapsed=0s need=2s
+UE 48 TTT_WAIT target=2 elapsed=0s need=2s
+UE 51 TTT_WAIT target=1 elapsed=0s need=2s
+UE 52 TTT_WAIT target=2 elapsed=0s need=2s
+UE 54 TTT_WAIT target=6 elapsed=0s need=2s
+UE 55 TTT_WAIT target=6 elapsed=0s need=2s
+UE 57 TTT_WAIT target=2 elapsed=0s need=2s
+UE 58 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=59 rnti=215 3->1 type=TN servingRsrp=-88.3956 targetRsrp=-84.8043 targetLoadReal=16/20 targetLoadEff=17/20
+UE 61 TTT_WAIT target=2 elapsed=0s need=2s
+UE 63 TTT_WAIT target=2 elapsed=0s need=2s
+UE 64 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=65 rnti=99 5->1 type=TN servingRsrp=-92.5888 targetRsrp=-44.7318 targetLoadReal=16/20 targetLoadEff=18/20
+UE 66 TTT_WAIT target=1 elapsed=0s need=2s
+UE 68 TTT_WAIT target=6 elapsed=0s need=2s
+UE 71 TTT_WAIT target=1 elapsed=0s need=2s
+UE 74 TTT_WAIT target=2 elapsed=0s need=2s
+UE 75 TTT_WAIT target=2 elapsed=0s need=2s
+UE 76 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=79 rnti=143 4->1 type=TN servingRsrp=-85.2903 targetRsrp=-51.8963 targetLoadReal=16/20 targetLoadEff=19/20
+UE 80 TTT_WAIT target=7 elapsed=0s need=2s
+UE 83 TTT_WAIT target=2 elapsed=0s need=2s
+UE 84 TTT_WAIT target=2 elapsed=0s need=2s
+UE 85 TTT_WAIT target=7 elapsed=0s need=2s
+UE 91 TTT_WAIT target=2 elapsed=0s need=2s
+UE 94 TTT_WAIT target=2 elapsed=0s need=2s
+UE 95 TTT_WAIT target=2 elapsed=0s need=2s
+UE 97 TTT_WAIT target=7 elapsed=0s need=2s
+UE 99 TTT_WAIT target=2 elapsed=0s need=2s
+UE 103 TTT_WAIT target=2 elapsed=0s need=2s
+UE 104 TTT_WAIT target=2 elapsed=0s need=2s
+UE 105 TTT_WAIT target=7 elapsed=0s need=2s
+UE 106 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=102.615 IMSI=34 TargetCell=1 Type=TN TargetRSRP=-79.7066 ServingRSRP=-68.1488 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=102.615 IMSI=58 TargetCell=1 Type=TN TargetRSRP=-91.7075 ServingRSRP=-71.2471 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=102.615 IMSI=78 TargetCell=1 Type=TN TargetRSRP=-89.7682 ServingRSRP=-88.8761 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=102.615 IMSI=64 TargetCell=1 Type=TN TargetRSRP=-79.0129 ServingRSRP=-53.2841 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=102.615 IMSI=33 TargetCell=6 Type=NTN TargetRSRP=-87.9461 ServingRSRP=-71.5571 BackhaulDlSnr=13.9486 BackhaulUlSnr=9.42801
+UAV_AUTONOMY_XAPP Time=104.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1207.95 XhaulConnected=1 XhaulChannelVariationDb=-3.01462 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=104.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=653.807 XhaulConnected=1 XhaulChannelVariationDb=0.4871 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=104.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=1 BestDonorDistanceM=1634.44 XhaulConnected=1 XhaulChannelVariationDb=1.65623 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=104.5 ----
+  cell 1 (TN) load=20/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=18/20
+  cell 4 (TN) load=18/20
+  cell 5 (NTN) load=9/10
+  cell 6 (NTN) load=9/10
+  cell 7 (NTN) load=8/10
+UE 9 TTT_WAIT target=4 elapsed=0s need=2s
+UE 11 TTT_WAIT target=2 elapsed=0s need=2s
+UE 12 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=18 rnti=191 1->2 type=TN servingRsrp=-67.5063 targetRsrp=-64.7828 targetLoadReal=18/20 targetLoadEff=18/20
+UE 19 TTT_WAIT target=2 elapsed=0s need=2s
+UE 20 TTT_WAIT target=5 elapsed=0s need=2s
+UE 23 TTT_WAIT target=7 elapsed=0s need=2s
+UE 24 TTT_WAIT target=3 elapsed=0s need=2s
+UE 25 TTT_WAIT target=4 elapsed=0s need=2s
+UE 27 TTT_WAIT target=3 elapsed=0s need=2s
+UE 28 TTT_WAIT target=5 elapsed=0s need=2s
+UE 29 TTT_WAIT target=2 elapsed=0s need=2s
+UE 31 TTT_WAIT target=5 elapsed=0s need=2s
+UE 33 TTT_WAIT target=5 elapsed=0s need=2s
+UE 34 TTT_WAIT target=7 elapsed=0s need=2s
+UE 35 TTT_WAIT target=4 elapsed=0s need=2s
+UE 36 TTT_WAIT target=6 elapsed=0s need=2s
+UE 37 TTT_WAIT target=7 elapsed=0s need=2s
+UE 38 TTT_WAIT target=5 elapsed=0s need=2s
+UE 39 TTT_WAIT target=4 elapsed=0s need=2s
+UE 44 TTT_WAIT target=3 elapsed=0s need=2s
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+UE 47 TTT_WAIT target=3 elapsed=0s need=2s
+UE 48 TTT_WAIT target=4 elapsed=0s need=2s
+UE 51 TTT_WAIT target=4 elapsed=0s need=2s
+UE 53 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=57 rnti=209 1->2 type=TN servingRsrp=-80.7802 targetRsrp=-77.1864 targetLoadReal=18/20 targetLoadEff=19/20
+UE 58 TTT_WAIT target=7 elapsed=0s need=2s
+UE 59 TTT_WAIT target=4 elapsed=0s need=2s
+UE 60 TTT_WAIT target=5 elapsed=0s need=2s
+UE 61 TTT_WAIT target=7 elapsed=0s need=2s
+UE 62 TTT_WAIT target=3 elapsed=0s need=2s
+UE 63 TTT_WAIT target=3 elapsed=0s need=2s
+UE 64 TTT_WAIT target=4 elapsed=0s need=2s
+UE 66 TTT_WAIT target=5 elapsed=0s need=2s
+UE 68 TTT_WAIT target=3 elapsed=0s need=2s
+UE 70 TTT_WAIT target=4 elapsed=0s need=2s
+UE 71 TTT_WAIT target=3 elapsed=0s need=2s
+UE 72 TTT_WAIT target=7 elapsed=0s need=2s
+UE 74 TTT_WAIT target=5 elapsed=0s need=2s
+UE 75 TTT_WAIT target=5 elapsed=0s need=2s
+UE 79 TTT_WAIT target=4 elapsed=0s need=2s
+UE 80 TTT_WAIT target=3 elapsed=0s need=2s
+UE 81 TTT_WAIT target=3 elapsed=0s need=2s
+UE 84 TTT_WAIT target=5 elapsed=0s need=2s
+UE 85 TTT_WAIT target=3 elapsed=0s need=2s
+UE 86 TTT_WAIT target=7 elapsed=0s need=2s
+UE 87 TTT_WAIT target=3 elapsed=0s need=2s
+UE 88 TTT_WAIT target=5 elapsed=0s need=2s
+UE 89 TTT_WAIT target=6 elapsed=0s need=2s
+UE 90 TTT_WAIT target=7 elapsed=0s need=2s
+UE 91 TTT_WAIT target=4 elapsed=0s need=2s
+UE 92 TTT_WAIT target=5 elapsed=0s need=2s
+UE 93 TTT_WAIT target=3 elapsed=0s need=2s
+UE 94 TTT_WAIT target=3 elapsed=0s need=2s
+UE 95 TTT_WAIT target=7 elapsed=0s need=2s
+UE 97 TTT_WAIT target=4 elapsed=0s need=2s
+UE 100 TTT_WAIT target=7 elapsed=0s need=2s
+UE 101 TTT_WAIT target=7 elapsed=0s need=2s
+UE 103 TTT_WAIT target=3 elapsed=0s need=2s
+UE 104 TTT_WAIT target=4 elapsed=0s need=2s
+UE 106 TTT_WAIT target=3 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=104.615 IMSI=17 TargetCell=2 Type=TN TargetRSRP=-44.5271 ServingRSRP=-72.107 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=104.615 IMSI=56 TargetCell=2 Type=TN TargetRSRP=-77.7141 ServingRSRP=-51.106 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=106.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1251.72 XhaulConnected=1 XhaulChannelVariationDb=-2.06174 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=106.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=653.807 XhaulConnected=1 XhaulChannelVariationDb=-3.76143 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=106.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1198.33 XhaulConnected=1 XhaulChannelVariationDb=3.66204 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=106.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=20/20
+  cell 3 (TN) load=18/20
+  cell 4 (TN) load=18/20
+  cell 5 (NTN) load=9/10
+  cell 6 (NTN) load=9/10
+  cell 7 (NTN) load=8/10
+LM HO UE=9 rnti=148 2->4 type=TN servingRsrp=-78.673 targetRsrp=-72.522 targetLoadReal=18/20 targetLoadEff=18/20
+UE 10 TTT_WAIT target=1 elapsed=0s need=2s
+UE 12 TTT_WAIT target=3 elapsed=0s need=2s
+UE 19 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=20 rnti=212 3->5 type=NTN servingRsrp=-72.8037 targetRsrp=-45.8743 targetLoadReal=9/10 targetLoadEff=9/10
+UE 21 TTT_WAIT target=6 elapsed=0s need=2s
+UE 24 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=25 rnti=105 5->4 type=TN servingRsrp=-108.859 targetRsrp=-85.2953 targetLoadReal=18/20 targetLoadEff=19/20
+UE 27 TTT_WAIT target=1 elapsed=0s need=2s
+UE 28 TTT_WAIT target=7 elapsed=0s need=2s
+UE 29 TTT_WAIT target=3 elapsed=0s need=2s
+UE 32 TTT_WAIT target=6 elapsed=0s need=2s
+UE 33 TTT_WAIT target=7 elapsed=0s need=2s
+UE 34 TTT_WAIT target=3 elapsed=0s need=2s
+UE 35 TTT_WAIT target=3 elapsed=0s need=2s
+UE 37 TTT_WAIT target=6 elapsed=0s need=2s
+UE 39 TTT_WAIT target=1 elapsed=0s need=2s
+UE 40 TTT_WAIT target=1 elapsed=0s need=2s
+UE 42 TTT_WAIT target=6 elapsed=0s need=2s
+UE 46 TTT_WAIT target=1 elapsed=0s need=2s
+UE 47 TTT_WAIT target=7 elapsed=0s need=2s
+UE 51 TTT_WAIT target=1 elapsed=0s need=2s
+UE 52 TTT_WAIT target=6 elapsed=0s need=2s
+UE 54 TTT_WAIT target=6 elapsed=0s need=2s
+UE 57 TTT_WAIT target=3 elapsed=0s need=2s
+UE 58 TTT_WAIT target=3 elapsed=0s need=2s
+UE 62 TTT_WAIT target=1 elapsed=0s need=2s
+UE 63 TTT_WAIT target=1 elapsed=0s need=2s
+UE 64 TTT_WAIT target=1 elapsed=0s need=2s
+UE 65 TTT_WAIT target=7 elapsed=0s need=2s
+UE 67 TTT_WAIT target=6 elapsed=0s need=2s
+UE 68 TTT_WAIT target=1 elapsed=0s need=2s
+UE 69 TTT_WAIT target=6 elapsed=0s need=2s
+UE 70 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO UE=71 rnti=67 7->3 type=TN servingRsrp=-80.8235 targetRsrp=-74.1299 targetLoadReal=18/20 targetLoadEff=18/20
+UE 73 TTT_WAIT target=6 elapsed=0s need=2s
+UE 74 TTT_WAIT target=3 elapsed=0s need=2s
+UE 76 TTT_WAIT target=1 elapsed=0s need=2s
+UE 79 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=80 rnti=141 2->3 type=TN servingRsrp=-84.0847 targetRsrp=-67.9046 targetLoadReal=18/20 targetLoadEff=19/20
+UE 83 TTT_WAIT target=1 elapsed=0s need=2s
+UE 89 TTT_WAIT target=7 elapsed=0s need=2s
+UE 91 TTT_WAIT target=1 elapsed=0s need=2s
+UE 92 TTT_WAIT target=1 elapsed=0s need=2s
+UE 93 TTT_WAIT target=1 elapsed=0s need=2s
+UE 94 TTT_WAIT target=1 elapsed=0s need=2s
+UE 95 TTT_WAIT target=1 elapsed=0s need=2s
+UE 96 TTT_WAIT target=1 elapsed=0s need=2s
+UE 97 TTT_WAIT target=6 elapsed=0s need=2s
+UE 101 TTT_WAIT target=1 elapsed=0s need=2s
+UE 102 TTT_WAIT target=6 elapsed=0s need=2s
+UE 103 TTT_WAIT target=7 elapsed=0s need=2s
+UE 104 TTT_WAIT target=1 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=106.615 IMSI=79 TargetCell=3 Type=TN TargetRSRP=-68.9052 ServingRSRP=-69.0039 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=106.615 IMSI=70 TargetCell=3 Type=TN TargetRSRP=-70.2298 ServingRSRP=-64.832 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=106.615 IMSI=8 TargetCell=4 Type=TN TargetRSRP=-85.867 ServingRSRP=-59.2853 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=106.615 IMSI=24 TargetCell=4 Type=TN TargetRSRP=-68.4551 ServingRSRP=-65.0073 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=106.615 IMSI=19 TargetCell=5 Type=NTN TargetRSRP=-79.3646 ServingRSRP=-58.639 BackhaulDlSnr=12.9366 BackhaulUlSnr=8.41601
+UAV_AUTONOMY_XAPP Time=108.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1295.95 XhaulConnected=1 XhaulChannelVariationDb=-1.96068 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=108.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=653.807 XhaulConnected=1 XhaulChannelVariationDb=-4.13753 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=108.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1316.45 XhaulConnected=1 XhaulChannelVariationDb=1.54536 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=108.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=19/20
+  cell 4 (TN) load=20/20
+  cell 5 (NTN) load=9/10
+  cell 6 (NTN) load=9/10
+  cell 7 (NTN) load=7/10
+UE 8 TTT_WAIT target=7 elapsed=0s need=2s
+UE 9 TTT_WAIT target=2 elapsed=0s need=2s
+UE 11 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=12 rnti=192 4->3 type=TN servingRsrp=-115.515 targetRsrp=-84.1751 targetLoadReal=19/20 targetLoadEff=19/20
+UE 17 TTT_WAIT target=1 elapsed=0s need=2s
+UE 18 TTT_WAIT target=1 elapsed=0s need=2s
+UE 20 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=24 rnti=104 5->1 type=TN servingRsrp=-76.3959 targetRsrp=-42.3864 targetLoadReal=18/20 targetLoadEff=18/20
+UE 25 TTT_WAIT target=7 elapsed=0s need=2s
+UE 27 TTT_WAIT target=6 elapsed=0s need=2s
+UE 35 TTT_WAIT target=2 elapsed=0s need=2s
+UE 37 TTT_WAIT target=2 elapsed=0s need=2s
+UE 38 TTT_WAIT target=2 elapsed=0s need=2s
+UE 39 TTT_WAIT target=2 elapsed=0s need=2s
+UE 40 TTT_WAIT target=2 elapsed=0s need=2s
+UE 42 TTT_WAIT target=2 elapsed=0s need=2s
+UE 43 TTT_WAIT target=5 elapsed=0s need=2s
+UE 46 TTT_WAIT target=2 elapsed=0s need=2s
+UE 48 TTT_WAIT target=2 elapsed=0s need=2s
+UE 50 TTT_WAIT target=5 elapsed=0s need=2s
+UE 51 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=54 rnti=140 2->6 type=NTN servingRsrp=-88.9345 targetRsrp=-66.7098 targetLoadReal=9/10 targetLoadEff=9/10
+UE 56 TTT_WAIT target=1 elapsed=0s need=2s
+UE 57 TTT_WAIT target=1 elapsed=0s need=2s
+UE 59 TTT_WAIT target=2 elapsed=0s need=2s
+UE 60 TTT_WAIT target=2 elapsed=0s need=2s
+UE 61 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=62 rnti=147 2->1 type=TN servingRsrp=-87.943 targetRsrp=-75.498 targetLoadReal=18/20 targetLoadEff=19/20
+UE 65 TTT_WAIT target=2 elapsed=0s need=2s
+UE 66 TTT_WAIT target=2 elapsed=0s need=2s
+UE 68 TTT_WAIT target=5 elapsed=0s need=2s
+UE 71 TTT_WAIT target=2 elapsed=0s need=2s
+UE 72 TTT_WAIT target=2 elapsed=0s need=2s
+UE 74 TTT_WAIT target=5 elapsed=0s need=2s
+UE 75 TTT_WAIT target=5 elapsed=0s need=2s
+UE 76 TTT_WAIT target=7 elapsed=0s need=2s
+UE 79 TTT_WAIT target=2 elapsed=0s need=2s
+UE 82 TTT_WAIT target=2 elapsed=0s need=2s
+UE 83 TTT_WAIT target=2 elapsed=0s need=2s
+UE 86 TTT_WAIT target=2 elapsed=0s need=2s
+UE 88 TTT_WAIT target=5 elapsed=0s need=2s
+UE 91 TTT_WAIT target=2 elapsed=0s need=2s
+UE 93 TTT_WAIT target=2 elapsed=0s need=2s
+UE 94 TTT_WAIT target=5 elapsed=0s need=2s
+UE 99 TTT_WAIT target=2 elapsed=0s need=2s
+UE 104 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=108.615 IMSI=61 TargetCell=1 Type=TN TargetRSRP=-80.9345 ServingRSRP=-66.3664 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=108.615 IMSI=23 TargetCell=1 Type=TN TargetRSRP=-80.1274 ServingRSRP=-64.2431 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=108.615 IMSI=11 TargetCell=3 Type=TN TargetRSRP=-94.3072 ServingRSRP=-48.5127 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=108.615 IMSI=53 TargetCell=6 Type=NTN TargetRSRP=-98.6198 ServingRSRP=-60.6423 BackhaulDlSnr=13.2996 BackhaulUlSnr=8.77896
+UAV_AUTONOMY_XAPP Time=110.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=2 BestDonorDistanceM=1789.09 XhaulConnected=1 XhaulChannelVariationDb=3.0158 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=110.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=653.807 XhaulConnected=1 XhaulChannelVariationDb=0.114613 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=110.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1316.45 XhaulConnected=1 XhaulChannelVariationDb=0.313872 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=110.5 ----
+  cell 1 (TN) load=20/20
+  cell 2 (TN) load=16/20
+  cell 3 (TN) load=20/20
+  cell 4 (TN) load=19/20
+  cell 5 (NTN) load=8/10
+  cell 6 (NTN) load=10/10
+  cell 7 (NTN) load=7/10
+UE 12 TTT_WAIT target=2 elapsed=0s need=2s
+UE 17 TTT_WAIT target=2 elapsed=0s need=2s
+UE 19 TTT_WAIT target=2 elapsed=0s need=2s
+UE 23 TTT_WAIT target=2 elapsed=0s need=2s
+UE 24 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO UE=25 rnti=195 4->7 type=NTN servingRsrp=-68.1187 targetRsrp=-54.9402 targetLoadReal=7/10 targetLoadEff=7/10
+UE 34 TTT_WAIT target=4 elapsed=0s need=2s
+UE 36 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO UE=37 rnti=193 4->2 type=TN servingRsrp=-78.0791 targetRsrp=-50.4288 targetLoadReal=16/20 targetLoadEff=16/20
+LM HO UE=40 rnti=97 7->2 type=TN servingRsrp=-59.7744 targetRsrp=-43.2196 targetLoadReal=16/20 targetLoadEff=17/20
+UE 41 TTT_WAIT target=4 elapsed=0s need=2s
+UE 43 TTT_WAIT target=2 elapsed=0s need=2s
+UE 44 TTT_WAIT target=4 elapsed=0s need=2s
+UE 45 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=46 rnti=75 6->2 type=TN servingRsrp=-96.8593 targetRsrp=-64.6203 targetLoadReal=16/20 targetLoadEff=18/20
+UE 47 TTT_WAIT target=2 elapsed=0s need=2s
+UE 48 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=51 rnti=227 3->2 type=TN servingRsrp=-68.2492 targetRsrp=-51.2984 targetLoadReal=16/20 targetLoadEff=19/20
+UE 53 TTT_WAIT target=5 elapsed=0s need=2s
+UE 54 TTT_WAIT target=7 elapsed=0s need=2s
+UE 55 TTT_WAIT target=7 elapsed=0s need=2s
+UE 57 TTT_WAIT target=5 elapsed=0s need=2s
+UE 59 TTT_WAIT target=5 elapsed=0s need=2s
+UE 60 TTT_WAIT target=5 elapsed=0s need=2s
+UE 64 TTT_WAIT target=4 elapsed=0s need=2s
+UE 65 TTT_WAIT target=4 elapsed=0s need=2s
+UE 66 TTT_WAIT target=5 elapsed=0s need=2s
+UE 70 TTT_WAIT target=4 elapsed=0s need=2s
+UE 71 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=75 rnti=206 3->5 type=NTN servingRsrp=-78.8724 targetRsrp=-62.7324 targetLoadReal=8/10 targetLoadEff=8/10
+UE 76 TTT_WAIT target=5 elapsed=0s need=2s
+UE 81 TTT_WAIT target=4 elapsed=0s need=2s
+UE 82 TTT_WAIT target=4 elapsed=0s need=2s
+UE 83 TTT_WAIT target=4 elapsed=0s need=2s
+UE 86 TTT_WAIT target=4 elapsed=0s need=2s
+UE 88 TTT_WAIT target=4 elapsed=0s need=2s
+UE 89 TTT_WAIT target=4 elapsed=0s need=2s
+UE 93 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=94 rnti=95 7->5 type=NTN servingRsrp=-89.913 targetRsrp=-85.46 targetLoadReal=8/10 targetLoadEff=9/10
+UE 95 TTT_WAIT target=7 elapsed=0s need=2s
+UE 102 TTT_WAIT target=4 elapsed=0s need=2s
+UE 103 TTT_WAIT target=4 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=110.615 IMSI=50 TargetCell=2 Type=TN TargetRSRP=-88.8701 ServingRSRP=-76.0774 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=110.615 IMSI=36 TargetCell=2 Type=TN TargetRSRP=-51.1375 ServingRSRP=-52.0196 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=110.615 IMSI=45 TargetCell=2 Type=TN TargetRSRP=-88.1001 ServingRSRP=-56.6976 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=110.615 IMSI=39 TargetCell=2 Type=TN TargetRSRP=-82.0424 ServingRSRP=-51.1363 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=110.615 IMSI=74 TargetCell=5 Type=NTN TargetRSRP=-73.3581 ServingRSRP=-50.8319 BackhaulDlSnr=15.3125 BackhaulUlSnr=10.7919
+TRACE HO_SUCCESS Time=110.615 IMSI=93 TargetCell=5 Type=NTN TargetRSRP=-84.2464 ServingRSRP=-80.8172 BackhaulDlSnr=15.3125 BackhaulUlSnr=10.7919
+TRACE HO_SUCCESS Time=110.615 IMSI=24 TargetCell=7 Type=NTN TargetRSRP=-64.4018 ServingRSRP=-72.1934 BackhaulDlSnr=11.91 BackhaulUlSnr=7.38935
+UAV_AUTONOMY_XAPP Time=112.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=1616 XhaulConnected=1 XhaulChannelVariationDb=-1.36339 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=112.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=653.807 XhaulConnected=1 XhaulChannelVariationDb=0.368929 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=112.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1316.45 XhaulConnected=1 XhaulChannelVariationDb=1.69334 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=112.5 ----
+  cell 1 (TN) load=20/20
+  cell 2 (TN) load=20/20
+  cell 3 (TN) load=18/20
+  cell 4 (TN) load=17/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=9/10
+  cell 7 (NTN) load=6/10
+UE 8 TTT_WAIT target=4 elapsed=0s need=2s
+UE 12 TTT_WAIT target=7 elapsed=0s need=2s
+UE 23 TTT_WAIT target=3 elapsed=0s need=2s
+UE 24 TTT_WAIT target=7 elapsed=0s need=2s
+UE 25 TTT_WAIT target=4 elapsed=0s need=2s
+UE 27 TTT_WAIT target=6 elapsed=0s need=2s
+UE 28 TTT_WAIT target=4 elapsed=0s need=2s
+UE 32 TTT_WAIT target=7 elapsed=0s need=2s
+UE 33 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=34 rnti=102 6->4 type=TN servingRsrp=-87.2331 targetRsrp=-79.2708 targetLoadReal=17/20 targetLoadEff=17/20
+UE 37 TTT_WAIT target=4 elapsed=0s need=2s
+UE 38 TTT_WAIT target=6 elapsed=0s need=2s
+UE 39 TTT_WAIT target=6 elapsed=0s need=2s
+UE 42 TTT_WAIT target=3 elapsed=0s need=2s
+UE 44 TTT_WAIT target=3 elapsed=0s need=2s
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+UE 48 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=54 rnti=103 6->7 type=NTN servingRsrp=-61.5776 targetRsrp=-55.7305 targetLoadReal=6/10 targetLoadEff=6/10
+UE 55 TTT_WAIT target=4 elapsed=0s need=2s
+UE 57 TTT_WAIT target=7 elapsed=0s need=2s
+UE 60 TTT_WAIT target=7 elapsed=0s need=2s
+UE 63 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=64 rnti=93 6->4 type=TN servingRsrp=-83.015 targetRsrp=-74.4292 targetLoadReal=17/20 targetLoadEff=18/20
+UE 65 TTT_WAIT target=3 elapsed=0s need=2s
+UE 66 TTT_WAIT target=6 elapsed=0s need=2s
+UE 67 TTT_WAIT target=6 elapsed=0s need=2s
+UE 68 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=70 rnti=213 1->4 type=TN servingRsrp=-64.3139 targetRsrp=-59.4382 targetLoadReal=17/20 targetLoadEff=19/20
+LM HO UE=71 rnti=229 3->7 type=NTN servingRsrp=-81.9775 targetRsrp=-62.0183 targetLoadReal=6/10 targetLoadEff=7/10
+UE 73 TTT_WAIT target=6 elapsed=0s need=2s
+UE 74 TTT_WAIT target=3 elapsed=0s need=2s
+UE 75 TTT_WAIT target=3 elapsed=0s need=2s
+UE 89 TTT_WAIT target=3 elapsed=0s need=2s
+UE 91 TTT_WAIT target=3 elapsed=0s need=2s
+UE 94 TTT_WAIT target=3 elapsed=0s need=2s
+UE 99 TTT_WAIT target=3 elapsed=0s need=2s
+UE 100 TTT_WAIT target=3 elapsed=0s need=2s
+UE 101 TTT_WAIT target=3 elapsed=0s need=2s
+UE 103 TTT_WAIT target=3 elapsed=0s need=2s
+UE 105 TTT_WAIT target=7 elapsed=0s need=2s
+UE 106 TTT_WAIT target=7 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=112.615 IMSI=69 TargetCell=4 Type=TN TargetRSRP=-33.6442 ServingRSRP=-61.0941 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=112.615 IMSI=33 TargetCell=4 Type=TN TargetRSRP=-82.3233 ServingRSRP=-71.1976 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=112.615 IMSI=63 TargetCell=4 Type=TN TargetRSRP=-75.2043 ServingRSRP=-82.8049 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=112.615 IMSI=70 TargetCell=7 Type=NTN TargetRSRP=-82.8607 ServingRSRP=-63.3388 BackhaulDlSnr=13.7436 BackhaulUlSnr=9.22297
+TRACE HO_SUCCESS Time=112.615 IMSI=53 TargetCell=7 Type=NTN TargetRSRP=-80.4565 ServingRSRP=-72.7316 BackhaulDlSnr=13.7436 BackhaulUlSnr=9.22297
+UAV_AUTONOMY_XAPP Time=114.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1372.05 XhaulConnected=1 XhaulChannelVariationDb=1.65914 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=114.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=661.047 XhaulConnected=1 XhaulChannelVariationDb=-2.31126 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=114.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1198.33 XhaulConnected=1 XhaulChannelVariationDb=-1.4967 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=114.5 ----
+  cell 1 (TN) load=19/20
+  cell 2 (TN) load=20/20
+  cell 3 (TN) load=17/20
+  cell 4 (TN) load=20/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=6/10
+  cell 7 (NTN) load=8/10
+UE 9 TTT_WAIT target=3 elapsed=0s need=2s
+UE 12 TTT_WAIT target=1 elapsed=0s need=2s
+UE 16 TTT_WAIT target=1 elapsed=0s need=2s
+UE 20 TTT_WAIT target=3 elapsed=0s need=2s
+UE 25 TTT_WAIT target=6 elapsed=0s need=2s
+UE 28 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO UE=32 rnti=53 4->7 type=NTN servingRsrp=-72.0446 targetRsrp=-55.2573 targetLoadReal=8/10 targetLoadEff=8/10
+UE 33 TTT_WAIT target=1 elapsed=0s need=2s
+UE 37 TTT_WAIT target=1 elapsed=0s need=2s
+UE 40 TTT_WAIT target=1 elapsed=0s need=2s
+UE 43 TTT_WAIT target=1 elapsed=0s need=2s
+UE 44 TTT_WAIT target=7 elapsed=0s need=2s
+UE 46 TTT_WAIT target=3 elapsed=0s need=2s
+UE 47 TTT_WAIT target=3 elapsed=0s need=2s
+UE 51 TTT_WAIT target=3 elapsed=0s need=2s
+UE 52 TTT_WAIT target=1 elapsed=0s need=2s
+UE 53 TTT_WAIT target=7 elapsed=0s need=2s
+UE 56 TTT_WAIT target=1 elapsed=0s need=2s
+UE 57 TTT_WAIT target=1 elapsed=0s need=2s
+UE 58 TTT_WAIT target=3 elapsed=0s need=2s
+UE 60 TTT_WAIT target=1 elapsed=0s need=2s
+UE 62 TTT_WAIT target=7 elapsed=0s need=2s
+UE 63 TTT_WAIT target=1 elapsed=0s need=2s
+UE 66 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=68 rnti=151 2->7 type=NTN servingRsrp=-87.2805 targetRsrp=-69.1283 targetLoadReal=8/10 targetLoadEff=9/10
+UE 72 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=73 rnti=141 4->6 type=NTN servingRsrp=-64.6239 targetRsrp=-58.8267 targetLoadReal=6/10 targetLoadEff=6/10
+LM HO UE=74 rnti=85 7->3 type=TN servingRsrp=-88.8037 targetRsrp=-41.1985 targetLoadReal=17/20 targetLoadEff=17/20
+LM HO UE=75 rnti=107 5->3 type=TN servingRsrp=-78.8821 targetRsrp=-40.4445 targetLoadReal=17/20 targetLoadEff=18/20
+UE 76 TTT_WAIT target=1 elapsed=0s need=2s
+UE 79 TTT_WAIT target=3 elapsed=0s need=2s
+UE 80 TTT_WAIT target=1 elapsed=0s need=2s
+UE 81 TTT_WAIT target=1 elapsed=0s need=2s
+UE 85 TTT_WAIT target=3 elapsed=0s need=2s
+UE 86 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=91 rnti=102 5->3 type=TN servingRsrp=-89.4717 targetRsrp=-51.214 targetLoadReal=17/20 targetLoadEff=19/20
+UE 92 TTT_WAIT target=1 elapsed=0s need=2s
+UE 95 TTT_WAIT target=1 elapsed=0s need=2s
+UE 98 TTT_WAIT target=1 elapsed=0s need=2s
+UE 104 TTT_WAIT target=1 elapsed=0s need=2s
+UE 105 TTT_WAIT target=6 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=114.615 IMSI=74 TargetCell=3 Type=TN TargetRSRP=-40.4364 ServingRSRP=-54.8 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=114.615 IMSI=90 TargetCell=3 Type=TN TargetRSRP=-83.3808 ServingRSRP=-81.32 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=114.615 IMSI=73 TargetCell=3 Type=TN TargetRSRP=-79.0799 ServingRSRP=-40.2427 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=114.615 IMSI=72 TargetCell=6 Type=NTN TargetRSRP=-80.3211 ServingRSRP=-29.1951 BackhaulDlSnr=15.0036 BackhaulUlSnr=10.483
+TRACE HO_SUCCESS Time=114.615 IMSI=67 TargetCell=7 Type=NTN TargetRSRP=-89.1065 ServingRSRP=-65.5597 BackhaulDlSnr=12.3162 BackhaulUlSnr=7.79565
+TRACE HO_SUCCESS Time=114.615 IMSI=31 TargetCell=7 Type=NTN TargetRSRP=-88.3763 ServingRSRP=-34.1311 BackhaulDlSnr=12.3162 BackhaulUlSnr=7.79565
+UAV_AUTONOMY_XAPP Time=116.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1372.05 XhaulConnected=1 XhaulChannelVariationDb=-2.88542 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=116.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=686.993 XhaulConnected=1 XhaulChannelVariationDb=-2.30576 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=116.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1198.33 XhaulConnected=1 XhaulChannelVariationDb=-0.553926 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=116.5 ----
+  cell 1 (TN) load=19/20
+  cell 2 (TN) load=19/20
+  cell 3 (TN) load=20/20
+  cell 4 (TN) load=18/20
+  cell 5 (NTN) load=8/10
+  cell 6 (NTN) load=7/10
+  cell 7 (NTN) load=9/10
+UE 8 TTT_WAIT target=7 elapsed=0s need=2s
+UE 9 TTT_WAIT target=1 elapsed=0s need=2s
+UE 10 TTT_WAIT target=2 elapsed=0s need=2s
+UE 11 TTT_WAIT target=2 elapsed=0s need=2s
+UE 15 TTT_WAIT target=5 elapsed=0s need=2s
+UE 16 TTT_WAIT target=6 elapsed=0s need=2s
+UE 19 TTT_WAIT target=2 elapsed=0s need=2s
+UE 20 TTT_WAIT target=1 elapsed=0s need=2s
+UE 21 TTT_WAIT target=7 elapsed=0s need=2s
+UE 22 TTT_WAIT target=1 elapsed=0s need=2s
+UE 25 TTT_WAIT target=2 elapsed=0s need=2s
+UE 32 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=33 rnti=117 2->1 type=TN servingRsrp=-73.3809 targetRsrp=-70.4567 targetLoadReal=19/20 targetLoadEff=19/20
+UE 37 TTT_WAIT target=4 elapsed=0s need=2s
+UE 38 TTT_WAIT target=2 elapsed=0s need=2s
+UE 40 TTT_WAIT target=4 elapsed=0s need=2s
+UE 41 TTT_WAIT target=6 elapsed=0s need=2s
+UE 43 TTT_WAIT target=5 elapsed=0s need=2s
+UE 44 TTT_WAIT target=5 elapsed=0s need=2s
+UE 46 TTT_WAIT target=5 elapsed=0s need=2s
+UE 47 TTT_WAIT target=2 elapsed=0s need=2s
+UE 48 TTT_WAIT target=2 elapsed=0s need=2s
+UE 54 TTT_WAIT target=2 elapsed=0s need=2s
+UE 55 TTT_WAIT target=5 elapsed=0s need=2s
+UE 57 TTT_WAIT target=7 elapsed=0s need=2s
+UE 59 TTT_WAIT target=2 elapsed=0s need=2s
+UE 62 TTT_WAIT target=5 elapsed=0s need=2s
+UE 63 TTT_WAIT target=2 elapsed=0s need=2s
+UE 66 TTT_WAIT target=5 elapsed=0s need=2s
+UE 68 TTT_WAIT target=2 elapsed=0s need=2s
+UE 72 TTT_WAIT target=2 elapsed=0s need=2s
+UE 73 TTT_WAIT target=4 elapsed=0s need=2s
+UE 75 TTT_WAIT target=2 elapsed=0s need=2s
+UE 76 TTT_WAIT target=2 elapsed=0s need=2s
+UE 79 TTT_WAIT target=4 elapsed=0s need=2s
+UE 81 TTT_WAIT target=6 elapsed=0s need=2s
+UE 83 TTT_WAIT target=5 elapsed=0s need=2s
+UE 84 TTT_WAIT target=2 elapsed=0s need=2s
+UE 86 TTT_WAIT target=2 elapsed=0s need=2s
+UE 88 TTT_WAIT target=4 elapsed=0s need=2s
+UE 89 TTT_WAIT target=4 elapsed=0s need=2s
+UE 91 TTT_WAIT target=4 elapsed=0s need=2s
+UE 94 TTT_WAIT target=7 elapsed=0s need=2s
+UE 95 TTT_WAIT target=5 elapsed=0s need=2s
+UE 96 TTT_WAIT target=4 elapsed=0s need=2s
+UE 97 TTT_WAIT target=6 elapsed=0s need=2s
+UE 99 TTT_WAIT target=7 elapsed=0s need=2s
+UE 100 TTT_WAIT target=4 elapsed=0s need=2s
+UE 101 TTT_WAIT target=2 elapsed=0s need=2s
+UE 103 TTT_WAIT target=2 elapsed=0s need=2s
+UE 104 TTT_WAIT target=4 elapsed=0s need=2s
+UE 106 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=116.615 IMSI=32 TargetCell=1 Type=TN TargetRSRP=-88.0812 ServingRSRP=-55.5047 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=118.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1372.05 XhaulConnected=1 XhaulChannelVariationDb=1.35516 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=118.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=715.488 XhaulConnected=1 XhaulChannelVariationDb=-1.54976 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=118.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1198.33 XhaulConnected=1 XhaulChannelVariationDb=3.75949 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=118.5 ----
+  cell 1 (TN) load=20/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=20/20
+  cell 4 (TN) load=18/20
+  cell 5 (NTN) load=8/10
+  cell 6 (NTN) load=7/10
+  cell 7 (NTN) load=9/10
+UE 9 TTT_WAIT target=5 elapsed=0s need=2s
+UE 12 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=16 rnti=167 4->6 type=NTN servingRsrp=-68.9206 targetRsrp=-45.9363 targetLoadReal=7/10 targetLoadEff=7/10
+UE 17 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=19 rnti=204 1->2 type=TN servingRsrp=-99.3881 targetRsrp=-69.2494 targetLoadReal=18/20 targetLoadEff=18/20
+UE 20 TTT_WAIT target=2 elapsed=0s need=2s
+UE 25 TTT_WAIT target=4 elapsed=0s need=2s
+UE 28 TTT_WAIT target=4 elapsed=0s need=2s
+UE 31 TTT_WAIT target=4 elapsed=0s need=2s
+UE 33 TTT_WAIT target=2 elapsed=0s need=2s
+UE 34 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO UE=37 rnti=154 2->4 type=TN servingRsrp=-93.1246 targetRsrp=-52.9799 targetLoadReal=18/20 targetLoadEff=18/20
+UE 38 TTT_WAIT target=5 elapsed=0s need=2s
+UE 39 TTT_WAIT target=2 elapsed=0s need=2s
+UE 40 TTT_WAIT target=7 elapsed=0s need=2s
+UE 42 TTT_WAIT target=6 elapsed=0s need=2s
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+UE 48 TTT_WAIT target=4 elapsed=0s need=2s
+UE 49 TTT_WAIT target=6 elapsed=0s need=2s
+UE 51 TTT_WAIT target=4 elapsed=0s need=2s
+UE 55 TTT_WAIT target=4 elapsed=0s need=2s
+UE 58 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO UE=59 rnti=218 1->2 type=TN servingRsrp=-87.1196 targetRsrp=-75.514 targetLoadReal=18/20 targetLoadEff=19/20
+UE 60 TTT_WAIT target=5 elapsed=0s need=2s
+UE 61 TTT_WAIT target=7 elapsed=0s need=2s
+UE 63 TTT_WAIT target=5 elapsed=0s need=2s
+UE 64 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=66 rnti=193 3->5 type=NTN servingRsrp=-77.0228 targetRsrp=-57.3977 targetLoadReal=8/10 targetLoadEff=8/10
+UE 68 TTT_WAIT target=5 elapsed=0s need=2s
+UE 70 TTT_WAIT target=6 elapsed=0s need=2s
+UE 71 TTT_WAIT target=4 elapsed=0s need=2s
+UE 72 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO UE=73 rnti=104 6->4 type=TN servingRsrp=-51.3197 targetRsrp=-41.6573 targetLoadReal=18/20 targetLoadEff=19/20
+UE 74 TTT_WAIT target=5 elapsed=0s need=2s
+UE 76 TTT_WAIT target=6 elapsed=0s need=2s
+UE 82 TTT_WAIT target=7 elapsed=0s need=2s
+UE 84 TTT_WAIT target=5 elapsed=0s need=2s
+UE 85 TTT_WAIT target=6 elapsed=0s need=2s
+UE 86 TTT_WAIT target=7 elapsed=0s need=2s
+UE 91 TTT_WAIT target=5 elapsed=0s need=2s
+UE 95 TTT_WAIT target=6 elapsed=0s need=2s
+UE 97 TTT_WAIT target=7 elapsed=0s need=2s
+UE 100 TTT_WAIT target=5 elapsed=0s need=2s
+UE 103 TTT_WAIT target=6 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=118.615 IMSI=18 TargetCell=2 Type=TN TargetRSRP=-94.6039 ServingRSRP=-92.9139 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=118.615 IMSI=58 TargetCell=2 Type=TN TargetRSRP=-91.4512 ServingRSRP=-71.2124 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=118.615 IMSI=36 TargetCell=4 Type=TN TargetRSRP=-76.3546 ServingRSRP=-65.4455 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=118.615 IMSI=72 TargetCell=4 Type=TN TargetRSRP=-67.1207 ServingRSRP=-72.5751 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=118.615 IMSI=65 TargetCell=5 Type=NTN TargetRSRP=-57.4192 ServingRSRP=-62.5413 BackhaulDlSnr=14.1622 BackhaulUlSnr=9.64164
+TRACE HO_SUCCESS Time=118.615 IMSI=15 TargetCell=6 Type=NTN TargetRSRP=-48.222 ServingRSRP=-33.0569 BackhaulDlSnr=13.9869 BackhaulUlSnr=9.4663
