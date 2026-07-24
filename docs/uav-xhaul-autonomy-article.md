@@ -458,6 +458,23 @@ Run the comparison set with:
 bash contrib/oran/examples/run-uav-xhaul-autonomy-scenarios.sh
 ```
 
+For final article comparison, repeat the four main scenarios over multiple random seeds. The recommended first batch is four seeds:
+
+```bash
+SEEDS="1 2 3 4" bash contrib/oran/examples/run-uav-xhaul-autonomy-scenarios.sh
+```
+
+This launches 16 runs in sequence: the four main scenarios are repeated with `RngRun=1`, `RngRun=2`, `RngRun=3`, and `RngRun=4`. The scenario parameters remain the same, while the random seed changes the random channel, mobility, and event realizations. The resulting run labels include the seed number, for example:
+
+```text
+clean-seed1
+healthy-xhaul-seed1
+donor-unavailable-no-sat-seed1
+donor-unavailable-sat-seed1
+```
+
+The final paper results should report the mean and variation across these seed runs, such as average PDR, throughput, delay, and handover counts over four seeds. This four-seed comparison is intended for the article KPI figures. The larger AI dataset sweep is separate and is used later for model training.
+
 The main individual runs are:
 
 ```bash
@@ -650,6 +667,55 @@ Suitable AI models for this future extension include:
 
 This would move the current rule-based framework toward a stronger AI-native UAV O-RAN control framework.
 
-## 12. Conclusion
+## 12. Remote Server Execution Note
+
+The full 120 s ns-3 runs can take a long time on a remote server. If the terminal session is connected through VPN or SSH, the simulation should be run inside `tmux` so that it continues even if the local connection drops.
+
+Start a persistent terminal session with:
+
+```bash
+cd ~/workspace/ns-3-dev-nr-oran
+tmux new -s uavsat
+```
+
+Then run the selected ns-3 command inside the `tmux` session. For example, the satellite fallback case can be launched as:
+
+```bash
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --run-label=donor-unavailable-sat --sim-time=120 --num-uess1=50 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=3 --max-ues-tn=20 --max-ues-ntn=10 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=0.2 --monitored-ul-rate-mbps=0.05 --monitored-packet-size=1000 --tn-tx-power-dbm=83 --uav-tx-power-dbm=78 --ue-tx-power-dbm=43 --init-min-rsrp=-160 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --sat-backhaul-scenario=NTN-Suburban --enable-sat-backhaul-monitor=1 --enable-uav-switching-xapp=1 --uav-control-start=30 --uav-control-period=2 --uav-underserved-rsrp-thresh-dbm=-110 --uav-initial-area-half-w-m=3000 --uav-initial-area-half-h-m=1500 --uav-area-half-w-m=16000 --uav-area-half-h-m=8000 --uav-mission-target-scale=4 --uav-speed-mps=25 --xhaul-donor-unavailable-start=30 --xhaul-donor-unavailable-stop=75 --xhaul-healthy-rsrp-dbm=-110 --enable-xhaul-channel-variation=1 --xhaul-shadowing-stddev-db=6 --xhaul-fading-stddev-db=4 --channel-update-ms=100 --channel-condition-update-ms=200"
+```
+
+To run the recommended four-case, four-seed article batch inside `tmux`, use:
+
+```bash
+SEEDS="1 2 3 4" bash contrib/oran/examples/run-uav-xhaul-autonomy-scenarios.sh
+```
+
+Detach from `tmux` without stopping the simulation by pressing:
+
+```text
+Ctrl+b, then d
+```
+
+Reconnect later with:
+
+```bash
+tmux attach -t uavsat
+```
+
+The output files can be checked from another terminal while the simulation is still running:
+
+```bash
+watch -n 5 'ls -lh results/nr/tn-ntn/tn-uav-satellite_ueS1_50_ueS2_50_tnGnb_4_ntnGnb_3_tnCap_20_ntnCap_10_hyst_2_donor-unavailable-sat'
+```
+
+The UAV switching behavior can also be monitored live:
+
+```bash
+tail -f results/nr/tn-ntn/tn-uav-satellite_ueS1_50_ueS2_50_tnGnb_4_ntnGnb_3_tnCap_20_ntnCap_10_hyst_2_donor-unavailable-sat/xhaul-autonomy-trace.csv
+```
+
+A complete final run should produce `final-flow-report.txt`, a `qos-vs-time.txt` trace reaching approximately 120 s, and `xhaul-autonomy-trace.csv` rows after the 75 s donor-outage recovery point.
+
+## 13. Conclusion
 
 This article presented an xHaul-aware UAV O-RAN scenario for evaluating service continuity across TN, UAV, and satellite-assisted deployments. The key contribution is the separation of UE access quality from UAV infrastructure reachability. By comparing UE + TN only, healthy UE + TN + UAV, and UE + TN + UAV + satellite with donor-backhaul stress, the simulation can show how UAVs improve aerial access coverage and how satellite assistance may improve continuity under terrestrial donor-backhaul outage. The resulting traces provide a practical basis for future AI-driven TN/NTN switching, UAV positioning, and autonomy-mode control in integrated TN-NTN systems.

@@ -105,7 +105,7 @@ for seed in 1 2 3 4 5 6 7 8 9 10; do
 done
 
 # 2) UAV mobility speed sweep.
-for speed in 10 15 25 35; do
+for speed in 10 15 25; do
   run_pair "speed${speed}" "--uav-speed-mps=${speed}"
 done
 

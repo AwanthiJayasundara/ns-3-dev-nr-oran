@@ -4,6 +4,9 @@ set -euo pipefail
 # Run this script from the repository root:
 #   bash contrib/oran/examples/run-uav-xhaul-autonomy-scenarios.sh
 #
+# To repeat the four main scenarios over several random seeds:
+#   SEEDS="1 2 3 4" bash contrib/oran/examples/run-uav-xhaul-autonomy-scenarios.sh
+#
 # Purpose:
 #   Compare terrestrial, UAV-assisted, and satellite-assisted service. The
 #   TN-only scenario is a clean semi-urban terrestrial reference with no
@@ -40,6 +43,8 @@ set -euo pipefail
 #   TN UE access:                 3GPP UMa
 #   UAV/NTN UE access:            3GPP NTN-Urban
 #   Satellite fallback/backhaul:  3GPP NTN-Suburban
+
+SEEDS="${SEEDS:-}"
 
 COMMON_ARGS="--sim-time=120 \
   --num-tn-gnbs=4 \
@@ -96,34 +101,63 @@ NATURAL_MISSION_ARGS="--uav-control-start=30 \
 #   ./ns3 configure --build-profile=optimized --enable-examples
 ./ns3 build oran-nr-uav-xhaul-autonomy-example
 
-# Scenario 1: UE + TN only with healthy terrestrial infrastructure.
-# This is the clean semi-urban TN reference. No UAV cells are installed,
-# no satellite monitor is enabled, and no artificial TN/donor-backhaul degradation is
-# applied. The xhaul-autonomy-trace.csv file will contain only the header.
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-only --run-label=clean ${COMMON_ARGS} ${TN_ONLY_ARGS}"
+run_ns3()
+{
+  local deployment_mode="$1"
+  local run_label="$2"
+  local seed="$3"
+  local args="$4"
+  local effective_label="${run_label}"
+  local seed_arg=""
 
-# Scenario 2: UE + TN + UAV with healthy terrestrial donor backhaul.
-# UAVs are active cell nodes. The TN layer has 80 UE capacity while 100 UEs are
-# present after 5 s, so UAV cells are expected to help with access capacity and
-# coverage. The UAV-to-ground TN donor link is monitored using the best donor
-# RSRP; the final comparison disables the hard donor-distance cutoff. Satellite
-# backhaul is disabled.
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --run-label=healthy-xhaul ${COMMON_ARGS} ${UAV_ARGS}"
+  if [[ -n "${seed}" ]]; then
+    effective_label="${run_label}-seed${seed}"
+    seed_arg="--RngRun=${seed}"
+  fi
 
-# Scenario 3: UE + TN + UAV with donor-backhaul stress but no satellite fallback.
-# This is the fair no-satellite baseline. When the TN donor/gateway path is
-# unavailable, the Near-RT RIC switching xApp removes the UAV route to the core
-# and blocks normal handover to the UAV. QoS should drop for UAV-served users
-# during this interval.
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --run-label=donor-unavailable-no-sat ${COMMON_ARGS} ${UAV_ARGS} ${NATURAL_MISSION_ARGS}"
+  echo
+  echo "============================================================"
+  echo "Running ${deployment_mode} / ${effective_label}"
+  echo "============================================================"
+  ./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=${deployment_mode} --run-label=${effective_label} ${seed_arg} ${args}"
+}
 
-# Scenario 4: UE + TN + UAV + satellite with a natural mission-period stress.
-# Same TN+UAV deployment, but satellite backhaul monitoring is enabled. From
-# 30 s onward, UAVs move toward underserved UE clusters with a realistic speed.
-# During 30-75 s, the TN donor/gateway path is unavailable, representing that the UAV
-# is outside the usable donor-link coverage region or the terrestrial donor path
-# is blocked. No artificial RSRP penalty is applied; the trace records this as
-# DonorUnavailableActive=1 and XhaulState=UNREACHABLE. If satellite SNR is
-# healthy, the Near-RT RIC switching xApp switches the core path to
-# UAV->SAT->GW->core.
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --run-label=donor-unavailable-sat ${COMMON_ARGS} ${UAV_ARGS} --sat-backhaul-scenario=NTN-Suburban --enable-sat-backhaul-monitor=1 --enable-uav-switching-xapp=1 ${NATURAL_MISSION_ARGS}"
+run_four_main_scenarios()
+{
+  local seed="$1"
+
+  # Scenario 1: UE + TN only with healthy terrestrial infrastructure.
+  # This is the clean semi-urban TN reference. No UAV cells are installed,
+  # no satellite monitor is enabled, and no artificial TN/donor-backhaul
+  # degradation is applied. The xhaul-autonomy-trace.csv file will contain only
+  # the header.
+  run_ns3 "tn-only" "clean" "${seed}" "${COMMON_ARGS} ${TN_ONLY_ARGS}"
+
+  # Scenario 2: UE + TN + UAV with healthy terrestrial donor backhaul.
+  # UAVs are active cell nodes. The TN layer has 80 UE capacity while 100 UEs
+  # are present after 5 s, so UAV cells are expected to help with access
+  # capacity and coverage. Satellite backhaul is disabled.
+  run_ns3 "tn-uav" "healthy-xhaul" "${seed}" "${COMMON_ARGS} ${UAV_ARGS}"
+
+  # Scenario 3: UE + TN + UAV with donor-backhaul stress but no satellite fallback.
+  # This is the fair no-satellite baseline. When the TN donor/gateway path is
+  # unavailable, the Near-RT RIC switching xApp removes the UAV route to the core
+  # and blocks normal handover to the UAV. QoS should drop for UAV-served users
+  # during this interval.
+  run_ns3 "tn-uav" "donor-unavailable-no-sat" "${seed}" "${COMMON_ARGS} ${UAV_ARGS} ${NATURAL_MISSION_ARGS}"
+
+  # Scenario 4: UE + TN + UAV + satellite with a natural mission-period stress.
+  # Same TN+UAV deployment, but satellite backhaul monitoring is enabled. During
+  # 30-75 s, the TN donor/gateway path is unavailable. If satellite SNR is
+  # healthy, the Near-RT RIC switching xApp switches the core path to
+  # UAV->SAT->GW->core.
+  run_ns3 "tn-uav-satellite" "donor-unavailable-sat" "${seed}" "${COMMON_ARGS} ${UAV_ARGS} --sat-backhaul-scenario=NTN-Suburban --enable-sat-backhaul-monitor=1 --enable-uav-switching-xapp=1 ${NATURAL_MISSION_ARGS}"
+}
+
+if [[ -n "${SEEDS}" ]]; then
+  for seed in ${SEEDS}; do
+    run_four_main_scenarios "${seed}"
+  done
+else
+  run_four_main_scenarios ""
+fi
