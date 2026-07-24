@@ -98,7 +98,7 @@ NS_LOG_COMPONENT_DEFINE("OranNrUavXhaulAutonomyExample");
  * ./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --sim-time=120 --enable-flow-monitor=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-decision-csv=1"
  * \endcode
  *
- * To run the three commented comparison scenarios, use:
+ * To run the four commented comparison scenarios, use:
  *
  * \code{.unparsed}
  * bash contrib/oran/examples/run-uav-xhaul-autonomy-scenarios.sh
@@ -114,49 +114,57 @@ NS_LOG_COMPONENT_DEFINE("OranNrUavXhaulAutonomyExample");
 const static float TN_GNB_HEIGHT = 25;
 
 
-// Variables
-uint32_t numGroundUesS1 = 115; // UES1 
-uint32_t numGroundUesS2 = 115; // UES2
+// --------------------------------------------------------------------------
+// Default scenario geometry and population.
+// Command-line arguments override these defaults in the runner scripts.
+// --------------------------------------------------------------------------
 
-uint32_t numTnGnbs = 8;
-uint32_t numNtnGnbs = 6; // e.g., uav gnbs for ntn area
+uint32_t numGroundUesS1 = 115; // UES1: monitored UE set used for QoS/handover KPIs.
+uint32_t numGroundUesS2 = 115; // UES2: delayed background-load UE set.
 
-static const double g_refLat = 53.3498;   // Dublin city centre
-static const double g_refLon = -6.2603;
+uint32_t numTnGnbs = 8;  // Terrestrial macro gNB count.
+uint32_t numNtnGnbs = 6; // UAV/NTN gNB count.
 
-static double TN_GNB_HALF_W_M  = 2500.0;
-static double TN_GNB_HALF_H_M  = 1200.0;
+static const double g_refLat = 53.3498; // Dublin city centre reference latitude.
+static const double g_refLon = -6.2603; // Dublin city centre reference longitude.
 
-static double UAV_AREA_HALF_W_M = 3000.0;
-static double UAV_AREA_HALF_H_M = 1500.0;
-static double UAV_INITIAL_AREA_HALF_W_M = 3000.0;
-static double UAV_INITIAL_AREA_HALF_H_M = 1500.0;
+static double TN_GNB_HALF_W_M  = 2500.0; // Half-width for TN gNB placement.
+static double TN_GNB_HALF_H_M  = 1200.0; // Half-height for TN gNB placement.
 
-static double UE_AREA_HALF_W_M  = 3000.0;
-static double UE_AREA_HALF_H_M  = 1500.0;
-static double g_uavSpeedMps = 10.0;
-static double g_uavMissionTargetScale = 1.0;
+static double UAV_AREA_HALF_W_M = 3000.0;         // Half-width for UAV mission mobility.
+static double UAV_AREA_HALF_H_M = 1500.0;         // Half-height for UAV mission mobility.
+static double UAV_INITIAL_AREA_HALF_W_M = 3000.0; // Initial UAV placement half-width.
+static double UAV_INITIAL_AREA_HALF_H_M = 1500.0; // Initial UAV placement half-height.
 
-//uint32_t maxUesPerCell = 20; // ORAN LM parameter: maximum number of UEs per cell (for load-aware handover decisions)
+static double UE_AREA_HALF_W_M  = 3000.0; // Half-width for UE mobility.
+static double UE_AREA_HALF_H_M  = 1500.0; // Half-height for UE mobility.
+static double g_uavSpeedMps = 10.0;       // UAV waypoint mobility speed.
+static double g_uavMissionTargetScale = 1.0; // Pushes UAV targets toward/off the underserved cluster.
+
 uint32_t maxUesPerCellTn  = 20;
 uint32_t maxUesPerCellNtn = 10;
 
-// Metrics collection interval
+// --------------------------------------------------------------------------
+// Periodic metric and trace configuration.
+// --------------------------------------------------------------------------
+
+// Metrics collection interval.
 Time management_interval = Seconds(2);
-static double g_mobilityUpdateMs = 200.0;
-static double g_positionTraceIntervalSec = 1.0;
+static double g_mobilityUpdateMs = 200.0;        // UAV/UE waypoint update period.
+static double g_positionTraceIntervalSec = 1.0;  // Position trace sampling interval.
 
 // UES1 ips vector
 std::vector<Ipv4Address> user_ip;
 
-// Vectors with the most recent metrics for each UES1
-// DL (existing)
+// Vectors with the most recent per-UES1 QoS metrics.
+// These are updated by the FlowMonitor sampler and written into qos-vs-time.txt.
+// Downlink metrics.
 std::vector<double> user_delay_dl;
 std::vector<double> user_jitter_dl;
 std::vector<double> user_throughput_dl;
 std::vector<double> user_pdr_dl;
 
-// UL (NEW)
+// Uplink metrics.
 std::vector<double> user_delay_ul;
 std::vector<double> user_jitter_ul;
 std::vector<double> user_throughput_ul;
@@ -183,24 +191,36 @@ static std::string s_handoverFailureTraceFile;
 static std::string s_flowStatTraceFile;
 static std::string s_tnInfrastructureTraceFile;
 static std::string ns3_dir;
-//fh control trace files
+// Optional fronthaul/control traces kept disabled by default.
 // static std::ofstream g_fhTraceFile;
 // static std::ofstream g_airTraceFile;
 
 static std::string s_satBackhaulTraceFile;
 static std::string s_xhaulAutonomyTraceFile;
 
+// Latest satellite backhaul SNR per UAV/NTN cell. The satellite monitor updates
+// these maps; the UAV switching xApp reads them to decide if satellite fallback
+// is healthy enough to carry UE user/core traffic.
 static std::map<uint16_t, double> g_backhaulDlSnrDb;
 static std::map<uint16_t, double> g_backhaulUlSnrDb;
 
+// Cell/measurement caches used by the UE mobility xApp. The RSRP maps store
+// recent UE reports so handover decisions can compare the current serving cell
+// with candidate TN and UAV cells.
 static std::set<uint16_t> g_ntnCellIds;
 static std::map<std::pair<uint16_t,uint16_t>, double> g_latestRsrp;
 static std::map<std::pair<uint64_t,uint16_t>, double> g_latestRsrpByImsiCell;
 
+// Pointer to the UE mobility logic module so the UAV switching xApp can expose
+// "UAV usable / not usable" through effective per-cell capacity.
 static Ptr<OranLmNr2NrRsrpHandoverWithTnNtn> g_rsrpLm = nullptr;
+
+// Random variables for the lightweight donor-backhaul channel proxy. Shadowing
+// is zero-mean, while fading is applied as an additional loss.
 static Ptr<NormalRandomVariable> g_xhaulShadowingRv = CreateObject<NormalRandomVariable>();
 static Ptr<NormalRandomVariable> g_xhaulFadingRv = CreateObject<NormalRandomVariable>();
 
+// Global knobs read by helper callbacks. They mirror parsed command-line values.
 static std::string g_deploymentMode = "tn-uav-satellite";
 static double g_satBackhaulMinSnrDb = 0.0;
 static bool g_enableUavSwitchingXapp = true;
@@ -208,30 +228,37 @@ static bool g_enableXhaulChannelVariation = false;
 static double g_xhaulShadowingStddevDb = 0.0;
 static double g_xhaulFadingStddevDb = 0.0;
 
+// Context passed to the UAV TN/satellite switching xApp.
+// It keeps the callback signature small and groups all state needed to:
+//   1. estimate the best terrestrial donor for each UAV,
+//   2. classify donor-backhaul health,
+//   3. check satellite fallback health,
+//   4. update EPC route mode and UE-mobility cell availability,
+//   5. write xhaul-autonomy-trace.csv.
 struct UavAutonomyXappContext
 {
-    NodeContainer tnGnbs;
-    NodeContainer uavs;
-    NetDeviceContainer tnGnbNrDevs;
-    NetDeviceContainer uavGnbNrDevs;
-    Ptr<HybridSatEpcHelper> epcHelper;
-    double xhaulTxPowerDbm = 43.0;
-    double xhaulFrequencyHz = 4.0e9;
-    double xhaulMaxDonorDistanceM = -1.0;
-    double healthyThresholdDbm = -95.0;
-    double degradedThresholdDbm = -115.0;
-    double degradationStartSec = -1.0;
-    double degradationStopSec = -1.0;
-    double degradationPenaltyDb = 0.0;
-    double donorUnavailableStartSec = -1.0;
-    double donorUnavailableStopSec = -1.0;
-    double e2TxDelaySec = 0.0;
-    double e2SendIntervalSec = 0.0;
-    double lmQueryIntervalSec = 0.0;
-    bool enableXhaulChannelVariation = false;
-    double xhaulShadowingStddevDb = 0.0;
-    double xhaulFadingStddevDb = 0.0;
-    bool enableUavSwitchingXapp = true;
+    NodeContainer tnGnbs;               // Candidate terrestrial donor gNB nodes.
+    NodeContainer uavs;                 // UAV gNB nodes being controlled.
+    NetDeviceContainer tnGnbNrDevs;     // TN gNB NR devices, used to read cell IDs.
+    NetDeviceContainer uavGnbNrDevs;    // UAV gNB NR devices, used to read cell IDs.
+    Ptr<HybridSatEpcHelper> epcHelper;  // Helper that switches TN/satellite/unavailable routes.
+    double xhaulTxPowerDbm = 43.0;      // Assumed TN donor transmit power for RSRP proxy.
+    double xhaulFrequencyHz = 4.0e9;    // Carrier used by the donor-backhaul RSRP proxy.
+    double xhaulMaxDonorDistanceM = -1.0; // Optional donor search cutoff; <= 0 disables it.
+    double healthyThresholdDbm = -95.0; // RSRP threshold above which TN_DIRECT is usable.
+    double degradedThresholdDbm = -115.0; // Deprecated compatibility value.
+    double degradationStartSec = -1.0;  // Optional old synthetic RSRP penalty start.
+    double degradationStopSec = -1.0;   // Optional old synthetic RSRP penalty stop.
+    double degradationPenaltyDb = 0.0;  // Optional old synthetic RSRP penalty amount.
+    double donorUnavailableStartSec = -1.0; // Start of explicit TN donor/gateway outage.
+    double donorUnavailableStopSec = -1.0;  // End of explicit TN donor/gateway outage.
+    double e2TxDelaySec = 0.0;          // Logged RIC/E2 timing knob for analysis.
+    double e2SendIntervalSec = 0.0;     // Logged E2 reporting interval.
+    double lmQueryIntervalSec = 0.0;    // Logged RIC logic-module query interval.
+    bool enableXhaulChannelVariation = false; // Enables random donor RSRP variation.
+    double xhaulShadowingStddevDb = 0.0; // Large-scale donor RSRP variation.
+    double xhaulFadingStddevDb = 0.0;    // Fast fading-loss proxy for donor RSRP.
+    bool enableUavSwitchingXapp = true;  // Enables the proposed switching policy.
 };
 
 static std::unique_ptr<UavAutonomyXappContext> g_uavAutonomyXappCtx;
@@ -382,8 +409,6 @@ ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
         }
 
         Ipv4Address ueIp = isDl ? fiveTuple.destinationAddress : fiveTuple.sourceAddress;
-        // uint64_t imsi = LookupImsiFromIp(ueIp);
-        // const char* role = LookupRoleFromImsi(imsi);
 
         // -------- interval deltas --------
         FlowIntervalSnapshot& prev = g_prevFlowStats[flowId];
@@ -635,6 +660,13 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
 
     for (uint32_t uavIdx = 0; uavIdx < ctx.uavs.GetN(); ++uavIdx)
     {
+        // ------------------------------------------------------------------
+        // 1. Find the best terrestrial donor for this UAV.
+        //
+        // If the explicit donor/gateway outage is active, the loop is skipped
+        // and the UAV is forced into UNREACHABLE donor-backhaul state. This is
+        // the final 30-75 s disaster/outage model used by the article.
+        // ------------------------------------------------------------------
         Ptr<MobilityModel> uavMob = ctx.uavs.Get(uavIdx)->GetObject<MobilityModel>();
         if (!uavMob)
         {
@@ -656,12 +688,18 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
 
             const double distanceMeters =
                 CalculateDistance(uavMob->GetPosition(), tnMob->GetPosition());
+
+            // The final experiments disable this hard distance cutoff by passing
+            // a non-positive value. It remains for backward-compatible tests.
             if (ctx.xhaulMaxDonorDistanceM > 0.0 &&
                 distanceMeters > ctx.xhaulMaxDonorDistanceM)
             {
                 continue;
             }
 
+            // Estimate a donor-backhaul RSRP proxy from distance and carrier
+            // frequency. This is a monitoring/control feature, not a full IAB
+            // protocol stack or separate physical UAV-UE donor connection.
             double rsrpDbm =
                 EstimateFreeSpaceRsrpDbm(ctx.xhaulTxPowerDbm, ctx.xhaulFrequencyHz, distanceMeters);
             double channelVariationDb = 0.0;
@@ -680,9 +718,13 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
             }
             if (degradationActive)
             {
+                // Legacy controlled-degradation knob. The final article runs
+                // keep this disabled and use donorUnavailableActive instead.
                 rsrpDbm -= ctx.degradationPenaltyDb;
             }
 
+            // Keep the donor with the strongest estimated RSRP. The selected
+            // donor cell ID and distance are written into xhaul-autonomy-trace.csv.
             if (rsrpDbm > bestRsrpDbm)
             {
                 bestRsrpDbm = rsrpDbm;
@@ -695,12 +737,26 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
         Ptr<NrGnbNetDevice> uavDev = ctx.uavGnbNrDevs.Get(uavIdx)->GetObject<NrGnbNetDevice>();
         const uint16_t uavCellId = uavDev ? uavDev->GetCellId() : 0;
 
+        // ------------------------------------------------------------------
+        // 2. Convert the best donor RSRP into the donor-backhaul state.
+        //
+        // Current final policy:
+        //   RSRP >= healthyThresholdDbm -> HEALTHY
+        //   otherwise                  -> UNREACHABLE
+        // ------------------------------------------------------------------
         const bool xhaulConnected = bestDonorCellId != 0;
         const std::string xhaulState =
             xhaulConnected
                 ? ClassifyXhaulState(bestRsrpDbm, ctx.healthyThresholdDbm, ctx.degradedThresholdDbm)
                 : "UNREACHABLE";
 
+        // ------------------------------------------------------------------
+        // 3. Read satellite fallback health for this UAV cell.
+        //
+        // The satellite monitor writes the latest DL/UL SNR into global maps.
+        // Satellite fallback is healthy only when both directions are present
+        // and the weaker direction is above the configured SNR threshold.
+        // ------------------------------------------------------------------
         double satDl = -999.0;
         double satUl = -999.0;
         auto itDl = g_backhaulDlSnrDb.find(uavCellId);
@@ -716,6 +772,14 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
         const bool satHealthy =
             itDl != g_backhaulDlSnrDb.end() && itUl != g_backhaulUlSnrDb.end() &&
             std::min(satDl, satUl) >= g_satBackhaulMinSnrDb;
+
+        // ------------------------------------------------------------------
+        // 4. UAV TN/satellite switching xApp decision.
+        //
+        // The switching xApp is active only when donor backhaul is not HEALTHY.
+        // It selects satellite fallback only in tn-uav-satellite mode and only
+        // if the satellite monitor says the fallback link is healthy.
+        // ------------------------------------------------------------------
         const bool uavSwitchingXappAvailable =
             ctx.enableUavSwitchingXapp && g_deploymentMode != "tn-only";
         const bool uavSwitchingXappActive =
@@ -726,11 +790,22 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
             uavSwitchingXappActive && satelliteFallbackAllowed && satHealthy;
         const std::string uavMode =
             SelectUavAutonomyMode(g_deploymentMode, xhaulState, useSatelliteBackhaul);
+
+        // A UAV gNB is usable for normal UE service if either:
+        //   1. direct TN donor backhaul is healthy, or
+        //   2. satellite fallback is selected and healthy.
+        // Otherwise the UE mobility xApp must not hand normal UEs to this UAV,
+        // because access coverage without a core-network path is not useful.
         const bool allowNormalUeHandover =
             xhaulState == "HEALTHY" || useSatelliteBackhaul;
         const bool directTnBackhaulUsable = (xhaulState == "HEALTHY");
+
+        // This string is consumed by HybridSatEpcHelper, which switches the
+        // actual UAV user/core route between TN, satellite, and unavailable.
         const std::string epcBackhaulMode =
             useSatelliteBackhaul ? "satellite" : (directTnBackhaulUsable ? "tn" : "unavailable");
+
+        // These strings are human-readable trace labels for the article plots.
         const std::string backhaulMode =
             useSatelliteBackhaul ? "SATELLITE_FALLBACK"
                                  : (directTnBackhaulUsable ? "TN_DIRECT" : "NO_BACKHAUL_AVAILABLE");
@@ -746,17 +821,31 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
         const std::string uavSwitchingXappState =
             uavSwitchingXappAvailable ? (uavSwitchingXappActive ? "ACTIVE" : "STANDBY")
                                       : "DISABLED";
+
+        // ------------------------------------------------------------------
+        // 5. Apply the decision to the simulated data plane and UE mobility xApp.
+        // ------------------------------------------------------------------
         if (ctx.epcHelper)
         {
+            // User/core traffic route:
+            //   "tn"          -> UE -> UAV gNB -> TN donor/core
+            //   "satellite"   -> UE -> UAV gNB -> SAT -> GW -> core
+            //   "unavailable" -> packets cannot use the UAV core route
             ctx.epcHelper->SetNtnBackhaulMode(uavCellId, epcBackhaulMode);
         }
         if (g_rsrpLm)
         {
+            // Coupling between the two xApps:
+            //   - switching xApp sets effective UAV capacity to 0 when there is
+            //     no backhaul;
+            //   - UE mobility xApp then rejects normal handover to that UAV.
             g_rsrpLm->SetCellCapacity(uavCellId,
                                       allowNormalUeHandover ? maxUesPerCellNtn : 0);
             g_rsrpLm->SetCellBackhaulDlSnrDb(uavCellId, satDl);
             g_rsrpLm->SetCellBackhaulUlSnrDb(uavCellId, satUl);
         }
+
+        // Verbose human-readable xApp log for ns3-oran-lm.log.
         if (g_nsLogFile.is_open())
         {
             std::clog << "UAV_AUTONOMY_XAPP"
@@ -781,6 +870,7 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
                       << "\n";
         }
 
+        // Machine-readable row used for plots and future AI training.
         out << now << ","
             << g_deploymentMode << ","
             << uavIdx << ","
@@ -1925,7 +2015,8 @@ struct SatBackhaulContext
     double minAcceptableBackhaulSnrDb = 0.0;
     uint32_t healthyNtnCapacity = 10;
 
-    // NEW: also update initial-attach capacities inside NrHelper
+    // Also update initial-attach capacities inside NrHelper so UEs do not
+    // attach to a UAV cell whose satellite backhaul is currently unhealthy.
     Ptr<NrHelper> initAttachNrHelper = nullptr;
 };
 
@@ -2217,11 +2308,6 @@ main(int argc, char* argv[])
     // Therefore, QoS scheduling is less critical than in a mixed-traffic single-BWP setup.
     // QoS scheduler becomes more useful when multiple traffic classes compete within the same BWP.
     std::string schedKind = "PF"; // RR | PF | MR | Qos
-    // UES1 UL is configured lighter than UES1 DL: 1 Mbps / 30 fps vs 5 Mbps / 60 fps
-    // double ueS1DlVideoRateMbps = 2.0;
-    // uint16_t ueS1DlVideoFps = 30;
-    // double ueS1UlVideoRateMbps = 0.5;
-    // uint16_t ueS1UlVideoFps = 15;
     double hysteresisDb = 2.0; // dB, for RSRP-based handover decisions (if used)
 
     std::string xrAppType = "VR";  // VR | AR | CG (Cloud Gaming)
@@ -2410,6 +2496,14 @@ main(int argc, char* argv[])
                  underservedRsrpThreshDbm);
     cmd.Parse(argc, argv);
 
+    // ----------------------------------------------------------------------
+    // Validate and normalize command-line configuration.
+    //
+    // The three deployment modes intentionally enable different subsystems:
+    //   tn-only          -> no UAV cells, no satellite monitor, no switching xApp
+    //   tn-uav          -> UAV cells and switching xApp, but no satellite fallback
+    //   tn-uav-satellite-> UAV cells, switching xApp, and satellite fallback monitor
+    // ----------------------------------------------------------------------
     NS_ABORT_MSG_IF(deploymentMode != "tn-only" &&
                         deploymentMode != "tn-uav" &&
                         deploymentMode != "tn-uav-satellite",
@@ -2474,6 +2568,12 @@ main(int argc, char* argv[])
 
     Time simulationStopTime = simTime + Seconds(stopTailSeconds);
 
+    // ----------------------------------------------------------------------
+    // Output folder and trace filenames.
+    //
+    // runLabel is deliberately appended to the folder name so baseline,
+    // satellite, no-satellite, and AI-sweep runs do not overwrite each other.
+    // ----------------------------------------------------------------------
     std::ostringstream runTag;
     runTag << deploymentMode << "_ueS1_" << numGroundUesS1 << "_ueS2_" << numGroundUesS2 << "_tnGnb_" << numTnGnbs << "_ntnGnb_" << numNtnGnbs << "_tnCap_" << maxUesPerCellTn << "_ntnCap_" << maxUesPerCellNtn << "_hyst_" << hysteresisDb;
     if (!runLabel.empty())
@@ -2517,10 +2617,6 @@ main(int argc, char* argv[])
         std::clog << std::unitbuf;
     }
 
-    // // ---- Redirect NS_LOG_UNCOND (std::cout) to a separate file ----
-    // g_uncondFile.open(ns3_dir + "init-attach.log", std::ios::out | std::ios::trunc);
-    // g_oldCoutBuf = std::cout.rdbuf(g_uncondFile.rdbuf());
-
     if (enableOranInfoLog)
     {
         LogComponentEnable("OranLmNr2NrRsrpHandoverWithTnNtn", LOG_LEVEL_INFO);
@@ -2542,14 +2638,16 @@ main(int argc, char* argv[])
                                                   : NrGnbRrc::RLC_AM_ALWAYS));
 
     Config::SetDefault("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(maxRlcTxBufferSize));
-    //Config::SetDefault("ns3::NrGnbRrc::MaxUesPerCell", UintegerValue(maxUesPerCell));
 
     Config::SetDefault("ns3::ThreeGppChannelModel::UpdatePeriod",
                        TimeValue(MilliSeconds(channelUpdatePeriodMs)));
 
-    //Config::SetDefault("ns3::NrGnbPhy::TxPower", DoubleValue(43));
-
-    // Create gNB and UES1
+    // ----------------------------------------------------------------------
+    // Node creation.
+    //
+    // UES1 is the monitored UE set. UES2 is delayed background load.
+    // TN gNBs are terrestrial cells. NTN gNBs are UAV-mounted cells.
+    // ----------------------------------------------------------------------
     NodeContainer groundUeNodesS1;
     NodeContainer groundUeNodesS2;
     NodeContainer tnGnbNodes;
@@ -2563,43 +2661,15 @@ main(int argc, char* argv[])
     allGnbNodes.Add(tnGnbNodes);
     allGnbNodes.Add(ntnGnbNodes);
 
-    // Create ChannelHelper API
-    // if (isLos)
-    // {
-    //     propChannelCondition = "LOS";
-    // }
-    /*
-    - Rural Macro (RMa)
-        - Urban Macro (UMa)
-        - Indoor Hotspot in an open plan office scenario (InH-OfficeOpen)
-        - Indoor Hotspot in a mixed plan office scenario (InH-OfficeMixed)
-        - Vehicle-to-vehicle in a highway scenario (V2V-Highway)
-        - Vehicle-to-vehicle in an urban scenario (V2V-Urban)
-        - Urban Micro (UMi)
-        - Indoor Hotspot (InH)
-        - Indoor Factory (InF)
-        - Non-Terrestrial Network in a dense urban scenario (NTN-DenseUrban)
-        - Non-Terrestrial Network in an urban scenario (NTN-Urban)
-        - Non-Terrestrial Network in a suburban scenario (NTN-Suburban)
-        - Non-Terrestrial Network in a rural scenario (NTN-Rural)
-    */
-
-    //Ptr<NrChannelHelper> channelHelper = CreateObject<NrChannelHelper>();
-    //NodeDistributionScenarioInterface* scenario{nullptr};
-    //std::string propScenario = "UMa"; //Urban Macro
     bool enableShadowing = false;
-
-    //std::string propChannelCondition = "LOS";
-    // NS_ABORT_MSG_UNLESS(
-    //     propScenario == "UMa",
-    //     "Unsupported scenario " << scenario << ". Supported valuess1: UMa, RMa");
-    // // Configure the factories for the channel creation
-    // channelHelper->ConfigureFactories(propScenario, "Default");
-    // channelHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(enableShadowing));
-    // if (!isLos)
-    // {
     
-    // --- TN channel helper ---
+    // ----------------------------------------------------------------------
+    // Channel models.
+    //
+    // TN access uses 3GPP UMa. UAV/NTN access uses 3GPP NTN-Urban.
+    // The separate satellite fallback monitor later uses NTN-Suburban by
+    // default. NR fading is required because initial attach uses measured RSRP.
+    // ----------------------------------------------------------------------
     Ptr<NrChannelHelper> tnChannelHelper = CreateObject<NrChannelHelper>();
     tnChannelHelper->ConfigureFactories("UMa", "Default");
     tnChannelHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(enableShadowing));
@@ -2615,10 +2685,12 @@ main(int argc, char* argv[])
         "UpdatePeriod", TimeValue(MilliSeconds(channelConditionUpdatePeriodMs)));
     ntnChannelHelper->SetChannelConditionModelAttribute(
         "UpdatePeriod", TimeValue(MilliSeconds(channelConditionUpdatePeriodMs)));
-    // }
-    //ObjectFactory distanceBasedChannelFactory;
-    
-    // Create the NR helper
+    // ----------------------------------------------------------------------
+    // NR helper and scheduler configuration.
+    //
+    // The native NR handover algorithm is already set to no-op, so runtime
+    // handover decisions come from the O-RAN logic modules.
+    // ----------------------------------------------------------------------
     Ptr<NrHelper> nrHelper = CreateObject<NrHelper>();
     
     nrHelper->SetHandoverAlgorithmType(handoverAlgorithm);
@@ -2690,8 +2762,6 @@ main(int argc, char* argv[])
     nrHelper->SetSchedulerAttribute("EnableHarqReTx", BooleanValue(enableHarqRetx));
     nrHelper->SetSchedulerAttribute("EnableSrsInUlSlots", BooleanValue(enableSrsInUlSlots));
     nrHelper->SetSchedulerAttribute("EnableSrsInFSlots", BooleanValue(enableSrsInFSlots));
-    //nrHelper->SetGnbPhyAttribute("TxPower", DoubleValue(txPower));
-    //nrHelper->SetGnbPhyAttribute("Numerology", UintegerValue(numerology));
     nrHelper->SetUePhyAttribute("TxPower", DoubleValue(ueTxPower));
 
     nrHelper->SetSchedulerAttribute("FixedMcsDl", BooleanValue(useFixedMcs));
@@ -2718,27 +2788,6 @@ main(int argc, char* argv[])
         nrHelper->SetFhControlAttribute("OverheadDyn", UintegerValue(32));    // or 100 if you want heavier overhead
     }
 
-
-    // ---- TDD single-carrier setup (ONE band, ONE BWP) ----
-    // bool enableFading = true;
-    // uint8_t bandMask = NrChannelHelper::INIT_PROPAGATION |
-    //                 (enableFading ? NrChannelHelper::INIT_FADING : 0);
-
-    // double centralFrequency = 4e9;
-    // double bandBw = 20e6;
-
-    // CcBwpCreator ccBwpCreator;
-    // CcBwpCreator::SimpleOperationBandConf conf(centralFrequency, bandBw, 1);
-    // OperationBandInfo band = ccBwpCreator.CreateOperationBandContiguousCc(conf);
-
-    // std::vector<std::reference_wrapper<OperationBandInfo>> bands;
-    // bands.emplace_back(std::ref(band));
-
-    // channelHelper->AssignChannelsToBands(bands, bandMask);
-
-    // // BWP 0
-    // BandwidthPartInfoPtrVector Bwps = CcBwpCreator::GetAllBwps(bands);
-    ////////////////////////////////
     // ---------------- Common BWP layout ----------------
     // Global/common indices for ALL nodes:
     //   BWP 0 = TN
@@ -2796,10 +2845,8 @@ main(int argc, char* argv[])
     allBwps = CcBwpCreator::GetAllBwps(bands);
 
     // Global/common BWP indices
-    const uint32_t bwpTn    = 0;
-    const uint32_t bwpNtnDl = 1;
-    const uint32_t bwpNtnUl = 2;
-    const uint32_t numBwps  = allBwps.size(); // should be 3
+    const uint32_t bwpTn = 0;
+    const uint32_t numBwps = allBwps.size(); // should be 3
 
     Ptr<IdealBeamformingHelper> idealBeamformingHelper = CreateObject<IdealBeamformingHelper>();
     idealBeamformingHelper->SetAttribute("BeamformingMethod",
@@ -2816,6 +2863,14 @@ main(int argc, char* argv[])
     NetDeviceContainer groundNrDevsS1;
     NetDeviceContainer groundNrDevsS2;
 
+    // ----------------------------------------------------------------------
+    // EPC/core and satellite fallback route.
+    //
+    // HybridSatEpcHelper carries normal UE user/core traffic. In satellite
+    // fallback mode, the UAV gNB user-plane route becomes:
+    //   UE -> UAV gNB -> SAT -> GW -> core
+    // The RIC/E2 control path remains the normal logical ns-O-RAN interface.
+    // ----------------------------------------------------------------------
     Ptr<HybridSatEpcHelper> epcHelper = CreateObject<HybridSatEpcHelper>();
     epcHelper->SetAttribute("TnS1uLinkDelay", TimeValue(MilliSeconds(0)));
     epcHelper->SetAttribute("NtnGnbSatDelay", TimeValue(MilliSeconds(120)));
@@ -2840,6 +2895,9 @@ main(int argc, char* argv[])
                                 groundUeNodesS2);
 
     // ---------------- SAT / GW nodes ----------------
+    // SAT is placed at GEO altitude above the Dublin reference point. GW is a
+    // ground gateway near the same reference point. These nodes are used by the
+    // satellite fallback route and by the backhaul SNR monitor.
     NodeContainer satNode;
     satNode.Create(1);
 
@@ -2904,7 +2962,10 @@ main(int argc, char* argv[])
                                             1);
 
     // ------------------------------------------------------------
-    // Monitor-only point-to-point links for beamforming reference
+    // Monitor-only point-to-point links.
+    //
+    // These links help the satellite backhaul monitor evaluate the UAV->SAT
+    // and SAT->GW channel state. They are not the UE access link.
     // ------------------------------------------------------------
     PointToPointHelper satMonP2p;
     satMonP2p.SetDeviceAttribute("DataRate", DataRateValue(DataRate("1Gbps")));
@@ -2939,9 +3000,9 @@ main(int argc, char* argv[])
     ntnGnbNrDevs = nrHelper->InstallGnbDevice(ntnGnbNodes, allBwps);
 
     // Start after measurements and initial attach have had a little time to appear.
-    // For the satellite-assisted natural-degradation scenario this can be set
-    // to 15 s, making 15-30 s the mission period where UAVs move toward weak
-    // UE clusters and the UAV-to-TN donor xHaul can naturally weaken.
+    // In the final donor-unavailable scenarios this is set to 30 s. UAVs then
+    // move toward weak UE clusters while the TN donor/gateway outage is active
+    // from 30-75 s; no hand-set RSRP penalty is required.
     Simulator::Schedule(Seconds(uavControlStartSec),
                         &UpdateUavTargetsFromUnderservedUes,
                         groundUeNodesS1,
@@ -3203,20 +3264,6 @@ main(int argc, char* argv[])
         nrHelper->ConfigureFhControl(allGnbNrDevs);
     }
 
-    // for (auto it = allGnbNrDevs.Begin(); it != allGnbNrDevs.End(); ++it)
-    // {
-    //     Ptr<NrGnbNetDevice> gnb = DynamicCast<NrGnbNetDevice>(*it);
-    //     NS_ABORT_MSG_IF(!gnb, "Device is not NrGnbNetDevice");
-
-    //     gnb->GetNrFhControl()->TraceConnectWithoutContext(
-    //         "RequiredFhDlThroughput",
-    //         MakeCallback(&ReportFhTrace));
-
-    //     gnb->GetNrFhControl()->TraceConnectWithoutContext(
-    //         "UsedAirRbs",
-    //         MakeCallback(&ReportAiTrace));
-    // }
-
     // -------- Role map: IMSI -> UES1/UES2 --------
     g_imsiRole.clear();
 
@@ -3401,7 +3448,13 @@ main(int argc, char* argv[])
     // remoteHost IP address on the PGW-remoteHost point-to-point link
     Ipv4Address remoteHostIp = internetIpIfaces.GetAddress(1);
 
-    // XR Application containers
+    // ---------------------------------------------------------------------
+    // Monitored traffic applications for UES1.
+    //
+    // Default article runs use UDP because it gives robust FlowMonitor KPIs.
+    // XR mode is retained for experiments, but UDP is the recommended mode
+    // for the final TN/UAV/satellite comparison.
+    // ---------------------------------------------------------------------
     ApplicationContainer xrDlSinks;
     ApplicationContainer xrUlSinks;
     ApplicationContainer xrDlSenders;
@@ -3510,7 +3563,12 @@ main(int argc, char* argv[])
         }
     }
 
-    // Ground UEs traffic
+    // ---------------------------------------------------------------------
+    // Background traffic applications for UES2.
+    //
+    // UES2 starts later than UES1 to create a controlled load increase after
+    // the monitored flows are already active.
+    // ---------------------------------------------------------------------
     uint16_t groundBasePort = 20000;
     ApplicationContainer ueAppsS2;
     ApplicationContainer groundRemoteAppsS2;
@@ -3711,15 +3769,15 @@ main(int argc, char* argv[])
 
         // If the best RSRP target is full or disallowed, try another candidate
         // instead of immediately keeping the current serving cell.
-        defaultLm->SetAttribute("TryNextBest", BooleanValue(true)); // try next best otherwise keep current
+        defaultLm->SetAttribute("TryNextBest", BooleanValue(true));
 
         // Reject very weak handover targets even if they are technically the
         // strongest candidate. This prevents moving a UE to an unusable cell.
-        defaultLm->SetAttribute("MinAcceptableRsrpDbm", DoubleValue(-120.0)); // default is -120 dbm
+        defaultLm->SetAttribute("MinAcceptableRsrpDbm", DoubleValue(-120.0));
 
         // Hysteresis protects against ping-pong handovers by requiring the
         // target cell to be better than the current cell by this margin.
-        defaultLm->SetAttribute("HysteresisDb", DoubleValue(hysteresisDb)); // default is 2 dbm
+        defaultLm->SetAttribute("HysteresisDb", DoubleValue(hysteresisDb));
 
         dataRepository->SetAttribute("DatabaseFile", StringValue(dbFileName));
         defaultLm->SetName("UE_MOBILITY_XAPP");
@@ -3779,9 +3837,9 @@ main(int argc, char* argv[])
                     "Rx", MakeCallback(&ns3::OranReporterAppLoss::AddRx, appLossReporter));
             }
           
-            //The UES1’s physical layer (NrUePhy) periodically measures:RSRP (signal strength),
-                                                                    //RSRQ (signal quality),
-                                                                    //SINR (interference/noise level).
+            // The UE PHY periodically measures RSRP/RSRQ/SINR. The reporter
+            // forwards those measurements to the Near-RT RIC, where the UE
+            // mobility xApp evaluates candidate TN and UAV serving cells.
             for (uint32_t netDevIdx = 0; netDevIdx < groundUeNodesS1.Get(idx)->GetNDevices(); ++netDevIdx)
             {
                 Ptr<NrUeNetDevice> nrUeDevice =
@@ -3889,8 +3947,6 @@ main(int argc, char* argv[])
                                         StringValue("ns3::ConstantRandomVariable[Constant=" +
                                                     std::to_string(txDelay) + "]"));
 
-            // nrUeTerminator->Attach(groundUeNodesS2.Get(idx));
-            // Simulator::Schedule(Seconds(2), &OranE2NodeTerminatorNrUe::Activate, nrUeTerminator);
             nrUeTerminator->Attach(groundUeNodesS2.Get(idx));
 
             // Activate E2 only after the UE is attached (small guard offset)
@@ -4065,7 +4121,7 @@ main(int argc, char* argv[])
         Simulator::Schedule(Seconds(g_positionTraceIntervalSec), &TraceUeS1Positions, groundUeNodesS1);
         Simulator::Schedule(Seconds(g_positionTraceIntervalSec), &TraceUavPositions, ntnGnbNodes);
 
-        /* Start tracing UE Set 2 only when they actually start */
+        // Start tracing UE Set 2 only when they actually start.
         Simulator::Schedule(tLateAttach, &TraceUeS2Positions, groundUeNodesS2);
     }
 
@@ -4157,14 +4213,6 @@ main(int argc, char* argv[])
     user_throughput_ul.assign(numGroundUesS1, 0);
     user_pdr_ul.assign(numGroundUesS1, 0);
 
-    // Ptr<FlowMonitor> flowMonitor;
-    // FlowMonitorHelper flowHelper;
-
-    // flowHelper.Install(remoteHost);
-    // NodeContainer allUes;
-    // allUes.Add(groundUeNodesS1);
-    // allUes.Add(groundUeNodesS2);
-    // flowMonitor = flowHelper.Install(allUes);
     FlowMonitorHelper flowHelper;
     Ptr<FlowMonitor> flowMonitor;
 
@@ -4190,8 +4238,6 @@ main(int argc, char* argv[])
     // populate user ip map
     for (uint32_t i = 0; i < groundUeNodesS1.GetN(); i++)
     {
-        // Ptr<Ipv4> remoteIpv4 = groundUeNodesS1.Get(i)->GetObject<Ipv4>();
-        // Ipv4Address remoteIpAddr = remoteIpv4->GetAddress(1, 0).GetLocal();
         user_ip[i] = ueIpIfaceS1.GetAddress(i);
     }
 
@@ -4231,10 +4277,6 @@ main(int argc, char* argv[])
                             bwpId);
     }
 
-    // std::ofstream flowOutFile(s_flowStatTraceFile, std::ios_base::trunc);
-    // flowOutFile << "Time,Role,IMSI\n";
-    // flowOutFile.close();
-
     // Tell the simulator how long to run
     if (enableProgress)
     {
@@ -4251,11 +4293,6 @@ main(int argc, char* argv[])
 
     if (g_oldClogBuf) { std::clog.rdbuf(g_oldClogBuf); }
     if (g_nsLogFile.is_open()) { g_nsLogFile.close(); }
-
-    // if (g_oldCoutBuf) { std::cout.rdbuf(g_oldCoutBuf); }
-    // if (g_uncondFile.is_open()) { g_uncondFile.close(); }
-    // if (g_fhTraceFile.is_open()) { g_fhTraceFile.close(); }
-    // if (g_airTraceFile.is_open()) { g_airTraceFile.close(); }   
 
     if (satBackhaulOut.is_open()) { satBackhaulOut.close(); }
 
