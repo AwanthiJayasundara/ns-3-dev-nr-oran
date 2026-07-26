@@ -1,0 +1,2157 @@
+Could not find NR UE cell info for E2 Node ID = 5
+Could not find NR UE cell info for E2 Node ID = 6
+Could not find NR UE cell info for E2 Node ID = 7
+Could not find NR UE cell info for E2 Node ID = 8
+Could not find NR UE cell info for E2 Node ID = 9
+Could not find NR UE cell info for E2 Node ID = 10
+Could not find NR UE cell info for E2 Node ID = 11
+Could not find NR UE cell info for E2 Node ID = 12
+Could not find NR UE cell info for E2 Node ID = 13
+Could not find NR UE cell info for E2 Node ID = 14
+Could not find NR UE cell info for E2 Node ID = 15
+Could not find NR UE cell info for E2 Node ID = 16
+Could not find NR UE cell info for E2 Node ID = 17
+Could not find NR UE cell info for E2 Node ID = 18
+Could not find NR UE cell info for E2 Node ID = 19
+Could not find NR UE cell info for E2 Node ID = 20
+Could not find NR UE cell info for E2 Node ID = 21
+Could not find NR UE cell info for E2 Node ID = 22
+Could not find NR UE cell info for E2 Node ID = 23
+Could not find NR UE cell info for E2 Node ID = 24
+Could not find NR gNB location for E2 Node ID = 1
+Could not find NR gNB location for E2 Node ID = 2
+Could not find NR gNB location for E2 Node ID = 3
+Could not find NR gNB location for E2 Node ID = 4
+---- LOAD at t=4.5 ----
+---- LOAD at t=6.5 ----
+  cell 1 (TN) load=5/20
+  cell 2 (TN) load=3/20
+  cell 3 (TN) load=6/20
+  cell 4 (TN) load=6/20
+UE 7 TTT_WAIT target=2 elapsed=0s need=2s
+UE 8 TTT_WAIT target=3 elapsed=0s need=2s
+UE 9 TTT_WAIT target=3 elapsed=0s need=2s
+UE 10 TTT_WAIT target=1 elapsed=0s need=2s
+UE 11 TTT_WAIT target=1 elapsed=0s need=2s
+UE 14 TTT_WAIT target=1 elapsed=0s need=2s
+UE 15 TTT_WAIT target=4 elapsed=0s need=2s
+UE 17 TTT_WAIT target=2 elapsed=0s need=2s
+UE 22 TTT_WAIT target=1 elapsed=0s need=2s
+UE 24 TTT_WAIT target=3 elapsed=0s need=2s
+---- LOAD at t=8.5 ----
+  cell 1 (TN) load=19/20
+  cell 2 (TN) load=10/20
+  cell 3 (TN) load=20/20
+  cell 4 (TN) load=20/20
+UE 8 TTT_WAIT target=1 elapsed=0s need=2s
+UE 11 TTT_WAIT target=2 elapsed=0s need=2s
+UE 12 TTT_WAIT target=2 elapsed=0s need=2s
+UE 14 TTT_WAIT target=2 elapsed=0s need=2s
+UE 15 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=17 currCell=4 candCell=1 candRsrp=-123.016 < min=-120
+UE 20 TTT_WAIT target=1 elapsed=0s need=2s
+UE 25 TTT_WAIT target=2 elapsed=0s need=2s
+UE 27 TTT_WAIT target=2 elapsed=0s need=2s
+UE 29 TTT_WAIT target=1 elapsed=0s need=2s
+UE 31 TTT_WAIT target=1 elapsed=0s need=2s
+UE 33 TTT_WAIT target=2 elapsed=0s need=2s
+UE 34 TTT_WAIT target=2 elapsed=0s need=2s
+UE 35 TTT_WAIT target=2 elapsed=0s need=2s
+UE 43 TTT_WAIT target=1 elapsed=0s need=2s
+UE 44 TTT_WAIT target=1 elapsed=0s need=2s
+UE 46 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=50 currCell=3 candCell=2 candRsrp=-130.191 < min=-120
+UE 52 TTT_WAIT target=1 elapsed=0s need=2s
+UE 53 TTT_WAIT target=2 elapsed=0s need=2s
+UE 54 TTT_WAIT target=1 elapsed=0s need=2s
+UE 58 TTT_WAIT target=2 elapsed=0s need=2s
+UE 59 TTT_WAIT target=1 elapsed=0s need=2s
+UE 62 TTT_WAIT target=2 elapsed=0s need=2s
+UE 65 TTT_WAIT target=1 elapsed=0s need=2s
+UE 66 TTT_WAIT target=2 elapsed=0s need=2s
+UE 67 TTT_WAIT target=2 elapsed=0s need=2s
+UE 69 TTT_WAIT target=1 elapsed=0s need=2s
+UE 71 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=74 currCell=1 candCell=2 candRsrp=-121.582 < min=-120
+---- LOAD at t=10.5 ----
+  cell 1 (TN) load=19/20
+  cell 2 (TN) load=10/20
+  cell 3 (TN) load=20/20
+  cell 4 (TN) load=20/20
+UE 7 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=8 rnti=15 2->1 type=TN servingRsrp=-113.247 targetRsrp=-95.5031 targetLoadReal=19/20 targetLoadEff=19/20
+UE 10 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=11 rnti=44 4->2 type=TN servingRsrp=-117.316 targetRsrp=-88.9139 targetLoadReal=10/20 targetLoadEff=10/20
+LM HO UE=15 rnti=46 3->2 type=TN servingRsrp=-96.0378 targetRsrp=-82.7713 targetLoadReal=10/20 targetLoadEff=11/20
+UE 17 TTT_WAIT target=2 elapsed=0s need=2s
+UE 20 TTT_WAIT target=2 elapsed=0s need=2s
+UE 22 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=33 rnti=155 1->2 type=TN servingRsrp=-111.965 targetRsrp=-83.1561 targetLoadReal=10/20 targetLoadEff=12/20
+LM HO UE=34 rnti=136 4->2 type=TN servingRsrp=-118.198 targetRsrp=-100.692 targetLoadReal=10/20 targetLoadEff=13/20
+LM HO UE=35 rnti=156 1->2 type=TN servingRsrp=-115.222 targetRsrp=-84.5026 targetLoadReal=10/20 targetLoadEff=14/20
+UE 38 TTT_WAIT target=2 elapsed=0s need=2s
+UE 47 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=51 currCell=3 candCell=2 candRsrp=-126.597 < min=-120
+UE 57 TTT_WAIT target=2 elapsed=0s need=2s
+UE 59 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=62 currCell=1 candCell=2 candRsrp=-120.459 < min=-120
+LM HO UE=66 rnti=128 1->2 type=TN servingRsrp=-103.191 targetRsrp=-90.8719 targetLoadReal=10/20 targetLoadEff=15/20
+UE 68 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=10.6151 IMSI=7 TargetCell=1 Type=TN TargetRSRP=-97.1398 ServingRSRP=-108.515 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=10.6151 IMSI=32 TargetCell=2 Type=TN TargetRSRP=-106.009 ServingRSRP=-92.9181 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=10.6151 IMSI=34 TargetCell=2 Type=TN TargetRSRP=-93.5166 ServingRSRP=-113.017 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=10.6151 IMSI=65 TargetCell=2 Type=TN TargetRSRP=-126.416 ServingRSRP=-98.5537 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=10.6151 IMSI=14 TargetCell=2 Type=TN TargetRSRP=-103.808 ServingRSRP=-63.2896 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=10.6151 IMSI=10 TargetCell=2 Type=TN TargetRSRP=-93.7602 ServingRSRP=-83.5852 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=10.6151 IMSI=33 TargetCell=2 Type=TN TargetRSRP=-124.553 ServingRSRP=-83.9756 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=12.5 ----
+  cell 1 (TN) load=17/20
+  cell 2 (TN) load=15/20
+  cell 3 (TN) load=20/20
+  cell 4 (TN) load=18/20
+UE 9 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=20 rnti=48 3->2 type=TN servingRsrp=-113.187 targetRsrp=-103.985 targetLoadReal=15/20 targetLoadEff=15/20
+LM HO UE=22 rnti=48 4->2 type=TN servingRsrp=-116.637 targetRsrp=-101.844 targetLoadReal=15/20 targetLoadEff=16/20
+UE 24 TTT_WAIT target=2 elapsed=0s need=2s
+UE 26 TTT_WAIT target=1 elapsed=0s need=2s
+UE 30 TTT_WAIT target=2 elapsed=0s need=2s
+UE 31 TTT_WAIT target=2 elapsed=0s need=2s
+UE 34 TTT_WAIT target=4 elapsed=0s need=2s
+UE 35 TTT_WAIT target=1 elapsed=0s need=2s
+UE 38 TTT_WAIT target=1 elapsed=0s need=2s
+UE 41 TTT_WAIT target=1 elapsed=0s need=2s
+UE 42 TTT_WAIT target=2 elapsed=0s need=2s
+UE 44 TTT_WAIT target=1 elapsed=0s need=2s
+UE 46 TTT_WAIT target=2 elapsed=0s need=2s
+UE 52 TTT_WAIT target=1 elapsed=0s need=2s
+UE 56 TTT_WAIT target=4 elapsed=0s need=2s
+UE 57 TTT_WAIT target=1 elapsed=0s need=2s
+UE 58 TTT_WAIT target=2 elapsed=0s need=2s
+UE 59 TTT_WAIT target=1 elapsed=0s need=2s
+UE 60 TTT_WAIT target=2 elapsed=0s need=2s
+UE 62 TTT_WAIT target=2 elapsed=0s need=2s
+UE 65 TTT_WAIT target=1 elapsed=0s need=2s
+UE 66 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=67 currCell=1 candCell=2 candRsrp=-135.987 < min=-120
+UE 69 TTT_WAIT target=1 elapsed=0s need=2s
+UE 72 TTT_WAIT target=1 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=12.6151 IMSI=19 TargetCell=2 Type=TN TargetRSRP=-101.783 ServingRSRP=-80.072 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=12.6151 IMSI=21 TargetCell=2 Type=TN TargetRSRP=-133.984 ServingRSRP=-78.341 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=14.5 ----
+  cell 1 (TN) load=17/20
+  cell 2 (TN) load=17/20
+  cell 3 (TN) load=19/20
+  cell 4 (TN) load=17/20
+UE 6 TTT_WAIT target=2 elapsed=0s need=2s
+UE 7 TTT_WAIT target=4 elapsed=0s need=2s
+UE 8 TTT_WAIT target=2 elapsed=0s need=2s
+UE 9 TTT_WAIT target=3 elapsed=0s need=2s
+UE 13 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=14 currCell=3 candCell=1 candRsrp=-120.07 < min=-120
+UE 15 TTT_WAIT target=3 elapsed=0s need=2s
+UE 17 TTT_WAIT target=2 elapsed=0s need=2s
+UE 18 TTT_WAIT target=1 elapsed=0s need=2s
+UE 19 TTT_WAIT target=3 elapsed=0s need=2s
+UE 20 TTT_WAIT target=3 elapsed=0s need=2s
+UE 22 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=24 rnti=40 1->2 type=TN servingRsrp=-111.801 targetRsrp=-83.7002 targetLoadReal=17/20 targetLoadEff=17/20
+UE 27 TTT_WAIT target=1 elapsed=0s need=2s
+UE 28 TTT_WAIT target=2 elapsed=0s need=2s
+UE 29 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=31 currCell=3 candCell=1 candRsrp=-123 < min=-120
+LM HO_FAIL_LOW_RSRP UE=34 currCell=2 candCell=4 candRsrp=-120.999 < min=-120
+LM HO UE=35 rnti=85 2->1 type=TN servingRsrp=-123.723 targetRsrp=-112.229 targetLoadReal=17/20 targetLoadEff=17/20
+LM HO UE=38 rnti=135 3->1 type=TN servingRsrp=-126.879 targetRsrp=-99.5253 targetLoadReal=17/20 targetLoadEff=18/20
+UE 39 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=44 currCell=3 candCell=1 candRsrp=-123.061 < min=-120
+UE 45 TTT_WAIT target=3 elapsed=0s need=2s
+UE 49 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=50 currCell=3 candCell=1 candRsrp=-134.032 < min=-120
+UE 51 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=52 rnti=140 3->1 type=TN servingRsrp=-102.333 targetRsrp=-83.736 targetLoadReal=17/20 targetLoadEff=19/20
+UE 58 TTT_WAIT target=4 elapsed=0s need=2s
+UE 59 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=60 rnti=144 3->2 type=TN servingRsrp=-126.221 targetRsrp=-92.9227 targetLoadReal=17/20 targetLoadEff=18/20
+UE 62 TTT_WAIT target=3 elapsed=0s need=2s
+UE 65 TTT_WAIT target=2 elapsed=0s need=2s
+UE 66 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=67 currCell=1 candCell=3 candRsrp=-121.522 < min=-120
+UE 68 TTT_WAIT target=3 elapsed=0s need=2s
+UE 69 TTT_WAIT target=4 elapsed=0s need=2s
+UE 70 TTT_WAIT target=3 elapsed=0s need=2s
+UE 71 TTT_WAIT target=4 elapsed=0s need=2s
+UE 72 TTT_WAIT target=2 elapsed=0s need=2s
+UE 73 TTT_WAIT target=4 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=14.6151 IMSI=34 TargetCell=1 Type=TN TargetRSRP=-115.368 ServingRSRP=-118.079 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=14.6151 IMSI=37 TargetCell=1 Type=TN TargetRSRP=-129.813 ServingRSRP=-93.3881 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=14.6151 IMSI=51 TargetCell=1 Type=TN TargetRSRP=-123.417 ServingRSRP=-102.703 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=14.6151 IMSI=23 TargetCell=2 Type=TN TargetRSRP=-113.799 ServingRSRP=-74.1756 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=14.6151 IMSI=59 TargetCell=2 Type=TN TargetRSRP=-89.5283 ServingRSRP=-103.474 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=16.5 ----
+  cell 1 (TN) load=19/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=16/20
+  cell 4 (TN) load=17/20
+UE 7 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=8 rnti=160 1->2 type=TN servingRsrp=-88.1733 targetRsrp=-81.8495 targetLoadReal=18/20 targetLoadEff=18/20
+UE 9 TTT_WAIT target=4 elapsed=0s need=2s
+UE 14 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=15 rnti=82 2->3 type=TN servingRsrp=-121.917 targetRsrp=-93.796 targetLoadReal=16/20 targetLoadEff=16/20
+UE 19 TTT_WAIT target=1 elapsed=0s need=2s
+UE 20 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=22 rnti=88 2->4 type=TN servingRsrp=-131.288 targetRsrp=-78.7767 targetLoadReal=17/20 targetLoadEff=17/20
+UE 23 TTT_WAIT target=3 elapsed=0s need=2s
+UE 24 TTT_WAIT target=1 elapsed=0s need=2s
+UE 26 TTT_WAIT target=2 elapsed=0s need=2s
+UE 27 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=29 rnti=67 2->1 type=TN servingRsrp=-114.133 targetRsrp=-111.629 targetLoadReal=19/20 targetLoadEff=19/20
+LM HO_FAIL_LOW_RSRP UE=31 currCell=3 candCell=2 candRsrp=-124.103 < min=-120
+UE 33 TTT_WAIT target=3 elapsed=0s need=2s
+UE 35 TTT_WAIT target=2 elapsed=0s need=2s
+UE 38 TTT_WAIT target=3 elapsed=0s need=2s
+UE 39 TTT_WAIT target=2 elapsed=0s need=2s
+UE 40 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=45 rnti=158 1->3 type=TN servingRsrp=-112.008 targetRsrp=-78.1704 targetLoadReal=16/20 targetLoadEff=17/20
+LM HO_FAIL_LOW_RSRP UE=50 currCell=3 candCell=4 candRsrp=-120.743 < min=-120
+UE 54 TTT_WAIT target=3 elapsed=0s need=2s
+UE 60 TTT_WAIT target=3 elapsed=0s need=2s
+UE 62 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=63 currCell=3 candCell=4 candRsrp=-124.941 < min=-120
+LM HO UE=66 rnti=86 2->3 type=TN servingRsrp=-124.685 targetRsrp=-95.7208 targetLoadReal=16/20 targetLoadEff=18/20
+LM HO_FAIL_LOW_RSRP UE=67 currCell=1 candCell=3 candRsrp=-127.742 < min=-120
+LM HO_FAIL_LOW_RSRP UE=68 currCell=1 candCell=3 candRsrp=-120.333 < min=-120
+LM HO UE=69 rnti=70 2->4 type=TN servingRsrp=-116.448 targetRsrp=-102.037 targetLoadReal=17/20 targetLoadEff=18/20
+LM HO UE=73 rnti=73 2->4 type=TN servingRsrp=-118.666 targetRsrp=-96.0315 targetLoadReal=17/20 targetLoadEff=19/20
+UE 74 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=16.6151 IMSI=28 TargetCell=1 Type=TN TargetRSRP=-119.512 ServingRSRP=-115.68 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=16.6151 IMSI=7 TargetCell=2 Type=TN TargetRSRP=-117.574 ServingRSRP=-108.5 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=16.6151 IMSI=44 TargetCell=3 Type=TN TargetRSRP=-115.012 ServingRSRP=-82.9346 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=16.6151 IMSI=65 TargetCell=3 Type=TN TargetRSRP=-117.422 ServingRSRP=-122.684 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=16.6151 IMSI=14 TargetCell=3 Type=TN TargetRSRP=-97.4556 ServingRSRP=-96.006 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=16.6151 IMSI=68 TargetCell=4 Type=TN TargetRSRP=-99.0008 ServingRSRP=-96.9674 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=16.6151 IMSI=72 TargetCell=4 Type=TN TargetRSRP=-114.169 ServingRSRP=-97.0654 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=16.6151 IMSI=21 TargetCell=4 Type=TN TargetRSRP=-112.992 ServingRSRP=-110.586 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=18.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=13/20
+  cell 3 (TN) load=19/20
+  cell 4 (TN) load=20/20
+UE 5 TTT_WAIT target=2 elapsed=0s need=2s
+UE 7 TTT_WAIT target=3 elapsed=0s need=2s
+UE 8 TTT_WAIT target=1 elapsed=0s need=2s
+UE 9 TTT_WAIT target=1 elapsed=0s need=2s
+UE 11 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=14 rnti=45 3->2 type=TN servingRsrp=-125.235 targetRsrp=-113.118 targetLoadReal=13/20 targetLoadEff=13/20
+UE 17 TTT_WAIT target=2 elapsed=0s need=2s
+UE 19 TTT_WAIT target=3 elapsed=0s need=2s
+UE 28 TTT_WAIT target=3 elapsed=0s need=2s
+UE 35 TTT_WAIT target=3 elapsed=0s need=2s
+UE 39 TTT_WAIT target=3 elapsed=0s need=2s
+UE 42 TTT_WAIT target=1 elapsed=0s need=2s
+UE 44 TTT_WAIT target=1 elapsed=0s need=2s
+UE 46 TTT_WAIT target=2 elapsed=0s need=2s
+UE 47 TTT_WAIT target=3 elapsed=0s need=2s
+UE 50 TTT_WAIT target=2 elapsed=0s need=2s
+UE 51 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=54 rnti=69 2->3 type=TN servingRsrp=-116.067 targetRsrp=-85.9307 targetLoadReal=19/20 targetLoadEff=19/20
+UE 57 TTT_WAIT target=1 elapsed=0s need=2s
+UE 59 TTT_WAIT target=2 elapsed=0s need=2s
+UE 60 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=63 currCell=3 candCell=1 candRsrp=-128.91 < min=-120
+LM HO_FAIL_LOW_RSRP UE=67 currCell=1 candCell=2 candRsrp=-131.192 < min=-120
+UE 73 TTT_WAIT target=1 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=18.6151 IMSI=13 TargetCell=2 Type=TN TargetRSRP=-118.935 ServingRSRP=-122.568 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=18.6151 IMSI=53 TargetCell=3 Type=TN TargetRSRP=-119.267 ServingRSRP=-89.7278 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=20.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=13/20
+  cell 3 (TN) load=19/20
+  cell 4 (TN) load=20/20
+UE 5 TTT_WAIT target=3 elapsed=0s need=2s
+UE 7 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=8 rnti=91 2->1 type=TN servingRsrp=-108.91 targetRsrp=-94.5704 targetLoadReal=18/20 targetLoadEff=18/20
+UE 9 TTT_WAIT target=3 elapsed=0s need=2s
+UE 11 TTT_WAIT target=3 elapsed=0s need=2s
+UE 13 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=14 currCell=2 candCell=3 candRsrp=-122.095 < min=-120
+UE 15 TTT_WAIT target=2 elapsed=0s need=2s
+UE 19 TTT_WAIT target=1 elapsed=0s need=2s
+UE 20 TTT_WAIT target=3 elapsed=0s need=2s
+UE 24 TTT_WAIT target=1 elapsed=0s need=2s
+UE 28 TTT_WAIT target=2 elapsed=0s need=2s
+UE 31 TTT_WAIT target=1 elapsed=0s need=2s
+UE 33 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=34 currCell=2 candCell=1 candRsrp=-126.844 < min=-120
+UE 37 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=39 rnti=157 1->3 type=TN servingRsrp=-119.109 targetRsrp=-115.629 targetLoadReal=19/20 targetLoadEff=19/20
+UE 41 TTT_WAIT target=1 elapsed=0s need=2s
+UE 42 TTT_WAIT target=2 elapsed=0s need=2s
+UE 43 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=44 currCell=3 candCell=1 candRsrp=-123.498 < min=-120
+UE 45 TTT_WAIT target=1 elapsed=0s need=2s
+UE 47 TTT_WAIT target=2 elapsed=0s need=2s
+UE 50 TTT_WAIT target=1 elapsed=0s need=2s
+UE 53 TTT_WAIT target=2 elapsed=0s need=2s
+UE 55 TTT_WAIT target=2 elapsed=0s need=2s
+UE 58 TTT_WAIT target=2 elapsed=0s need=2s
+UE 59 TTT_WAIT target=1 elapsed=0s need=2s
+UE 64 TTT_WAIT target=2 elapsed=0s need=2s
+UE 65 TTT_WAIT target=1 elapsed=0s need=2s
+UE 66 TTT_WAIT target=1 elapsed=0s need=2s
+UE 71 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=73 rnti=165 4->1 type=TN servingRsrp=-114.606 targetRsrp=-101.138 targetLoadReal=18/20 targetLoadEff=19/20
+TRACE HO_SUCCESS Time=20.6151 IMSI=7 TargetCell=1 Type=TN TargetRSRP=-119.543 ServingRSRP=-115.662 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=20.6151 IMSI=72 TargetCell=1 Type=TN TargetRSRP=-108.774 ServingRSRP=-79.4942 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=20.6151 IMSI=38 TargetCell=3 Type=TN TargetRSRP=-115.462 ServingRSRP=-117.62 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=22.5 ----
+  cell 1 (TN) load=19/20
+  cell 2 (TN) load=12/20
+  cell 3 (TN) load=20/20
+  cell 4 (TN) load=19/20
+UE 8 TTT_WAIT target=2 elapsed=0s need=2s
+UE 10 TTT_WAIT target=1 elapsed=0s need=2s
+UE 12 TTT_WAIT target=1 elapsed=0s need=2s
+UE 16 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=24 rnti=89 2->1 type=TN servingRsrp=-111.365 targetRsrp=-84.778 targetLoadReal=19/20 targetLoadEff=19/20
+UE 27 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=28 rnti=153 1->2 type=TN servingRsrp=-118.869 targetRsrp=-90.7837 targetLoadReal=12/20 targetLoadEff=12/20
+UE 31 TTT_WAIT target=2 elapsed=0s need=2s
+UE 34 TTT_WAIT target=4 elapsed=0s need=2s
+UE 35 TTT_WAIT target=2 elapsed=0s need=2s
+UE 39 TTT_WAIT target=2 elapsed=0s need=2s
+UE 44 TTT_WAIT target=2 elapsed=0s need=2s
+UE 51 TTT_WAIT target=4 elapsed=0s need=2s
+UE 52 TTT_WAIT target=2 elapsed=0s need=2s
+UE 54 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=55 rnti=144 4->2 type=TN servingRsrp=-120.049 targetRsrp=-93.0654 targetLoadReal=12/20 targetLoadEff=13/20
+UE 62 TTT_WAIT target=4 elapsed=0s need=2s
+UE 63 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=67 currCell=1 candCell=2 candRsrp=-134.542 < min=-120
+UE 70 TTT_WAIT target=4 elapsed=0s need=2s
+UE 73 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=22.6151 IMSI=23 TargetCell=1 Type=TN TargetRSRP=-109.426 ServingRSRP=-100.956 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=22.6151 IMSI=27 TargetCell=2 Type=TN TargetRSRP=-96.1444 ServingRSRP=-100.394 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=22.6151 IMSI=54 TargetCell=2 Type=TN TargetRSRP=-117.483 ServingRSRP=-111.916 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=24.5 ----
+  cell 1 (TN) load=19/20
+  cell 2 (TN) load=13/20
+  cell 3 (TN) load=20/20
+  cell 4 (TN) load=18/20
+UE 5 TTT_WAIT target=2 elapsed=0s need=2s
+UE 7 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=8 rnti=165 1->2 type=TN servingRsrp=-113.022 targetRsrp=-98.6701 targetLoadReal=13/20 targetLoadEff=13/20
+UE 9 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=11 currCell=2 candCell=1 candRsrp=-120.659 < min=-120
+UE 14 TTT_WAIT target=1 elapsed=0s need=2s
+UE 17 TTT_WAIT target=2 elapsed=0s need=2s
+UE 18 TTT_WAIT target=1 elapsed=0s need=2s
+UE 20 TTT_WAIT target=1 elapsed=0s need=2s
+UE 25 TTT_WAIT target=2 elapsed=0s need=2s
+UE 26 TTT_WAIT target=2 elapsed=0s need=2s
+UE 27 TTT_WAIT target=1 elapsed=0s need=2s
+UE 28 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=35 rnti=161 1->2 type=TN servingRsrp=-115.737 targetRsrp=-103.37 targetLoadReal=13/20 targetLoadEff=14/20
+LM HO UE=39 rnti=175 3->2 type=TN servingRsrp=-123.46 targetRsrp=-100.092 targetLoadReal=13/20 targetLoadEff=15/20
+UE 40 TTT_WAIT target=1 elapsed=0s need=2s
+UE 42 TTT_WAIT target=2 elapsed=0s need=2s
+UE 44 TTT_WAIT target=1 elapsed=0s need=2s
+UE 45 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=50 currCell=3 candCell=1 candRsrp=-128.758 < min=-120
+UE 55 TTT_WAIT target=4 elapsed=0s need=2s
+UE 57 TTT_WAIT target=2 elapsed=0s need=2s
+UE 59 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=60 currCell=2 candCell=1 candRsrp=-128.704 < min=-120
+UE 63 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=67 currCell=1 candCell=2 candRsrp=-134.206 < min=-120
+UE 68 TTT_WAIT target=4 elapsed=0s need=2s
+UE 69 TTT_WAIT target=2 elapsed=0s need=2s
+UE 70 TTT_WAIT target=1 elapsed=0s need=2s
+UE 71 TTT_WAIT target=1 elapsed=0s need=2s
+UE 74 TTT_WAIT target=4 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=24.6151 IMSI=34 TargetCell=2 Type=TN TargetRSRP=-81.8785 ServingRSRP=-92.3944 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=24.6151 IMSI=7 TargetCell=2 Type=TN TargetRSRP=-116.886 ServingRSRP=-81.1492 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=24.6151 IMSI=38 TargetCell=2 Type=TN TargetRSRP=-94.3846 ServingRSRP=-80.1364 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=26.5 ----
+  cell 1 (TN) load=17/20
+  cell 2 (TN) load=16/20
+  cell 3 (TN) load=19/20
+  cell 4 (TN) load=18/20
+LM HO UE=7 rnti=37 1->2 type=TN servingRsrp=-109.253 targetRsrp=-101.024 targetLoadReal=16/20 targetLoadEff=16/20
+LM HO_FAIL_LOW_RSRP UE=8 currCell=2 candCell=1 candRsrp=-120.082 < min=-120
+UE 9 TTT_WAIT target=3 elapsed=0s need=2s
+UE 11 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=14 rnti=92 2->1 type=TN servingRsrp=-121.497 targetRsrp=-89.3326 targetLoadReal=17/20 targetLoadEff=17/20
+UE 15 TTT_WAIT target=1 elapsed=0s need=2s
+UE 16 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=17 rnti=46 4->2 type=TN servingRsrp=-100.506 targetRsrp=-86.2806 targetLoadReal=16/20 targetLoadEff=17/20
+LM HO_FAIL_LOW_RSRP UE=19 currCell=2 candCell=1 candRsrp=-121.614 < min=-120
+LM HO UE=20 rnti=87 2->1 type=TN servingRsrp=-127.309 targetRsrp=-80.0572 targetLoadReal=17/20 targetLoadEff=18/20
+UE 22 TTT_WAIT target=2 elapsed=0s need=2s
+UE 24 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=25 rnti=133 4->2 type=TN servingRsrp=-123.788 targetRsrp=-98.522 targetLoadReal=16/20 targetLoadEff=18/20
+UE 28 TTT_WAIT target=1 elapsed=0s need=2s
+UE 34 TTT_WAIT target=4 elapsed=0s need=2s
+UE 38 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=44 rnti=137 3->1 type=TN servingRsrp=-132.552 targetRsrp=-94.7477 targetLoadReal=17/20 targetLoadEff=19/20
+UE 46 TTT_WAIT target=2 elapsed=0s need=2s
+UE 51 TTT_WAIT target=2 elapsed=0s need=2s
+UE 54 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=55 rnti=94 2->4 type=TN servingRsrp=-128.544 targetRsrp=-117.172 targetLoadReal=18/20 targetLoadEff=18/20
+LM HO UE=57 rnti=142 3->2 type=TN servingRsrp=-125.598 targetRsrp=-90.9196 targetLoadReal=16/20 targetLoadEff=19/20
+LM HO_FAIL_LOW_RSRP UE=63 currCell=3 candCell=4 candRsrp=-121.421 < min=-120
+UE 67 TTT_WAIT target=3 elapsed=0s need=2s
+UE 70 TTT_WAIT target=3 elapsed=0s need=2s
+UE 73 TTT_WAIT target=4 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=26.6151 IMSI=19 TargetCell=1 Type=TN TargetRSRP=-112.948 ServingRSRP=-108.769 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=26.6151 IMSI=13 TargetCell=1 Type=TN TargetRSRP=-119.803 ServingRSRP=-125.794 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=26.6151 IMSI=43 TargetCell=1 Type=TN TargetRSRP=-114.751 ServingRSRP=-125.626 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=26.6151 IMSI=6 TargetCell=2 Type=TN TargetRSRP=-113.504 ServingRSRP=-110.146 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=26.6151 IMSI=56 TargetCell=2 Type=TN TargetRSRP=-91.0997 ServingRSRP=-93.9283 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=26.6151 IMSI=16 TargetCell=2 Type=TN TargetRSRP=-130.084 ServingRSRP=-92.085 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=26.6151 IMSI=24 TargetCell=2 Type=TN TargetRSRP=-130.226 ServingRSRP=-99.5013 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=26.6151 IMSI=54 TargetCell=4 Type=TN TargetRSRP=-111.671 ServingRSRP=-122.389 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=28.5 ----
+  cell 1 (TN) load=19/20
+  cell 2 (TN) load=17/20
+  cell 3 (TN) load=17/20
+  cell 4 (TN) load=17/20
+UE 5 TTT_WAIT target=2 elapsed=0s need=2s
+UE 7 TTT_WAIT target=1 elapsed=0s need=2s
+UE 8 TTT_WAIT target=1 elapsed=0s need=2s
+UE 9 TTT_WAIT target=4 elapsed=0s need=2s
+UE 10 TTT_WAIT target=1 elapsed=0s need=2s
+UE 12 TTT_WAIT target=2 elapsed=0s need=2s
+UE 14 TTT_WAIT target=3 elapsed=0s need=2s
+UE 17 TTT_WAIT target=4 elapsed=0s need=2s
+UE 19 TTT_WAIT target=1 elapsed=0s need=2s
+UE 20 TTT_WAIT target=3 elapsed=0s need=2s
+UE 25 TTT_WAIT target=4 elapsed=0s need=2s
+UE 27 TTT_WAIT target=3 elapsed=0s need=2s
+UE 28 TTT_WAIT target=3 elapsed=0s need=2s
+UE 29 TTT_WAIT target=2 elapsed=0s need=2s
+UE 31 TTT_WAIT target=2 elapsed=0s need=2s
+UE 33 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=34 currCell=2 candCell=4 candRsrp=-121.29 < min=-120
+UE 35 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=38 rnti=162 1->3 type=TN servingRsrp=-125.187 targetRsrp=-116.317 targetLoadReal=17/20 targetLoadEff=17/20
+UE 40 TTT_WAIT target=3 elapsed=0s need=2s
+UE 41 TTT_WAIT target=3 elapsed=0s need=2s
+UE 44 TTT_WAIT target=2 elapsed=0s need=2s
+UE 45 TTT_WAIT target=2 elapsed=0s need=2s
+UE 47 TTT_WAIT target=3 elapsed=0s need=2s
+UE 50 TTT_WAIT target=4 elapsed=0s need=2s
+UE 51 TTT_WAIT target=4 elapsed=0s need=2s
+UE 54 TTT_WAIT target=2 elapsed=0s need=2s
+UE 55 TTT_WAIT target=3 elapsed=0s need=2s
+UE 56 TTT_WAIT target=3 elapsed=0s need=2s
+UE 57 TTT_WAIT target=3 elapsed=0s need=2s
+UE 58 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=60 currCell=2 candCell=3 candRsrp=-121.503 < min=-120
+UE 61 TTT_WAIT target=2 elapsed=0s need=2s
+UE 62 TTT_WAIT target=2 elapsed=0s need=2s
+UE 63 TTT_WAIT target=1 elapsed=0s need=2s
+UE 65 TTT_WAIT target=1 elapsed=0s need=2s
+UE 66 TTT_WAIT target=1 elapsed=0s need=2s
+UE 67 TTT_WAIT target=2 elapsed=0s need=2s
+UE 71 TTT_WAIT target=3 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=28.6151 IMSI=37 TargetCell=3 Type=TN TargetRSRP=-81.9235 ServingRSRP=-100.756 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=30.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=17/20
+  cell 3 (TN) load=18/20
+  cell 4 (TN) load=17/20
+LM HO UE=8 rnti=95 2->1 type=TN servingRsrp=-117.215 targetRsrp=-80.5318 targetLoadReal=18/20 targetLoadEff=18/20
+UE 13 TTT_WAIT target=2 elapsed=0s need=2s
+UE 14 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=17 rnti=99 2->4 type=TN servingRsrp=-122.673 targetRsrp=-89.1871 targetLoadReal=17/20 targetLoadEff=17/20
+LM HO UE=19 rnti=24 2->1 type=TN servingRsrp=-124.783 targetRsrp=-107.134 targetLoadReal=18/20 targetLoadEff=19/20
+LM HO UE=20 rnti=170 1->3 type=TN servingRsrp=-113.18 targetRsrp=-82.7954 targetLoadReal=18/20 targetLoadEff=18/20
+UE 24 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=25 rnti=101 2->4 type=TN servingRsrp=-131.615 targetRsrp=-84.6126 targetLoadReal=17/20 targetLoadEff=18/20
+UE 27 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=28 rnti=93 2->3 type=TN servingRsrp=-103.672 targetRsrp=-86.0394 targetLoadReal=18/20 targetLoadEff=19/20
+UE 34 TTT_WAIT target=4 elapsed=0s need=2s
+UE 38 TTT_WAIT target=2 elapsed=0s need=2s
+UE 47 TTT_WAIT target=2 elapsed=0s need=2s
+UE 50 TTT_WAIT target=2 elapsed=0s need=2s
+UE 52 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=54 rnti=174 3->2 type=TN servingRsrp=-124.376 targetRsrp=-99.685 targetLoadReal=17/20 targetLoadEff=17/20
+UE 55 TTT_WAIT target=2 elapsed=0s need=2s
+UE 58 TTT_WAIT target=4 elapsed=0s need=2s
+UE 59 TTT_WAIT target=2 elapsed=0s need=2s
+UE 65 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=67 rnti=129 1->2 type=TN servingRsrp=-140.219 targetRsrp=-93.8066 targetLoadReal=17/20 targetLoadEff=18/20
+UE 68 TTT_WAIT target=4 elapsed=0s need=2s
+UE 69 TTT_WAIT target=2 elapsed=0s need=2s
+UE 70 TTT_WAIT target=4 elapsed=0s need=2s
+UE 73 TTT_WAIT target=4 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=30.6151 IMSI=7 TargetCell=1 Type=TN TargetRSRP=-92.512 ServingRSRP=-115.242 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=30.6151 IMSI=18 TargetCell=1 Type=TN TargetRSRP=-111.01 ServingRSRP=-89.8287 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=30.6151 IMSI=66 TargetCell=2 Type=TN TargetRSRP=-113.608 ServingRSRP=-97.6287 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=30.6151 IMSI=53 TargetCell=2 Type=TN TargetRSRP=-113.761 ServingRSRP=-107.239 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=30.6151 IMSI=19 TargetCell=3 Type=TN TargetRSRP=-112.021 ServingRSRP=-80.1223 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=30.6151 IMSI=27 TargetCell=3 Type=TN TargetRSRP=-96.4865 ServingRSRP=-95.0664 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=30.6151 IMSI=16 TargetCell=4 Type=TN TargetRSRP=-85.1317 ServingRSRP=-127.145 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=30.6151 IMSI=24 TargetCell=4 Type=TN TargetRSRP=-116.594 ServingRSRP=-98.5866 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=32.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=14/20
+  cell 3 (TN) load=19/20
+  cell 4 (TN) load=19/20
+UE 5 TTT_WAIT target=2 elapsed=0s need=2s
+UE 8 TTT_WAIT target=2 elapsed=0s need=2s
+UE 14 TTT_WAIT target=3 elapsed=0s need=2s
+UE 25 TTT_WAIT target=2 elapsed=0s need=2s
+UE 26 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=27 rnti=134 4->2 type=TN servingRsrp=-115.087 targetRsrp=-92.1921 targetLoadReal=14/20 targetLoadEff=14/20
+UE 28 TTT_WAIT target=2 elapsed=0s need=2s
+UE 29 TTT_WAIT target=3 elapsed=0s need=2s
+UE 30 TTT_WAIT target=3 elapsed=0s need=2s
+UE 31 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=34 rnti=84 2->4 type=TN servingRsrp=-124.89 targetRsrp=-116.905 targetLoadReal=19/20 targetLoadEff=19/20
+UE 35 TTT_WAIT target=3 elapsed=0s need=2s
+UE 36 TTT_WAIT target=2 elapsed=0s need=2s
+UE 38 TTT_WAIT target=1 elapsed=0s need=2s
+UE 39 TTT_WAIT target=3 elapsed=0s need=2s
+UE 40 TTT_WAIT target=2 elapsed=0s need=2s
+UE 42 TTT_WAIT target=3 elapsed=0s need=2s
+UE 45 TTT_WAIT target=2 elapsed=0s need=2s
+UE 46 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=47 rnti=159 1->2 type=TN servingRsrp=-112.231 targetRsrp=-77.7815 targetLoadReal=14/20 targetLoadEff=15/20
+UE 51 TTT_WAIT target=1 elapsed=0s need=2s
+UE 52 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=53 currCell=3 candCell=1 candRsrp=-121.987 < min=-120
+UE 55 TTT_WAIT target=1 elapsed=0s need=2s
+UE 57 TTT_WAIT target=3 elapsed=0s need=2s
+UE 58 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=59 rnti=143 3->2 type=TN servingRsrp=-124.183 targetRsrp=-89.4437 targetLoadReal=14/20 targetLoadEff=16/20
+UE 60 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=63 currCell=3 candCell=1 candRsrp=-125.126 < min=-120
+UE 64 TTT_WAIT target=1 elapsed=0s need=2s
+UE 65 TTT_WAIT target=1 elapsed=0s need=2s
+UE 67 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=69 rnti=164 4->2 type=TN servingRsrp=-119.355 targetRsrp=-93.9444 targetLoadReal=14/20 targetLoadEff=17/20
+UE 71 TTT_WAIT target=3 elapsed=0s need=2s
+UE 72 TTT_WAIT target=1 elapsed=0s need=2s
+UE 73 TTT_WAIT target=3 elapsed=0s need=2s
+UE 74 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=32.6151 IMSI=46 TargetCell=2 Type=TN TargetRSRP=-111.792 ServingRSRP=-105.095 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=32.6151 IMSI=58 TargetCell=2 Type=TN TargetRSRP=-89.552 ServingRSRP=-91.7525 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=32.6151 IMSI=68 TargetCell=2 Type=TN TargetRSRP=-116.533 ServingRSRP=-107.321 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=32.6151 IMSI=26 TargetCell=2 Type=TN TargetRSRP=-119.885 ServingRSRP=-115.94 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=32.6151 IMSI=33 TargetCell=4 Type=TN TargetRSRP=-120.288 ServingRSRP=-123.437 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=34.5 ----
+  cell 1 (TN) load=17/20
+  cell 2 (TN) load=17/20
+  cell 3 (TN) load=18/20
+  cell 4 (TN) load=18/20
+UE 8 TTT_WAIT target=3 elapsed=0s need=2s
+UE 10 TTT_WAIT target=1 elapsed=0s need=2s
+UE 11 TTT_WAIT target=3 elapsed=0s need=2s
+UE 13 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=14 rnti=168 1->3 type=TN servingRsrp=-117.732 targetRsrp=-106.771 targetLoadReal=18/20 targetLoadEff=18/20
+UE 18 TTT_WAIT target=1 elapsed=0s need=2s
+UE 20 TTT_WAIT target=1 elapsed=0s need=2s
+UE 22 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=26 rnti=133 3->4 type=TN servingRsrp=-122.171 targetRsrp=-104.788 targetLoadReal=18/20 targetLoadEff=18/20
+LM HO UE=28 rnti=178 3->2 type=TN servingRsrp=-127.78 targetRsrp=-118.551 targetLoadReal=17/20 targetLoadEff=17/20
+UE 32 TTT_WAIT target=1 elapsed=0s need=2s
+UE 38 TTT_WAIT target=2 elapsed=0s need=2s
+UE 39 TTT_WAIT target=1 elapsed=0s need=2s
+UE 40 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=42 rnti=140 4->3 type=TN servingRsrp=-89.0946 targetRsrp=-86.598 targetLoadReal=18/20 targetLoadEff=19/20
+UE 43 TTT_WAIT target=1 elapsed=0s need=2s
+UE 44 TTT_WAIT target=4 elapsed=0s need=2s
+UE 45 TTT_WAIT target=1 elapsed=0s need=2s
+UE 50 TTT_WAIT target=2 elapsed=0s need=2s
+UE 51 TTT_WAIT target=2 elapsed=0s need=2s
+UE 52 TTT_WAIT target=2 elapsed=0s need=2s
+UE 53 TTT_WAIT target=2 elapsed=0s need=2s
+UE 57 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=58 currCell=1 candCell=2 candRsrp=-128.608 < min=-120
+UE 65 TTT_WAIT target=2 elapsed=0s need=2s
+UE 66 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=72 currCell=3 candCell=1 candRsrp=-125.982 < min=-120
+UE 73 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=34.6151 IMSI=27 TargetCell=2 Type=TN TargetRSRP=-84.758 ServingRSRP=-82.8855 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=34.6151 IMSI=13 TargetCell=3 Type=TN TargetRSRP=-116.38 ServingRSRP=-84.1606 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=34.6151 IMSI=41 TargetCell=3 Type=TN TargetRSRP=-116.653 ServingRSRP=-81.1611 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=34.6151 IMSI=25 TargetCell=4 Type=TN TargetRSRP=-131.15 ServingRSRP=-84.2237 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=36.5 ----
+  cell 1 (TN) load=16/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=18/20
+  cell 4 (TN) load=18/20
+UE 6 TTT_WAIT target=2 elapsed=0s need=2s
+UE 8 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=11 rnti=81 2->3 type=TN servingRsrp=-118.361 targetRsrp=-90.1076 targetLoadReal=18/20 targetLoadEff=18/20
+LM HO_FAIL_LOW_RSRP UE=12 currCell=3 candCell=1 candRsrp=-122.212 < min=-120
+UE 16 TTT_WAIT target=2 elapsed=0s need=2s
+UE 17 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=18 rnti=47 3->1 type=TN servingRsrp=-107.801 targetRsrp=-80.808 targetLoadReal=16/20 targetLoadEff=16/20
+UE 24 TTT_WAIT target=2 elapsed=0s need=2s
+UE 26 TTT_WAIT target=2 elapsed=0s need=2s
+UE 29 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=32 rnti=135 4->1 type=TN servingRsrp=-103.448 targetRsrp=-95.4714 targetLoadReal=16/20 targetLoadEff=17/20
+UE 33 TTT_WAIT target=1 elapsed=0s need=2s
+UE 37 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=39 rnti=96 2->1 type=TN servingRsrp=-125.61 targetRsrp=-114.56 targetLoadReal=16/20 targetLoadEff=18/20
+UE 40 TTT_WAIT target=1 elapsed=0s need=2s
+UE 42 TTT_WAIT target=2 elapsed=0s need=2s
+UE 44 TTT_WAIT target=2 elapsed=0s need=2s
+UE 45 TTT_WAIT target=2 elapsed=0s need=2s
+UE 47 TTT_WAIT target=1 elapsed=0s need=2s
+UE 55 TTT_WAIT target=2 elapsed=0s need=2s
+UE 56 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=57 rnti=100 2->1 type=TN servingRsrp=-127.776 targetRsrp=-88.8224 targetLoadReal=16/20 targetLoadEff=19/20
+UE 58 TTT_WAIT target=2 elapsed=0s need=2s
+UE 61 TTT_WAIT target=2 elapsed=0s need=2s
+UE 65 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=67 currCell=2 candCell=3 candRsrp=-122.593 < min=-120
+UE 68 TTT_WAIT target=4 elapsed=0s need=2s
+UE 70 TTT_WAIT target=4 elapsed=0s need=2s
+UE 73 TTT_WAIT target=4 elapsed=0s need=2s
+UE 74 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=36.6151 IMSI=38 TargetCell=1 Type=TN TargetRSRP=-113.737 ServingRSRP=-112.862 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=36.6151 IMSI=56 TargetCell=1 Type=TN TargetRSRP=-121.304 ServingRSRP=-125.759 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=36.6151 IMSI=17 TargetCell=1 Type=TN TargetRSRP=-106.738 ServingRSRP=-105.054 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=36.6151 IMSI=31 TargetCell=1 Type=TN TargetRSRP=-128.593 ServingRSRP=-87.1572 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=36.6151 IMSI=10 TargetCell=3 Type=TN TargetRSRP=-129.565 ServingRSRP=-93.2361 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=38.5 ----
+  cell 1 (TN) load=20/20
+  cell 2 (TN) load=15/20
+  cell 3 (TN) load=18/20
+  cell 4 (TN) load=17/20
+UE 14 TTT_WAIT target=2 elapsed=0s need=2s
+UE 17 TTT_WAIT target=2 elapsed=0s need=2s
+UE 18 TTT_WAIT target=2 elapsed=0s need=2s
+UE 20 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=24 rnti=167 1->2 type=TN servingRsrp=-113.083 targetRsrp=-92.0867 targetLoadReal=15/20 targetLoadEff=15/20
+UE 25 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=26 rnti=170 4->2 type=TN servingRsrp=-131.634 targetRsrp=-84.8079 targetLoadReal=15/20 targetLoadEff=16/20
+LM HO UE=29 rnti=164 1->2 type=TN servingRsrp=-118.609 targetRsrp=-97.2838 targetLoadReal=15/20 targetLoadEff=17/20
+UE 30 TTT_WAIT target=2 elapsed=0s need=2s
+UE 32 TTT_WAIT target=4 elapsed=0s need=2s
+UE 33 TTT_WAIT target=3 elapsed=0s need=2s
+UE 34 TTT_WAIT target=2 elapsed=0s need=2s
+UE 35 TTT_WAIT target=3 elapsed=0s need=2s
+UE 38 TTT_WAIT target=2 elapsed=0s need=2s
+UE 39 TTT_WAIT target=2 elapsed=0s need=2s
+UE 42 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=44 rnti=169 1->2 type=TN servingRsrp=-100.656 targetRsrp=-88.8226 targetLoadReal=15/20 targetLoadEff=18/20
+LM HO UE=45 rnti=172 3->2 type=TN servingRsrp=-121.366 targetRsrp=-78.2154 targetLoadReal=15/20 targetLoadEff=19/20
+UE 47 TTT_WAIT target=3 elapsed=0s need=2s
+UE 50 TTT_WAIT target=4 elapsed=0s need=2s
+UE 58 TTT_WAIT target=3 elapsed=0s need=2s
+UE 61 TTT_WAIT target=3 elapsed=0s need=2s
+UE 69 TTT_WAIT target=4 elapsed=0s need=2s
+UE 73 TTT_WAIT target=3 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=38.6151 IMSI=28 TargetCell=2 Type=TN TargetRSRP=-95.403 ServingRSRP=-74.7821 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=38.6151 IMSI=23 TargetCell=2 Type=TN TargetRSRP=-115.902 ServingRSRP=-99.0957 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=38.6151 IMSI=43 TargetCell=2 Type=TN TargetRSRP=-129.947 ServingRSRP=-115.585 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=38.6151 IMSI=44 TargetCell=2 Type=TN TargetRSRP=-117.926 ServingRSRP=-93.9183 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=38.6151 IMSI=25 TargetCell=2 Type=TN TargetRSRP=-127.404 ServingRSRP=-95.3794 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=40.5 ----
+  cell 1 (TN) load=17/20
+  cell 2 (TN) load=20/20
+  cell 3 (TN) load=17/20
+  cell 4 (TN) load=16/20
+UE 5 TTT_WAIT target=3 elapsed=0s need=2s
+UE 9 TTT_WAIT target=1 elapsed=0s need=2s
+UE 11 TTT_WAIT target=1 elapsed=0s need=2s
+UE 13 TTT_WAIT target=3 elapsed=0s need=2s
+UE 20 TTT_WAIT target=1 elapsed=0s need=2s
+UE 22 TTT_WAIT target=3 elapsed=0s need=2s
+UE 24 TTT_WAIT target=3 elapsed=0s need=2s
+UE 25 TTT_WAIT target=1 elapsed=0s need=2s
+UE 29 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=32 rnti=174 1->4 type=TN servingRsrp=-126.564 targetRsrp=-70.2038 targetLoadReal=16/20 targetLoadEff=16/20
+UE 33 TTT_WAIT target=1 elapsed=0s need=2s
+UE 35 TTT_WAIT target=1 elapsed=0s need=2s
+UE 38 TTT_WAIT target=1 elapsed=0s need=2s
+UE 42 TTT_WAIT target=1 elapsed=0s need=2s
+UE 44 TTT_WAIT target=1 elapsed=0s need=2s
+UE 45 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=58 rnti=126 1->3 type=TN servingRsrp=-120.212 targetRsrp=-112.725 targetLoadReal=17/20 targetLoadEff=17/20
+UE 59 TTT_WAIT target=3 elapsed=0s need=2s
+UE 65 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=67 currCell=2 candCell=3 candRsrp=-122.888 < min=-120
+UE 68 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=69 rnti=107 2->4 type=TN servingRsrp=-126.126 targetRsrp=-95.9778 targetLoadReal=16/20 targetLoadEff=17/20
+UE 71 TTT_WAIT target=1 elapsed=0s need=2s
+UE 72 TTT_WAIT target=1 elapsed=0s need=2s
+UE 73 TTT_WAIT target=4 elapsed=0s need=2s
+UE 74 TTT_WAIT target=4 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=40.6151 IMSI=57 TargetCell=3 Type=TN TargetRSRP=-120.317 ServingRSRP=-124.073 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=40.6151 IMSI=31 TargetCell=4 Type=TN TargetRSRP=-101.815 ServingRSRP=-106.505 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=40.6151 IMSI=68 TargetCell=4 Type=TN TargetRSRP=-119.009 ServingRSRP=-109.11 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=42.5 ----
+  cell 1 (TN) load=15/20
+  cell 2 (TN) load=19/20
+  cell 3 (TN) load=18/20
+  cell 4 (TN) load=18/20
+UE 5 TTT_WAIT target=2 elapsed=0s need=2s
+UE 8 TTT_WAIT target=4 elapsed=0s need=2s
+UE 9 TTT_WAIT target=3 elapsed=0s need=2s
+UE 10 TTT_WAIT target=2 elapsed=0s need=2s
+UE 11 TTT_WAIT target=2 elapsed=0s need=2s
+UE 14 TTT_WAIT target=2 elapsed=0s need=2s
+UE 16 TTT_WAIT target=3 elapsed=0s need=2s
+UE 17 TTT_WAIT target=2 elapsed=0s need=2s
+UE 19 TTT_WAIT target=4 elapsed=0s need=2s
+UE 20 TTT_WAIT target=2 elapsed=0s need=2s
+UE 23 TTT_WAIT target=2 elapsed=0s need=2s
+UE 24 TTT_WAIT target=4 elapsed=0s need=2s
+UE 25 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=26 currCell=2 candCell=1 candRsrp=-123.155 < min=-120
+UE 28 TTT_WAIT target=1 elapsed=0s need=2s
+UE 29 TTT_WAIT target=1 elapsed=0s need=2s
+UE 34 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=35 rnti=97 2->1 type=TN servingRsrp=-128.899 targetRsrp=-114.746 targetLoadReal=15/20 targetLoadEff=15/20
+UE 39 TTT_WAIT target=2 elapsed=0s need=2s
+UE 41 TTT_WAIT target=3 elapsed=0s need=2s
+UE 42 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=44 rnti=113 2->1 type=TN servingRsrp=-125.546 targetRsrp=-108.219 targetLoadReal=15/20 targetLoadEff=16/20
+UE 45 TTT_WAIT target=1 elapsed=0s need=2s
+UE 51 TTT_WAIT target=2 elapsed=0s need=2s
+UE 56 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=57 currCell=1 candCell=3 candRsrp=-122.212 < min=-120
+LM HO UE=59 rnti=106 2->3 type=TN servingRsrp=-125.032 targetRsrp=-86.8431 targetLoadReal=18/20 targetLoadEff=18/20
+UE 62 TTT_WAIT target=2 elapsed=0s need=2s
+UE 63 TTT_WAIT target=2 elapsed=0s need=2s
+UE 65 TTT_WAIT target=2 elapsed=0s need=2s
+UE 66 TTT_WAIT target=1 elapsed=0s need=2s
+UE 69 TTT_WAIT target=3 elapsed=0s need=2s
+UE 70 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=73 rnti=166 1->4 type=TN servingRsrp=-127.997 targetRsrp=-79.3866 targetLoadReal=18/20 targetLoadEff=18/20
+TRACE HO_SUCCESS Time=42.6151 IMSI=43 TargetCell=1 Type=TN TargetRSRP=-129.01 ServingRSRP=-123.488 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=42.6151 IMSI=34 TargetCell=1 Type=TN TargetRSRP=-117.219 ServingRSRP=-117.76 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=42.6151 IMSI=58 TargetCell=3 Type=TN TargetRSRP=-110.761 ServingRSRP=-118.246 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=42.6151 IMSI=72 TargetCell=4 Type=TN TargetRSRP=-118.686 ServingRSRP=-91.5048 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=44.5 ----
+  cell 1 (TN) load=16/20
+  cell 2 (TN) load=16/20
+  cell 3 (TN) load=19/20
+  cell 4 (TN) load=19/20
+UE 5 TTT_WAIT target=3 elapsed=0s need=2s
+UE 8 TTT_WAIT target=2 elapsed=0s need=2s
+UE 11 TTT_WAIT target=1 elapsed=0s need=2s
+UE 16 TTT_WAIT target=1 elapsed=0s need=2s
+UE 17 TTT_WAIT target=1 elapsed=0s need=2s
+UE 18 TTT_WAIT target=3 elapsed=0s need=2s
+UE 20 TTT_WAIT target=1 elapsed=0s need=2s
+UE 23 TTT_WAIT target=4 elapsed=0s need=2s
+UE 24 TTT_WAIT target=1 elapsed=0s need=2s
+UE 26 TTT_WAIT target=1 elapsed=0s need=2s
+UE 28 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=29 rnti=112 2->1 type=TN servingRsrp=-118.224 targetRsrp=-113.076 targetLoadReal=16/20 targetLoadEff=16/20
+UE 30 TTT_WAIT target=3 elapsed=0s need=2s
+UE 31 TTT_WAIT target=1 elapsed=0s need=2s
+UE 33 TTT_WAIT target=1 elapsed=0s need=2s
+UE 35 TTT_WAIT target=3 elapsed=0s need=2s
+UE 39 TTT_WAIT target=3 elapsed=0s need=2s
+UE 42 TTT_WAIT target=4 elapsed=0s need=2s
+UE 44 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=45 rnti=111 2->1 type=TN servingRsrp=-120.442 targetRsrp=-70.7471 targetLoadReal=16/20 targetLoadEff=17/20
+UE 46 TTT_WAIT target=3 elapsed=0s need=2s
+UE 47 TTT_WAIT target=1 elapsed=0s need=2s
+UE 50 TTT_WAIT target=2 elapsed=0s need=2s
+UE 53 TTT_WAIT target=4 elapsed=0s need=2s
+UE 59 TTT_WAIT target=2 elapsed=0s need=2s
+UE 60 TTT_WAIT target=3 elapsed=0s need=2s
+UE 63 TTT_WAIT target=4 elapsed=0s need=2s
+UE 65 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=66 rnti=173 3->1 type=TN servingRsrp=-126.131 targetRsrp=-118.797 targetLoadReal=16/20 targetLoadEff=18/20
+UE 67 TTT_WAIT target=4 elapsed=0s need=2s
+UE 68 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=69 rnti=172 4->3 type=TN servingRsrp=-115.142 targetRsrp=-96.5624 targetLoadReal=19/20 targetLoadEff=19/20
+UE 70 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=72 currCell=3 candCell=2 candRsrp=-121.072 < min=-120
+UE 73 TTT_WAIT target=1 elapsed=0s need=2s
+UE 74 TTT_WAIT target=4 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=44.6151 IMSI=28 TargetCell=1 Type=TN TargetRSRP=-109.562 ServingRSRP=-115.655 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=44.6151 IMSI=44 TargetCell=1 Type=TN TargetRSRP=-105.887 ServingRSRP=-78.0389 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=44.6151 IMSI=65 TargetCell=1 Type=TN TargetRSRP=-86.9592 ServingRSRP=-88.5917 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=44.6151 IMSI=68 TargetCell=3 Type=TN TargetRSRP=-130.807 ServingRSRP=-113.149 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=46.5 ----
+  cell 1 (TN) load=19/20
+  cell 2 (TN) load=14/20
+  cell 3 (TN) load=19/20
+  cell 4 (TN) load=18/20
+UE 5 TTT_WAIT target=2 elapsed=0s need=2s
+UE 6 TTT_WAIT target=3 elapsed=0s need=2s
+UE 11 TTT_WAIT target=2 elapsed=0s need=2s
+UE 12 TTT_WAIT target=2 elapsed=0s need=2s
+UE 14 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=16 rnti=45 4->1 type=TN servingRsrp=-110.033 targetRsrp=-101.628 targetLoadReal=19/20 targetLoadEff=19/20
+UE 17 TTT_WAIT target=3 elapsed=0s need=2s
+UE 20 TTT_WAIT target=2 elapsed=0s need=2s
+UE 21 TTT_WAIT target=2 elapsed=0s need=2s
+UE 26 TTT_WAIT target=3 elapsed=0s need=2s
+UE 29 TTT_WAIT target=2 elapsed=0s need=2s
+UE 33 TTT_WAIT target=3 elapsed=0s need=2s
+UE 34 TTT_WAIT target=3 elapsed=0s need=2s
+UE 36 TTT_WAIT target=3 elapsed=0s need=2s
+UE 46 TTT_WAIT target=2 elapsed=0s need=2s
+UE 51 TTT_WAIT target=2 elapsed=0s need=2s
+UE 52 TTT_WAIT target=3 elapsed=0s need=2s
+UE 58 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=59 rnti=183 3->2 type=TN servingRsrp=-127.205 targetRsrp=-102.553 targetLoadReal=14/20 targetLoadEff=14/20
+LM HO_FAIL_LOW_RSRP UE=60 currCell=2 candCell=3 candRsrp=-121.063 < min=-120
+UE 62 TTT_WAIT target=3 elapsed=0s need=2s
+UE 63 TTT_WAIT target=2 elapsed=0s need=2s
+UE 66 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=67 currCell=2 candCell=3 candRsrp=-120.889 < min=-120
+UE 69 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=70 rnti=71 2->4 type=TN servingRsrp=-127.389 targetRsrp=-89.3251 targetLoadReal=18/20 targetLoadEff=18/20
+UE 72 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=46.6151 IMSI=15 TargetCell=1 Type=TN TargetRSRP=-133.304 ServingRSRP=-109.048 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=46.6151 IMSI=58 TargetCell=2 Type=TN TargetRSRP=-108.687 ServingRSRP=-113.474 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=46.6151 IMSI=69 TargetCell=4 Type=TN TargetRSRP=-122.477 ServingRSRP=-87.2342 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=48.5 ----
+  cell 1 (TN) load=20/20
+  cell 2 (TN) load=14/20
+  cell 3 (TN) load=18/20
+  cell 4 (TN) load=18/20
+UE 8 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=11 rnti=181 3->2 type=TN servingRsrp=-121.754 targetRsrp=-99.2568 targetLoadReal=14/20 targetLoadEff=14/20
+UE 16 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=17 rnti=167 4->3 type=TN servingRsrp=-116.952 targetRsrp=-98.2317 targetLoadReal=18/20 targetLoadEff=18/20
+UE 19 TTT_WAIT target=2 elapsed=0s need=2s
+UE 23 TTT_WAIT target=2 elapsed=0s need=2s
+UE 25 TTT_WAIT target=3 elapsed=0s need=2s
+UE 27 TTT_WAIT target=4 elapsed=0s need=2s
+UE 29 TTT_WAIT target=3 elapsed=0s need=2s
+UE 32 TTT_WAIT target=2 elapsed=0s need=2s
+UE 35 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=46 rnti=141 4->2 type=TN servingRsrp=-111.232 targetRsrp=-106.818 targetLoadReal=14/20 targetLoadEff=15/20
+UE 47 TTT_WAIT target=3 elapsed=0s need=2s
+UE 50 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=51 rnti=139 3->2 type=TN servingRsrp=-127.365 targetRsrp=-114.15 targetLoadReal=14/20 targetLoadEff=16/20
+UE 59 TTT_WAIT target=3 elapsed=0s need=2s
+UE 61 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=63 rnti=161 3->2 type=TN servingRsrp=-120.524 targetRsrp=-109.252 targetLoadReal=14/20 targetLoadEff=17/20
+UE 65 TTT_WAIT target=4 elapsed=0s need=2s
+UE 74 TTT_WAIT target=4 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=48.6151 IMSI=10 TargetCell=2 Type=TN TargetRSRP=-117.907 ServingRSRP=-113.227 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=48.6151 IMSI=50 TargetCell=2 Type=TN TargetRSRP=-89.8026 ServingRSRP=-109.376 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=48.6151 IMSI=62 TargetCell=2 Type=TN TargetRSRP=-129.884 ServingRSRP=-111.399 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=48.6151 IMSI=45 TargetCell=2 Type=TN TargetRSRP=-116.032 ServingRSRP=-102.446 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=48.6151 IMSI=16 TargetCell=3 Type=TN TargetRSRP=-127.278 ServingRSRP=-95.0184 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=50.5 ----
+  cell 1 (TN) load=20/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=16/20
+  cell 4 (TN) load=16/20
+LM HO UE=8 rnti=171 1->2 type=TN servingRsrp=-122.832 targetRsrp=-80.4834 targetLoadReal=18/20 targetLoadEff=18/20
+UE 10 TTT_WAIT target=2 elapsed=0s need=2s
+UE 14 TTT_WAIT target=2 elapsed=0s need=2s
+UE 15 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=16 rnti=182 1->4 type=TN servingRsrp=-119.958 targetRsrp=-110.871 targetLoadReal=16/20 targetLoadEff=16/20
+UE 17 TTT_WAIT target=2 elapsed=0s need=2s
+UE 19 TTT_WAIT target=3 elapsed=0s need=2s
+UE 24 TTT_WAIT target=3 elapsed=0s need=2s
+UE 28 TTT_WAIT target=3 elapsed=0s need=2s
+UE 29 TTT_WAIT target=2 elapsed=0s need=2s
+UE 40 TTT_WAIT target=3 elapsed=0s need=2s
+UE 44 TTT_WAIT target=2 elapsed=0s need=2s
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=47 rnti=105 2->3 type=TN servingRsrp=-108.447 targetRsrp=-80.4747 targetLoadReal=16/20 targetLoadEff=16/20
+LM HO_FAIL_LOW_RSRP UE=50 currCell=3 candCell=4 candRsrp=-127.689 < min=-120
+LM HO_FAIL_LOW_RSRP UE=51 currCell=2 candCell=4 candRsrp=-121.008 < min=-120
+UE 56 TTT_WAIT target=3 elapsed=0s need=2s
+UE 58 TTT_WAIT target=2 elapsed=0s need=2s
+UE 65 TTT_WAIT target=2 elapsed=0s need=2s
+UE 66 TTT_WAIT target=2 elapsed=0s need=2s
+UE 67 TTT_WAIT target=3 elapsed=0s need=2s
+UE 68 TTT_WAIT target=2 elapsed=0s need=2s
+UE 70 TTT_WAIT target=3 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=50.6151 IMSI=7 TargetCell=2 Type=TN TargetRSRP=-82.5508 ServingRSRP=-115.652 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=50.6151 IMSI=46 TargetCell=3 Type=TN TargetRSRP=-101.533 ServingRSRP=-91.615 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=50.6151 IMSI=15 TargetCell=4 Type=TN TargetRSRP=-98.8088 ServingRSRP=-124.483 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=52.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=17/20
+  cell 4 (TN) load=17/20
+UE 5 TTT_WAIT target=2 elapsed=0s need=2s
+UE 8 TTT_WAIT target=4 elapsed=0s need=2s
+UE 9 TTT_WAIT target=1 elapsed=0s need=2s
+UE 11 TTT_WAIT target=3 elapsed=0s need=2s
+UE 13 TTT_WAIT target=2 elapsed=0s need=2s
+UE 14 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=15 rnti=171 3->2 type=TN servingRsrp=-94.441 targetRsrp=-90.1214 targetLoadReal=18/20 targetLoadEff=18/20
+UE 17 TTT_WAIT target=1 elapsed=0s need=2s
+UE 18 TTT_WAIT target=3 elapsed=0s need=2s
+UE 20 TTT_WAIT target=2 elapsed=0s need=2s
+UE 22 TTT_WAIT target=3 elapsed=0s need=2s
+UE 24 TTT_WAIT target=1 elapsed=0s need=2s
+UE 26 TTT_WAIT target=3 elapsed=0s need=2s
+UE 27 TTT_WAIT target=4 elapsed=0s need=2s
+UE 28 TTT_WAIT target=1 elapsed=0s need=2s
+UE 31 TTT_WAIT target=1 elapsed=0s need=2s
+UE 32 TTT_WAIT target=2 elapsed=0s need=2s
+UE 33 TTT_WAIT target=1 elapsed=0s need=2s
+UE 35 TTT_WAIT target=2 elapsed=0s need=2s
+UE 37 TTT_WAIT target=2 elapsed=0s need=2s
+UE 38 TTT_WAIT target=1 elapsed=0s need=2s
+UE 39 TTT_WAIT target=3 elapsed=0s need=2s
+UE 41 TTT_WAIT target=1 elapsed=0s need=2s
+UE 42 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=44 rnti=178 1->2 type=TN servingRsrp=-121.085 targetRsrp=-88.7167 targetLoadReal=18/20 targetLoadEff=19/20
+UE 46 TTT_WAIT target=3 elapsed=0s need=2s
+UE 50 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=51 currCell=2 candCell=3 candRsrp=-124.463 < min=-120
+UE 54 TTT_WAIT target=4 elapsed=0s need=2s
+UE 59 TTT_WAIT target=3 elapsed=0s need=2s
+UE 60 TTT_WAIT target=3 elapsed=0s need=2s
+UE 62 TTT_WAIT target=3 elapsed=0s need=2s
+UE 65 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=67 rnti=103 2->3 type=TN servingRsrp=-128.812 targetRsrp=-112.448 targetLoadReal=17/20 targetLoadEff=17/20
+UE 69 TTT_WAIT target=4 elapsed=0s need=2s
+UE 74 TTT_WAIT target=3 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=52.6151 IMSI=43 TargetCell=2 Type=TN TargetRSRP=-123.844 ServingRSRP=-96.4664 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=52.6151 IMSI=14 TargetCell=2 Type=TN TargetRSRP=-91.9107 ServingRSRP=-91.388 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=52.6151 IMSI=66 TargetCell=3 Type=TN TargetRSRP=-126.126 ServingRSRP=-94.9868 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=54.5 ----
+  cell 1 (TN) load=17/20
+  cell 2 (TN) load=19/20
+  cell 3 (TN) load=17/20
+  cell 4 (TN) load=17/20
+UE 7 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=8 rnti=119 2->4 type=TN servingRsrp=-117.38 targetRsrp=-105.29 targetLoadReal=17/20 targetLoadEff=17/20
+LM HO UE=9 rnti=16 2->1 type=TN servingRsrp=-116.18 targetRsrp=-82.9517 targetLoadReal=17/20 targetLoadEff=17/20
+UE 12 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=14 rnti=179 3->1 type=TN servingRsrp=-122.375 targetRsrp=-118.356 targetLoadReal=17/20 targetLoadEff=18/20
+UE 15 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=17 rnti=185 3->1 type=TN servingRsrp=-125.312 targetRsrp=-88.2495 targetLoadReal=17/20 targetLoadEff=19/20
+UE 24 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=26 rnti=110 2->3 type=TN servingRsrp=-109.506 targetRsrp=-95.6082 targetLoadReal=17/20 targetLoadEff=17/20
+LM HO UE=27 rnti=104 2->4 type=TN servingRsrp=-118.171 targetRsrp=-82.7343 targetLoadReal=17/20 targetLoadEff=18/20
+UE 29 TTT_WAIT target=3 elapsed=0s need=2s
+UE 31 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=35 rnti=177 1->2 type=TN servingRsrp=-114.023 targetRsrp=-108.629 targetLoadReal=19/20 targetLoadEff=19/20
+UE 42 TTT_WAIT target=4 elapsed=0s need=2s
+UE 44 TTT_WAIT target=3 elapsed=0s need=2s
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+UE 51 TTT_WAIT target=3 elapsed=0s need=2s
+UE 52 TTT_WAIT target=3 elapsed=0s need=2s
+UE 54 TTT_WAIT target=3 elapsed=0s need=2s
+UE 56 TTT_WAIT target=4 elapsed=0s need=2s
+UE 57 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=59 rnti=114 2->3 type=TN servingRsrp=-98.443 targetRsrp=-87.5914 targetLoadReal=17/20 targetLoadEff=18/20
+LM HO UE=62 rnti=127 1->3 type=TN servingRsrp=-121.621 targetRsrp=-87.8538 targetLoadReal=17/20 targetLoadEff=19/20
+TRACE HO_SUCCESS Time=54.6151 IMSI=8 TargetCell=1 Type=TN TargetRSRP=-123.091 ServingRSRP=-113.93 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=54.6151 IMSI=13 TargetCell=1 Type=TN TargetRSRP=-85.9902 ServingRSRP=-119.738 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=54.6151 IMSI=16 TargetCell=1 Type=TN TargetRSRP=-119.765 ServingRSRP=-90.5885 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=54.6151 IMSI=34 TargetCell=2 Type=TN TargetRSRP=-117.272 ServingRSRP=-81.5983 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=54.6151 IMSI=61 TargetCell=3 Type=TN TargetRSRP=-85.0026 ServingRSRP=-115.381 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=54.6151 IMSI=25 TargetCell=3 Type=TN TargetRSRP=-127.126 ServingRSRP=-111.038 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=54.6151 IMSI=58 TargetCell=3 Type=TN TargetRSRP=-86.5417 ServingRSRP=-86.5783 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=54.6151 IMSI=7 TargetCell=4 Type=TN TargetRSRP=-129.722 ServingRSRP=-85.9891 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=54.6151 IMSI=26 TargetCell=4 Type=TN TargetRSRP=-87.6115 ServingRSRP=-119.439 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=56.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=15/20
+  cell 3 (TN) load=18/20
+  cell 4 (TN) load=19/20
+UE 5 TTT_WAIT target=3 elapsed=0s need=2s
+UE 8 TTT_WAIT target=3 elapsed=0s need=2s
+UE 9 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=12 currCell=3 candCell=2 candRsrp=-126.781 < min=-120
+LM HO UE=15 rnti=120 2->3 type=TN servingRsrp=-129.109 targetRsrp=-73.8222 targetLoadReal=18/20 targetLoadEff=18/20
+LM HO_FAIL_LOW_RSRP UE=17 currCell=1 candCell=4 candRsrp=-125.849 < min=-120
+UE 18 TTT_WAIT target=3 elapsed=0s need=2s
+UE 19 TTT_WAIT target=2 elapsed=0s need=2s
+UE 26 TTT_WAIT target=2 elapsed=0s need=2s
+UE 28 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=29 rnti=179 1->3 type=TN servingRsrp=-119.529 targetRsrp=-87.1383 targetLoadReal=18/20 targetLoadEff=19/20
+UE 31 TTT_WAIT target=1 elapsed=0s need=2s
+UE 33 TTT_WAIT target=1 elapsed=0s need=2s
+UE 35 TTT_WAIT target=1 elapsed=0s need=2s
+UE 39 TTT_WAIT target=2 elapsed=0s need=2s
+UE 40 TTT_WAIT target=1 elapsed=0s need=2s
+UE 46 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=51 currCell=2 candCell=1 candRsrp=-125.127 < min=-120
+UE 54 TTT_WAIT target=1 elapsed=0s need=2s
+UE 59 TTT_WAIT target=2 elapsed=0s need=2s
+UE 60 TTT_WAIT target=1 elapsed=0s need=2s
+UE 63 TTT_WAIT target=4 elapsed=0s need=2s
+UE 65 TTT_WAIT target=1 elapsed=0s need=2s
+UE 66 TTT_WAIT target=2 elapsed=0s need=2s
+UE 70 TTT_WAIT target=2 elapsed=0s need=2s
+UE 71 TTT_WAIT target=1 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=56.6151 IMSI=28 TargetCell=3 Type=TN TargetRSRP=-114.893 ServingRSRP=-103.307 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=56.6151 IMSI=14 TargetCell=3 Type=TN TargetRSRP=-77.389 ServingRSRP=-97.0468 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=58.5 ----
+  cell 1 (TN) load=17/20
+  cell 2 (TN) load=14/20
+  cell 3 (TN) load=20/20
+  cell 4 (TN) load=19/20
+UE 5 TTT_WAIT target=2 elapsed=0s need=2s
+UE 8 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=9 rnti=183 1->2 type=TN servingRsrp=-95.579 targetRsrp=-77.5995 targetLoadReal=14/20 targetLoadEff=14/20
+UE 12 TTT_WAIT target=1 elapsed=0s need=2s
+UE 16 TTT_WAIT target=2 elapsed=0s need=2s
+UE 17 TTT_WAIT target=2 elapsed=0s need=2s
+UE 19 TTT_WAIT target=4 elapsed=0s need=2s
+UE 20 TTT_WAIT target=1 elapsed=0s need=2s
+UE 23 TTT_WAIT target=2 elapsed=0s need=2s
+UE 24 TTT_WAIT target=1 elapsed=0s need=2s
+UE 26 TTT_WAIT target=1 elapsed=0s need=2s
+UE 27 TTT_WAIT target=2 elapsed=0s need=2s
+UE 29 TTT_WAIT target=1 elapsed=0s need=2s
+UE 31 TTT_WAIT target=2 elapsed=0s need=2s
+UE 32 TTT_WAIT target=2 elapsed=0s need=2s
+UE 35 TTT_WAIT target=4 elapsed=0s need=2s
+UE 42 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=44 currCell=2 candCell=1 candRsrp=-122.272 < min=-120
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+UE 47 TTT_WAIT target=1 elapsed=0s need=2s
+UE 50 TTT_WAIT target=2 elapsed=0s need=2s
+UE 51 TTT_WAIT target=4 elapsed=0s need=2s
+UE 53 TTT_WAIT target=1 elapsed=0s need=2s
+UE 58 TTT_WAIT target=1 elapsed=0s need=2s
+UE 59 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=63 currCell=2 candCell=1 candRsrp=-127.139 < min=-120
+LM HO UE=66 rnti=180 1->2 type=TN servingRsrp=-109.907 targetRsrp=-86.3616 targetLoadReal=14/20 targetLoadEff=15/20
+LM HO_FAIL_LOW_RSRP UE=67 currCell=3 candCell=2 candRsrp=-124.985 < min=-120
+UE 68 TTT_WAIT target=2 elapsed=0s need=2s
+UE 69 TTT_WAIT target=1 elapsed=0s need=2s
+UE 70 TTT_WAIT target=1 elapsed=0s need=2s
+UE 72 TTT_WAIT target=2 elapsed=0s need=2s
+UE 74 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=58.6151 IMSI=65 TargetCell=2 Type=TN TargetRSRP=-125.932 ServingRSRP=-125.182 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=58.6151 IMSI=8 TargetCell=2 Type=TN TargetRSRP=-117.838 ServingRSRP=-98.1994 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=60.5 ----
+  cell 1 (TN) load=15/20
+  cell 2 (TN) load=16/20
+  cell 3 (TN) load=20/20
+  cell 4 (TN) load=19/20
+LM HO UE=5 rnti=36 1->2 type=TN servingRsrp=-116.753 targetRsrp=-94.1541 targetLoadReal=16/20 targetLoadEff=16/20
+UE 7 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=8 rnti=176 4->1 type=TN servingRsrp=-110.994 targetRsrp=-95.6601 targetLoadReal=15/20 targetLoadEff=15/20
+UE 9 TTT_WAIT target=4 elapsed=0s need=2s
+UE 11 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=12 currCell=3 candCell=1 candRsrp=-120.397 < min=-120
+UE 13 TTT_WAIT target=2 elapsed=0s need=2s
+UE 17 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=19 rnti=172 1->4 type=TN servingRsrp=-131.092 targetRsrp=-114.986 targetLoadReal=19/20 targetLoadEff=19/20
+LM HO UE=24 rnti=109 2->1 type=TN servingRsrp=-116.048 targetRsrp=-95.9358 targetLoadReal=15/20 targetLoadEff=16/20
+UE 28 TTT_WAIT target=1 elapsed=0s need=2s
+UE 29 TTT_WAIT target=2 elapsed=0s need=2s
+UE 31 TTT_WAIT target=1 elapsed=0s need=2s
+UE 36 TTT_WAIT target=2 elapsed=0s need=2s
+UE 37 TTT_WAIT target=1 elapsed=0s need=2s
+UE 38 TTT_WAIT target=1 elapsed=0s need=2s
+UE 39 TTT_WAIT target=2 elapsed=0s need=2s
+UE 47 TTT_WAIT target=2 elapsed=0s need=2s
+UE 50 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=58 rnti=182 3->1 type=TN servingRsrp=-126.322 targetRsrp=-83.4641 targetLoadReal=15/20 targetLoadEff=17/20
+LM HO UE=59 rnti=190 3->1 type=TN servingRsrp=-122.603 targetRsrp=-111.755 targetLoadReal=15/20 targetLoadEff=18/20
+UE 62 TTT_WAIT target=1 elapsed=0s need=2s
+UE 63 TTT_WAIT target=1 elapsed=0s need=2s
+UE 69 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=60.6151 IMSI=23 TargetCell=1 Type=TN TargetRSRP=-97.5872 ServingRSRP=-90.2661 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=60.6151 IMSI=58 TargetCell=1 Type=TN TargetRSRP=-100.278 ServingRSRP=-127.324 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=60.6151 IMSI=57 TargetCell=1 Type=TN TargetRSRP=-123.741 ServingRSRP=-115.511 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=60.6151 IMSI=7 TargetCell=1 Type=TN TargetRSRP=-116.726 ServingRSRP=-95.709 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=60.6151 IMSI=4 TargetCell=2 Type=TN TargetRSRP=-120.923 ServingRSRP=-93.0026 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=60.6151 IMSI=18 TargetCell=4 Type=TN TargetRSRP=-154.846 ServingRSRP=-100.168 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=62.5 ----
+  cell 1 (TN) load=17/20
+  cell 2 (TN) load=16/20
+  cell 3 (TN) load=18/20
+  cell 4 (TN) load=19/20
+UE 5 TTT_WAIT target=1 elapsed=0s need=2s
+UE 12 TTT_WAIT target=2 elapsed=0s need=2s
+UE 17 TTT_WAIT target=2 elapsed=0s need=2s
+UE 19 TTT_WAIT target=3 elapsed=0s need=2s
+UE 20 TTT_WAIT target=2 elapsed=0s need=2s
+UE 23 TTT_WAIT target=4 elapsed=0s need=2s
+UE 25 TTT_WAIT target=1 elapsed=0s need=2s
+UE 27 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=29 rnti=192 3->2 type=TN servingRsrp=-86.4123 targetRsrp=-78.7535 targetLoadReal=16/20 targetLoadEff=16/20
+UE 31 TTT_WAIT target=2 elapsed=0s need=2s
+UE 33 TTT_WAIT target=1 elapsed=0s need=2s
+UE 35 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=37 rnti=138 4->1 type=TN servingRsrp=-110.422 targetRsrp=-98.2054 targetLoadReal=17/20 targetLoadEff=17/20
+LM HO UE=39 rnti=175 1->2 type=TN servingRsrp=-117.713 targetRsrp=-106.963 targetLoadReal=16/20 targetLoadEff=17/20
+UE 42 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=44 currCell=2 candCell=1 candRsrp=-122.39 < min=-120
+UE 45 TTT_WAIT target=2 elapsed=0s need=2s
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+UE 47 TTT_WAIT target=1 elapsed=0s need=2s
+UE 52 TTT_WAIT target=2 elapsed=0s need=2s
+UE 54 TTT_WAIT target=4 elapsed=0s need=2s
+UE 55 TTT_WAIT target=1 elapsed=0s need=2s
+UE 56 TTT_WAIT target=3 elapsed=0s need=2s
+UE 57 TTT_WAIT target=2 elapsed=0s need=2s
+UE 58 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=59 currCell=1 candCell=3 candRsrp=-120.613 < min=-120
+LM HO_FAIL_LOW_RSRP UE=60 currCell=2 candCell=3 candRsrp=-121.291 < min=-120
+LM HO UE=62 rnti=189 3->1 type=TN servingRsrp=-128.017 targetRsrp=-116.997 targetLoadReal=17/20 targetLoadEff=18/20
+UE 65 TTT_WAIT target=2 elapsed=0s need=2s
+UE 66 TTT_WAIT target=1 elapsed=0s need=2s
+UE 67 TTT_WAIT target=2 elapsed=0s need=2s
+UE 69 TTT_WAIT target=4 elapsed=0s need=2s
+UE 70 TTT_WAIT target=1 elapsed=0s need=2s
+UE 74 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=62.6151 IMSI=61 TargetCell=1 Type=TN TargetRSRP=-118.089 ServingRSRP=-86.4511 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=62.6151 IMSI=36 TargetCell=1 Type=TN TargetRSRP=-121.327 ServingRSRP=-108.734 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=62.6151 IMSI=38 TargetCell=2 Type=TN TargetRSRP=-116.397 ServingRSRP=-115.123 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=62.6151 IMSI=28 TargetCell=2 Type=TN TargetRSRP=-128.713 ServingRSRP=-111.658 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=64.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=16/20
+  cell 4 (TN) load=18/20
+UE 5 TTT_WAIT target=3 elapsed=0s need=2s
+UE 10 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=12 rnti=44 3->2 type=TN servingRsrp=-122.878 targetRsrp=-116.888 targetLoadReal=18/20 targetLoadEff=18/20
+UE 13 TTT_WAIT target=2 elapsed=0s need=2s
+UE 14 TTT_WAIT target=2 elapsed=0s need=2s
+UE 16 TTT_WAIT target=2 elapsed=0s need=2s
+UE 17 TTT_WAIT target=4 elapsed=0s need=2s
+UE 19 TTT_WAIT target=2 elapsed=0s need=2s
+UE 20 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=23 rnti=39 1->4 type=TN servingRsrp=-111.807 targetRsrp=-92.1302 targetLoadReal=18/20 targetLoadEff=18/20
+UE 28 TTT_WAIT target=3 elapsed=0s need=2s
+UE 29 TTT_WAIT target=3 elapsed=0s need=2s
+UE 30 TTT_WAIT target=3 elapsed=0s need=2s
+UE 31 TTT_WAIT target=1 elapsed=0s need=2s
+UE 33 TTT_WAIT target=4 elapsed=0s need=2s
+UE 35 TTT_WAIT target=3 elapsed=0s need=2s
+UE 36 TTT_WAIT target=3 elapsed=0s need=2s
+UE 37 TTT_WAIT target=4 elapsed=0s need=2s
+UE 39 TTT_WAIT target=1 elapsed=0s need=2s
+UE 42 TTT_WAIT target=1 elapsed=0s need=2s
+UE 46 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=47 rnti=186 3->1 type=TN servingRsrp=-113.302 targetRsrp=-70.2272 targetLoadReal=18/20 targetLoadEff=18/20
+UE 50 TTT_WAIT target=4 elapsed=0s need=2s
+UE 54 TTT_WAIT target=1 elapsed=0s need=2s
+UE 55 TTT_WAIT target=2 elapsed=0s need=2s
+UE 57 TTT_WAIT target=3 elapsed=0s need=2s
+UE 60 TTT_WAIT target=3 elapsed=0s need=2s
+UE 62 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=63 currCell=2 candCell=3 candRsrp=-123.917 < min=-120
+LM HO UE=65 rnti=162 3->2 type=TN servingRsrp=-119.61 targetRsrp=-88.2134 targetLoadReal=18/20 targetLoadEff=19/20
+LM HO UE=70 rnti=174 4->1 type=TN servingRsrp=-115.05 targetRsrp=-88.485 targetLoadReal=18/20 targetLoadEff=19/20
+LM HO_FAIL_LOW_RSRP UE=72 currCell=3 candCell=4 candRsrp=-121.059 < min=-120
+UE 74 TTT_WAIT target=3 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=64.6151 IMSI=46 TargetCell=1 Type=TN TargetRSRP=-117.414 ServingRSRP=-113.336 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=64.6151 IMSI=69 TargetCell=1 Type=TN TargetRSRP=-129.696 ServingRSRP=-87.151 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=64.6151 IMSI=11 TargetCell=2 Type=TN TargetRSRP=-129.257 ServingRSRP=-88.9107 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=64.6151 IMSI=64 TargetCell=2 Type=TN TargetRSRP=-120.982 ServingRSRP=-97.2759 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=64.6151 IMSI=22 TargetCell=4 Type=TN TargetRSRP=-91.6137 ServingRSRP=-77.2989 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=66.5 ----
+  cell 1 (TN) load=19/20
+  cell 2 (TN) load=20/20
+  cell 3 (TN) load=13/20
+  cell 4 (TN) load=18/20
+UE 5 TTT_WAIT target=1 elapsed=0s need=2s
+UE 8 TTT_WAIT target=4 elapsed=0s need=2s
+UE 11 TTT_WAIT target=3 elapsed=0s need=2s
+UE 12 TTT_WAIT target=1 elapsed=0s need=2s
+UE 14 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=17 rnti=185 1->4 type=TN servingRsrp=-124.81 targetRsrp=-119.873 targetLoadReal=18/20 targetLoadEff=18/20
+UE 19 TTT_WAIT target=3 elapsed=0s need=2s
+UE 23 TTT_WAIT target=1 elapsed=0s need=2s
+UE 24 TTT_WAIT target=3 elapsed=0s need=2s
+UE 28 TTT_WAIT target=1 elapsed=0s need=2s
+UE 29 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=30 rnti=154 1->3 type=TN servingRsrp=-112.639 targetRsrp=-100.051 targetLoadReal=13/20 targetLoadEff=13/20
+UE 33 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=35 rnti=122 2->3 type=TN servingRsrp=-117.563 targetRsrp=-114.956 targetLoadReal=13/20 targetLoadEff=14/20
+LM HO_FAIL_LOW_RSRP UE=37 currCell=1 candCell=4 candRsrp=-120.607 < min=-120
+LM HO UE=39 rnti=127 2->1 type=TN servingRsrp=-121.06 targetRsrp=-84.2093 targetLoadReal=19/20 targetLoadEff=19/20
+UE 41 TTT_WAIT target=4 elapsed=0s need=2s
+UE 42 TTT_WAIT target=4 elapsed=0s need=2s
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+UE 54 TTT_WAIT target=3 elapsed=0s need=2s
+UE 56 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=57 rnti=176 1->3 type=TN servingRsrp=-121.588 targetRsrp=-107.007 targetLoadReal=13/20 targetLoadEff=15/20
+LM HO UE=60 rnti=90 2->3 type=TN servingRsrp=-126.154 targetRsrp=-98.4001 targetLoadReal=13/20 targetLoadEff=16/20
+UE 63 TTT_WAIT target=3 elapsed=0s need=2s
+UE 65 TTT_WAIT target=4 elapsed=0s need=2s
+UE 67 TTT_WAIT target=4 elapsed=0s need=2s
+UE 69 TTT_WAIT target=4 elapsed=0s need=2s
+UE 70 TTT_WAIT target=3 elapsed=0s need=2s
+UE 71 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=74 rnti=131 1->3 type=TN servingRsrp=-113.541 targetRsrp=-108.879 targetLoadReal=13/20 targetLoadEff=17/20
+TRACE HO_SUCCESS Time=66.6151 IMSI=38 TargetCell=1 Type=TN TargetRSRP=-86.4199 ServingRSRP=-87.0316 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=66.6151 IMSI=29 TargetCell=3 Type=TN TargetRSRP=-94.6074 ServingRSRP=-112.886 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=66.6151 IMSI=73 TargetCell=3 Type=TN TargetRSRP=-124.461 ServingRSRP=-112.409 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=66.6151 IMSI=56 TargetCell=3 Type=TN TargetRSRP=-125.214 ServingRSRP=-127.051 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=66.6151 IMSI=34 TargetCell=3 Type=TN TargetRSRP=-117.224 ServingRSRP=-86.1186 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=66.6151 IMSI=59 TargetCell=3 Type=TN TargetRSRP=-107.304 ServingRSRP=-87.4815 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=66.6151 IMSI=16 TargetCell=4 Type=TN TargetRSRP=-118.659 ServingRSRP=-115.128 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=68.5 ----
+  cell 1 (TN) load=16/20
+  cell 2 (TN) load=17/20
+  cell 3 (TN) load=18/20
+  cell 4 (TN) load=19/20
+UE 5 TTT_WAIT target=3 elapsed=0s need=2s
+UE 7 TTT_WAIT target=1 elapsed=0s need=2s
+UE 8 TTT_WAIT target=3 elapsed=0s need=2s
+UE 11 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=12 currCell=2 candCell=3 candRsrp=-124.063 < min=-120
+UE 13 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=14 rnti=184 1->3 type=TN servingRsrp=-97.1954 targetRsrp=-84.1871 targetLoadReal=18/20 targetLoadEff=18/20
+UE 15 TTT_WAIT target=2 elapsed=0s need=2s
+UE 18 TTT_WAIT target=2 elapsed=0s need=2s
+UE 19 TTT_WAIT target=2 elapsed=0s need=2s
+UE 20 TTT_WAIT target=2 elapsed=0s need=2s
+UE 25 TTT_WAIT target=2 elapsed=0s need=2s
+UE 26 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=31 currCell=3 candCell=1 candRsrp=-126.418 < min=-120
+UE 35 TTT_WAIT target=2 elapsed=0s need=2s
+UE 38 TTT_WAIT target=2 elapsed=0s need=2s
+UE 39 TTT_WAIT target=2 elapsed=0s need=2s
+UE 42 TTT_WAIT target=2 elapsed=0s need=2s
+UE 45 TTT_WAIT target=3 elapsed=0s need=2s
+UE 46 TTT_WAIT target=3 elapsed=0s need=2s
+UE 50 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=51 currCell=2 candCell=3 candRsrp=-120.41 < min=-120
+UE 54 TTT_WAIT target=1 elapsed=0s need=2s
+UE 55 TTT_WAIT target=1 elapsed=0s need=2s
+UE 59 TTT_WAIT target=3 elapsed=0s need=2s
+UE 62 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=65 rnti=129 2->4 type=TN servingRsrp=-109.534 targetRsrp=-105.53 targetLoadReal=19/20 targetLoadEff=19/20
+UE 66 TTT_WAIT target=3 elapsed=0s need=2s
+UE 69 TTT_WAIT target=2 elapsed=0s need=2s
+UE 72 TTT_WAIT target=1 elapsed=0s need=2s
+UE 74 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=68.6151 IMSI=13 TargetCell=3 Type=TN TargetRSRP=-123.824 ServingRSRP=-117.652 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=68.6151 IMSI=64 TargetCell=4 Type=TN TargetRSRP=-97.092 ServingRSRP=-92.7305 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=70.5 ----
+  cell 1 (TN) load=15/20
+  cell 2 (TN) load=16/20
+  cell 3 (TN) load=19/20
+  cell 4 (TN) load=20/20
+UE 5 TTT_WAIT target=1 elapsed=0s need=2s
+UE 11 TTT_WAIT target=3 elapsed=0s need=2s
+UE 14 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=18 rnti=173 1->2 type=TN servingRsrp=-106.068 targetRsrp=-99.0199 targetLoadReal=16/20 targetLoadEff=16/20
+LM HO_FAIL_LOW_RSRP UE=19 currCell=4 candCell=1 candRsrp=-126.036 < min=-120
+UE 20 TTT_WAIT target=1 elapsed=0s need=2s
+UE 23 TTT_WAIT target=1 elapsed=0s need=2s
+UE 26 TTT_WAIT target=2 elapsed=0s need=2s
+UE 28 TTT_WAIT target=3 elapsed=0s need=2s
+UE 29 TTT_WAIT target=3 elapsed=0s need=2s
+UE 30 TTT_WAIT target=1 elapsed=0s need=2s
+UE 31 TTT_WAIT target=1 elapsed=0s need=2s
+UE 35 TTT_WAIT target=1 elapsed=0s need=2s
+UE 37 TTT_WAIT target=3 elapsed=0s need=2s
+UE 41 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=42 rnti=180 3->2 type=TN servingRsrp=-118.046 targetRsrp=-103.4 targetLoadReal=16/20 targetLoadEff=17/20
+UE 44 TTT_WAIT target=1 elapsed=0s need=2s
+UE 47 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=51 currCell=2 candCell=3 candRsrp=-121.532 < min=-120
+UE 52 TTT_WAIT target=3 elapsed=0s need=2s
+UE 57 TTT_WAIT target=2 elapsed=0s need=2s
+UE 65 TTT_WAIT target=2 elapsed=0s need=2s
+UE 68 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=69 currCell=3 candCell=2 candRsrp=-127.895 < min=-120
+UE 70 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=70.6151 IMSI=17 TargetCell=2 Type=TN TargetRSRP=-100.151 ServingRSRP=-106.557 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=70.6151 IMSI=41 TargetCell=2 Type=TN TargetRSRP=-126.325 ServingRSRP=-90.044 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=72.5 ----
+  cell 1 (TN) load=14/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=18/20
+  cell 4 (TN) load=20/20
+UE 5 TTT_WAIT target=3 elapsed=0s need=2s
+UE 8 TTT_WAIT target=3 elapsed=0s need=2s
+UE 10 TTT_WAIT target=2 elapsed=0s need=2s
+UE 12 TTT_WAIT target=3 elapsed=0s need=2s
+UE 13 TTT_WAIT target=2 elapsed=0s need=2s
+UE 14 TTT_WAIT target=2 elapsed=0s need=2s
+UE 17 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=19 currCell=4 candCell=3 candRsrp=-120.722 < min=-120
+UE 20 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=23 rnti=179 4->1 type=TN servingRsrp=-127.775 targetRsrp=-107.144 targetLoadReal=14/20 targetLoadEff=14/20
+LM HO UE=26 rnti=188 3->2 type=TN servingRsrp=-120.584 targetRsrp=-98.8394 targetLoadReal=18/20 targetLoadEff=18/20
+UE 39 TTT_WAIT target=2 elapsed=0s need=2s
+UE 41 TTT_WAIT target=1 elapsed=0s need=2s
+UE 45 TTT_WAIT target=2 elapsed=0s need=2s
+UE 47 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=57 currCell=3 candCell=1 candRsrp=-123.092 < min=-120
+UE 59 TTT_WAIT target=2 elapsed=0s need=2s
+UE 61 TTT_WAIT target=3 elapsed=0s need=2s
+UE 62 TTT_WAIT target=2 elapsed=0s need=2s
+UE 64 TTT_WAIT target=2 elapsed=0s need=2s
+UE 69 TTT_WAIT target=2 elapsed=0s need=2s
+UE 70 TTT_WAIT target=3 elapsed=0s need=2s
+UE 71 TTT_WAIT target=1 elapsed=0s need=2s
+UE 72 TTT_WAIT target=2 elapsed=0s need=2s
+UE 74 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=72.6151 IMSI=22 TargetCell=1 Type=TN TargetRSRP=-77.6935 ServingRSRP=-105.121 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=72.6151 IMSI=25 TargetCell=2 Type=TN TargetRSRP=-123.544 ServingRSRP=-117.257 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=74.5 ----
+  cell 1 (TN) load=15/20
+  cell 2 (TN) load=19/20
+  cell 3 (TN) load=17/20
+  cell 4 (TN) load=19/20
+UE 5 TTT_WAIT target=1 elapsed=0s need=2s
+UE 11 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=12 rnti=128 2->3 type=TN servingRsrp=-127.502 targetRsrp=-105.784 targetLoadReal=17/20 targetLoadEff=17/20
+LM HO UE=13 rnti=38 1->2 type=TN servingRsrp=-99.8234 targetRsrp=-95.0991 targetLoadReal=19/20 targetLoadEff=19/20
+UE 16 TTT_WAIT target=1 elapsed=0s need=2s
+UE 17 TTT_WAIT target=3 elapsed=0s need=2s
+UE 18 TTT_WAIT target=1 elapsed=0s need=2s
+UE 19 TTT_WAIT target=1 elapsed=0s need=2s
+UE 20 TTT_WAIT target=1 elapsed=0s need=2s
+UE 22 TTT_WAIT target=1 elapsed=0s need=2s
+UE 26 TTT_WAIT target=3 elapsed=0s need=2s
+UE 29 TTT_WAIT target=1 elapsed=0s need=2s
+UE 31 TTT_WAIT target=1 elapsed=0s need=2s
+UE 39 TTT_WAIT target=4 elapsed=0s need=2s
+UE 40 TTT_WAIT target=1 elapsed=0s need=2s
+UE 41 TTT_WAIT target=3 elapsed=0s need=2s
+UE 42 TTT_WAIT target=4 elapsed=0s need=2s
+UE 51 TTT_WAIT target=3 elapsed=0s need=2s
+UE 52 TTT_WAIT target=3 elapsed=0s need=2s
+UE 54 TTT_WAIT target=4 elapsed=0s need=2s
+UE 57 TTT_WAIT target=1 elapsed=0s need=2s
+UE 58 TTT_WAIT target=3 elapsed=0s need=2s
+UE 63 TTT_WAIT target=1 elapsed=0s need=2s
+UE 65 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=66 currCell=2 candCell=3 candRsrp=-123.164 < min=-120
+UE 69 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=71 rnti=72 2->1 type=TN servingRsrp=-106.146 targetRsrp=-76.0481 targetLoadReal=15/20 targetLoadEff=15/20
+UE 73 TTT_WAIT target=1 elapsed=0s need=2s
+UE 74 TTT_WAIT target=1 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=74.6151 IMSI=70 TargetCell=1 Type=TN TargetRSRP=-112.136 ServingRSRP=-107.672 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=74.6151 IMSI=12 TargetCell=2 Type=TN TargetRSRP=-71.6415 ServingRSRP=-98.0542 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=74.6151 IMSI=11 TargetCell=3 Type=TN TargetRSRP=-121.836 ServingRSRP=-89.6062 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=76.5 ----
+  cell 1 (TN) load=15/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=18/20
+  cell 4 (TN) load=19/20
+UE 5 TTT_WAIT target=3 elapsed=0s need=2s
+UE 8 TTT_WAIT target=3 elapsed=0s need=2s
+UE 10 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=17 rnti=180 4->3 type=TN servingRsrp=-118.075 targetRsrp=-103.266 targetLoadReal=18/20 targetLoadEff=18/20
+LM HO UE=18 rnti=130 2->1 type=TN servingRsrp=-117.389 targetRsrp=-104.858 targetLoadReal=15/20 targetLoadEff=15/20
+UE 19 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=20 rnti=177 3->1 type=TN servingRsrp=-98.6221 targetRsrp=-92.725 targetLoadReal=15/20 targetLoadEff=16/20
+UE 23 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=26 rnti=132 2->3 type=TN servingRsrp=-129.545 targetRsrp=-100.216 targetLoadReal=18/20 targetLoadEff=19/20
+UE 27 TTT_WAIT target=1 elapsed=0s need=2s
+UE 28 TTT_WAIT target=1 elapsed=0s need=2s
+UE 30 TTT_WAIT target=1 elapsed=0s need=2s
+UE 31 TTT_WAIT target=2 elapsed=0s need=2s
+UE 33 TTT_WAIT target=4 elapsed=0s need=2s
+UE 34 TTT_WAIT target=2 elapsed=0s need=2s
+UE 37 TTT_WAIT target=4 elapsed=0s need=2s
+UE 38 TTT_WAIT target=1 elapsed=0s need=2s
+UE 45 TTT_WAIT target=2 elapsed=0s need=2s
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=51 currCell=2 candCell=1 candRsrp=-121.065 < min=-120
+LM HO_FAIL_LOW_RSRP UE=53 currCell=3 candCell=1 candRsrp=-121.764 < min=-120
+LM HO_FAIL_LOW_RSRP UE=58 currCell=1 candCell=2 candRsrp=-120.142 < min=-120
+UE 60 TTT_WAIT target=1 elapsed=0s need=2s
+UE 65 TTT_WAIT target=2 elapsed=0s need=2s
+UE 66 TTT_WAIT target=1 elapsed=0s need=2s
+UE 67 TTT_WAIT target=2 elapsed=0s need=2s
+UE 69 TTT_WAIT target=1 elapsed=0s need=2s
+UE 71 TTT_WAIT target=2 elapsed=0s need=2s
+UE 72 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=76.6151 IMSI=17 TargetCell=1 Type=TN TargetRSRP=-111.223 ServingRSRP=-79.7396 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=76.6151 IMSI=19 TargetCell=1 Type=TN TargetRSRP=-116.391 ServingRSRP=-105.107 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=76.6151 IMSI=25 TargetCell=3 Type=TN TargetRSRP=-118.116 ServingRSRP=-107.749 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=76.6151 IMSI=16 TargetCell=3 Type=TN TargetRSRP=-131.267 ServingRSRP=-95.8255 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=78.5 ----
+  cell 1 (TN) load=17/20
+  cell 2 (TN) load=16/20
+  cell 3 (TN) load=19/20
+  cell 4 (TN) load=18/20
+UE 5 TTT_WAIT target=1 elapsed=0s need=2s
+UE 12 TTT_WAIT target=1 elapsed=0s need=2s
+UE 14 TTT_WAIT target=2 elapsed=0s need=2s
+UE 17 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=19 rnti=178 4->3 type=TN servingRsrp=-150.069 targetRsrp=-92.765 targetLoadReal=19/20 targetLoadEff=19/20
+UE 25 TTT_WAIT target=2 elapsed=0s need=2s
+UE 26 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=30 rnti=193 3->1 type=TN servingRsrp=-115.192 targetRsrp=-96.4332 targetLoadReal=17/20 targetLoadEff=17/20
+LM HO UE=31 rnti=134 3->2 type=TN servingRsrp=-123.43 targetRsrp=-107.666 targetLoadReal=16/20 targetLoadEff=16/20
+UE 33 TTT_WAIT target=1 elapsed=0s need=2s
+UE 35 TTT_WAIT target=1 elapsed=0s need=2s
+UE 38 TTT_WAIT target=4 elapsed=0s need=2s
+UE 39 TTT_WAIT target=4 elapsed=0s need=2s
+UE 41 TTT_WAIT target=4 elapsed=0s need=2s
+UE 44 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=50 currCell=3 candCell=1 candRsrp=-122.652 < min=-120
+UE 58 TTT_WAIT target=2 elapsed=0s need=2s
+UE 59 TTT_WAIT target=2 elapsed=0s need=2s
+UE 63 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=65 rnti=181 4->2 type=TN servingRsrp=-125.647 targetRsrp=-107.879 targetLoadReal=16/20 targetLoadEff=17/20
+UE 69 TTT_WAIT target=4 elapsed=0s need=2s
+UE 70 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=71 rnti=196 1->2 type=TN servingRsrp=-114.013 targetRsrp=-94.0986 targetLoadReal=16/20 targetLoadEff=18/20
+LM HO UE=72 rnti=170 3->2 type=TN servingRsrp=-125.097 targetRsrp=-113.495 targetLoadReal=16/20 targetLoadEff=19/20
+UE 74 TTT_WAIT target=1 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=78.6151 IMSI=29 TargetCell=1 Type=TN TargetRSRP=-100.771 ServingRSRP=-104.888 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=78.6151 IMSI=70 TargetCell=2 Type=TN TargetRSRP=-112.184 ServingRSRP=-113.02 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=78.6151 IMSI=30 TargetCell=2 Type=TN TargetRSRP=-106.947 ServingRSRP=-87.6486 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=78.6151 IMSI=71 TargetCell=2 Type=TN TargetRSRP=-128.749 ServingRSRP=-121.054 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=78.6151 IMSI=64 TargetCell=2 Type=TN TargetRSRP=-119.995 ServingRSRP=-89.0262 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=78.6151 IMSI=18 TargetCell=3 Type=TN TargetRSRP=-120.861 ServingRSRP=-109.574 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=80.5 ----
+  cell 1 (TN) load=17/20
+  cell 2 (TN) load=20/20
+  cell 3 (TN) load=17/20
+  cell 4 (TN) load=16/20
+UE 5 TTT_WAIT target=3 elapsed=0s need=2s
+UE 7 TTT_WAIT target=1 elapsed=0s need=2s
+UE 8 TTT_WAIT target=3 elapsed=0s need=2s
+UE 9 TTT_WAIT target=4 elapsed=0s need=2s
+UE 17 TTT_WAIT target=4 elapsed=0s need=2s
+UE 19 TTT_WAIT target=1 elapsed=0s need=2s
+UE 20 TTT_WAIT target=4 elapsed=0s need=2s
+UE 23 TTT_WAIT target=4 elapsed=0s need=2s
+UE 26 TTT_WAIT target=4 elapsed=0s need=2s
+UE 27 TTT_WAIT target=1 elapsed=0s need=2s
+UE 29 TTT_WAIT target=3 elapsed=0s need=2s
+UE 30 TTT_WAIT target=3 elapsed=0s need=2s
+UE 31 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=33 rnti=83 2->1 type=TN servingRsrp=-120.091 targetRsrp=-88.3758 targetLoadReal=17/20 targetLoadEff=17/20
+LM HO UE=35 rnti=194 3->1 type=TN servingRsrp=-118.616 targetRsrp=-99.8508 targetLoadReal=17/20 targetLoadEff=18/20
+UE 37 TTT_WAIT target=4 elapsed=0s need=2s
+UE 39 TTT_WAIT target=3 elapsed=0s need=2s
+UE 42 TTT_WAIT target=4 elapsed=0s need=2s
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+UE 50 TTT_WAIT target=4 elapsed=0s need=2s
+UE 51 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=63 rnti=118 2->4 type=TN servingRsrp=-131.543 targetRsrp=-110.532 targetLoadReal=16/20 targetLoadEff=16/20
+UE 66 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=69 rnti=184 3->4 type=TN servingRsrp=-133.085 targetRsrp=-90.0191 targetLoadReal=16/20 targetLoadEff=17/20
+LM HO UE=70 rnti=193 1->4 type=TN servingRsrp=-102.649 targetRsrp=-87.7721 targetLoadReal=16/20 targetLoadEff=18/20
+UE 71 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=72 currCell=2 candCell=3 candRsrp=-123.983 < min=-120
+LM HO UE=74 rnti=197 3->1 type=TN servingRsrp=-126.914 targetRsrp=-117.467 targetLoadReal=17/20 targetLoadEff=19/20
+TRACE HO_SUCCESS Time=80.6151 IMSI=32 TargetCell=1 Type=TN TargetRSRP=-107.687 ServingRSRP=-106.853 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=80.6151 IMSI=73 TargetCell=1 Type=TN TargetRSRP=-117.479 ServingRSRP=-118.16 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=80.6151 IMSI=34 TargetCell=1 Type=TN TargetRSRP=-119.099 ServingRSRP=-87.3604 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=80.6151 IMSI=69 TargetCell=4 Type=TN TargetRSRP=-107.136 ServingRSRP=-116.112 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=80.6151 IMSI=62 TargetCell=4 Type=TN TargetRSRP=-104.381 ServingRSRP=-99.8079 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=80.6151 IMSI=68 TargetCell=4 Type=TN TargetRSRP=-93.625 ServingRSRP=-82.6811 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=82.5 ----
+  cell 1 (TN) load=19/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=14/20
+  cell 4 (TN) load=19/20
+LM HO UE=5 rnti=125 2->3 type=TN servingRsrp=-119.262 targetRsrp=-82.0994 targetLoadReal=14/20 targetLoadEff=14/20
+LM HO UE=7 rnti=98 2->1 type=TN servingRsrp=-100.066 targetRsrp=-72.704 targetLoadReal=19/20 targetLoadEff=19/20
+UE 8 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=19 currCell=3 candCell=2 candRsrp=-126.518 < min=-120
+UE 23 TTT_WAIT target=3 elapsed=0s need=2s
+UE 28 TTT_WAIT target=3 elapsed=0s need=2s
+UE 30 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=31 currCell=2 candCell=3 candRsrp=-123.737 < min=-120
+UE 33 TTT_WAIT target=3 elapsed=0s need=2s
+UE 34 TTT_WAIT target=2 elapsed=0s need=2s
+UE 35 TTT_WAIT target=2 elapsed=0s need=2s
+UE 39 TTT_WAIT target=2 elapsed=0s need=2s
+UE 40 TTT_WAIT target=2 elapsed=0s need=2s
+UE 41 TTT_WAIT target=3 elapsed=0s need=2s
+UE 44 TTT_WAIT target=3 elapsed=0s need=2s
+UE 45 TTT_WAIT target=2 elapsed=0s need=2s
+UE 47 TTT_WAIT target=2 elapsed=0s need=2s
+UE 54 TTT_WAIT target=4 elapsed=0s need=2s
+UE 63 TTT_WAIT target=3 elapsed=0s need=2s
+UE 66 TTT_WAIT target=3 elapsed=0s need=2s
+UE 68 TTT_WAIT target=2 elapsed=0s need=2s
+UE 70 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=72 currCell=2 candCell=3 candRsrp=-123.785 < min=-120
+TRACE HO_SUCCESS Time=82.6151 IMSI=6 TargetCell=1 Type=TN TargetRSRP=-114.356 ServingRSRP=-99.3812 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=82.6151 IMSI=4 TargetCell=3 Type=TN TargetRSRP=-120.307 ServingRSRP=-116.902 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=84.5 ----
+  cell 1 (TN) load=20/20
+  cell 2 (TN) load=16/20
+  cell 3 (TN) load=15/20
+  cell 4 (TN) load=19/20
+UE 7 TTT_WAIT target=2 elapsed=0s need=2s
+UE 9 TTT_WAIT target=3 elapsed=0s need=2s
+UE 10 TTT_WAIT target=2 elapsed=0s need=2s
+UE 14 TTT_WAIT target=2 elapsed=0s need=2s
+UE 18 TTT_WAIT target=3 elapsed=0s need=2s
+UE 20 TTT_WAIT target=3 elapsed=0s need=2s
+UE 23 TTT_WAIT target=2 elapsed=0s need=2s
+UE 24 TTT_WAIT target=2 elapsed=0s need=2s
+UE 25 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=28 rnti=108 2->3 type=TN servingRsrp=-120.986 targetRsrp=-97.1587 targetLoadReal=15/20 targetLoadEff=15/20
+UE 29 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=30 rnti=199 1->2 type=TN servingRsrp=-113.571 targetRsrp=-82.278 targetLoadReal=16/20 targetLoadEff=16/20
+UE 31 TTT_WAIT target=3 elapsed=0s need=2s
+UE 33 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=35 rnti=201 1->2 type=TN servingRsrp=-119.858 targetRsrp=-87.6868 targetLoadReal=16/20 targetLoadEff=17/20
+UE 37 TTT_WAIT target=4 elapsed=0s need=2s
+UE 42 TTT_WAIT target=3 elapsed=0s need=2s
+UE 52 TTT_WAIT target=3 elapsed=0s need=2s
+UE 53 TTT_WAIT target=2 elapsed=0s need=2s
+UE 56 TTT_WAIT target=3 elapsed=0s need=2s
+UE 58 TTT_WAIT target=3 elapsed=0s need=2s
+UE 59 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=63 currCell=4 candCell=3 candRsrp=-126.05 < min=-120
+UE 65 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=66 rnti=124 2->3 type=TN servingRsrp=-124.732 targetRsrp=-119.083 targetLoadReal=15/20 targetLoadEff=16/20
+UE 74 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=84.6151 IMSI=29 TargetCell=2 Type=TN TargetRSRP=-110.449 ServingRSRP=-114.513 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=84.6151 IMSI=34 TargetCell=2 Type=TN TargetRSRP=-92.8314 ServingRSRP=-111.347 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=84.6151 IMSI=65 TargetCell=3 Type=TN TargetRSRP=-119.758 ServingRSRP=-88.7907 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=84.6151 IMSI=27 TargetCell=3 Type=TN TargetRSRP=-124.167 ServingRSRP=-117.752 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=86.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=16/20
+  cell 3 (TN) load=17/20
+  cell 4 (TN) load=19/20
+UE 7 TTT_WAIT target=3 elapsed=0s need=2s
+UE 8 TTT_WAIT target=4 elapsed=0s need=2s
+UE 9 TTT_WAIT target=4 elapsed=0s need=2s
+UE 15 TTT_WAIT target=1 elapsed=0s need=2s
+UE 17 TTT_WAIT target=4 elapsed=0s need=2s
+UE 18 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=20 rnti=198 1->3 type=TN servingRsrp=-112.94 targetRsrp=-74.2601 targetLoadReal=17/20 targetLoadEff=17/20
+LM HO UE=23 rnti=195 1->2 type=TN servingRsrp=-109.407 targetRsrp=-103.915 targetLoadReal=16/20 targetLoadEff=16/20
+LM HO UE=24 rnti=187 1->2 type=TN servingRsrp=-100.239 targetRsrp=-91.9335 targetLoadReal=16/20 targetLoadEff=17/20
+UE 26 TTT_WAIT target=2 elapsed=0s need=2s
+UE 28 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=29 rnti=126 2->3 type=TN servingRsrp=-103.842 targetRsrp=-80.1093 targetLoadReal=17/20 targetLoadEff=18/20
+UE 30 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=31 rnti=134 2->3 type=TN servingRsrp=-127.921 targetRsrp=-86.7139 targetLoadReal=17/20 targetLoadEff=19/20
+UE 35 TTT_WAIT target=1 elapsed=0s need=2s
+UE 41 TTT_WAIT target=4 elapsed=0s need=2s
+UE 42 TTT_WAIT target=4 elapsed=0s need=2s
+UE 44 TTT_WAIT target=1 elapsed=0s need=2s
+UE 57 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=59 rnti=189 1->2 type=TN servingRsrp=-122.417 targetRsrp=-107.896 targetLoadReal=16/20 targetLoadEff=18/20
+UE 62 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=63 currCell=4 candCell=1 candRsrp=-120.273 < min=-120
+UE 65 TTT_WAIT target=1 elapsed=0s need=2s
+UE 66 TTT_WAIT target=2 elapsed=0s need=2s
+UE 67 TTT_WAIT target=2 elapsed=0s need=2s
+UE 68 TTT_WAIT target=4 elapsed=0s need=2s
+UE 71 TTT_WAIT target=1 elapsed=0s need=2s
+UE 73 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=74 rnti=202 1->2 type=TN servingRsrp=-115.159 targetRsrp=-102.163 targetLoadReal=16/20 targetLoadEff=19/20
+TRACE HO_SUCCESS Time=86.6151 IMSI=23 TargetCell=2 Type=TN TargetRSRP=-113.697 ServingRSRP=-79.4895 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=86.6151 IMSI=58 TargetCell=2 Type=TN TargetRSRP=-128.14 ServingRSRP=-121.358 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=86.6151 IMSI=22 TargetCell=2 Type=TN TargetRSRP=-119.815 ServingRSRP=-105.664 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=86.6151 IMSI=73 TargetCell=2 Type=TN TargetRSRP=-95.4898 ServingRSRP=-110.895 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=86.6151 IMSI=19 TargetCell=3 Type=TN TargetRSRP=-108.59 ServingRSRP=-100.722 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=86.6151 IMSI=28 TargetCell=3 Type=TN TargetRSRP=-123.246 ServingRSRP=-108.458 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=86.6151 IMSI=30 TargetCell=3 Type=TN TargetRSRP=-121.537 ServingRSRP=-105.734 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=88.5 ----
+  cell 1 (TN) load=13/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=20/20
+  cell 4 (TN) load=19/20
+LM HO UE=8 rnti=186 1->4 type=TN servingRsrp=-123.815 targetRsrp=-99.1816 targetLoadReal=19/20 targetLoadEff=19/20
+UE 12 TTT_WAIT target=1 elapsed=0s need=2s
+UE 15 TTT_WAIT target=2 elapsed=0s need=2s
+UE 17 TTT_WAIT target=2 elapsed=0s need=2s
+UE 19 TTT_WAIT target=2 elapsed=0s need=2s
+UE 23 TTT_WAIT target=1 elapsed=0s need=2s
+UE 24 TTT_WAIT target=1 elapsed=0s need=2s
+UE 28 TTT_WAIT target=2 elapsed=0s need=2s
+UE 31 TTT_WAIT target=1 elapsed=0s need=2s
+UE 33 TTT_WAIT target=2 elapsed=0s need=2s
+UE 38 TTT_WAIT target=2 elapsed=0s need=2s
+UE 39 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=44 rnti=121 2->1 type=TN servingRsrp=-126.119 targetRsrp=-96.2071 targetLoadReal=13/20 targetLoadEff=13/20
+UE 46 TTT_WAIT target=1 elapsed=0s need=2s
+UE 51 TTT_WAIT target=1 elapsed=0s need=2s
+UE 53 TTT_WAIT target=2 elapsed=0s need=2s
+UE 54 TTT_WAIT target=1 elapsed=0s need=2s
+UE 55 TTT_WAIT target=1 elapsed=0s need=2s
+UE 58 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=59 currCell=2 candCell=1 candRsrp=-121.669 < min=-120
+UE 63 TTT_WAIT target=2 elapsed=0s need=2s
+UE 66 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=67 rnti=187 3->2 type=TN servingRsrp=-125.237 targetRsrp=-99.2365 targetLoadReal=18/20 targetLoadEff=18/20
+UE 70 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=71 rnti=136 2->1 type=TN servingRsrp=-114.691 targetRsrp=-93.2654 targetLoadReal=13/20 targetLoadEff=14/20
+UE 72 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=74 currCell=2 candCell=1 candRsrp=-120.829 < min=-120
+TRACE HO_SUCCESS Time=88.6151 IMSI=70 TargetCell=1 Type=TN TargetRSRP=-101.558 ServingRSRP=-106.664 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=88.6151 IMSI=43 TargetCell=1 Type=TN TargetRSRP=-120.498 ServingRSRP=-109.892 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=88.6151 IMSI=66 TargetCell=2 Type=TN TargetRSRP=-128.381 ServingRSRP=-89.4102 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=88.6151 IMSI=7 TargetCell=4 Type=TN TargetRSRP=-123.759 ServingRSRP=-111.298 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=90.5 ----
+  cell 1 (TN) load=14/20
+  cell 2 (TN) load=17/20
+  cell 3 (TN) load=19/20
+  cell 4 (TN) load=20/20
+UE 5 TTT_WAIT target=1 elapsed=0s need=2s
+UE 7 TTT_WAIT target=2 elapsed=0s need=2s
+UE 8 TTT_WAIT target=1 elapsed=0s need=2s
+UE 9 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=12 currCell=3 candCell=2 candRsrp=-122.172 < min=-120
+UE 14 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=17 rnti=200 3->2 type=TN servingRsrp=-103.82 targetRsrp=-83.9297 targetLoadReal=17/20 targetLoadEff=17/20
+UE 19 TTT_WAIT target=1 elapsed=0s need=2s
+UE 20 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=23 rnti=140 2->1 type=TN servingRsrp=-89.4936 targetRsrp=-69.274 targetLoadReal=14/20 targetLoadEff=14/20
+LM HO UE=24 rnti=141 2->1 type=TN servingRsrp=-115.469 targetRsrp=-108.15 targetLoadReal=14/20 targetLoadEff=15/20
+UE 25 TTT_WAIT target=2 elapsed=0s need=2s
+UE 26 TTT_WAIT target=2 elapsed=0s need=2s
+UE 28 TTT_WAIT target=1 elapsed=0s need=2s
+UE 29 TTT_WAIT target=1 elapsed=0s need=2s
+UE 31 TTT_WAIT target=2 elapsed=0s need=2s
+UE 35 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=38 rnti=176 3->2 type=TN servingRsrp=-115.496 targetRsrp=-90.2202 targetLoadReal=17/20 targetLoadEff=18/20
+LM HO UE=39 rnti=194 1->2 type=TN servingRsrp=-115.383 targetRsrp=-81.8371 targetLoadReal=17/20 targetLoadEff=19/20
+UE 41 TTT_WAIT target=1 elapsed=0s need=2s
+UE 42 TTT_WAIT target=3 elapsed=0s need=2s
+UE 45 TTT_WAIT target=3 elapsed=0s need=2s
+UE 47 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=51 currCell=2 candCell=3 candRsrp=-124.562 < min=-120
+LM HO UE=55 rnti=166 4->1 type=TN servingRsrp=-121.685 targetRsrp=-88.3213 targetLoadReal=14/20 targetLoadEff=16/20
+UE 59 TTT_WAIT target=1 elapsed=0s need=2s
+UE 60 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=62 currCell=1 candCell=3 candRsrp=-121.626 < min=-120
+UE 63 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=66 rnti=205 3->1 type=TN servingRsrp=-119.704 targetRsrp=-113.24 targetLoadReal=14/20 targetLoadEff=17/20
+UE 67 TTT_WAIT target=1 elapsed=0s need=2s
+UE 69 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=72 rnti=137 2->1 type=TN servingRsrp=-127.223 targetRsrp=-95.7154 targetLoadReal=14/20 targetLoadEff=18/20
+UE 74 TTT_WAIT target=3 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=90.6151 IMSI=23 TargetCell=1 Type=TN TargetRSRP=-102.305 ServingRSRP=-94.1228 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=90.6151 IMSI=22 TargetCell=1 Type=TN TargetRSRP=-106.744 ServingRSRP=-91.1208 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=90.6151 IMSI=71 TargetCell=1 Type=TN TargetRSRP=-121.946 ServingRSRP=-127.637 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=90.6151 IMSI=65 TargetCell=1 Type=TN TargetRSRP=-88.1635 ServingRSRP=-122.123 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=90.6151 IMSI=54 TargetCell=1 Type=TN TargetRSRP=-122.041 ServingRSRP=-125.549 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=90.6151 IMSI=38 TargetCell=2 Type=TN TargetRSRP=-81.596 ServingRSRP=-114.997 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=90.6151 IMSI=37 TargetCell=2 Type=TN TargetRSRP=-126.711 ServingRSRP=-112.665 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=90.6151 IMSI=16 TargetCell=2 Type=TN TargetRSRP=-122.463 ServingRSRP=-79.398 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=92.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=17/20
+  cell 3 (TN) load=16/20
+  cell 4 (TN) load=19/20
+LM HO UE=7 rnti=203 1->2 type=TN servingRsrp=-79.1705 targetRsrp=-72.7145 targetLoadReal=17/20 targetLoadEff=17/20
+UE 8 TTT_WAIT target=2 elapsed=0s need=2s
+UE 11 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=12 currCell=3 candCell=1 candRsrp=-122.486 < min=-120
+LM HO UE=14 rnti=198 3->1 type=TN servingRsrp=-108.555 targetRsrp=-82.7662 targetLoadReal=18/20 targetLoadEff=18/20
+UE 17 TTT_WAIT target=4 elapsed=0s need=2s
+UE 18 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=19 rnti=202 3->1 type=TN servingRsrp=-127.448 targetRsrp=-86.2798 targetLoadReal=18/20 targetLoadEff=19/20
+UE 23 TTT_WAIT target=2 elapsed=0s need=2s
+UE 24 TTT_WAIT target=3 elapsed=0s need=2s
+UE 29 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=35 rnti=139 2->3 type=TN servingRsrp=-125.717 targetRsrp=-98.9017 targetLoadReal=16/20 targetLoadEff=16/20
+UE 37 TTT_WAIT target=2 elapsed=0s need=2s
+UE 38 TTT_WAIT target=4 elapsed=0s need=2s
+UE 39 TTT_WAIT target=3 elapsed=0s need=2s
+UE 41 TTT_WAIT target=3 elapsed=0s need=2s
+UE 42 TTT_WAIT target=4 elapsed=0s need=2s
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+UE 47 TTT_WAIT target=2 elapsed=0s need=2s
+UE 48 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=51 currCell=2 candCell=3 candRsrp=-122.452 < min=-120
+UE 56 TTT_WAIT target=3 elapsed=0s need=2s
+UE 57 TTT_WAIT target=2 elapsed=0s need=2s
+UE 59 TTT_WAIT target=3 elapsed=0s need=2s
+UE 61 TTT_WAIT target=2 elapsed=0s need=2s
+UE 63 TTT_WAIT target=3 elapsed=0s need=2s
+UE 68 TTT_WAIT target=4 elapsed=0s need=2s
+UE 71 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=72 currCell=1 candCell=3 candRsrp=-120.149 < min=-120
+UE 74 TTT_WAIT target=4 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=92.6151 IMSI=13 TargetCell=1 Type=TN TargetRSRP=-122.188 ServingRSRP=-111.93 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=92.6151 IMSI=18 TargetCell=1 Type=TN TargetRSRP=-124.532 ServingRSRP=-127.597 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=92.6151 IMSI=6 TargetCell=2 Type=TN TargetRSRP=-109.432 ServingRSRP=-107.809 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=92.6151 IMSI=34 TargetCell=3 Type=TN TargetRSRP=-109.479 ServingRSRP=-114.434 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=94.5 ----
+  cell 1 (TN) load=19/20
+  cell 2 (TN) load=17/20
+  cell 3 (TN) load=15/20
+  cell 4 (TN) load=19/20
+UE 8 TTT_WAIT target=1 elapsed=0s need=2s
+UE 9 TTT_WAIT target=1 elapsed=0s need=2s
+UE 10 TTT_WAIT target=2 elapsed=0s need=2s
+UE 11 TTT_WAIT target=1 elapsed=0s need=2s
+UE 12 TTT_WAIT target=1 elapsed=0s need=2s
+UE 14 TTT_WAIT target=2 elapsed=0s need=2s
+UE 17 TTT_WAIT target=3 elapsed=0s need=2s
+UE 18 TTT_WAIT target=3 elapsed=0s need=2s
+UE 20 TTT_WAIT target=2 elapsed=0s need=2s
+UE 24 TTT_WAIT target=2 elapsed=0s need=2s
+UE 27 TTT_WAIT target=2 elapsed=0s need=2s
+UE 31 TTT_WAIT target=1 elapsed=0s need=2s
+UE 33 TTT_WAIT target=4 elapsed=0s need=2s
+UE 34 TTT_WAIT target=2 elapsed=0s need=2s
+UE 35 TTT_WAIT target=1 elapsed=0s need=2s
+UE 41 TTT_WAIT target=1 elapsed=0s need=2s
+UE 46 TTT_WAIT target=1 elapsed=0s need=2s
+UE 50 TTT_WAIT target=1 elapsed=0s need=2s
+UE 51 TTT_WAIT target=1 elapsed=0s need=2s
+UE 53 TTT_WAIT target=2 elapsed=0s need=2s
+UE 54 TTT_WAIT target=1 elapsed=0s need=2s
+UE 55 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=56 rnti=125 1->3 type=TN servingRsrp=-110.894 targetRsrp=-104.713 targetLoadReal=15/20 targetLoadEff=15/20
+UE 57 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=59 rnti=142 2->3 type=TN servingRsrp=-105.823 targetRsrp=-93.6776 targetLoadReal=15/20 targetLoadEff=16/20
+UE 60 TTT_WAIT target=1 elapsed=0s need=2s
+UE 63 TTT_WAIT target=2 elapsed=0s need=2s
+UE 66 TTT_WAIT target=3 elapsed=0s need=2s
+UE 69 TTT_WAIT target=1 elapsed=0s need=2s
+UE 70 TTT_WAIT target=3 elapsed=0s need=2s
+UE 71 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=94.6151 IMSI=55 TargetCell=3 Type=TN TargetRSRP=-112.912 ServingRSRP=-106.388 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=94.6151 IMSI=58 TargetCell=3 Type=TN TargetRSRP=-127.523 ServingRSRP=-107.94 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=96.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=16/20
+  cell 3 (TN) load=17/20
+  cell 4 (TN) load=19/20
+UE 7 TTT_WAIT target=3 elapsed=0s need=2s
+UE 8 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=9 rnti=123 2->1 type=TN servingRsrp=-123.731 targetRsrp=-105.686 targetLoadReal=18/20 targetLoadEff=18/20
+UE 11 TTT_WAIT target=4 elapsed=0s need=2s
+UE 12 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=18 rnti=197 1->3 type=TN servingRsrp=-107.207 targetRsrp=-78.0079 targetLoadReal=17/20 targetLoadEff=17/20
+UE 19 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=24 rnti=209 1->2 type=TN servingRsrp=-93.3945 targetRsrp=-86.0733 targetLoadReal=16/20 targetLoadEff=16/20
+LM HO UE=27 rnti=177 4->2 type=TN servingRsrp=-113.808 targetRsrp=-81.1708 targetLoadReal=16/20 targetLoadEff=17/20
+UE 28 TTT_WAIT target=1 elapsed=0s need=2s
+UE 29 TTT_WAIT target=1 elapsed=0s need=2s
+UE 31 TTT_WAIT target=2 elapsed=0s need=2s
+UE 33 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=35 rnti=209 3->1 type=TN servingRsrp=-117.056 targetRsrp=-101.406 targetLoadReal=18/20 targetLoadEff=19/20
+UE 37 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=38 currCell=2 candCell=3 candRsrp=-122.093 < min=-120
+UE 39 TTT_WAIT target=3 elapsed=0s need=2s
+UE 41 TTT_WAIT target=4 elapsed=0s need=2s
+UE 42 TTT_WAIT target=3 elapsed=0s need=2s
+UE 44 TTT_WAIT target=2 elapsed=0s need=2s
+UE 45 TTT_WAIT target=2 elapsed=0s need=2s
+UE 46 TTT_WAIT target=3 elapsed=0s need=2s
+UE 47 TTT_WAIT target=2 elapsed=0s need=2s
+UE 51 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=59 currCell=3 candCell=2 candRsrp=-124.74 < min=-120
+UE 62 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=63 currCell=4 candCell=3 candRsrp=-122.414 < min=-120
+UE 67 TTT_WAIT target=3 elapsed=0s need=2s
+UE 71 TTT_WAIT target=3 elapsed=0s need=2s
+UE 72 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=96.6151 IMSI=8 TargetCell=1 Type=TN TargetRSRP=-119.972 ServingRSRP=-112.808 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=96.6151 IMSI=34 TargetCell=1 Type=TN TargetRSRP=-115.204 ServingRSRP=-114.143 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=96.6151 IMSI=23 TargetCell=2 Type=TN TargetRSRP=-112.686 ServingRSRP=-85.3207 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=96.6151 IMSI=26 TargetCell=2 Type=TN TargetRSRP=-117.377 ServingRSRP=-93.6911 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=96.6151 IMSI=17 TargetCell=3 Type=TN TargetRSRP=-118.712 ServingRSRP=-103.421 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=98.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=17/20
+  cell 3 (TN) load=17/20
+  cell 4 (TN) load=18/20
+UE 5 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=7 rnti=148 2->3 type=TN servingRsrp=-103.314 targetRsrp=-97.0977 targetLoadReal=17/20 targetLoadEff=17/20
+UE 8 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=11 rnti=115 2->4 type=TN servingRsrp=-121.074 targetRsrp=-102.082 targetLoadReal=18/20 targetLoadEff=18/20
+UE 14 TTT_WAIT target=3 elapsed=0s need=2s
+UE 18 TTT_WAIT target=1 elapsed=0s need=2s
+UE 20 TTT_WAIT target=2 elapsed=0s need=2s
+UE 24 TTT_WAIT target=1 elapsed=0s need=2s
+UE 27 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=28 rnti=204 3->1 type=TN servingRsrp=-123.377 targetRsrp=-102.637 targetLoadReal=18/20 targetLoadEff=18/20
+LM HO UE=29 rnti=207 3->1 type=TN servingRsrp=-111.562 targetRsrp=-108.349 targetLoadReal=18/20 targetLoadEff=19/20
+LM HO UE=31 rnti=208 3->2 type=TN servingRsrp=-124.022 targetRsrp=-90.3066 targetLoadReal=17/20 targetLoadEff=17/20
+UE 38 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=39 currCell=2 candCell=3 candRsrp=-120.559 < min=-120
+UE 45 TTT_WAIT target=3 elapsed=0s need=2s
+UE 52 TTT_WAIT target=2 elapsed=0s need=2s
+UE 54 TTT_WAIT target=4 elapsed=0s need=2s
+UE 58 TTT_WAIT target=2 elapsed=0s need=2s
+UE 59 TTT_WAIT target=2 elapsed=0s need=2s
+UE 62 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=63 currCell=4 candCell=3 candRsrp=-124.498 < min=-120
+UE 65 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=67 rnti=144 2->3 type=TN servingRsrp=-125.348 targetRsrp=-103.439 targetLoadReal=17/20 targetLoadEff=18/20
+UE 68 TTT_WAIT target=2 elapsed=0s need=2s
+UE 70 TTT_WAIT target=2 elapsed=0s need=2s
+UE 71 TTT_WAIT target=2 elapsed=0s need=2s
+UE 72 TTT_WAIT target=3 elapsed=0s need=2s
+UE 73 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=98.6151 IMSI=28 TargetCell=1 Type=TN TargetRSRP=-108.708 ServingRSRP=-104.151 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=98.6151 IMSI=27 TargetCell=1 Type=TN TargetRSRP=-120.111 ServingRSRP=-83.1014 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=98.6151 IMSI=30 TargetCell=2 Type=TN TargetRSRP=-122.728 ServingRSRP=-122.664 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=98.6151 IMSI=6 TargetCell=3 Type=TN TargetRSRP=-120.449 ServingRSRP=-100.456 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=98.6151 IMSI=66 TargetCell=3 Type=TN TargetRSRP=-120.055 ServingRSRP=-87.8511 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=98.6151 IMSI=10 TargetCell=4 Type=TN TargetRSRP=-119.243 ServingRSRP=-86.9655 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=100.5 ----
+  cell 1 (TN) load=20/20
+  cell 2 (TN) load=15/20
+  cell 3 (TN) load=16/20
+  cell 4 (TN) load=19/20
+UE 7 TTT_WAIT target=2 elapsed=0s need=2s
+UE 9 TTT_WAIT target=2 elapsed=0s need=2s
+UE 11 TTT_WAIT target=2 elapsed=0s need=2s
+UE 12 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=14 rnti=211 1->3 type=TN servingRsrp=-109.663 targetRsrp=-82.392 targetLoadReal=16/20 targetLoadEff=16/20
+UE 18 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=27 rnti=150 2->4 type=TN servingRsrp=-121.491 targetRsrp=-115.237 targetLoadReal=19/20 targetLoadEff=19/20
+UE 29 TTT_WAIT target=2 elapsed=0s need=2s
+UE 30 TTT_WAIT target=3 elapsed=0s need=2s
+UE 33 TTT_WAIT target=3 elapsed=0s need=2s
+UE 34 TTT_WAIT target=2 elapsed=0s need=2s
+UE 35 TTT_WAIT target=2 elapsed=0s need=2s
+UE 37 TTT_WAIT target=2 elapsed=0s need=2s
+UE 40 TTT_WAIT target=2 elapsed=0s need=2s
+UE 42 TTT_WAIT target=3 elapsed=0s need=2s
+UE 44 TTT_WAIT target=3 elapsed=0s need=2s
+UE 46 TTT_WAIT target=3 elapsed=0s need=2s
+UE 48 TTT_WAIT target=2 elapsed=0s need=2s
+UE 52 TTT_WAIT target=3 elapsed=0s need=2s
+UE 58 TTT_WAIT target=3 elapsed=0s need=2s
+UE 61 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=62 rnti=191 1->2 type=TN servingRsrp=-119.326 targetRsrp=-94.4856 targetLoadReal=15/20 targetLoadEff=15/20
+UE 63 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=71 rnti=205 1->2 type=TN servingRsrp=-113.433 targetRsrp=-108.232 targetLoadReal=15/20 targetLoadEff=16/20
+UE 72 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=100.615 IMSI=61 TargetCell=2 Type=TN TargetRSRP=-119.421 ServingRSRP=-117.149 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=100.615 IMSI=70 TargetCell=2 Type=TN TargetRSRP=-107.863 ServingRSRP=-80.6138 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=100.615 IMSI=13 TargetCell=3 Type=TN TargetRSRP=-119.455 ServingRSRP=-116.682 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=100.615 IMSI=26 TargetCell=4 Type=TN TargetRSRP=-88.3712 ServingRSRP=-86.5516 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=102.5 ----
+  cell 1 (TN) load=17/20
+  cell 2 (TN) load=16/20
+  cell 3 (TN) load=17/20
+  cell 4 (TN) load=20/20
+UE 5 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=7 rnti=213 3->2 type=TN servingRsrp=-117.847 targetRsrp=-92.3214 targetLoadReal=16/20 targetLoadEff=16/20
+UE 8 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=11 rnti=186 4->2 type=TN servingRsrp=-120.868 targetRsrp=-87.3432 targetLoadReal=16/20 targetLoadEff=17/20
+LM HO_FAIL_LOW_RSRP UE=14 currCell=3 candCell=2 candRsrp=-122.847 < min=-120
+UE 17 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=18 rnti=212 3->2 type=TN servingRsrp=-106.733 targetRsrp=-84.4446 targetLoadReal=16/20 targetLoadEff=18/20
+UE 24 TTT_WAIT target=3 elapsed=0s need=2s
+UE 25 TTT_WAIT target=2 elapsed=0s need=2s
+UE 27 TTT_WAIT target=3 elapsed=0s need=2s
+UE 31 TTT_WAIT target=3 elapsed=0s need=2s
+UE 37 TTT_WAIT target=3 elapsed=0s need=2s
+UE 38 TTT_WAIT target=3 elapsed=0s need=2s
+UE 39 TTT_WAIT target=1 elapsed=0s need=2s
+UE 40 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=42 currCell=2 candCell=1 candRsrp=-121.26 < min=-120
+UE 44 TTT_WAIT target=2 elapsed=0s need=2s
+UE 47 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=51 currCell=2 candCell=3 candRsrp=-121.733 < min=-120
+UE 53 TTT_WAIT target=2 elapsed=0s need=2s
+UE 54 TTT_WAIT target=1 elapsed=0s need=2s
+UE 55 TTT_WAIT target=2 elapsed=0s need=2s
+UE 57 TTT_WAIT target=2 elapsed=0s need=2s
+UE 58 TTT_WAIT target=2 elapsed=0s need=2s
+UE 59 TTT_WAIT target=2 elapsed=0s need=2s
+UE 60 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=61 rnti=161 4->2 type=TN servingRsrp=-111.67 targetRsrp=-106.751 targetLoadReal=16/20 targetLoadEff=19/20
+LM HO_FAIL_LOW_RSRP UE=63 currCell=4 candCell=1 candRsrp=-124.511 < min=-120
+UE 65 TTT_WAIT target=3 elapsed=0s need=2s
+UE 66 TTT_WAIT target=3 elapsed=0s need=2s
+UE 70 TTT_WAIT target=1 elapsed=0s need=2s
+UE 71 TTT_WAIT target=1 elapsed=0s need=2s
+UE 72 TTT_WAIT target=3 elapsed=0s need=2s
+UE 74 TTT_WAIT target=3 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=102.615 IMSI=6 TargetCell=2 Type=TN TargetRSRP=-66.113 ServingRSRP=-101.687 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=102.615 IMSI=17 TargetCell=2 Type=TN TargetRSRP=-95.9503 ServingRSRP=-109.656 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=102.615 IMSI=10 TargetCell=2 Type=TN TargetRSRP=-123.165 ServingRSRP=-81.2334 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=102.615 IMSI=60 TargetCell=2 Type=TN TargetRSRP=-92.1985 ServingRSRP=-106.538 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=104.5 ----
+  cell 1 (TN) load=17/20
+  cell 2 (TN) load=20/20
+  cell 3 (TN) load=15/20
+  cell 4 (TN) load=18/20
+LM HO UE=8 rnti=185 4->1 type=TN servingRsrp=-117.911 targetRsrp=-114.69 targetLoadReal=17/20 targetLoadEff=17/20
+UE 9 TTT_WAIT target=3 elapsed=0s need=2s
+UE 11 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=12 currCell=3 candCell=1 candRsrp=-123.618 < min=-120
+UE 14 TTT_WAIT target=4 elapsed=0s need=2s
+UE 17 TTT_WAIT target=4 elapsed=0s need=2s
+UE 19 TTT_WAIT target=3 elapsed=0s need=2s
+UE 24 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=38 rnti=147 2->3 type=TN servingRsrp=-120.952 targetRsrp=-77.7708 targetLoadReal=15/20 targetLoadEff=15/20
+UE 39 TTT_WAIT target=3 elapsed=0s need=2s
+UE 40 TTT_WAIT target=3 elapsed=0s need=2s
+UE 42 TTT_WAIT target=1 elapsed=0s need=2s
+UE 50 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=52 currCell=1 candCell=3 candRsrp=-120.33 < min=-120
+UE 55 TTT_WAIT target=4 elapsed=0s need=2s
+UE 57 TTT_WAIT target=1 elapsed=0s need=2s
+UE 58 TTT_WAIT target=3 elapsed=0s need=2s
+UE 59 TTT_WAIT target=1 elapsed=0s need=2s
+UE 61 TTT_WAIT target=4 elapsed=0s need=2s
+UE 62 TTT_WAIT target=3 elapsed=0s need=2s
+UE 63 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=65 currCell=2 candCell=1 candRsrp=-120.946 < min=-120
+TRACE HO_SUCCESS Time=104.615 IMSI=7 TargetCell=1 Type=TN TargetRSRP=-120.009 ServingRSRP=-81.2697 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=104.615 IMSI=37 TargetCell=3 Type=TN TargetRSRP=-116.044 ServingRSRP=-117.409 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=106.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=19/20
+  cell 3 (TN) load=16/20
+  cell 4 (TN) load=17/20
+UE 5 TTT_WAIT target=1 elapsed=0s need=2s
+UE 9 TTT_WAIT target=4 elapsed=0s need=2s
+UE 12 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=17 rnti=145 2->4 type=TN servingRsrp=-85.175 targetRsrp=-78.9054 targetLoadReal=17/20 targetLoadEff=17/20
+UE 18 TTT_WAIT target=1 elapsed=0s need=2s
+UE 19 TTT_WAIT target=4 elapsed=0s need=2s
+UE 24 TTT_WAIT target=3 elapsed=0s need=2s
+UE 28 TTT_WAIT target=3 elapsed=0s need=2s
+UE 30 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=31 currCell=2 candCell=3 candRsrp=-124.428 < min=-120
+UE 35 TTT_WAIT target=2 elapsed=0s need=2s
+UE 36 TTT_WAIT target=2 elapsed=0s need=2s
+UE 37 TTT_WAIT target=4 elapsed=0s need=2s
+UE 38 TTT_WAIT target=1 elapsed=0s need=2s
+UE 41 TTT_WAIT target=3 elapsed=0s need=2s
+UE 47 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=50 rnti=138 3->4 type=TN servingRsrp=-123.381 targetRsrp=-110.017 targetLoadReal=17/20 targetLoadEff=18/20
+LM HO_FAIL_LOW_RSRP UE=51 currCell=2 candCell=3 candRsrp=-120.797 < min=-120
+UE 52 TTT_WAIT target=3 elapsed=0s need=2s
+UE 56 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=59 currCell=3 candCell=1 candRsrp=-121.297 < min=-120
+UE 63 TTT_WAIT target=1 elapsed=0s need=2s
+UE 65 TTT_WAIT target=4 elapsed=0s need=2s
+UE 67 TTT_WAIT target=1 elapsed=0s need=2s
+UE 69 TTT_WAIT target=2 elapsed=0s need=2s
+UE 74 TTT_WAIT target=1 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=106.615 IMSI=16 TargetCell=4 Type=TN TargetRSRP=-99.0779 ServingRSRP=-110.547 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=106.615 IMSI=49 TargetCell=4 Type=TN TargetRSRP=-134.889 ServingRSRP=-119.251 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=108.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=15/20
+  cell 4 (TN) load=19/20
+LM HO UE=5 rnti=203 3->1 type=TN servingRsrp=-117.763 targetRsrp=-111.622 targetLoadReal=18/20 targetLoadEff=18/20
+LM HO UE=9 rnti=213 1->4 type=TN servingRsrp=-105.166 targetRsrp=-99.2757 targetLoadReal=19/20 targetLoadEff=19/20
+UE 10 TTT_WAIT target=2 elapsed=0s need=2s
+UE 11 TTT_WAIT target=1 elapsed=0s need=2s
+UE 12 TTT_WAIT target=1 elapsed=0s need=2s
+UE 14 TTT_WAIT target=1 elapsed=0s need=2s
+UE 17 TTT_WAIT target=2 elapsed=0s need=2s
+UE 18 TTT_WAIT target=3 elapsed=0s need=2s
+UE 19 TTT_WAIT target=2 elapsed=0s need=2s
+UE 23 TTT_WAIT target=3 elapsed=0s need=2s
+UE 24 TTT_WAIT target=1 elapsed=0s need=2s
+UE 29 TTT_WAIT target=2 elapsed=0s need=2s
+UE 35 TTT_WAIT target=3 elapsed=0s need=2s
+UE 40 TTT_WAIT target=1 elapsed=0s need=2s
+UE 44 TTT_WAIT target=3 elapsed=0s need=2s
+UE 45 TTT_WAIT target=3 elapsed=0s need=2s
+UE 46 TTT_WAIT target=1 elapsed=0s need=2s
+UE 47 TTT_WAIT target=2 elapsed=0s need=2s
+UE 50 TTT_WAIT target=1 elapsed=0s need=2s
+UE 53 TTT_WAIT target=1 elapsed=0s need=2s
+UE 55 TTT_WAIT target=2 elapsed=0s need=2s
+UE 57 TTT_WAIT target=2 elapsed=0s need=2s
+UE 59 TTT_WAIT target=1 elapsed=0s need=2s
+UE 62 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=63 rnti=182 4->1 type=TN servingRsrp=-139.069 targetRsrp=-113.011 targetLoadReal=18/20 targetLoadEff=19/20
+UE 68 TTT_WAIT target=2 elapsed=0s need=2s
+UE 69 TTT_WAIT target=3 elapsed=0s need=2s
+UE 70 TTT_WAIT target=3 elapsed=0s need=2s
+UE 74 TTT_WAIT target=3 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=108.615 IMSI=4 TargetCell=1 Type=TN TargetRSRP=-103.476 ServingRSRP=-116.857 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=108.615 IMSI=62 TargetCell=1 Type=TN TargetRSRP=-125.802 ServingRSRP=-119.038 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=108.615 IMSI=8 TargetCell=4 Type=TN TargetRSRP=-116.957 ServingRSRP=-100.316 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=110.5 ----
+  cell 1 (TN) load=19/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=14/20
+  cell 4 (TN) load=19/20
+UE 5 TTT_WAIT target=3 elapsed=0s need=2s
+UE 7 TTT_WAIT target=1 elapsed=0s need=2s
+UE 8 TTT_WAIT target=2 elapsed=0s need=2s
+UE 9 TTT_WAIT target=2 elapsed=0s need=2s
+UE 11 TTT_WAIT target=4 elapsed=0s need=2s
+UE 19 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=24 rnti=149 2->1 type=TN servingRsrp=-87.97 targetRsrp=-81.074 targetLoadReal=19/20 targetLoadEff=19/20
+UE 26 TTT_WAIT target=2 elapsed=0s need=2s
+UE 27 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=29 rnti=216 1->2 type=TN servingRsrp=-112.1 targetRsrp=-103.688 targetLoadReal=18/20 targetLoadEff=18/20
+UE 33 TTT_WAIT target=3 elapsed=0s need=2s
+UE 35 TTT_WAIT target=2 elapsed=0s need=2s
+UE 37 TTT_WAIT target=2 elapsed=0s need=2s
+UE 38 TTT_WAIT target=2 elapsed=0s need=2s
+UE 41 TTT_WAIT target=4 elapsed=0s need=2s
+UE 42 TTT_WAIT target=3 elapsed=0s need=2s
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+UE 48 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=50 currCell=4 candCell=3 candRsrp=-122.437 < min=-120
+LM HO_FAIL_LOW_RSRP UE=51 currCell=2 candCell=3 candRsrp=-121.918 < min=-120
+UE 52 TTT_WAIT target=3 elapsed=0s need=2s
+UE 54 TTT_WAIT target=3 elapsed=0s need=2s
+UE 55 TTT_WAIT target=4 elapsed=0s need=2s
+UE 59 TTT_WAIT target=2 elapsed=0s need=2s
+UE 61 TTT_WAIT target=4 elapsed=0s need=2s
+UE 63 TTT_WAIT target=2 elapsed=0s need=2s
+UE 65 TTT_WAIT target=4 elapsed=0s need=2s
+UE 70 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=74 rnti=143 2->3 type=TN servingRsrp=-125.791 targetRsrp=-117.195 targetLoadReal=14/20 targetLoadEff=14/20
+TRACE HO_SUCCESS Time=110.615 IMSI=23 TargetCell=1 Type=TN TargetRSRP=-109.14 ServingRSRP=-109.511 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=110.615 IMSI=28 TargetCell=2 Type=TN TargetRSRP=-111.594 ServingRSRP=-80.8628 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=110.615 IMSI=73 TargetCell=3 Type=TN TargetRSRP=-122.54 ServingRSRP=-103.02 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=112.5 ----
+  cell 1 (TN) load=19/20
+  cell 2 (TN) load=17/20
+  cell 3 (TN) load=15/20
+  cell 4 (TN) load=19/20
+UE 8 TTT_WAIT target=4 elapsed=0s need=2s
+UE 10 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=11 rnti=155 2->4 type=TN servingRsrp=-125.101 targetRsrp=-90.6472 targetLoadReal=19/20 targetLoadEff=19/20
+UE 14 TTT_WAIT target=1 elapsed=0s need=2s
+UE 19 TTT_WAIT target=2 elapsed=0s need=2s
+UE 24 TTT_WAIT target=2 elapsed=0s need=2s
+UE 25 TTT_WAIT target=2 elapsed=0s need=2s
+UE 27 TTT_WAIT target=1 elapsed=0s need=2s
+UE 28 TTT_WAIT target=2 elapsed=0s need=2s
+UE 29 TTT_WAIT target=1 elapsed=0s need=2s
+UE 30 TTT_WAIT target=1 elapsed=0s need=2s
+UE 34 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=37 rnti=190 1->2 type=TN servingRsrp=-117.005 targetRsrp=-93.7538 targetLoadReal=17/20 targetLoadEff=17/20
+UE 39 TTT_WAIT target=1 elapsed=0s need=2s
+UE 46 TTT_WAIT target=1 elapsed=0s need=2s
+UE 47 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=48 rnti=142 4->2 type=TN servingRsrp=-106.857 targetRsrp=-87.9293 targetLoadReal=17/20 targetLoadEff=18/20
+UE 50 TTT_WAIT target=3 elapsed=0s need=2s
+UE 51 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=55 currCell=1 candCell=2 candRsrp=-121.607 < min=-120
+UE 56 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=57 currCell=3 candCell=1 candRsrp=-127.666 < min=-120
+UE 58 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=59 currCell=3 candCell=1 candRsrp=-124.335 < min=-120
+UE 60 TTT_WAIT target=2 elapsed=0s need=2s
+UE 62 TTT_WAIT target=1 elapsed=0s need=2s
+UE 64 TTT_WAIT target=2 elapsed=0s need=2s
+UE 65 TTT_WAIT target=1 elapsed=0s need=2s
+UE 66 TTT_WAIT target=3 elapsed=0s need=2s
+UE 71 TTT_WAIT target=1 elapsed=0s need=2s
+UE 72 TTT_WAIT target=3 elapsed=0s need=2s
+UE 74 TTT_WAIT target=1 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=112.615 IMSI=36 TargetCell=2 Type=TN TargetRSRP=-124.895 ServingRSRP=-106.636 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=112.615 IMSI=47 TargetCell=2 Type=TN TargetRSRP=-123.59 ServingRSRP=-104.398 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=112.615 IMSI=10 TargetCell=4 Type=TN TargetRSRP=-119.896 ServingRSRP=-91.0312 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=114.5 ----
+  cell 1 (TN) load=18/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=15/20
+  cell 4 (TN) load=19/20
+UE 5 TTT_WAIT target=2 elapsed=0s need=2s
+UE 9 TTT_WAIT target=2 elapsed=0s need=2s
+UE 10 TTT_WAIT target=1 elapsed=0s need=2s
+UE 11 TTT_WAIT target=1 elapsed=0s need=2s
+UE 12 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=14 rnti=215 3->1 type=TN servingRsrp=-117.162 targetRsrp=-82.3769 targetLoadReal=18/20 targetLoadEff=18/20
+UE 15 TTT_WAIT target=1 elapsed=0s need=2s
+UE 18 TTT_WAIT target=1 elapsed=0s need=2s
+UE 19 TTT_WAIT target=3 elapsed=0s need=2s
+UE 20 TTT_WAIT target=1 elapsed=0s need=2s
+UE 22 TTT_WAIT target=2 elapsed=0s need=2s
+UE 24 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=25 rnti=168 4->2 type=TN servingRsrp=-125.075 targetRsrp=-100.689 targetLoadReal=18/20 targetLoadEff=18/20
+UE 26 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=27 rnti=187 4->1 type=TN servingRsrp=-113.706 targetRsrp=-84.3158 targetLoadReal=18/20 targetLoadEff=19/20
+LM HO UE=28 rnti=215 1->2 type=TN servingRsrp=-115.112 targetRsrp=-87.6646 targetLoadReal=18/20 targetLoadEff=19/20
+UE 31 TTT_WAIT target=3 elapsed=0s need=2s
+UE 35 TTT_WAIT target=3 elapsed=0s need=2s
+UE 37 TTT_WAIT target=4 elapsed=0s need=2s
+UE 48 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=50 currCell=4 candCell=3 candRsrp=-120.021 < min=-120
+LM HO UE=51 rnti=117 2->3 type=TN servingRsrp=-91.7209 targetRsrp=-88.3785 targetLoadReal=15/20 targetLoadEff=15/20
+UE 54 TTT_WAIT target=4 elapsed=0s need=2s
+UE 62 TTT_WAIT target=4 elapsed=0s need=2s
+UE 63 TTT_WAIT target=3 elapsed=0s need=2s
+UE 68 TTT_WAIT target=4 elapsed=0s need=2s
+UE 73 TTT_WAIT target=3 elapsed=0s need=2s
+UE 74 TTT_WAIT target=4 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=114.615 IMSI=13 TargetCell=1 Type=TN TargetRSRP=-121.262 ServingRSRP=-97.4461 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=114.615 IMSI=26 TargetCell=1 Type=TN TargetRSRP=-94.6665 ServingRSRP=-79.3976 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=114.615 IMSI=27 TargetCell=2 Type=TN TargetRSRP=-112.537 ServingRSRP=-92.3239 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=114.615 IMSI=24 TargetCell=2 Type=TN TargetRSRP=-128.314 ServingRSRP=-118.974 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=114.615 IMSI=50 TargetCell=3 Type=TN TargetRSRP=-113.116 ServingRSRP=-97.787 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=116.5 ----
+  cell 1 (TN) load=19/20
+  cell 2 (TN) load=19/20
+  cell 3 (TN) load=15/20
+  cell 4 (TN) load=17/20
+LM HO UE=5 rnti=218 1->2 type=TN servingRsrp=-116.973 targetRsrp=-106.584 targetLoadReal=19/20 targetLoadEff=19/20
+UE 8 TTT_WAIT target=3 elapsed=0s need=2s
+UE 9 TTT_WAIT target=1 elapsed=0s need=2s
+UE 16 TTT_WAIT target=1 elapsed=0s need=2s
+UE 17 TTT_WAIT target=3 elapsed=0s need=2s
+UE 18 TTT_WAIT target=4 elapsed=0s need=2s
+UE 22 TTT_WAIT target=1 elapsed=0s need=2s
+UE 23 TTT_WAIT target=4 elapsed=0s need=2s
+UE 25 TTT_WAIT target=4 elapsed=0s need=2s
+UE 28 TTT_WAIT target=3 elapsed=0s need=2s
+UE 30 TTT_WAIT target=3 elapsed=0s need=2s
+UE 31 TTT_WAIT target=1 elapsed=0s need=2s
+UE 33 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=35 rnti=214 1->3 type=TN servingRsrp=-120.644 targetRsrp=-117.593 targetLoadReal=15/20 targetLoadEff=15/20
+UE 39 TTT_WAIT target=1 elapsed=0s need=2s
+UE 40 TTT_WAIT target=1 elapsed=0s need=2s
+UE 42 TTT_WAIT target=1 elapsed=0s need=2s
+UE 44 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=48 rnti=160 2->4 type=TN servingRsrp=-129.933 targetRsrp=-108.313 targetLoadReal=17/20 targetLoadEff=17/20
+LM HO_FAIL_LOW_RSRP UE=50 currCell=4 candCell=1 candRsrp=-121.632 < min=-120
+LM HO_FAIL_LOW_RSRP UE=53 currCell=3 candCell=4 candRsrp=-124.955 < min=-120
+LM HO_FAIL_LOW_RSRP UE=54 currCell=2 candCell=1 candRsrp=-120.23 < min=-120
+UE 55 TTT_WAIT target=4 elapsed=0s need=2s
+UE 56 TTT_WAIT target=1 elapsed=0s need=2s
+UE 61 TTT_WAIT target=3 elapsed=0s need=2s
+UE 62 TTT_WAIT target=1 elapsed=0s need=2s
+UE 65 TTT_WAIT target=1 elapsed=0s need=2s
+UE 70 TTT_WAIT target=3 elapsed=0s need=2s
+UE 71 TTT_WAIT target=1 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=116.615 IMSI=4 TargetCell=2 Type=TN TargetRSRP=-116.517 ServingRSRP=-97.929 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=116.615 IMSI=34 TargetCell=3 Type=TN TargetRSRP=-101.277 ServingRSRP=-83.1884 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=116.615 IMSI=47 TargetCell=4 Type=TN TargetRSRP=-101.44 ServingRSRP=-120.847 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+---- LOAD at t=118.5 ----
+  cell 1 (TN) load=17/20
+  cell 2 (TN) load=19/20
+  cell 3 (TN) load=16/20
+  cell 4 (TN) load=18/20
+UE 5 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=8 rnti=217 1->3 type=TN servingRsrp=-117.795 targetRsrp=-107.434 targetLoadReal=16/20 targetLoadEff=16/20
+UE 9 TTT_WAIT target=3 elapsed=0s need=2s
+UE 12 TTT_WAIT target=1 elapsed=0s need=2s
+UE 14 TTT_WAIT target=2 elapsed=0s need=2s
+UE 24 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=25 rnti=161 2->4 type=TN servingRsrp=-125.217 targetRsrp=-92.5871 targetLoadReal=18/20 targetLoadEff=18/20
+UE 27 TTT_WAIT target=4 elapsed=0s need=2s
+UE 28 TTT_WAIT target=1 elapsed=0s need=2s
+UE 29 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=33 rnti=200 1->3 type=TN servingRsrp=-123.723 targetRsrp=-94.9059 targetLoadReal=16/20 targetLoadEff=17/20
+UE 37 TTT_WAIT target=4 elapsed=0s need=2s
+UE 38 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=39 rnti=146 2->1 type=TN servingRsrp=-113.66 targetRsrp=-78.2175 targetLoadReal=17/20 targetLoadEff=17/20
+UE 41 TTT_WAIT target=3 elapsed=0s need=2s
+UE 44 TTT_WAIT target=2 elapsed=0s need=2s
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+UE 47 TTT_WAIT target=3 elapsed=0s need=2s
+UE 50 TTT_WAIT target=3 elapsed=0s need=2s
+UE 51 TTT_WAIT target=1 elapsed=0s need=2s
+UE 52 TTT_WAIT target=3 elapsed=0s need=2s
+UE 58 TTT_WAIT target=2 elapsed=0s need=2s
+UE 59 TTT_WAIT target=2 elapsed=0s need=2s
+UE 60 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=62 rnti=152 2->1 type=TN servingRsrp=-121.561 targetRsrp=-96.8503 targetLoadReal=17/20 targetLoadEff=18/20
+LM HO_FAIL_LOW_RSRP UE=63 currCell=1 candCell=2 candRsrp=-124.54 < min=-120
+UE 66 TTT_WAIT target=2 elapsed=0s need=2s
+UE 67 TTT_WAIT target=1 elapsed=0s need=2s
+UE 68 TTT_WAIT target=2 elapsed=0s need=2s
+UE 69 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=71 rnti=153 2->1 type=TN servingRsrp=-110.916 targetRsrp=-89.5066 targetLoadReal=17/20 targetLoadEff=19/20
+UE 72 TTT_WAIT target=2 elapsed=0s need=2s
+UE 74 TTT_WAIT target=2 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=118.615 IMSI=61 TargetCell=1 Type=TN TargetRSRP=-107.163 ServingRSRP=-118.61 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=118.615 IMSI=70 TargetCell=1 Type=TN TargetRSRP=-74.4629 ServingRSRP=-68.9479 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=118.615 IMSI=38 TargetCell=1 Type=TN TargetRSRP=-116.462 ServingRSRP=-80.4909 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=118.615 IMSI=32 TargetCell=3 Type=TN TargetRSRP=-118.518 ServingRSRP=-114.905 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=118.615 IMSI=7 TargetCell=3 Type=TN TargetRSRP=-122.576 ServingRSRP=-93.8143 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=118.615 IMSI=24 TargetCell=4 Type=TN TargetRSRP=-126.742 ServingRSRP=-105.467 BackhaulDlSnr=-999 BackhaulUlSnr=-999
