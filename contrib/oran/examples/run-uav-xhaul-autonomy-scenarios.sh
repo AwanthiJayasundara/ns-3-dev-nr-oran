@@ -56,7 +56,7 @@ COMMON_ARGS="--sim-time=120 \
   --tn-tx-power-dbm=46 \
   --uav-tx-power-dbm=37 \
   --ue-tx-power-dbm=23 \
-  --init-min-rsrp=-160 \
+  --init-min-rsrp=-110 \
   --enable-flow-monitor=1 \
   --enable-rsrp-trace=1 \
   --enable-position-trace=1 \
@@ -81,7 +81,7 @@ UAV_ARGS="--num-uess1=50 \
 
 NATURAL_MISSION_ARGS="--uav-control-start=30 \
   --uav-control-period=2 \
-  --uav-underserved-rsrp-thresh-dbm=-120 \
+  --uav-underserved-rsrp-thresh-dbm=-110 \
   --uav-initial-area-half-w-m=3000 \
   --uav-initial-area-half-h-m=1500 \
   --uav-area-half-w-m=16000 \
@@ -90,7 +90,7 @@ NATURAL_MISSION_ARGS="--uav-control-start=30 \
   --uav-speed-mps=25 \
   --xhaul-donor-unavailable-start=30 \
   --xhaul-donor-unavailable-stop=75 \
-  --xhaul-healthy-rsrp-dbm=-120 \
+  --xhaul-healthy-rsrp-dbm=-110 \
   --enable-xhaul-channel-variation=1 \
   --xhaul-shadowing-stddev-db=6 \
   --xhaul-fading-stddev-db=4 \

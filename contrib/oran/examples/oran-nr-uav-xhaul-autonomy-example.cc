@@ -2227,7 +2227,7 @@ main(int argc, char* argv[])
     double txTnPower = 46.0;
     double txNtnPower = 37.0;
     double ueTxPower = 23.0;
-    double initMinRsrpDbm = -160.0;
+    double initMinRsrpDbm = -110.0;
     double initRetryIntervalSec = 2.0;
     bool remMode = false; // [0]: REM disabled; [1]: generate REM
     int32_t remRbId = -1; // kept for compatibility (not used by this REM helper)
@@ -2252,8 +2252,8 @@ main(int argc, char* argv[])
     // this proxy with a co-located UAV-UE NetDevice attached to a TN donor gNB.
     double xhaulTxPowerDbm = 43.0;
     double xhaulFrequencyHz = 4.0e9;
-    double xhaulHealthyRsrpDbm = -120.0;
-    double xhaulDegradedRsrpDbm = -120.0;
+    double xhaulHealthyRsrpDbm = -110.0;
+    double xhaulDegradedRsrpDbm = -110.0;
     double xhaulTraceIntervalSec = 1.0;
     double xhaulMaxDonorDistanceM = -1.0;
 
@@ -2317,7 +2317,7 @@ main(int argc, char* argv[])
     uint32_t monitoredPacketSizeBytes = 1000;
     double uavControlStartSec = 7.0;
     double uavControlPeriodSec = 2.0;
-    double underservedRsrpThreshDbm = -120.0;
+    double underservedRsrpThreshDbm = -110.0;
 
     CommandLine cmd;
     cmd.AddValue("verbose", "Enable printing SQL queries results", verbose);
@@ -3773,7 +3773,7 @@ main(int argc, char* argv[])
 
         // Reject very weak handover targets even if they are technically the
         // strongest candidate. This prevents moving a UE to an unusable cell.
-        defaultLm->SetAttribute("MinAcceptableRsrpDbm", DoubleValue(-120.0));
+        defaultLm->SetAttribute("MinAcceptableRsrpDbm", DoubleValue(-110.0));
 
         // Hysteresis protects against ping-pong handovers by requiring the
         // target cell to be better than the current cell by this margin.
