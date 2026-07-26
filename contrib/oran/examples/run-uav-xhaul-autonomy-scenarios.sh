@@ -45,6 +45,7 @@ set -euo pipefail
 #   Satellite fallback/backhaul:  3GPP NTN-Suburban
 
 SEEDS="${SEEDS:-}"
+ENABLE_HARQ_RETX="${ENABLE_HARQ_RETX:-1}"
 
 COMMON_ARGS="--sim-time=120 \
   --num-tn-gnbs=4 \
@@ -57,6 +58,9 @@ COMMON_ARGS="--sim-time=120 \
   --uav-tx-power-dbm=37 \
   --ue-tx-power-dbm=23 \
   --init-min-rsrp=-110 \
+  --handover-min-rsrp-dbm=-110 \
+  --enable-harq-retx=${ENABLE_HARQ_RETX} \
+  --pdcp-discard-timer-ms=1000 \
   --enable-flow-monitor=1 \
   --enable-rsrp-trace=1 \
   --enable-position-trace=1 \

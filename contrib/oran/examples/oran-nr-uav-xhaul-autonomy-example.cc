@@ -2210,7 +2210,7 @@ main(int argc, char* argv[])
     bool enableOranCellLoadReports = true;
     bool enableDedicatedQosFlows = false;
     bool enablePdcpDiscarding = true;
-    uint32_t discardTimerMs = 100;
+    uint32_t discardTimerMs = 1000;
     uint32_t reorderingTimerMs = 100;
     uint32_t maxRlcTxBufferSize = 10 * 1024 * 1024;
     std::string rlcMode = "um";
@@ -2222,12 +2222,14 @@ main(int argc, char* argv[])
     bool enableFhControl = true;
     bool useFixedMcs = false;
     uint8_t fixedMcs = 0;
+    bool enableHarqRetx = true;
     bool enableSrsInUlSlots = true;
     bool enableSrsInFSlots = true;
     double txTnPower = 46.0;
     double txNtnPower = 37.0;
     double ueTxPower = 23.0;
     double initMinRsrpDbm = -110.0;
+    double handoverMinRsrpDbm = -110.0;
     double initRetryIntervalSec = 2.0;
     bool remMode = false; // [0]: REM disabled; [1]: generate REM
     int32_t remRbId = -1; // kept for compatibility (not used by this REM helper)
@@ -2466,12 +2468,18 @@ main(int argc, char* argv[])
     cmd.AddValue("enable-fh-control", "Enable 5G-LENA fronthaul control calculations", enableFhControl);
     cmd.AddValue("use-fixed-mcs", "Use fixed DL/UL MCS instead of adaptive AMC", useFixedMcs);
     cmd.AddValue("fixed-mcs", "Fixed MCS index used when --use-fixed-mcs=1", fixedMcs);
+    cmd.AddValue("enable-harq-retx",
+                 "Enable NR HARQ retransmissions. Keep enabled for fading/mobility QoS runs.",
+                 enableHarqRetx);
     cmd.AddValue("enable-srs-in-ul-slots", "Allow NR SRS scheduling in UL slots", enableSrsInUlSlots);
     cmd.AddValue("enable-srs-in-f-slots", "Allow NR SRS scheduling in flexible slots", enableSrsInFSlots);
     cmd.AddValue("tn-tx-power-dbm", "TN gNB access-link transmit power in dBm", txTnPower);
     cmd.AddValue("uav-tx-power-dbm", "UAV/NTN gNB access-link transmit power in dBm", txNtnPower);
     cmd.AddValue("ue-tx-power-dbm", "UE access-link transmit power in dBm", ueTxPower);
     cmd.AddValue("init-min-rsrp", "Minimum RSRP for initial attach in dBm", initMinRsrpDbm);
+    cmd.AddValue("handover-min-rsrp-dbm",
+                 "Minimum target RSRP allowed for O-RAN UE handover commands",
+                 handoverMinRsrpDbm);
     cmd.AddValue("init-retry-interval", "Initial attach retry interval in seconds", initRetryIntervalSec);
     cmd.AddValue("monitored-traffic",
                  "Traffic model for monitored UES1 flows: udp | xr",
@@ -2756,8 +2764,6 @@ main(int argc, char* argv[])
     // Both DL and UL AMC will have the same model behind.
     nrHelper->SetGnbDlAmcAttribute("AmcModel", EnumValue(NrAmc::ErrorModel));
     nrHelper->SetGnbUlAmcAttribute("AmcModel", EnumValue(NrAmc::ErrorModel));
-
-    bool enableHarqRetx = false;
 
     nrHelper->SetSchedulerAttribute("EnableHarqReTx", BooleanValue(enableHarqRetx));
     nrHelper->SetSchedulerAttribute("EnableSrsInUlSlots", BooleanValue(enableSrsInUlSlots));
@@ -3773,7 +3779,7 @@ main(int argc, char* argv[])
 
         // Reject very weak handover targets even if they are technically the
         // strongest candidate. This prevents moving a UE to an unusable cell.
-        defaultLm->SetAttribute("MinAcceptableRsrpDbm", DoubleValue(-110.0));
+        defaultLm->SetAttribute("MinAcceptableRsrpDbm", DoubleValue(handoverMinRsrpDbm));
 
         // Hysteresis protects against ping-pong handovers by requiring the
         // target cell to be better than the current cell by this margin.

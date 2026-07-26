@@ -13,18 +13,23 @@ set -euo pipefail
 #   not overwrite each other.
 
 RUN_LIMIT="${RUN_LIMIT:-0}"
+ENABLE_HARQ_RETX="${ENABLE_HARQ_RETX:-1}"
 RUN_COUNT=0
 
 COMMON_ARGS="--sim-time=120 \
   --num-tn-gnbs=4 \
   --rlc-mode=am \
   --monitored-traffic=udp \
+  --monitored-dl-rate-mbps=0.2 \
   --monitored-ul-rate-mbps=0.05 \
   --monitored-packet-size=1000 \
   --tn-tx-power-dbm=46 \
   --uav-tx-power-dbm=37 \
   --ue-tx-power-dbm=23 \
   --init-min-rsrp=-110 \
+  --handover-min-rsrp-dbm=-110 \
+  --enable-harq-retx=${ENABLE_HARQ_RETX} \
+  --pdcp-discard-timer-ms=1000 \
   --enable-flow-monitor=1 \
   --enable-rsrp-trace=1 \
   --enable-position-trace=1 \
