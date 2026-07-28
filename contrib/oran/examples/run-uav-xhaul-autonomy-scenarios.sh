@@ -11,15 +11,14 @@ set -euo pipefail
 #   Compare terrestrial, UAV-assisted, and satellite-assisted service. The
 #   TN-only scenario is a clean semi-urban terrestrial reference with no
 #   artificial disruption. The TN+UAV scenario adds aerial cells under healthy
-#   terrestrial donor backhaul. The satellite-assisted scenario uses a natural
-#   mission period starting at 30 s where UAVs move toward underserved UEs.
-#   In the satellite case, the TN donor/gateway path is unavailable from 30-75 s,
-#   representing a mission segment outside donor coverage or with blocked TN
-#   donor reachability. No hand-set RSRP penalty is used.
+#   terrestrial donor backhaul. The distance-loss scenarios use a mission period
+#   starting at 5 s where UAVs move toward underserved UEs. The UAV-to-TN donor
+#   RSRP can then fall because of distance/path loss and channel variation. No
+#   forced donor-unavailable time window or hand-set RSRP penalty is used.
 #     1. TN only under healthy terrestrial infrastructure
 #     2. TN + UAV with extra aerial access capacity and healthy TN donor backhaul
-#     3. TN + UAV with the same donor-backhaul outage but no satellite fallback
-#     4. TN + UAV + satellite with terrestrial donor-backhaul outage and a
+#     3. TN + UAV with distance-based donor-backhaul loss and no satellite fallback
+#     4. TN + UAV + satellite with distance-based donor-backhaul loss and a
 #        Near-RT RIC UAV TN/satellite switching xApp fallback
 #
 # Scenario 1 experiment size:
@@ -45,7 +44,10 @@ set -euo pipefail
 #   Satellite fallback/backhaul:  3GPP NTN-Suburban
 
 SEEDS="${SEEDS:-}"
-ENABLE_HARQ_RETX="${ENABLE_HARQ_RETX:-1}"
+# Keep HARQ disabled by default for this large mobility/satellite scenario.
+# It can be enabled for focused debugging with ENABLE_HARQ_RETX=1, but it has
+# caused allocator crashes in long mixed TN/UAV/satellite runs.
+ENABLE_HARQ_RETX="${ENABLE_HARQ_RETX:-0}"
 
 COMMON_ARGS="--sim-time=120 \
   --num-tn-gnbs=4 \
@@ -55,6 +57,7 @@ COMMON_ARGS="--sim-time=120 \
   --monitored-ul-rate-mbps=0.05 \
   --monitored-packet-size=1000 \
   --tn-tx-power-dbm=46 \
+  --xhaul-tx-power-dbm=46 \
   --uav-tx-power-dbm=37 \
   --ue-tx-power-dbm=23 \
   --init-min-rsrp=-110 \
@@ -83,18 +86,20 @@ UAV_ARGS="--num-uess1=50 \
   --max-ues-ntn=10 \
   --num-ntn-gnbs=3"
 
-NATURAL_MISSION_ARGS="--uav-control-start=30 \
+NATURAL_MISSION_ARGS="--uav-control-start=5 \
   --uav-control-period=2 \
   --uav-underserved-rsrp-thresh-dbm=-110 \
   --uav-initial-area-half-w-m=3000 \
   --uav-initial-area-half-h-m=1500 \
-  --uav-area-half-w-m=16000 \
-  --uav-area-half-h-m=8000 \
+  --uav-area-half-w-m=20000 \
+  --uav-area-half-h-m=10000 \
   --uav-mission-target-scale=4 \
   --uav-speed-mps=25 \
-  --xhaul-donor-unavailable-start=30 \
-  --xhaul-donor-unavailable-stop=75 \
+  --xhaul-pathloss-exponent=4.8 \
+  --xhaul-reference-distance-m=100 \
   --xhaul-healthy-rsrp-dbm=-110 \
+  --xhaul-switch-to-sat-ttt-s=5 \
+  --xhaul-switch-to-tn-ttt-s=5 \
   --enable-xhaul-channel-variation=1 \
   --xhaul-shadowing-stddev-db=6 \
   --xhaul-fading-stddev-db=4 \
@@ -143,19 +148,18 @@ run_four_main_scenarios()
   # capacity and coverage. Satellite backhaul is disabled.
   run_ns3 "tn-uav" "healthy-xhaul" "${seed}" "${COMMON_ARGS} ${UAV_ARGS}"
 
-  # Scenario 3: UE + TN + UAV with donor-backhaul stress but no satellite fallback.
-  # This is the fair no-satellite baseline. When the TN donor/gateway path is
-  # unavailable, the Near-RT RIC switching xApp removes the UAV route to the core
-  # and blocks normal handover to the UAV. QoS should drop for UAV-served users
-  # during this interval.
-  run_ns3 "tn-uav" "donor-unavailable-no-sat" "${seed}" "${COMMON_ARGS} ${UAV_ARGS} ${NATURAL_MISSION_ARGS}"
+  # Scenario 3: UE + TN + UAV with distance-based donor-backhaul stress but no
+  # satellite fallback. This is the fair no-satellite baseline. When UAV mission
+  # movement makes the TN donor RSRP fall below the usable threshold, the UAV
+  # route to the core becomes unavailable and normal UE handover to the UAV is
+  # blocked.
+  run_ns3 "tn-uav" "distance-loss-no-sat" "${seed}" "${COMMON_ARGS} ${UAV_ARGS} ${NATURAL_MISSION_ARGS}"
 
-  # Scenario 4: UE + TN + UAV + satellite with a natural mission-period stress.
-  # Same TN+UAV deployment, but satellite backhaul monitoring is enabled. During
-  # 30-75 s, the TN donor/gateway path is unavailable. If satellite SNR is
+  # Scenario 4: UE + TN + UAV + satellite with the same distance-based donor
+  # stress. If donor RSRP falls below the usable threshold and satellite SNR is
   # healthy, the Near-RT RIC switching xApp switches the core path to
   # UAV->SAT->GW->core.
-  run_ns3 "tn-uav-satellite" "donor-unavailable-sat" "${seed}" "${COMMON_ARGS} ${UAV_ARGS} --sat-backhaul-scenario=NTN-Suburban --enable-sat-backhaul-monitor=1 --enable-uav-switching-xapp=1 ${NATURAL_MISSION_ARGS}"
+  run_ns3 "tn-uav-satellite" "distance-loss-sat" "${seed}" "${COMMON_ARGS} ${UAV_ARGS} --sat-backhaul-scenario=NTN-Suburban --enable-sat-backhaul-monitor=1 --enable-uav-switching-xapp=1 ${NATURAL_MISSION_ARGS}"
 }
 
 if [[ -n "${SEEDS}" ]]; then

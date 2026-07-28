@@ -47,7 +47,7 @@ cmake-*/
 vcpkg/
 
 .vs/
-
+.venv-uav-ai
 *.db
 
 # Ignore local cache used by e.g. clangd

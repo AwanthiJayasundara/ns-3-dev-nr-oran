@@ -242,8 +242,10 @@ struct UavAutonomyXappContext
     NetDeviceContainer tnGnbNrDevs;     // TN gNB NR devices, used to read cell IDs.
     NetDeviceContainer uavGnbNrDevs;    // UAV gNB NR devices, used to read cell IDs.
     Ptr<HybridSatEpcHelper> epcHelper;  // Helper that switches TN/satellite/unavailable routes.
-    double xhaulTxPowerDbm = 43.0;      // Assumed TN donor transmit power for RSRP proxy.
+    double xhaulTxPowerDbm = 46.0;      // Assumed TN donor transmit power for RSRP proxy.
     double xhaulFrequencyHz = 4.0e9;    // Carrier used by the donor-backhaul RSRP proxy.
+    double xhaulPathlossExponent = 2.0; // 2.0 keeps the free-space distance slope.
+    double xhaulReferenceDistanceM = 1.0; // Reference distance for log-distance donor loss.
     double xhaulMaxDonorDistanceM = -1.0; // Optional donor search cutoff; <= 0 disables it.
     double healthyThresholdDbm = -95.0; // RSRP threshold above which TN_DIRECT is usable.
     double degradedThresholdDbm = -115.0; // Deprecated compatibility value.
@@ -252,6 +254,8 @@ struct UavAutonomyXappContext
     double degradationPenaltyDb = 0.0;  // Optional old synthetic RSRP penalty amount.
     double donorUnavailableStartSec = -1.0; // Start of explicit TN donor/gateway outage.
     double donorUnavailableStopSec = -1.0;  // End of explicit TN donor/gateway outage.
+    double switchToSatTttSec = 5.0;     // Time-to-trigger before leaving TN_DIRECT.
+    double switchToTnTttSec = 5.0;      // Time-to-trigger before returning to TN_DIRECT.
     double e2TxDelaySec = 0.0;          // Logged RIC/E2 timing knob for analysis.
     double e2SendIntervalSec = 0.0;     // Logged E2 reporting interval.
     double lmQueryIntervalSec = 0.0;    // Logged RIC logic-module query interval.
@@ -262,6 +266,9 @@ struct UavAutonomyXappContext
 };
 
 static std::unique_ptr<UavAutonomyXappContext> g_uavAutonomyXappCtx;
+static std::unordered_map<uint16_t, std::string> g_xhaulRawStateByCell;
+static std::unordered_map<uint16_t, std::string> g_xhaulEffectiveStateByCell;
+static std::unordered_map<uint16_t, double> g_xhaulRawStateSinceSecByCell;
 
 // --- ns-3 NS_LOG output redirection (LogComponentEnable -> file via std::clog) ---
 static std::ofstream g_nsLogFile;
@@ -571,18 +578,25 @@ void TraceUavPositions(NodeContainer uavs)
 }
 
 static double
-EstimateFreeSpaceRsrpDbm(double txPowerDbm, double frequencyHz, double distanceMeters)
+EstimateDonorBackhaulRsrpDbm(double txPowerDbm,
+                             double frequencyHz,
+                             double distanceMeters,
+                             double pathlossExponent,
+                             double referenceDistanceMeters)
 {
     // This is a lightweight UAV-to-TN donor-backhaul/xHaul-health proxy:
-    //   best TN donor gNB transmit power - free-space path loss.
-    // It is intentionally simple so that the comparison isolates the effect of
-    // xHaul-aware UAV autonomy. It should be described as an estimated
-    // donor-backhaul health RSRP, not as a full measured NR donor-link RSRP or
-    // a full 3GPP IAB implementation.
+    //   best TN donor gNB transmit power - log-distance path loss.
+    // The default exponent 2.0 with a 1 m reference distance equals free-space
+    // loss. Final distance-loss experiments can use a higher urban/NLOS-like
+    // exponent so that UAV mission movement naturally weakens donor backhaul.
     const double d = std::max(distanceMeters, 1.0);
     const double fGhz = frequencyHz / 1e9;
-    const double fsplDb = 32.4 + 20.0 * std::log10(fGhz) + 20.0 * std::log10(d);
-    return txPowerDbm - fsplDb;
+    const double d0 = std::max(referenceDistanceMeters, 1.0);
+    const double refLossDb = 32.4 + 20.0 * std::log10(fGhz) + 20.0 * std::log10(d0);
+    const double exponent = std::max(pathlossExponent, 2.0);
+    const double pathLossDb =
+        d <= d0 ? refLossDb : refLossDb + 10.0 * exponent * std::log10(d / d0);
+    return txPowerDbm - pathLossDb;
 }
 
 static std::string
@@ -663,9 +677,9 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
         // ------------------------------------------------------------------
         // 1. Find the best terrestrial donor for this UAV.
         //
-        // If the explicit donor/gateway outage is active, the loop is skipped
-        // and the UAV is forced into UNREACHABLE donor-backhaul state. This is
-        // the final 30-75 s disaster/outage model used by the article.
+        // The final scripts use distance/path-loss and channel variation to
+        // weaken this donor path. The explicit donor/gateway outage window is
+        // kept only for backward-compatible experiments.
         // ------------------------------------------------------------------
         Ptr<MobilityModel> uavMob = ctx.uavs.Get(uavIdx)->GetObject<MobilityModel>();
         if (!uavMob)
@@ -700,8 +714,11 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
             // Estimate a donor-backhaul RSRP proxy from distance and carrier
             // frequency. This is a monitoring/control feature, not a full IAB
             // protocol stack or separate physical UAV-UE donor connection.
-            double rsrpDbm =
-                EstimateFreeSpaceRsrpDbm(ctx.xhaulTxPowerDbm, ctx.xhaulFrequencyHz, distanceMeters);
+            double rsrpDbm = EstimateDonorBackhaulRsrpDbm(ctx.xhaulTxPowerDbm,
+                                                          ctx.xhaulFrequencyHz,
+                                                          distanceMeters,
+                                                          ctx.xhaulPathlossExponent,
+                                                          ctx.xhaulReferenceDistanceM);
             double channelVariationDb = 0.0;
             if (ctx.enableXhaulChannelVariation)
             {
@@ -740,15 +757,39 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
         // ------------------------------------------------------------------
         // 2. Convert the best donor RSRP into the donor-backhaul state.
         //
-        // Current final policy:
-        //   RSRP >= healthyThresholdDbm -> HEALTHY
-        //   otherwise                  -> UNREACHABLE
+        // The raw state follows the instantaneous donor RSRP. The effective
+        // state is what the xApp actually uses after a time-to-trigger filter.
+        // This avoids ping-pong switching from short fading dips.
         // ------------------------------------------------------------------
         const bool xhaulConnected = bestDonorCellId != 0;
-        const std::string xhaulState =
+        const std::string rawXhaulState =
             xhaulConnected
                 ? ClassifyXhaulState(bestRsrpDbm, ctx.healthyThresholdDbm, ctx.degradedThresholdDbm)
                 : "UNREACHABLE";
+
+        if (!g_xhaulRawStateByCell.count(uavCellId))
+        {
+            g_xhaulRawStateByCell[uavCellId] = rawXhaulState;
+            g_xhaulEffectiveStateByCell[uavCellId] = rawXhaulState;
+            g_xhaulRawStateSinceSecByCell[uavCellId] = now;
+        }
+        else if (g_xhaulRawStateByCell[uavCellId] != rawXhaulState)
+        {
+            g_xhaulRawStateByCell[uavCellId] = rawXhaulState;
+            g_xhaulRawStateSinceSecByCell[uavCellId] = now;
+        }
+
+        const std::string currentEffectiveState = g_xhaulEffectiveStateByCell[uavCellId];
+        if (rawXhaulState != currentEffectiveState)
+        {
+            const double requiredTttSec =
+                rawXhaulState == "HEALTHY" ? ctx.switchToTnTttSec : ctx.switchToSatTttSec;
+            if (now - g_xhaulRawStateSinceSecByCell[uavCellId] >= requiredTttSec)
+            {
+                g_xhaulEffectiveStateByCell[uavCellId] = rawXhaulState;
+            }
+        }
+        const std::string xhaulState = g_xhaulEffectiveStateByCell[uavCellId];
 
         // ------------------------------------------------------------------
         // 3. Read satellite fallback health for this UAV cell.
@@ -857,6 +898,8 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
                       << " BestDonorDistanceM=" << bestDonorDistanceM
                       << " XhaulConnected=" << (xhaulConnected ? 1 : 0)
                       << " XhaulChannelVariationDb=" << bestChannelVariationDb
+                      << " RawXhaulState=" << rawXhaulState
+                      << " RawXhaulStateAgeSec=" << (now - g_xhaulRawStateSinceSecByCell[uavCellId])
                       << " XhaulState=" << xhaulState
                       << " DonorUnavailableActive=" << (donorUnavailableActive ? 1 : 0)
                       << " SatBackhaulHealthy=" << (satHealthy ? 1 : 0)
@@ -880,6 +923,8 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
             << (xhaulConnected ? 1 : 0) << ","
             << bestChannelVariationDb << ","
             << bestRsrpDbm << ","
+            << rawXhaulState << ","
+            << (now - g_xhaulRawStateSinceSecByCell[uavCellId]) << ","
             << xhaulState << ","
             << (degradationActive ? 1 : 0) << ","
             << (donorUnavailableActive ? 1 : 0) << ","
@@ -907,6 +952,8 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
                    Ptr<HybridSatEpcHelper> epcHelper,
                    double xhaulTxPowerDbm,
                    double xhaulFrequencyHz,
+                   double xhaulPathlossExponent,
+                   double xhaulReferenceDistanceM,
                    double xhaulMaxDonorDistanceM,
                    double healthyThresholdDbm,
                    double degradedThresholdDbm,
@@ -915,6 +962,8 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
                    double degradationPenaltyDb,
                    double donorUnavailableStartSec,
                    double donorUnavailableStopSec,
+                   double switchToSatTttSec,
+                   double switchToTnTttSec,
                    double e2TxDelaySec,
                    double e2SendIntervalSec,
                    double lmQueryIntervalSec,
@@ -928,6 +977,8 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
     ctx.epcHelper = epcHelper;
     ctx.xhaulTxPowerDbm = xhaulTxPowerDbm;
     ctx.xhaulFrequencyHz = xhaulFrequencyHz;
+    ctx.xhaulPathlossExponent = xhaulPathlossExponent;
+    ctx.xhaulReferenceDistanceM = xhaulReferenceDistanceM;
     ctx.xhaulMaxDonorDistanceM = xhaulMaxDonorDistanceM;
     ctx.healthyThresholdDbm = healthyThresholdDbm;
     ctx.degradedThresholdDbm = degradedThresholdDbm;
@@ -936,6 +987,8 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
     ctx.degradationPenaltyDb = degradationPenaltyDb;
     ctx.donorUnavailableStartSec = donorUnavailableStartSec;
     ctx.donorUnavailableStopSec = donorUnavailableStopSec;
+    ctx.switchToSatTttSec = switchToSatTttSec;
+    ctx.switchToTnTttSec = switchToTnTttSec;
     ctx.e2TxDelaySec = e2TxDelaySec;
     ctx.e2SendIntervalSec = e2SendIntervalSec;
     ctx.lmQueryIntervalSec = lmQueryIntervalSec;
@@ -955,6 +1008,8 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
                         epcHelper,
                         xhaulTxPowerDbm,
                         xhaulFrequencyHz,
+                        xhaulPathlossExponent,
+                        xhaulReferenceDistanceM,
                         xhaulMaxDonorDistanceM,
                         healthyThresholdDbm,
                         degradedThresholdDbm,
@@ -963,6 +1018,8 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
                         degradationPenaltyDb,
                         donorUnavailableStartSec,
                         donorUnavailableStopSec,
+                        switchToSatTttSec,
+                        switchToTnTttSec,
                         e2TxDelaySec,
                         e2SendIntervalSec,
                         lmQueryIntervalSec,
@@ -2247,13 +2304,16 @@ main(int argc, char* argv[])
     //   tn-uav-satellite: UE + terrestrial cells + UAV cell nodes + satellite backhaul monitor.
     std::string deploymentMode = "tn-uav-satellite"; // tn-only | tn-uav | tn-uav-satellite
     std::string runLabel;
+    std::string outputParentDir = "results/nr/tn-ntn";
 
     // xHaul monitor parameters. This first version estimates the UAV-to-ground-donor
     // RSRP from geometry and free-space path loss. It is a policy/trace monitor, not a
     // separate physical NR UE device mounted on the UAV. A later version can replace
     // this proxy with a co-located UAV-UE NetDevice attached to a TN donor gNB.
-    double xhaulTxPowerDbm = 43.0;
+    double xhaulTxPowerDbm = 46.0;
     double xhaulFrequencyHz = 4.0e9;
+    double xhaulPathlossExponent = 2.0;
+    double xhaulReferenceDistanceM = 1.0;
     double xhaulHealthyRsrpDbm = -110.0;
     double xhaulDegradedRsrpDbm = -110.0;
     double xhaulTraceIntervalSec = 1.0;
@@ -2268,6 +2328,8 @@ main(int argc, char* argv[])
     double xhaulDegradationPenaltyDb = 25.0;
     double xhaulDonorUnavailableStartSec = -1.0;
     double xhaulDonorUnavailableStopSec = -1.0;
+    double xhaulSwitchToSatTttSec = 5.0;
+    double xhaulSwitchToTnTttSec = 5.0;
     bool enableXhaulChannelVariation = false;
     double xhaulShadowingStddevDb = 0.0;
     double xhaulFadingStddevDb = 0.0;
@@ -2339,8 +2401,18 @@ main(int argc, char* argv[])
     cmd.AddValue("run-label",
                  "Optional label appended to the output folder name, e.g., clean, healthy-xhaul, or donor-unavailable-sat",
                  runLabel);
+    cmd.AddValue("output-parent-dir",
+                 "Parent directory where this run's result folder is created",
+                 outputParentDir);
     cmd.AddValue("xhaul-tx-power-dbm", "TN donor transmit power used by xHaul RSRP monitor", xhaulTxPowerDbm);
     cmd.AddValue("xhaul-frequency-hz", "Carrier frequency used by xHaul RSRP monitor", xhaulFrequencyHz);
+    cmd.AddValue("xhaul-pathloss-exponent",
+                 "Log-distance path-loss exponent for the UAV-to-TN donor RSRP proxy; "
+                 "2.0 keeps free-space behavior, higher values model urban/NLOS donor loss",
+                 xhaulPathlossExponent);
+    cmd.AddValue("xhaul-reference-distance-m",
+                 "Reference distance for the UAV-to-TN donor log-distance path-loss proxy",
+                 xhaulReferenceDistanceM);
     cmd.AddValue("xhaul-healthy-rsrp-dbm",
                  "Policy threshold for classifying the UAV-to-TN donor RSRP as HEALTHY; "
                  "3GPP defines measurement/reporting behavior, not this service-continuity cutoff",
@@ -2368,6 +2440,12 @@ main(int argc, char* argv[])
     cmd.AddValue("xhaul-donor-unavailable-stop",
                  "Stop time when the TN donor/gateway path becomes available again",
                  xhaulDonorUnavailableStopSec);
+    cmd.AddValue("xhaul-switch-to-sat-ttt-s",
+                 "Time-to-trigger in seconds before switching from TN donor backhaul to satellite/no-backhaul state",
+                 xhaulSwitchToSatTttSec);
+    cmd.AddValue("xhaul-switch-to-tn-ttt-s",
+                 "Time-to-trigger in seconds before switching back to TN_DIRECT after donor recovery",
+                 xhaulSwitchToTnTttSec);
     cmd.AddValue("enable-xhaul-channel-variation",
                  "Enable stochastic xHaul shadowing/fading variation in the UAV-to-TN donor RSRP proxy",
                  enableXhaulChannelVariation);
@@ -2590,7 +2668,7 @@ main(int argc, char* argv[])
     }
 
     // Base output folder for this run
-    ns3_dir = "results/nr/tn-ntn/" + runTag.str() + "/";
+    ns3_dir = (std::filesystem::path(outputParentDir) / runTag.str()).string() + "/";
 
     // Update file paths to be inside ns3_dir
     s_ueS1PositionTraceFile = ns3_dir + "ues1-position-trace.tr";
@@ -3006,9 +3084,9 @@ main(int argc, char* argv[])
     ntnGnbNrDevs = nrHelper->InstallGnbDevice(ntnGnbNodes, allBwps);
 
     // Start after measurements and initial attach have had a little time to appear.
-    // In the final donor-unavailable scenarios this is set to 30 s. UAVs then
-    // move toward weak UE clusters while the TN donor/gateway outage is active
-    // from 30-75 s; no hand-set RSRP penalty is required.
+    // In the final distance-loss scenarios this is set to 5 s. UAVs then move
+    // toward weak UE clusters; their TN donor-backhaul quality is determined by
+    // distance/path loss and optional shadowing/fading, not by a fixed RSRP penalty.
     Simulator::Schedule(Seconds(uavControlStartSec),
                         &UpdateUavTargetsFromUnderservedUes,
                         groundUeNodesS1,
@@ -3656,6 +3734,8 @@ main(int argc, char* argv[])
         g_uavAutonomyXappCtx->epcHelper = epcHelper;
         g_uavAutonomyXappCtx->xhaulTxPowerDbm = xhaulTxPowerDbm;
         g_uavAutonomyXappCtx->xhaulFrequencyHz = xhaulFrequencyHz;
+        g_uavAutonomyXappCtx->xhaulPathlossExponent = xhaulPathlossExponent;
+        g_uavAutonomyXappCtx->xhaulReferenceDistanceM = xhaulReferenceDistanceM;
         g_uavAutonomyXappCtx->xhaulMaxDonorDistanceM = xhaulMaxDonorDistanceM;
         g_uavAutonomyXappCtx->healthyThresholdDbm = xhaulHealthyRsrpDbm;
         g_uavAutonomyXappCtx->degradedThresholdDbm = xhaulDegradedRsrpDbm;
@@ -3664,6 +3744,8 @@ main(int argc, char* argv[])
         g_uavAutonomyXappCtx->degradationPenaltyDb = xhaulDegradationPenaltyDb;
         g_uavAutonomyXappCtx->donorUnavailableStartSec = xhaulDonorUnavailableStartSec;
         g_uavAutonomyXappCtx->donorUnavailableStopSec = xhaulDonorUnavailableStopSec;
+        g_uavAutonomyXappCtx->switchToSatTttSec = xhaulSwitchToSatTttSec;
+        g_uavAutonomyXappCtx->switchToTnTttSec = xhaulSwitchToTnTttSec;
         g_uavAutonomyXappCtx->e2TxDelaySec = txDelay;
         g_uavAutonomyXappCtx->e2SendIntervalSec = e2SendInterval;
         g_uavAutonomyXappCtx->lmQueryIntervalSec = lmQueryInterval;
@@ -4075,7 +4157,8 @@ main(int argc, char* argv[])
         std::ofstream xhaulOut(s_xhaulAutonomyTraceFile, std::ios_base::trunc);
         xhaulOut << "Time,DeploymentMode,UavIndex,UavCellId,BestDonorCellId,"
                  << "BestDonorDistanceM,XhaulConnected,"
-                 << "XhaulChannelVariationDb,XhaulRsrpDbm,XhaulState,XhaulDegradationActive,"
+                 << "XhaulChannelVariationDb,XhaulRsrpDbm,RawXhaulState,RawXhaulStateAgeSec,"
+                 << "XhaulState,XhaulDegradationActive,"
                  << "DonorUnavailableActive,"
                  << "SatBackhaulDlSnrDb,SatBackhaulUlSnrDb,SatBackhaulHealthy,"
                  << "UavSwitchingXappAvailable,UavSwitchingXappState,"
@@ -4097,6 +4180,8 @@ main(int argc, char* argv[])
                             epcHelper,
                             xhaulTxPowerDbm,
                             xhaulFrequencyHz,
+                            xhaulPathlossExponent,
+                            xhaulReferenceDistanceM,
                             xhaulMaxDonorDistanceM,
                             xhaulHealthyRsrpDbm,
                             xhaulDegradedRsrpDbm,
@@ -4105,6 +4190,8 @@ main(int argc, char* argv[])
                             xhaulDegradationPenaltyDb,
                             xhaulDonorUnavailableStartSec,
                             xhaulDonorUnavailableStopSec,
+                            xhaulSwitchToSatTttSec,
+                            xhaulSwitchToTnTttSec,
                             txDelay,
                             e2SendInterval,
                             lmQueryInterval,
