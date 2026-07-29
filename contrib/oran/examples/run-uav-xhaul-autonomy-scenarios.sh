@@ -89,11 +89,13 @@ UAV_ARGS="--num-uess1=50 \
 NATURAL_MISSION_ARGS="--uav-control-start=5 \
   --uav-control-period=2 \
   --uav-underserved-rsrp-thresh-dbm=-110 \
+  --ue-area-half-w-m=10000 \
+  --ue-area-half-h-m=5000 \
   --uav-initial-area-half-w-m=3000 \
   --uav-initial-area-half-h-m=1500 \
-  --uav-area-half-w-m=20000 \
-  --uav-area-half-h-m=10000 \
-  --uav-mission-target-scale=8 \
+  --uav-area-half-w-m=10000 \
+  --uav-area-half-h-m=5000 \
+  --uav-mission-target-scale=1 \
   --uav-speed-mps=25 \
   --xhaul-pathloss-exponent=5.6 \
   --xhaul-reference-distance-m=100 \

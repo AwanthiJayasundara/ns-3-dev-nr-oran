@@ -2732,7 +2732,7 @@ main(int argc, char* argv[])
     // Node creation.
     //
     // UES1 is the monitored UE set. UES2 is delayed background load.
-    // TN gNBs are terrestrial cells. NTN gNBs are UAV-mounted cells.
+    // TN gNBs are terrestrial cells. NTN gNBs are gNB-mounted UAV cells.
     // ----------------------------------------------------------------------
     NodeContainer groundUeNodesS1;
     NodeContainer groundUeNodesS2;
