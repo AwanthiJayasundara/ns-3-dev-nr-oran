@@ -99,7 +99,7 @@ NATURAL_MISSION_ARGS="--uav-control-start=5 \
   --uav-speed-mps=25 \
   --xhaul-pathloss-exponent=5.6 \
   --xhaul-reference-distance-m=100 \
-  --xhaul-healthy-rsrp-dbm=-110 \
+  --xhaul-healthy-rsrp-dbm=-100 \
   --xhaul-switch-to-sat-ttt-s=5 \
   --xhaul-switch-to-tn-ttt-s=5 \
   --enable-xhaul-channel-variation=1 \

@@ -77,7 +77,7 @@ MISSION_BASE_ARGS="--uav-control-start=5 \
   --uav-mission-target-scale=1 \
   --uav-speed-mps=25 \
   --xhaul-reference-distance-m=100 \
-  --xhaul-healthy-rsrp-dbm=-110 \
+  --xhaul-healthy-rsrp-dbm=-100 \
   --xhaul-switch-to-sat-ttt-s=5 \
   --xhaul-switch-to-tn-ttt-s=5 \
   --channel-update-ms=100 \
@@ -184,9 +184,9 @@ run_pair "logdist-fading" "dl0p2" "--monitored-dl-rate-mbps=0.2"
 run_pair "logdist-fading" "dl0p4" "--monitored-dl-rate-mbps=0.4"
 
 # 6) Donor RSRP threshold sweep.
+run_pair "logdist-fading" "rsrp-100" "--xhaul-healthy-rsrp-dbm=-100"
+run_pair "logdist-fading" "rsrp-105" "--xhaul-healthy-rsrp-dbm=-105"
 run_pair "logdist-fading" "rsrp-110" "--xhaul-healthy-rsrp-dbm=-110"
-run_pair "logdist-fading" "rsrp-120" "--xhaul-healthy-rsrp-dbm=-120"
-run_pair "logdist-fading" "rsrp-125" "--xhaul-healthy-rsrp-dbm=-125"
 
 # 7) Channel-variation severity sweep.
 run_pair "logdist-fading" "chan4-2" "--xhaul-shadowing-stddev-db=4 --xhaul-fading-stddev-db=2"

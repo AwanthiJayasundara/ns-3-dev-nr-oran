@@ -2314,7 +2314,7 @@ main(int argc, char* argv[])
     double xhaulFrequencyHz = 4.0e9;
     double xhaulPathlossExponent = 2.0;
     double xhaulReferenceDistanceM = 1.0;
-    double xhaulHealthyRsrpDbm = -110.0;
+    double xhaulHealthyRsrpDbm = -100.0;
     double xhaulDegradedRsrpDbm = -110.0;
     double xhaulTraceIntervalSec = 1.0;
     double xhaulMaxDonorDistanceM = -1.0;

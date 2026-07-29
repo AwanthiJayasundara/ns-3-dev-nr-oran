@@ -48,7 +48,7 @@ def main() -> None:
     frequency_hz = 4.0e9
     exponent = 5.6
     reference_distance_m = 100.0
-    threshold_dbm = -110.0
+    threshold_dbm = -100.0
     shadowing_std_db = 6.0
     fading_std_db = 4.0
 

@@ -159,7 +159,7 @@ def main() -> None:
     parser.add_argument("--frequency-hz", type=float, default=4.0e9)
     parser.add_argument("--pathloss-exponent", type=float, default=5.6)
     parser.add_argument("--reference-distance-m", type=float, default=100.0)
-    parser.add_argument("--healthy-rsrp-dbm", type=float, default=-110.0)
+    parser.add_argument("--healthy-rsrp-dbm", type=float, default=-100.0)
     parser.add_argument("--switch-to-sat-ttt-s", type=float, default=5.0)
     parser.add_argument("--switch-to-tn-ttt-s", type=float, default=5.0)
     parser.add_argument(
