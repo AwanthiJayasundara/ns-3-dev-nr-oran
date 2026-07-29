@@ -93,9 +93,9 @@ NATURAL_MISSION_ARGS="--uav-control-start=5 \
   --uav-initial-area-half-h-m=1500 \
   --uav-area-half-w-m=20000 \
   --uav-area-half-h-m=10000 \
-  --uav-mission-target-scale=4 \
+  --uav-mission-target-scale=8 \
   --uav-speed-mps=25 \
-  --xhaul-pathloss-exponent=4.8 \
+  --xhaul-pathloss-exponent=5.6 \
   --xhaul-reference-distance-m=100 \
   --xhaul-healthy-rsrp-dbm=-110 \
   --xhaul-switch-to-sat-ttt-s=5 \

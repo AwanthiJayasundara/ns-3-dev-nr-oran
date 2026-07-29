@@ -88,31 +88,31 @@ Terminology note: this work uses `xHaul` as a broad service-continuity term for 
 
 ### 4.1 UAV-to-TN Donor-Backhaul RSRP Proxy
 
-The UAV-to-TN donor/backhaul condition is estimated using a log-distance path-loss proxy with stochastic shadowing/fading variation. This proxy is used only for the switching xApp's donor-health decision; it is separate from the 3GPP UMa, NTN-Urban, and NTN-Suburban channel models used for the NR access and satellite-backhaul links. The model follows the common log-distance path-loss form:
+The UAV-to-TN donor/backhaul condition is estimated using a log-distance path-loss proxy with stochastic shadowing/fading variation. This proxy is used only for the switching xApp's donor-health decision; it is separate from the 3GPP UMa, NTN-Urban, and NTN-Suburban channel models used for the NR access and satellite-backhaul links. Using the notation adopted in the system model, the donor-backhaul path loss is:
 
 ```text
-PL(d) = PL(d0) + 10 n log10(d / d0) + X_sigma
+L = L0 + 10 gamma log10(d / d0) + X_sh(t) + X_f(t)
 ```
 
-where `d` is the UAV-to-TN donor distance, `d0` is the reference distance, `n` is the path-loss exponent, and `X_sigma` is the random shadowing/fading variation in dB. The estimated donor RSRP used by the xApp is:
+where `d` is the distance between the UAV gNB and the selected terrestrial donor gNB, `d0` is the reference distance, `L0` is the path loss at `d0`, and `gamma` is the donor-link path-loss exponent. The stochastic terms `X_sh(t)` and `X_f(t)` represent slow shadowing and fading-related variation in dB. The estimated donor-backhaul RSRP used by the xApp is:
 
 ```text
-RSRP_donor(d) = P_TN_donor - PL(d)
+P_hat_RSRP_xH(d,t) = P_ref_donor - L
 ```
 
 In the final distance-loss runs, the donor-backhaul proxy uses:
 
 ```text
-P_TN_donor = 46 dBm
+P_ref_donor = 46 dBm
 Carrier frequency = 4 GHz
 d0 = 100 m
-n = 4.8
+gamma = 5.6
 shadowing standard deviation = 6 dB
 fading-loss standard deviation = 4 dB
 usable donor threshold = -110 dBm
 ```
 
-The exponent `n = 2` corresponds to free-space-like distance loss, while larger values represent stronger attenuation in obstructed urban or non-line-of-sight donor conditions. Therefore, `n = 4.8` is used as a stressed obstructed-donor setting that can make UAV mission movement visible within a 120 s simulation: as the UAV moves toward underserved UEs and farther from TN donor gNBs, the estimated donor RSRP can fall below the usable threshold. The switching xApp then treats the TN donor path as unreachable and selects either `SATELLITE_FALLBACK` or `NO_BACKHAUL_AVAILABLE` depending on satellite health.
+The exponent `gamma = 2` corresponds to free-space-like distance loss, while larger values represent stronger attenuation in obstructed urban or non-line-of-sight donor conditions. Therefore, `gamma = 5.6` is used as a stressed obstructed-donor setting that can make UAV mission movement visible within a 120 s simulation: as the UAV moves toward underserved UEs and farther from TN donor gNBs, the estimated donor RSRP can fall below the usable threshold. The switching xApp then treats the TN donor path as unreachable and selects either `SATELLITE_FALLBACK` or `NO_BACKHAUL_AVAILABLE` depending on satellite health.
 
 To avoid unnecessary switching from short fading dips, the xApp uses a persistence timer. The raw donor state is updated every control sample, but the effective donor state used for backhaul switching changes only after the new raw state remains stable for the configured time-to-trigger:
 
@@ -134,7 +134,7 @@ An explanatory figure generated from the same parameters is:
 docs/figures/uav_donor_log_distance_pathloss_model.png
 ```
 
-This figure shows the free-space and log-distance path-loss curves, the random channel variation, and the resulting donor RSRP crossing the `-110 dBm` switching threshold.
+This figure shows the free-space and log-distance path-loss curves, the random channel variation, and the resulting estimated donor-backhaul RSRP crossing the `-110 dBm` switching threshold.
 
 The first UE group, UES1, means UE Set 1: the monitored UEs used for traffic, mobility, and QoS evaluation. The second UE group, UES2, means UE Set 2: delayed background-load UEs. In the current TN-only reference setup, 20 UES1 nodes are available from the start, and 50 UES2 background UEs attach at 5 s. The UAV-assisted scenarios use a larger monitored group, currently 50 UES1 and 50 UES2, when stress-testing UAV and satellite continuity.
 
@@ -488,19 +488,19 @@ The current experiment uses the following settings:
 | TN gNB TxPower penalty during satellite scenario | 0 dB | No synthetic TN transmit-power penalty is applied. |
 | Natural mission movement start, donor-stress runs | 5 s | UAV movement starts early so donor-distance effects can appear within a 120 s simulation. |
 | UAV underserved-UE RSRP threshold | -110 dBm | UEs below this RSRP are treated as severe weak/cell-edge users for UAV mission targeting. |
-| UAV initial placement half-width, donor-outage runs | 3 km | UAVs initially start inside a 6 km-wide region near the TN deployment, so TN donor backhaul is likely available at the beginning. |
-| UAV initial placement half-height, donor-outage runs | 1.5 km | UAVs initially start inside a 3 km-high region near the TN deployment, supporting the initial healthy-backhaul period. |
+| UAV initial placement half-width, donor-stress runs | 3 km | UAVs initially start inside a 6 km-wide region near the TN deployment, so TN donor backhaul is likely available at the beginning. |
+| UAV initial placement half-height, donor-stress runs | 1.5 km | UAVs initially start inside a 3 km-high region near the TN deployment, supporting the initial healthy-backhaul period. |
 | UAV mission mobility half-width, donor-stress runs | 20 km | During the mission, UAVs may move inside a 40 km-wide region to reach underserved UEs farther from TN donors. |
 | UAV mission mobility half-height, donor-stress runs | 10 km | During the mission, UAVs may move inside a 20 km-high region, increasing the chance of donor-backhaul stress. |
-| UAV mission target scale, donor-outage runs | 4 | Scales the underserved-UE target region so UAVs move farther toward weak-coverage users. |
-| UAV mission speed, donor-outage runs | 25 m/s | Realistic UAV movement speed during mission repositioning. |
-| UAV donor-backhaul outage method, donor-outage runs | Donor RSRP, channel variation, and TN donor/gateway unavailability | Degradation is created by geometry/channel behavior and a sudden donor outage event, not by a fixed RSRP penalty. |
+| UAV mission target scale, donor-stress runs | 8 | Scales the underserved-UE target region so UAVs move farther toward weak-coverage users. |
+| UAV mission speed, donor-stress runs | 25 m/s | Realistic UAV movement speed during mission repositioning. |
+| UAV donor-backhaul stress method, donor-stress runs | Donor RSRP from distance, log-distance path loss, and channel variation | Degradation is created by UAV geometry and channel behavior, not by a fixed outage window or RSRP penalty. |
 | Distance-based donor-loss trigger, donor-stress runs | UAV movement after 5 s | UAVs move toward underserved UEs early enough for donor distance, obstructed path loss, and channel variation to reduce donor RSRP within a 120 s run. |
-| UAV-to-TN donor path-loss exponent, donor-stress runs | 4.8 | Stressed obstructed log-distance donor-backhaul exponent used to make distance-based donor weakening visible within 120 s without a forced outage flag. |
+| UAV-to-TN donor path-loss exponent, donor-stress runs | 5.6 | Stressed obstructed log-distance donor-backhaul exponent used to make distance-based donor weakening visible within 120 s without a forced outage flag. |
 | UAV-to-TN donor reference distance, donor-stress runs | 100 m | Reference distance for the log-distance donor-backhaul RSRP proxy. |
 | Switch-to-satellite time-to-trigger | 5 s | Donor state must remain unreachable for 5 s before the xApp switches away from TN_DIRECT. |
 | Switch-back-to-TN time-to-trigger | 5 s | Donor state must remain healthy for 5 s before the xApp returns to TN_DIRECT. |
-| xHaul usable RSRP threshold, donor-outage runs | -110 dBm | Policy threshold above which the UAV donor path is treated as healthy; below it the donor path is treated as unreachable. |
+| xHaul usable RSRP threshold, donor-stress runs | -110 dBm | Policy threshold above which the UAV donor path is treated as healthy; below it the donor path is treated as unreachable. |
 | xHaul shadowing standard deviation | 6 dB | Random slow variation applied to the UAV-to-TN donor RSRP proxy. |
 | xHaul fading-loss standard deviation | 4 dB | Random fast variation applied to the UAV-to-TN donor RSRP proxy. |
 | Synthetic xHaul penalty | Disabled | No artificial time-window RSRP penalty is applied in the final scenario. |
@@ -552,9 +552,9 @@ The main individual runs are:
 
 ./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --run-label=healthy-xhaul --sim-time=120 --num-uess1=50 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=3 --max-ues-tn=20 --max-ues-ntn=10 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=0.2 --monitored-ul-rate-mbps=0.05 --monitored-packet-size=1000 --tn-tx-power-dbm=46 --xhaul-tx-power-dbm=46 --uav-tx-power-dbm=37 --ue-tx-power-dbm=23 --init-min-rsrp=-110 --handover-min-rsrp-dbm=-110 --enable-harq-retx=0 --pdcp-discard-timer-ms=1000 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1"
 
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --run-label=distance-loss-no-sat --sim-time=120 --num-uess1=50 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=3 --max-ues-tn=20 --max-ues-ntn=10 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=0.2 --monitored-ul-rate-mbps=0.05 --monitored-packet-size=1000 --tn-tx-power-dbm=46 --xhaul-tx-power-dbm=46 --uav-tx-power-dbm=37 --ue-tx-power-dbm=23 --init-min-rsrp=-110 --handover-min-rsrp-dbm=-110 --enable-harq-retx=0 --pdcp-discard-timer-ms=1000 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --uav-control-start=5 --uav-control-period=2 --uav-underserved-rsrp-thresh-dbm=-110 --uav-initial-area-half-w-m=3000 --uav-initial-area-half-h-m=1500 --uav-area-half-w-m=20000 --uav-area-half-h-m=10000 --uav-mission-target-scale=4 --uav-speed-mps=25 --xhaul-pathloss-exponent=4.8 --xhaul-reference-distance-m=100 --xhaul-healthy-rsrp-dbm=-110 --xhaul-switch-to-sat-ttt-s=5 --xhaul-switch-to-tn-ttt-s=5 --enable-xhaul-channel-variation=1 --xhaul-shadowing-stddev-db=6 --xhaul-fading-stddev-db=4 --channel-update-ms=100 --channel-condition-update-ms=200"
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav --run-label=distance-loss-no-sat --sim-time=120 --num-uess1=50 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=3 --max-ues-tn=20 --max-ues-ntn=10 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=0.2 --monitored-ul-rate-mbps=0.05 --monitored-packet-size=1000 --tn-tx-power-dbm=46 --xhaul-tx-power-dbm=46 --uav-tx-power-dbm=37 --ue-tx-power-dbm=23 --init-min-rsrp=-110 --handover-min-rsrp-dbm=-110 --enable-harq-retx=0 --pdcp-discard-timer-ms=1000 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --uav-control-start=5 --uav-control-period=2 --uav-underserved-rsrp-thresh-dbm=-110 --uav-initial-area-half-w-m=3000 --uav-initial-area-half-h-m=1500 --uav-area-half-w-m=20000 --uav-area-half-h-m=10000 --uav-mission-target-scale=8 --uav-speed-mps=25 --xhaul-pathloss-exponent=5.6 --xhaul-reference-distance-m=100 --xhaul-healthy-rsrp-dbm=-110 --xhaul-switch-to-sat-ttt-s=5 --xhaul-switch-to-tn-ttt-s=5 --enable-xhaul-channel-variation=1 --xhaul-shadowing-stddev-db=6 --xhaul-fading-stddev-db=4 --channel-update-ms=100 --channel-condition-update-ms=200"
 
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --run-label=distance-loss-sat --sim-time=120 --num-uess1=50 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=3 --max-ues-tn=20 --max-ues-ntn=10 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=0.2 --monitored-ul-rate-mbps=0.05 --monitored-packet-size=1000 --tn-tx-power-dbm=46 --xhaul-tx-power-dbm=46 --uav-tx-power-dbm=37 --ue-tx-power-dbm=23 --init-min-rsrp=-110 --handover-min-rsrp-dbm=-110 --enable-harq-retx=0 --pdcp-discard-timer-ms=1000 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --sat-backhaul-scenario=NTN-Suburban --enable-sat-backhaul-monitor=1 --enable-uav-switching-xapp=1 --uav-control-start=5 --uav-control-period=2 --uav-underserved-rsrp-thresh-dbm=-110 --uav-initial-area-half-w-m=3000 --uav-initial-area-half-h-m=1500 --uav-area-half-w-m=20000 --uav-area-half-h-m=10000 --uav-mission-target-scale=4 --uav-speed-mps=25 --xhaul-pathloss-exponent=4.8 --xhaul-reference-distance-m=100 --xhaul-healthy-rsrp-dbm=-110 --xhaul-switch-to-sat-ttt-s=5 --xhaul-switch-to-tn-ttt-s=5 --enable-xhaul-channel-variation=1 --xhaul-shadowing-stddev-db=6 --xhaul-fading-stddev-db=4 --channel-update-ms=100 --channel-condition-update-ms=200"
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --run-label=distance-loss-sat --sim-time=120 --num-uess1=50 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=3 --max-ues-tn=20 --max-ues-ntn=10 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=0.2 --monitored-ul-rate-mbps=0.05 --monitored-packet-size=1000 --tn-tx-power-dbm=46 --xhaul-tx-power-dbm=46 --uav-tx-power-dbm=37 --ue-tx-power-dbm=23 --init-min-rsrp=-110 --handover-min-rsrp-dbm=-110 --enable-harq-retx=0 --pdcp-discard-timer-ms=1000 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --sat-backhaul-scenario=NTN-Suburban --enable-sat-backhaul-monitor=1 --enable-uav-switching-xapp=1 --uav-control-start=5 --uav-control-period=2 --uav-underserved-rsrp-thresh-dbm=-110 --uav-initial-area-half-w-m=3000 --uav-initial-area-half-h-m=1500 --uav-area-half-w-m=20000 --uav-area-half-h-m=10000 --uav-mission-target-scale=8 --uav-speed-mps=25 --xhaul-pathloss-exponent=5.6 --xhaul-reference-distance-m=100 --xhaul-healthy-rsrp-dbm=-110 --xhaul-switch-to-sat-ttt-s=5 --xhaul-switch-to-tn-ttt-s=5 --enable-xhaul-channel-variation=1 --xhaul-shadowing-stddev-db=6 --xhaul-fading-stddev-db=4 --channel-update-ms=100 --channel-condition-update-ms=200"
 ```
 
 The TN-only scenario is the clean reference and does not include artificial degradation. The healthy TN + UAV scenario adds aerial access cells under healthy terrestrial donor backhaul, so it tests whether UAVs help when the TN layer has limited capacity for the 100-UE load. The satellite-assisted scenario uses a natural mission movement period from 5 s onward. During this mission period, UAVs move toward underserved UE clusters, which can improve UAV access coverage while naturally increasing the UAV-to-TN donor distance. No fixed time-window RSRP penalty is applied:
@@ -708,9 +708,9 @@ The three donor-loss assumptions are:
 
 | Donor-loss model | Script label | Configuration | Expected switching behavior |
 |---|---|---|---|
-| Free-space path loss | `fspl` | `n = 2.0`, no channel variation | Best-case LOS donor backhaul; TN_DIRECT should dominate and satellite fallback should be rare. |
-| Log-distance path loss | `logdist` | `n = 4.8`, no channel variation | Stressed obstructed/NLOS-like distance loss; donor RSRP can fall as the UAV moves away from TN donors. |
-| Log-distance plus shadowing/fading | `logdist-fading` | `n = 4.8`, 6 dB shadowing, 4 dB fading-loss variation | Most variable donor backhaul; more frequent TN-to-satellite switching is expected. |
+| Free-space path loss | `fspl` | `gamma = 2.0`, no channel variation | Best-case LOS donor backhaul; TN_DIRECT should dominate and satellite fallback should be rare. |
+| Log-distance path loss | `logdist` | `gamma = 5.6`, no channel variation | Stressed obstructed/NLOS-like distance loss; donor RSRP can fall as the UAV moves away from TN donors. |
+| Log-distance plus shadowing/fading | `logdist-fading` | `gamma = 5.6`, 6 dB shadowing, 4 dB fading-loss variation | Most variable donor backhaul; more frequent TN-to-satellite switching is expected. |
 
 Each simulation run lasts 120 s. Therefore, a 10-seed AI dataset with three donor-loss models contains:
 
@@ -754,7 +754,7 @@ SATELLITE_FALLBACK
 NO_BACKHAUL_AVAILABLE
 ```
 
-The input features are extracted from `xhaul-autonomy-trace.csv` and nearby QoS measurements in `qos-vs-time.txt`. The current feature set includes donor RSRP, donor/gateway outage state, satellite DL/UL SNR, satellite health, switching-xApp availability, recent PDR, recent delay, and recent throughput. Handover counters from `handover-trace.tr`, `handover-failure-trace.tr`, and `ns3-oran-lm.log` can be added as extended features after the first model comparison.
+The input features are extracted from `xhaul-autonomy-trace.csv` and nearby QoS measurements in `qos-vs-time.txt`. The current feature set includes donor RSRP, raw/effective donor state, raw-state persistence age, satellite DL/UL SNR, satellite health, switching-xApp availability, recent PDR, recent delay, and recent throughput. Handover counters from `handover-trace.tr`, `handover-failure-trace.tr`, and `ns3-oran-lm.log` can be added as extended features after the first model comparison.
 
 To avoid data leakage, training, validation, and testing should be separated by seed rather than by random rows. For the 10-seed dataset, the recommended split is:
 
@@ -772,7 +772,7 @@ The model-comparison script is:
 .venv-uav-ai/bin/python contrib/oran/examples/train-uav-switching-xapp-ai.py --split-mode group --model random_forest
 ```
 
-The script currently compares Decision Tree, Random Forest, histogram gradient boosting, and XGBoost. It reports precision, recall, macro-F1, weighted-F1, confusion matrix, and inference time per sample. The comparison table is saved as:
+The script currently compares Decision Tree, Random Forest, histogram gradient boosting, XGBoost, and a small neural-network classifier. It reports precision, recall, macro-F1, weighted-F1, confusion matrix, and inference time per sample. The comparison table is saved as:
 
 ```text
 results/ai/uav-switching-xapp/uav_switching_xapp_model_comparison.csv
@@ -802,7 +802,7 @@ tmux new -s uavsat
 Then run the selected ns-3 command inside the `tmux` session. For example, the satellite fallback case can be launched as:
 
 ```bash
-./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --run-label=distance-loss-sat --sim-time=120 --num-uess1=50 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=3 --max-ues-tn=20 --max-ues-ntn=10 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=0.2 --monitored-ul-rate-mbps=0.05 --monitored-packet-size=1000 --tn-tx-power-dbm=46 --xhaul-tx-power-dbm=46 --uav-tx-power-dbm=37 --ue-tx-power-dbm=23 --init-min-rsrp=-110 --handover-min-rsrp-dbm=-110 --enable-harq-retx=0 --pdcp-discard-timer-ms=1000 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --sat-backhaul-scenario=NTN-Suburban --enable-sat-backhaul-monitor=1 --enable-uav-switching-xapp=1 --uav-control-start=5 --uav-control-period=2 --uav-underserved-rsrp-thresh-dbm=-110 --uav-initial-area-half-w-m=3000 --uav-initial-area-half-h-m=1500 --uav-area-half-w-m=20000 --uav-area-half-h-m=10000 --uav-mission-target-scale=4 --uav-speed-mps=25 --xhaul-pathloss-exponent=4.8 --xhaul-reference-distance-m=100 --xhaul-healthy-rsrp-dbm=-110 --xhaul-switch-to-sat-ttt-s=5 --xhaul-switch-to-tn-ttt-s=5 --enable-xhaul-channel-variation=1 --xhaul-shadowing-stddev-db=6 --xhaul-fading-stddev-db=4 --channel-update-ms=100 --channel-condition-update-ms=200"
+./ns3 run "oran-nr-uav-xhaul-autonomy-example --deployment-mode=tn-uav-satellite --run-label=distance-loss-sat --sim-time=120 --num-uess1=50 --num-ground-ues=50 --ground-attach-delay=5 --num-tn-gnbs=4 --num-ntn-gnbs=3 --max-ues-tn=20 --max-ues-ntn=10 --rlc-mode=am --monitored-traffic=udp --monitored-dl-rate-mbps=0.2 --monitored-ul-rate-mbps=0.05 --monitored-packet-size=1000 --tn-tx-power-dbm=46 --xhaul-tx-power-dbm=46 --uav-tx-power-dbm=37 --ue-tx-power-dbm=23 --init-min-rsrp=-110 --handover-min-rsrp-dbm=-110 --enable-harq-retx=0 --pdcp-discard-timer-ms=1000 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --enable-handover-trace=1 --enable-handover-failure-trace=1 --enable-decision-csv=1 --enable-oran-info-log=1 --sat-backhaul-scenario=NTN-Suburban --enable-sat-backhaul-monitor=1 --enable-uav-switching-xapp=1 --uav-control-start=5 --uav-control-period=2 --uav-underserved-rsrp-thresh-dbm=-110 --uav-initial-area-half-w-m=3000 --uav-initial-area-half-h-m=1500 --uav-area-half-w-m=20000 --uav-area-half-h-m=10000 --uav-mission-target-scale=8 --uav-speed-mps=25 --xhaul-pathloss-exponent=5.6 --xhaul-reference-distance-m=100 --xhaul-healthy-rsrp-dbm=-110 --xhaul-switch-to-sat-ttt-s=5 --xhaul-switch-to-tn-ttt-s=5 --enable-xhaul-channel-variation=1 --xhaul-shadowing-stddev-db=6 --xhaul-fading-stddev-db=4 --channel-update-ms=100 --channel-condition-update-ms=200"
 ```
 
 To run the recommended four-case, four-seed article batch inside `tmux`, use:
@@ -835,7 +835,7 @@ The UAV switching behavior can also be monitored live:
 tail -f results/nr/tn-ntn/tn-uav-satellite_ueS1_50_ueS2_50_tnGnb_4_ntnGnb_3_tnCap_20_ntnCap_10_hyst_2_distance-loss-sat/xhaul-autonomy-trace.csv
 ```
 
-A complete final run should produce `final-flow-report.txt`, a `qos-vs-time.txt` trace reaching approximately 120 s, and `xhaul-autonomy-trace.csv` rows after the 75 s donor-outage recovery point.
+A complete final run should produce `final-flow-report.txt`, a `qos-vs-time.txt` trace reaching approximately 120 s, and `xhaul-autonomy-trace.csv` rows showing the raw/effective donor state, donor RSRP, backhaul mode, and switching-xApp decision throughout the 5-120 s mission period.
 
 ## 13. Conclusion
 

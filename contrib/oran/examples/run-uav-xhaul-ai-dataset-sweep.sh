@@ -72,7 +72,7 @@ MISSION_BASE_ARGS="--uav-control-start=5 \
   --uav-initial-area-half-h-m=1500 \
   --uav-area-half-w-m=20000 \
   --uav-area-half-h-m=10000 \
-  --uav-mission-target-scale=4 \
+  --uav-mission-target-scale=8 \
   --uav-speed-mps=25 \
   --xhaul-reference-distance-m=100 \
   --xhaul-healthy-rsrp-dbm=-110 \
@@ -88,10 +88,10 @@ loss_model_args() {
       echo "--xhaul-pathloss-exponent=2.0 --enable-xhaul-channel-variation=0 --xhaul-shadowing-stddev-db=0 --xhaul-fading-stddev-db=0"
       ;;
     logdist)
-      echo "--xhaul-pathloss-exponent=4.8 --enable-xhaul-channel-variation=0 --xhaul-shadowing-stddev-db=0 --xhaul-fading-stddev-db=0"
+      echo "--xhaul-pathloss-exponent=5.6 --enable-xhaul-channel-variation=0 --xhaul-shadowing-stddev-db=0 --xhaul-fading-stddev-db=0"
       ;;
     logdist-fading)
-      echo "--xhaul-pathloss-exponent=4.8 --enable-xhaul-channel-variation=1 --xhaul-shadowing-stddev-db=6 --xhaul-fading-stddev-db=4"
+      echo "--xhaul-pathloss-exponent=5.6 --enable-xhaul-channel-variation=1 --xhaul-shadowing-stddev-db=6 --xhaul-fading-stddev-db=4"
       ;;
     *)
       echo "[ai-sweep] Unknown LOSS_MODEL '${model}'. Use: fspl logdist logdist-fading" >&2

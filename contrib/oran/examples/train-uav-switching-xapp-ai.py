@@ -21,7 +21,10 @@ import pandas as pd
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.inspection import permutation_importance
 from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import GroupShuffleSplit, train_test_split
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import LabelEncoder
 from sklearn.tree import DecisionTreeClassifier
 
@@ -234,6 +237,21 @@ def train_models(x_train, y_train, seed: int):
             random_state=seed,
             n_jobs=-1,
         ),
+        "neural_network": make_pipeline(
+            StandardScaler(),
+            MLPClassifier(
+                hidden_layer_sizes=(64, 32),
+                activation="relu",
+                solver="adam",
+                alpha=1e-4,
+                learning_rate_init=1e-3,
+                max_iter=500,
+                early_stopping=True,
+                validation_fraction=0.15,
+                n_iter_no_change=20,
+                random_state=seed,
+            ),
+        ),
     }
     if HAVE_XGBOOST:
         models["xgboost"] = XGBClassifier(
@@ -257,7 +275,7 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument(
         "--model",
-        choices=["gradient_boosting", "random_forest", "xgboost"],
+        choices=["gradient_boosting", "random_forest", "xgboost", "neural_network"],
         default="xgboost",
         help="Model to save as the active AI switching model.",
     )

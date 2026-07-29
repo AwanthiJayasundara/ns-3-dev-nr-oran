@@ -46,7 +46,7 @@ def main() -> None:
     rng = np.random.default_rng(7)
     tx_power_dbm = 46.0
     frequency_hz = 4.0e9
-    exponent = 4.8
+    exponent = 5.6
     reference_distance_m = 100.0
     threshold_dbm = -110.0
     shadowing_std_db = 6.0
