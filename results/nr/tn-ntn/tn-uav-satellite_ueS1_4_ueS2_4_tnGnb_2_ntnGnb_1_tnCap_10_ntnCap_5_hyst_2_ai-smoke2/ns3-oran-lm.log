@@ -1,0 +1,19 @@
+UAV_AUTONOMY_XAPP Time=4.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=3 BestDonorCellId=1 BestDonorDistanceM=1451.84 XhaulConnected=1 XhaulChannelVariationDb=0.434841 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=0 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=AI_ACTIVE AiPredictedBackhaulMode=SATELLITE_FALLBACK BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+Could not find NR UE cell info for E2 Node ID = 4
+Could not find NR UE cell info for E2 Node ID = 5
+Could not find NR UE cell info for E2 Node ID = 6
+Could not find NR UE cell info for E2 Node ID = 7
+Could not find NR gNB location for E2 Node ID = 1
+Could not find NR gNB location for E2 Node ID = 2
+Could not find NR gNB location for E2 Node ID = 3
+---- LOAD at t=4.5 ----
+UAV_AUTONOMY_XAPP Time=6.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=3 BestDonorCellId=1 BestDonorDistanceM=1412.13 XhaulConnected=1 XhaulChannelVariationDb=-0.312432 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=2 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=AI_ACTIVE AiPredictedBackhaulMode=TN_DIRECT BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=6.5 ----
+  cell 1 (TN) load=0/10
+  cell 2 (TN) load=0/10
+  cell 3 (NTN) load=0/5
+UAV_AUTONOMY_XAPP Time=8.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=3 BestDonorCellId=1 BestDonorDistanceM=1362.51 XhaulConnected=1 XhaulChannelVariationDb=-1.45774 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=4 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=AI_ACTIVE AiPredictedBackhaulMode=TN_DIRECT BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=8.5 ----
+  cell 1 (TN) load=0/10
+  cell 2 (TN) load=0/10
+  cell 3 (NTN) load=0/5

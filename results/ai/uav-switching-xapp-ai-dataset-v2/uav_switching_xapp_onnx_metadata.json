@@ -1,0 +1,25 @@
+{
+  "features": [
+    "BestDonorDistanceM",
+    "XhaulConnected",
+    "XhaulChannelVariationDb",
+    "XhaulRsrpDbm",
+    "SatBackhaulDlSnrDb",
+    "SatBackhaulUlSnrDb",
+    "SatBackhaulHealthy",
+    "UavSwitchingXappAvailable",
+    "recent_dl_pdr",
+    "recent_dl_delay_ms",
+    "recent_dl_throughput_mbps",
+    "recent_ul_pdr",
+    "recent_ul_delay_ms",
+    "recent_ul_throughput_mbps"
+  ],
+  "labels": [
+    "NO_BACKHAUL_AVAILABLE",
+    "SATELLITE_FALLBACK",
+    "TN_DIRECT"
+  ],
+  "input_name": "float_input",
+  "output_note": "The model returns a predicted label tensor and a probability tensor. The label IDs map through the labels array in this metadata file."
+}

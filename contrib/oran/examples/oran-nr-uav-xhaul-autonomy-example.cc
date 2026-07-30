@@ -31,6 +31,7 @@
 #include "ns3/uniform-planar-array.h"
 #include "ns3/nr-hybrid-sat-epc-helper.h"
 #include "ns3/oran-lm-nr-2-nr-rsrp-handover-with-tn-ntn.h"
+#include <onnxruntime_cxx_api.h>
 
 // NS-3 headers
 #include "ns3/flow-monitor-module.h"
@@ -54,7 +55,9 @@
 #include <set>
 #include <map>
 #include <algorithm>
+#include <array>
 #include <complex>
+#include <cstdint>
 #include <iomanip>
 
 using namespace ns3;
@@ -224,9 +227,72 @@ static Ptr<NormalRandomVariable> g_xhaulFadingRv = CreateObject<NormalRandomVari
 static std::string g_deploymentMode = "tn-uav-satellite";
 static double g_satBackhaulMinSnrDb = 0.0;
 static bool g_enableUavSwitchingXapp = true;
+static bool g_enableAiUavSwitchingXapp = false;
+static std::string g_uavSwitchingAiModelPath =
+    "results/ai/uav-switching-xapp-ai-dataset-v2/uav_switching_xapp_model.onnx";
 static bool g_enableXhaulChannelVariation = false;
 static double g_xhaulShadowingStddevDb = 0.0;
 static double g_xhaulFadingStddevDb = 0.0;
+
+class UavSwitchingOnnxModel
+{
+  public:
+    void
+    Load(const std::string& modelPath)
+    {
+        std::ifstream f(modelPath.c_str());
+        NS_ABORT_MSG_IF(!f.good(), "UAV switching ONNX model file not found: " << modelPath);
+        f.close();
+
+        Ort::SessionOptions sessionOptions;
+        sessionOptions.SetIntraOpNumThreads(1);
+        m_session = std::make_unique<Ort::Session>(m_env, modelPath.c_str(), sessionOptions);
+        m_loaded = true;
+    }
+
+    bool
+    IsLoaded() const
+    {
+        return m_loaded;
+    }
+
+    int64_t
+    PredictLabel(const std::array<float, 14>& features)
+    {
+        NS_ABORT_MSG_IF(!m_loaded, "UAV switching ONNX model requested before loading");
+
+        std::array<int64_t, 2> inputShape = {1, static_cast<int64_t>(features.size())};
+        Ort::Value inputTensor = Ort::Value::CreateTensor<float>(m_memoryInfo,
+                                                                 const_cast<float*>(features.data()),
+                                                                 features.size(),
+                                                                 inputShape.data(),
+                                                                 inputShape.size());
+
+        auto inputName = m_session->GetInputNameAllocated(0UL, m_allocator);
+        std::array<const char*, 1> inputNames{inputName.get()};
+        auto outputName = m_session->GetOutputNameAllocated(0UL, m_allocator);
+        std::array<const char*, 1> outputNames{outputName.get()};
+
+        auto output = m_session->Run(Ort::RunOptions{},
+                                     inputNames.data(),
+                                     &inputTensor,
+                                     1UL,
+                                     outputNames.data(),
+                                     1UL);
+
+        const auto* outputData = output.at(0).GetTensorData<int64_t>();
+        return outputData[0];
+    }
+
+  private:
+    bool m_loaded = false;
+    Ort::Env m_env{ORT_LOGGING_LEVEL_WARNING, "UavSwitchingXappOnnx"};
+    std::unique_ptr<Ort::Session> m_session;
+    Ort::MemoryInfo m_memoryInfo{Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU)};
+    Ort::AllocatorWithDefaultOptions m_allocator;
+};
+
+static UavSwitchingOnnxModel g_uavSwitchingOnnxModel;
 
 // Context passed to the UAV TN/satellite switching xApp.
 // It keeps the callback signature small and groups all state needed to:
@@ -263,6 +329,7 @@ struct UavAutonomyXappContext
     double xhaulShadowingStddevDb = 0.0; // Large-scale donor RSRP variation.
     double xhaulFadingStddevDb = 0.0;    // Fast fading-loss proxy for donor RSRP.
     bool enableUavSwitchingXapp = true;  // Enables the proposed switching policy.
+    bool enableAiUavSwitchingXapp = false; // Uses ONNX inference for the switching decision.
 };
 
 static std::unique_ptr<UavAutonomyXappContext> g_uavAutonomyXappCtx;
@@ -647,6 +714,63 @@ SelectUavAutonomyMode(const std::string& deploymentMode,
     return "AUTONOMOUS_LOCAL_ISLAND";
 }
 
+static double
+MeanMetric(const std::vector<double>& values, double multiplier = 1.0)
+{
+    if (values.empty())
+    {
+        return 0.0;
+    }
+    double sum = 0.0;
+    for (double value : values)
+    {
+        sum += value * multiplier;
+    }
+    return sum / static_cast<double>(values.size());
+}
+
+static std::string
+BackhaulModeFromAiLabel(int64_t label)
+{
+    // Label order from train-uav-switching-xapp-ai.py:
+    // 0=NO_BACKHAUL_AVAILABLE, 1=SATELLITE_FALLBACK, 2=TN_DIRECT.
+    if (label == 1)
+    {
+        return "SATELLITE_FALLBACK";
+    }
+    if (label == 2)
+    {
+        return "TN_DIRECT";
+    }
+    return "NO_BACKHAUL_AVAILABLE";
+}
+
+static std::string
+SanitizeAiBackhaulMode(const std::string& predictedMode,
+                       const std::string& xhaulState,
+                       bool satelliteFallbackAllowed,
+                       bool satHealthy)
+{
+    if (predictedMode == "TN_DIRECT")
+    {
+        if (xhaulState == "HEALTHY")
+        {
+            return "TN_DIRECT";
+        }
+        return satelliteFallbackAllowed && satHealthy ? "SATELLITE_FALLBACK"
+                                                      : "NO_BACKHAUL_AVAILABLE";
+    }
+    if (predictedMode == "SATELLITE_FALLBACK")
+    {
+        if (satelliteFallbackAllowed && satHealthy)
+        {
+            return "SATELLITE_FALLBACK";
+        }
+        return xhaulState == "HEALTHY" ? "TN_DIRECT" : "NO_BACKHAUL_AVAILABLE";
+    }
+    return "NO_BACKHAUL_AVAILABLE";
+}
+
 static void
 RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
 {
@@ -827,8 +951,43 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
             uavSwitchingXappAvailable && xhaulState != "HEALTHY";
         const bool satelliteFallbackAllowed = g_deploymentMode == "tn-uav-satellite";
 
-        const bool useSatelliteBackhaul =
-            uavSwitchingXappActive && satelliteFallbackAllowed && satHealthy;
+        std::string backhaulMode;
+        std::string aiPredictedBackhaulMode = "RULE_BASED";
+        if (ctx.enableAiUavSwitchingXapp && uavSwitchingXappAvailable)
+        {
+            std::array<float, 14> aiFeatures = {
+                static_cast<float>(bestDonorDistanceM),
+                static_cast<float>(xhaulConnected ? 1.0 : 0.0),
+                static_cast<float>(bestChannelVariationDb),
+                static_cast<float>(bestRsrpDbm),
+                static_cast<float>(satDl),
+                static_cast<float>(satUl),
+                static_cast<float>(satHealthy ? 1.0 : 0.0),
+                static_cast<float>(uavSwitchingXappAvailable ? 1.0 : 0.0),
+                static_cast<float>(MeanMetric(user_pdr_dl)),
+                static_cast<float>(MeanMetric(user_delay_dl, 1000.0)),
+                static_cast<float>(MeanMetric(user_throughput_dl)),
+                static_cast<float>(MeanMetric(user_pdr_ul)),
+                static_cast<float>(MeanMetric(user_delay_ul, 1000.0)),
+                static_cast<float>(MeanMetric(user_throughput_ul)),
+            };
+            aiPredictedBackhaulMode =
+                BackhaulModeFromAiLabel(g_uavSwitchingOnnxModel.PredictLabel(aiFeatures));
+            backhaulMode = SanitizeAiBackhaulMode(aiPredictedBackhaulMode,
+                                                  xhaulState,
+                                                  satelliteFallbackAllowed,
+                                                  satHealthy);
+        }
+        else
+        {
+            const bool useSatelliteRule =
+                uavSwitchingXappActive && satelliteFallbackAllowed && satHealthy;
+            backhaulMode = useSatelliteRule ? "SATELLITE_FALLBACK"
+                                            : (xhaulState == "HEALTHY" ? "TN_DIRECT"
+                                                                       : "NO_BACKHAUL_AVAILABLE");
+        }
+
+        const bool useSatelliteBackhaul = backhaulMode == "SATELLITE_FALLBACK";
         const std::string uavMode =
             SelectUavAutonomyMode(g_deploymentMode, xhaulState, useSatelliteBackhaul);
 
@@ -837,9 +996,8 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
         //   2. satellite fallback is selected and healthy.
         // Otherwise the UE mobility xApp must not hand normal UEs to this UAV,
         // because access coverage without a core-network path is not useful.
-        const bool allowNormalUeHandover =
-            xhaulState == "HEALTHY" || useSatelliteBackhaul;
-        const bool directTnBackhaulUsable = (xhaulState == "HEALTHY");
+        const bool allowNormalUeHandover = backhaulMode != "NO_BACKHAUL_AVAILABLE";
+        const bool directTnBackhaulUsable = backhaulMode == "TN_DIRECT";
 
         // This string is consumed by HybridSatEpcHelper, which switches the
         // actual UAV user/core route between TN, satellite, and unavailable.
@@ -847,11 +1005,8 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
             useSatelliteBackhaul ? "satellite" : (directTnBackhaulUsable ? "tn" : "unavailable");
 
         // These strings are human-readable trace labels for the article plots.
-        const std::string backhaulMode =
-            useSatelliteBackhaul ? "SATELLITE_FALLBACK"
-                                 : (directTnBackhaulUsable ? "TN_DIRECT" : "NO_BACKHAUL_AVAILABLE");
         const std::string ricControlState =
-            xhaulState == "HEALTHY"
+            backhaulMode == "TN_DIRECT"
                 ? "TN_E2"
                 : (uavSwitchingXappActive
                        ? (useSatelliteBackhaul ? "NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL"
@@ -860,8 +1015,10 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
         const std::string activeUavRic =
             uavSwitchingXappAvailable ? "TN_NEAR_RT_RIC" : "LOCAL_UAV_AUTONOMY";
         const std::string uavSwitchingXappState =
-            uavSwitchingXappAvailable ? (uavSwitchingXappActive ? "ACTIVE" : "STANDBY")
-                                      : "DISABLED";
+            uavSwitchingXappAvailable
+                ? (ctx.enableAiUavSwitchingXapp ? "AI_ACTIVE"
+                                                : (uavSwitchingXappActive ? "ACTIVE" : "STANDBY"))
+                : "DISABLED";
 
         // ------------------------------------------------------------------
         // 5. Apply the decision to the simulated data plane and UE mobility xApp.
@@ -905,6 +1062,7 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
                       << " SatBackhaulHealthy=" << (satHealthy ? 1 : 0)
                       << " UavSwitchingXappAvailable=" << (uavSwitchingXappAvailable ? 1 : 0)
                       << " UavSwitchingXappState=" << uavSwitchingXappState
+                      << " AiPredictedBackhaulMode=" << aiPredictedBackhaulMode
                       << " BackhaulMode=" << backhaulMode
                       << " RicControlState=" << ricControlState
                       << " ActiveUavRic=" << activeUavRic
@@ -996,6 +1154,7 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
     ctx.xhaulShadowingStddevDb = g_xhaulShadowingStddevDb;
     ctx.xhaulFadingStddevDb = g_xhaulFadingStddevDb;
     ctx.enableUavSwitchingXapp = g_enableUavSwitchingXapp;
+    ctx.enableAiUavSwitchingXapp = g_enableAiUavSwitchingXapp;
 
     RunUavAutonomyXappPolicy(ctx);
 
@@ -2345,6 +2504,8 @@ main(int argc, char* argv[])
 
     bool enableSatBackhaulMonitor = true;
     bool enableUavSwitchingXapp = true;
+    bool enableAiUavSwitchingXapp = false;
+    std::string uavSwitchingAiModelPath = g_uavSwitchingAiModelPath;
     double satBackhaulLogStepMs = 500.0;
     double satBackhaulMinSnrDb = 0.0;
 
@@ -2497,6 +2658,12 @@ main(int argc, char* argv[])
     cmd.AddValue("enable-uav-switching-xapp",
                  "Enable the Near-RT RIC UAV TN/satellite switching xApp",
                  enableUavSwitchingXapp);
+    cmd.AddValue("enable-ai-uav-switching-xapp",
+                 "Use ONNX AI inference for the UAV TN/satellite switching xApp decision",
+                 enableAiUavSwitchingXapp);
+    cmd.AddValue("uav-switching-ai-model",
+                 "Path to the ONNX model used by --enable-ai-uav-switching-xapp",
+                 uavSwitchingAiModelPath);
     cmd.AddValue("enable-onboard-uav-ric",
                  "Deprecated alias for --enable-uav-switching-xapp; no onboard RIC is created",
                  enableUavSwitchingXapp);
@@ -2597,6 +2764,8 @@ main(int argc, char* argv[])
     g_deploymentMode = deploymentMode;
     g_satBackhaulMinSnrDb = satBackhaulMinSnrDb;
     g_enableUavSwitchingXapp = enableUavSwitchingXapp;
+    g_enableAiUavSwitchingXapp = enableAiUavSwitchingXapp;
+    g_uavSwitchingAiModelPath = uavSwitchingAiModelPath;
     g_enableXhaulChannelVariation = enableXhaulChannelVariation;
     g_xhaulShadowingStddevDb = xhaulShadowingStddevDb;
     g_xhaulFadingStddevDb = xhaulFadingStddevDb;
@@ -2634,10 +2803,19 @@ main(int argc, char* argv[])
         enableOranCellLoadReports = false;
         enableSatBackhaulMonitor = false;
         enableUavSwitchingXapp = false;
+        enableAiUavSwitchingXapp = false;
         enableFhControl = false;
         remMode = false;
     }
     g_enableUavSwitchingXapp = enableUavSwitchingXapp;
+    g_enableAiUavSwitchingXapp = enableAiUavSwitchingXapp;
+
+    NS_ABORT_MSG_IF(enableAiUavSwitchingXapp && !enableUavSwitchingXapp,
+                    "--enable-ai-uav-switching-xapp requires --enable-uav-switching-xapp=1");
+    if (enableAiUavSwitchingXapp)
+    {
+        g_uavSwitchingOnnxModel.Load(uavSwitchingAiModelPath);
+    }
 
     NS_ABORT_MSG_IF(useOran == false && (useOnnx || useTorch || useRsrp),
                     "Cannot use ML LM or RSRP LM without enabling O-RAN.");
@@ -3753,6 +3931,7 @@ main(int argc, char* argv[])
         g_uavAutonomyXappCtx->xhaulShadowingStddevDb = xhaulShadowingStddevDb;
         g_uavAutonomyXappCtx->xhaulFadingStddevDb = xhaulFadingStddevDb;
         g_uavAutonomyXappCtx->enableUavSwitchingXapp = enableUavSwitchingXapp;
+        g_uavAutonomyXappCtx->enableAiUavSwitchingXapp = enableAiUavSwitchingXapp;
     }
 
 

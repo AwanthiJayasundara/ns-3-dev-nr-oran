@@ -1,0 +1,284 @@
+{
+  "active_model": "random_forest",
+  "split_mode": "group",
+  "num_samples": 1740,
+  "num_train": 1044,
+  "num_test": 696,
+  "features": [
+    "BestDonorDistanceM",
+    "XhaulConnected",
+    "XhaulChannelVariationDb",
+    "XhaulRsrpDbm",
+    "SatBackhaulDlSnrDb",
+    "SatBackhaulUlSnrDb",
+    "SatBackhaulHealthy",
+    "UavSwitchingXappAvailable",
+    "recent_dl_pdr",
+    "recent_dl_delay_ms",
+    "recent_dl_throughput_mbps",
+    "recent_ul_pdr",
+    "recent_ul_delay_ms",
+    "recent_ul_throughput_mbps"
+  ],
+  "include_outage_flag": false,
+  "labels": [
+    "NO_BACKHAUL_AVAILABLE",
+    "SATELLITE_FALLBACK",
+    "TN_DIRECT"
+  ],
+  "reports": {
+    "decision_tree": {
+      "NO_BACKHAUL_AVAILABLE": {
+        "precision": 0.95,
+        "recall": 0.9236111111111112,
+        "f1-score": 0.9366197183098591,
+        "support": 144.0
+      },
+      "SATELLITE_FALLBACK": {
+        "precision": 0.8947368421052632,
+        "recall": 0.9251700680272109,
+        "f1-score": 0.9096989966555183,
+        "support": 147.0
+      },
+      "TN_DIRECT": {
+        "precision": 0.948019801980198,
+        "recall": 0.945679012345679,
+        "f1-score": 0.9468479604449939,
+        "support": 405.0
+      },
+      "accuracy": 0.9367816091954023,
+      "macro avg": {
+        "precision": 0.9309188813618204,
+        "recall": 0.931486730494667,
+        "f1-score": 0.9310555584701238,
+        "support": 696.0
+      },
+      "weighted avg": {
+        "precision": 0.937175769527951,
+        "recall": 0.9367816091954023,
+        "f1-score": 0.9368856550649474,
+        "support": 696.0
+      }
+    },
+    "gradient_boosting": {
+      "NO_BACKHAUL_AVAILABLE": {
+        "precision": 0.9621212121212122,
+        "recall": 0.8819444444444444,
+        "f1-score": 0.9202898550724637,
+        "support": 144.0
+      },
+      "SATELLITE_FALLBACK": {
+        "precision": 0.9612403100775194,
+        "recall": 0.8435374149659864,
+        "f1-score": 0.8985507246376812,
+        "support": 147.0
+      },
+      "TN_DIRECT": {
+        "precision": 0.9103448275862069,
+        "recall": 0.9777777777777777,
+        "f1-score": 0.9428571428571428,
+        "support": 405.0
+      },
+      "accuracy": 0.9295977011494253,
+      "macro avg": {
+        "precision": 0.9445687832616462,
+        "recall": 0.9010865457294028,
+        "f1-score": 0.9205659075224292,
+        "support": 696.0
+      },
+      "weighted avg": {
+        "precision": 0.9318066599127353,
+        "recall": 0.9295977011494253,
+        "f1-score": 0.9288302277432711,
+        "support": 696.0
+      }
+    },
+    "random_forest": {
+      "NO_BACKHAUL_AVAILABLE": {
+        "precision": 0.9436619718309859,
+        "recall": 0.9305555555555556,
+        "f1-score": 0.9370629370629371,
+        "support": 144.0
+      },
+      "SATELLITE_FALLBACK": {
+        "precision": 0.9315068493150684,
+        "recall": 0.9251700680272109,
+        "f1-score": 0.9283276450511946,
+        "support": 147.0
+      },
+      "TN_DIRECT": {
+        "precision": 0.9485294117647058,
+        "recall": 0.9555555555555556,
+        "f1-score": 0.9520295202952029,
+        "support": 405.0
+      },
+      "accuracy": 0.9439655172413793,
+      "macro avg": {
+        "precision": 0.9412327443035867,
+        "recall": 0.9370937263794407,
+        "f1-score": 0.9391400341364449,
+        "support": 696.0
+      },
+      "weighted avg": {
+        "precision": 0.9439270726403489,
+        "recall": 0.9439655172413793,
+        "f1-score": 0.9439269863206117,
+        "support": 696.0
+      }
+    },
+    "neural_network": {
+      "NO_BACKHAUL_AVAILABLE": {
+        "precision": 0.968503937007874,
+        "recall": 0.8541666666666666,
+        "f1-score": 0.9077490774907749,
+        "support": 144.0
+      },
+      "SATELLITE_FALLBACK": {
+        "precision": 0.9624060150375939,
+        "recall": 0.8707482993197279,
+        "f1-score": 0.9142857142857143,
+        "support": 147.0
+      },
+      "TN_DIRECT": {
+        "precision": 0.908256880733945,
+        "recall": 0.9777777777777777,
+        "f1-score": 0.9417360285374554,
+        "support": 405.0
+      },
+      "accuracy": 0.9295977011494253,
+      "macro avg": {
+        "precision": 0.9463889442598044,
+        "recall": 0.9008975812547241,
+        "f1-score": 0.9212569401046483,
+        "support": 696.0
+      },
+      "weighted avg": {
+        "precision": 0.9321584595357871,
+        "recall": 0.9295977011494253,
+        "f1-score": 0.9289065498798003,
+        "support": 696.0
+      }
+    },
+    "xgboost": {
+      "NO_BACKHAUL_AVAILABLE": {
+        "precision": 0.9770992366412213,
+        "recall": 0.8888888888888888,
+        "f1-score": 0.9309090909090909,
+        "support": 144.0
+      },
+      "SATELLITE_FALLBACK": {
+        "precision": 0.9763779527559056,
+        "recall": 0.8435374149659864,
+        "f1-score": 0.9051094890510949,
+        "support": 147.0
+      },
+      "TN_DIRECT": {
+        "precision": 0.910958904109589,
+        "recall": 0.9851851851851852,
+        "f1-score": 0.9466192170818505,
+        "support": 405.0
+      },
+      "accuracy": 0.9353448275862069,
+      "macro avg": {
+        "precision": 0.9548120311689052,
+        "recall": 0.9058704963466869,
+        "f1-score": 0.9275459323473454,
+        "support": 696.0
+      },
+      "weighted avg": {
+        "precision": 0.9384600650802264,
+        "recall": 0.9353448275862069,
+        "f1-score": 0.9346017053154733,
+        "support": 696.0
+      }
+    }
+  },
+  "confusion_matrices": {
+    "decision_tree": [
+      [
+        133,
+        1,
+        10
+      ],
+      [
+        0,
+        136,
+        11
+      ],
+      [
+        7,
+        15,
+        383
+      ]
+    ],
+    "gradient_boosting": [
+      [
+        127,
+        1,
+        16
+      ],
+      [
+        0,
+        124,
+        23
+      ],
+      [
+        5,
+        4,
+        396
+      ]
+    ],
+    "random_forest": [
+      [
+        134,
+        0,
+        10
+      ],
+      [
+        0,
+        136,
+        11
+      ],
+      [
+        8,
+        10,
+        387
+      ]
+    ],
+    "neural_network": [
+      [
+        123,
+        0,
+        21
+      ],
+      [
+        0,
+        128,
+        19
+      ],
+      [
+        4,
+        5,
+        396
+      ]
+    ],
+    "xgboost": [
+      [
+        128,
+        0,
+        16
+      ],
+      [
+        0,
+        124,
+        23
+      ],
+      [
+        3,
+        3,
+        399
+      ]
+    ]
+  },
+  "note": "This model is trained from current BackhaulMode decisions. It is an AI imitation baseline for the switching xApp, not yet a QoS-optimal policy. For PDR improvement, relabel samples using future-window QoS reward."
+}

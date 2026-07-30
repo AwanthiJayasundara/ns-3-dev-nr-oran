@@ -296,8 +296,8 @@ This means UAV access remains under the terrestrial Near-RT RIC, while UE servin
 The donor-backhaul/xHaul-health state is classified using the estimated UAV-to-TN donor RSRP:
 
 ```text
-RSRP >= -110 dBm  HEALTHY
-RSRP < -110 dBm   UNREACHABLE
+RSRP >= -100 dBm  HEALTHY
+RSRP < -100 dBm   UNREACHABLE
 ```
 
 This is a simulation policy threshold for the UAV-to-TN donor/backhaul link. It is not a fixed 3GPP standard cutoff. The UE handover logic still uses its own minimum acceptable UE-facing RSRP threshold. The `DEGRADED` label is not used in the final comparison policy; the final behavior intentionally uses only `HEALTHY` and `UNREACHABLE` donor states.
@@ -345,7 +345,7 @@ UEs -> UAV gNB -> TN donor/gateway -> core network
               -> SAT -> GW -> core network fallback
 ```
 
-The satellite path is used as a fallback UAV backhaul route when terrestrial donor backhaul is degraded or unavailable. In normal conditions, the satellite may not significantly improve UE access coverage because the UAV already serves as the aerial radio node. Its main value appears when terrestrial donor-backhaul or infrastructure reachability becomes unreliable. In the simulation, this fallback is represented by switching the UAV S1-U route from the direct TN/core path to the UAV gNB -> SAT -> GW -> core path. In NTN terminology, the UAV satellite terminal to satellite hop is the service link, while the satellite to ground gateway hop is the feeder link.
+The satellite path is used as a fallback UAV backhaul route when terrestrial donor backhaul is degraded or unavailable. In normal conditions, the satellite may not significantly improve UE access coverage because the UAV already serves as the aerial radio node. Its main value appears when terrestrial donor-backhaul or infrastructure reachability becomes unreliable. In the simulation, this fallback is represented by switching the UAV N3/user-plane route from the direct TN/core path to the UAV gNB -> SAT -> GW -> core path. In NTN terminology, the UAV satellite terminal to satellite hop is the service link, while the satellite to ground gateway hop is the feeder link.
 
 The SAT node is an ns-3 node with a geocentric mobility position, NTN propagation/channel models, satellite-link SNR monitoring, and IP forwarding behavior. In the current configuration, the SAT node is placed at the scenario reference latitude/longitude with a GEO-like altitude, while the satellite gateway is placed at the same reference point at near-ground altitude:
 
@@ -640,8 +640,8 @@ The expected trace behavior is:
 ```text
 0-5 s:     BackhaulMode = TN_DIRECT is expected during initial attachment
 After 5 s: UAV mission movement can reduce donor RSRP through distance/path loss
-RSRP < -110 dBm, no satellite: BackhaulMode = NO_BACKHAUL_AVAILABLE
-RSRP < -110 dBm, satellite healthy: BackhaulMode = SATELLITE_FALLBACK
+RSRP < -100 dBm, no satellite: BackhaulMode = NO_BACKHAUL_AVAILABLE
+RSRP < -100 dBm, satellite healthy: BackhaulMode = SATELLITE_FALLBACK
 Recovery: if donor RSRP becomes healthy again, BackhaulMode can return to TN_DIRECT
 ```
 
@@ -682,7 +682,7 @@ Satellite assistance is most valuable when terrestrial donor-backhaul reachabili
 
 ## 11. Scope and Next Step
 
-The current simulation records donor-backhaul/xHaul-health state, satellite backhaul health, UAV switching xApp availability/state, the selected UAV backhaul mode, the RIC control state, the active RIC authority, and whether normal UE handover to a UAV cell is allowed. In the satellite-assisted scenario, the UAV S1-U route can switch from direct TN backhaul to a satellite fallback path when terrestrial donor backhaul is unreachable. The UAV TN/NTN Switching xApp influences the UE Mobility xApp by setting the effective UAV cell capacity to 0 when the UAV has unreachable donor backhaul and no satellite-backhaul fallback.
+The current simulation records donor-backhaul/xHaul-health state, satellite backhaul health, UAV switching xApp availability/state, the selected UAV backhaul mode, the RIC control state, the active RIC authority, and whether normal UE handover to a UAV cell is allowed. In the satellite-assisted scenario, the UAV N3/user-plane route can switch from direct TN backhaul to a satellite fallback path when terrestrial donor backhaul is unreachable. The UAV TN/NTN Switching xApp influences the UE Mobility xApp by setting the effective UAV cell capacity to 0 when the UAV has unreachable donor backhaul and no satellite-backhaul fallback.
 
 The scope of this work is UE service continuity through UAV backhaul switching. Therefore, the satellite path is modeled for user/core traffic as:
 
