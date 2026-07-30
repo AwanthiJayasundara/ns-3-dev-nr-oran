@@ -1,0 +1,1129 @@
+UAV_AUTONOMY_XAPP Time=4.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1451.84 XhaulConnected=1 XhaulChannelVariationDb=0.434841 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=0 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=4.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=629.258 XhaulConnected=1 XhaulChannelVariationDb=-2.28216 RawXhaulState=HEALTHY RawXhaulStateAgeSec=0 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=4.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=765.017 XhaulConnected=1 XhaulChannelVariationDb=-0.793916 RawXhaulState=HEALTHY RawXhaulStateAgeSec=0 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+Could not find NR UE cell info for E2 Node ID = 8
+Could not find NR UE cell info for E2 Node ID = 9
+Could not find NR UE cell info for E2 Node ID = 10
+Could not find NR UE cell info for E2 Node ID = 11
+Could not find NR UE cell info for E2 Node ID = 12
+Could not find NR UE cell info for E2 Node ID = 13
+Could not find NR UE cell info for E2 Node ID = 14
+Could not find NR UE cell info for E2 Node ID = 15
+Could not find NR UE cell info for E2 Node ID = 16
+Could not find NR UE cell info for E2 Node ID = 17
+Could not find NR UE cell info for E2 Node ID = 18
+Could not find NR UE cell info for E2 Node ID = 19
+Could not find NR UE cell info for E2 Node ID = 20
+Could not find NR UE cell info for E2 Node ID = 21
+Could not find NR UE cell info for E2 Node ID = 22
+Could not find NR UE cell info for E2 Node ID = 23
+Could not find NR UE cell info for E2 Node ID = 24
+Could not find NR UE cell info for E2 Node ID = 25
+Could not find NR UE cell info for E2 Node ID = 26
+Could not find NR UE cell info for E2 Node ID = 27
+Could not find NR UE cell info for E2 Node ID = 28
+Could not find NR UE cell info for E2 Node ID = 29
+Could not find NR UE cell info for E2 Node ID = 30
+Could not find NR UE cell info for E2 Node ID = 31
+Could not find NR UE cell info for E2 Node ID = 32
+Could not find NR UE cell info for E2 Node ID = 33
+Could not find NR UE cell info for E2 Node ID = 34
+Could not find NR UE cell info for E2 Node ID = 35
+Could not find NR UE cell info for E2 Node ID = 36
+Could not find NR UE cell info for E2 Node ID = 37
+Could not find NR UE cell info for E2 Node ID = 38
+Could not find NR UE cell info for E2 Node ID = 39
+Could not find NR UE cell info for E2 Node ID = 40
+Could not find NR UE cell info for E2 Node ID = 41
+Could not find NR UE cell info for E2 Node ID = 42
+Could not find NR UE cell info for E2 Node ID = 43
+Could not find NR UE cell info for E2 Node ID = 44
+Could not find NR UE cell info for E2 Node ID = 45
+Could not find NR UE cell info for E2 Node ID = 46
+Could not find NR UE cell info for E2 Node ID = 47
+Could not find NR UE cell info for E2 Node ID = 48
+Could not find NR UE cell info for E2 Node ID = 49
+Could not find NR UE cell info for E2 Node ID = 50
+Could not find NR UE cell info for E2 Node ID = 51
+Could not find NR UE cell info for E2 Node ID = 52
+Could not find NR UE cell info for E2 Node ID = 53
+Could not find NR UE cell info for E2 Node ID = 54
+Could not find NR UE cell info for E2 Node ID = 55
+Could not find NR UE cell info for E2 Node ID = 56
+Could not find NR UE cell info for E2 Node ID = 57
+Could not find NR gNB location for E2 Node ID = 1
+Could not find NR gNB location for E2 Node ID = 2
+Could not find NR gNB location for E2 Node ID = 3
+Could not find NR gNB location for E2 Node ID = 4
+Could not find NR gNB location for E2 Node ID = 5
+Could not find NR gNB location for E2 Node ID = 6
+Could not find NR gNB location for E2 Node ID = 7
+---- LOAD at t=4.5 ----
+UAV_AUTONOMY_XAPP Time=6.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1479.21 XhaulConnected=1 XhaulChannelVariationDb=-3.5052 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=2 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=6.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=628.779 XhaulConnected=1 XhaulChannelVariationDb=-3.9027 RawXhaulState=HEALTHY RawXhaulStateAgeSec=2 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=6.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=791.903 XhaulConnected=1 XhaulChannelVariationDb=-0.170944 RawXhaulState=HEALTHY RawXhaulStateAgeSec=2 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=6.5 ----
+  cell 1 (TN) load=0/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=0/20
+  cell 5 (NTN) load=0/10
+  cell 6 (NTN) load=1/10
+  cell 7 (NTN) load=1/10
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+UAV_AUTONOMY_XAPP Time=8.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1514.22 XhaulConnected=1 XhaulChannelVariationDb=0.172433 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=4 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=8.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=632.214 XhaulConnected=1 XhaulChannelVariationDb=2.22826 RawXhaulState=HEALTHY RawXhaulStateAgeSec=4 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=8.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=826.989 XhaulConnected=1 XhaulChannelVariationDb=0.725406 RawXhaulState=HEALTHY RawXhaulStateAgeSec=4 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=8.5 ----
+  cell 1 (TN) load=0/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=1/20
+  cell 5 (NTN) load=0/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=1/10
+UE 23 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=46 currCell=6 candCell=7 candRsrp=-123.361 < min=-110
+LM HO_FAIL_LOW_RSRP UE=92 currCell=6 candCell=7 candRsrp=-122.398 < min=-110
+UAV_AUTONOMY_XAPP Time=10.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=1668.54 XhaulConnected=1 XhaulChannelVariationDb=1.3721 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=6 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=10.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=637.453 XhaulConnected=1 XhaulChannelVariationDb=-7.24567 RawXhaulState=HEALTHY RawXhaulStateAgeSec=6 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=10.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=863.527 XhaulConnected=1 XhaulChannelVariationDb=-4.11727 RawXhaulState=HEALTHY RawXhaulStateAgeSec=6 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=10.5 ----
+  cell 1 (TN) load=0/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=1/20
+  cell 5 (NTN) load=1/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=1/10
+LM HO_FAIL_LOW_RSRP UE=23 currCell=7 candCell=6 candRsrp=-115.789 < min=-110
+LM HO_FAIL_LOW_RSRP UE=90 currCell=4 candCell=6 candRsrp=-122.712 < min=-110
+UAV_AUTONOMY_XAPP Time=12.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=1687.11 XhaulConnected=1 XhaulChannelVariationDb=-0.892629 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=8 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=12.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=648.119 XhaulConnected=1 XhaulChannelVariationDb=2.56656 RawXhaulState=HEALTHY RawXhaulStateAgeSec=8 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=12.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=901.341 XhaulConnected=1 XhaulChannelVariationDb=1.04915 RawXhaulState=HEALTHY RawXhaulStateAgeSec=8 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=12.5 ----
+  cell 1 (TN) load=0/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=2/20
+  cell 5 (NTN) load=1/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=1/10
+UE 23 TTT_WAIT target=5 elapsed=0s need=2s
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=47 currCell=5 candCell=7 candRsrp=-113.037 < min=-110
+UE 100 TTT_WAIT target=6 elapsed=0s need=2s
+UAV_AUTONOMY_XAPP Time=14.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1623.92 XhaulConnected=1 XhaulChannelVariationDb=3.02157 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=10 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=14.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=660.708 XhaulConnected=1 XhaulChannelVariationDb=-3.75201 RawXhaulState=HEALTHY RawXhaulStateAgeSec=10 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=14.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=940.276 XhaulConnected=1 XhaulChannelVariationDb=-2.04708 RawXhaulState=HEALTHY RawXhaulStateAgeSec=10 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=14.5 ----
+  cell 1 (TN) load=1/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=2/20
+  cell 5 (NTN) load=1/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=1/10
+UE 23 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=46 currCell=6 candCell=7 candRsrp=-118.727 < min=-110
+UE 100 TTT_WAIT target=1 elapsed=0s need=2s
+UAV_AUTONOMY_XAPP Time=16.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1663.07 XhaulConnected=1 XhaulChannelVariationDb=-1.35744 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=12 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=16.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=663.059 XhaulConnected=1 XhaulChannelVariationDb=-2.66666 RawXhaulState=HEALTHY RawXhaulStateAgeSec=12 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=16.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=983.008 XhaulConnected=1 XhaulChannelVariationDb=-5.34018 RawXhaulState=HEALTHY RawXhaulStateAgeSec=12 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=16.5 ----
+  cell 1 (TN) load=1/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=2/20
+  cell 5 (NTN) load=1/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=1/10
+LM HO_FAIL_LOW_RSRP UE=46 currCell=6 candCell=7 candRsrp=-134.943 < min=-110
+UE 47 TTT_WAIT target=4 elapsed=0s need=2s
+UE 90 TTT_WAIT target=6 elapsed=0s need=2s
+UE 92 TTT_WAIT target=5 elapsed=0s need=2s
+UE 100 TTT_WAIT target=5 elapsed=0s need=2s
+UAV_AUTONOMY_XAPP Time=18.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1703.43 XhaulConnected=1 XhaulChannelVariationDb=1.51246 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=14 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=18.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=665.818 XhaulConnected=1 XhaulChannelVariationDb=-0.297647 RawXhaulState=HEALTHY RawXhaulStateAgeSec=14 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=18.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1027.05 XhaulConnected=1 XhaulChannelVariationDb=0.972659 RawXhaulState=HEALTHY RawXhaulStateAgeSec=14 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=18.5 ----
+  cell 1 (TN) load=1/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=3/20
+  cell 5 (NTN) load=1/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=1/10
+LM HO_FAIL_LOW_RSRP UE=23 currCell=7 candCell=5 candRsrp=-119.881 < min=-110
+LM HO_FAIL_LOW_RSRP UE=46 currCell=6 candCell=5 candRsrp=-129.054 < min=-110
+LM HO UE=47 rnti=8 5->4 type=TN servingRsrp=-116.064 targetRsrp=-96.0034 targetLoadReal=3/20 targetLoadEff=3/20
+LM HO UE=92 rnti=16 6->5 type=NTN servingRsrp=-93.4542 targetRsrp=-89.8608 targetLoadReal=1/10 targetLoadEff=1/10
+UE 97 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=100 rnti=16 4->5 type=NTN servingRsrp=-103.939 targetRsrp=-98.2973 targetLoadReal=1/10 targetLoadEff=2/10
+TRACE HO_SUCCESS Time=18.6151 IMSI=46 TargetCell=4 Type=TN TargetRSRP=-117.162 ServingRSRP=-120.585 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=18.6151 IMSI=99 TargetCell=5 Type=NTN TargetRSRP=-126.085 ServingRSRP=-64.9788 BackhaulDlSnr=10.435 BackhaulUlSnr=5.91441
+TRACE HO_SUCCESS Time=18.6151 IMSI=91 TargetCell=5 Type=NTN TargetRSRP=-118.867 ServingRSRP=-115.673 BackhaulDlSnr=10.435 BackhaulUlSnr=5.91441
+UAV_AUTONOMY_XAPP Time=20.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1744.05 XhaulConnected=1 XhaulChannelVariationDb=-1.23503 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=16 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=20.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=672.492 XhaulConnected=1 XhaulChannelVariationDb=-4.72636 RawXhaulState=HEALTHY RawXhaulStateAgeSec=16 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=20.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1071.6 XhaulConnected=1 XhaulChannelVariationDb=0.0675034 RawXhaulState=HEALTHY RawXhaulStateAgeSec=16 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=20.5 ----
+  cell 1 (TN) load=1/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=3/20
+  cell 5 (NTN) load=2/10
+  cell 6 (NTN) load=1/10
+  cell 7 (NTN) load=1/10
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-133.114 < min=-110
+LM HO_FAIL_LOW_RSRP UE=92 currCell=5 candCell=7 candRsrp=-123.617 < min=-110
+UE 100 TTT_WAIT target=4 elapsed=0s need=2s
+UAV_AUTONOMY_XAPP Time=22.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=1806.54 XhaulConnected=1 XhaulChannelVariationDb=3.91691 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=18 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=22.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=682.79 XhaulConnected=1 XhaulChannelVariationDb=-2.96853 RawXhaulState=HEALTHY RawXhaulStateAgeSec=18 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=22.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1116.59 XhaulConnected=1 XhaulChannelVariationDb=1.01141 RawXhaulState=HEALTHY RawXhaulStateAgeSec=18 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=22.5 ----
+  cell 1 (TN) load=1/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=3/20
+  cell 5 (NTN) load=2/10
+  cell 6 (NTN) load=1/10
+  cell 7 (NTN) load=1/10
+UE 23 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=46 rnti=8 6->4 type=TN servingRsrp=-118.957 targetRsrp=-96.9191 targetLoadReal=3/20 targetLoadEff=3/20
+UE 47 TTT_WAIT target=1 elapsed=0s need=2s
+UE 92 TTT_WAIT target=1 elapsed=0s need=2s
+UE 100 TTT_WAIT target=1 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=22.6151 IMSI=45 TargetCell=4 Type=TN TargetRSRP=-141.16 ServingRSRP=-103.257 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=24.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1826.56 XhaulConnected=1 XhaulChannelVariationDb=-9.97187 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=20 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=0 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=NO_BACKHAUL_AVAILABLE RicControlState=NEAR_RT_RIC_SWITCHING_NO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=0 UavMode=AUTONOMOUS_LOCAL_ISLAND
+UAV_AUTONOMY_XAPP Time=24.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=696.978 XhaulConnected=1 XhaulChannelVariationDb=1.30617 RawXhaulState=HEALTHY RawXhaulStateAgeSec=20 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=24.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1161.98 XhaulConnected=1 XhaulChannelVariationDb=0.562182 RawXhaulState=HEALTHY RawXhaulStateAgeSec=20 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=24.5 ----
+  cell 1 (TN) load=1/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=3 (BLOCKED)
+  cell 6 (NTN) load=0/10
+  cell 7 (NTN) load=1/10
+UE 23 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=7 candRsrp=-141.707 < min=-110
+LM HO UE=47 rnti=25 4->1 type=TN servingRsrp=-134.048 targetRsrp=-92.9592 targetLoadReal=1/20 targetLoadEff=1/20
+UE 100 TTT_WAIT target=4 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=24.6151 IMSI=46 TargetCell=1 Type=TN TargetRSRP=-127.41 ServingRSRP=-134.088 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=26.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1867.21 XhaulConnected=1 XhaulChannelVariationDb=0.6374 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=22 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=26.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=727.808 XhaulConnected=1 XhaulChannelVariationDb=-2.69739 RawXhaulState=HEALTHY RawXhaulStateAgeSec=22 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=26.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1205.23 XhaulConnected=1 XhaulChannelVariationDb=-4.21776 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=0 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=26.5 ----
+  cell 1 (TN) load=2/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=3/20
+  cell 5 (NTN) load=3/10
+  cell 6 (NTN) load=0/10
+  cell 7 (NTN) load=1/10
+LM HO UE=23 rnti=8 7->1 type=TN servingRsrp=-123.088 targetRsrp=-94.399 targetLoadReal=2/20 targetLoadEff=2/20
+UE 47 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=90 currCell=4 candCell=7 candRsrp=-113.837 < min=-110
+UE 92 TTT_WAIT target=4 elapsed=0s need=2s
+UE 97 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=100 rnti=10 5->4 type=TN servingRsrp=-130.673 targetRsrp=-79.973 targetLoadReal=3/20 targetLoadEff=3/20
+TRACE HO_SUCCESS Time=26.6151 IMSI=22 TargetCell=1 Type=TN TargetRSRP=-94.7612 ServingRSRP=-105.428 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=26.6151 IMSI=99 TargetCell=4 Type=TN TargetRSRP=-100.313 ServingRSRP=-97.6706 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=28.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1909.2 XhaulConnected=1 XhaulChannelVariationDb=1.53709 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=24 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=28.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=751.716 XhaulConnected=1 XhaulChannelVariationDb=-1.58626 RawXhaulState=HEALTHY RawXhaulStateAgeSec=24 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=28.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1250.49 XhaulConnected=1 XhaulChannelVariationDb=-1.33302 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=2 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=28.5 ----
+  cell 1 (TN) load=3/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=2/10
+  cell 6 (NTN) load=0/10
+  cell 7 (NTN) load=0/10
+UE 23 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=1 candRsrp=-121.439 < min=-110
+LM HO_FAIL_LOW_RSRP UE=47 currCell=1 candCell=5 candRsrp=-132.093 < min=-110
+UE 90 TTT_WAIT target=6 elapsed=0s need=2s
+UAV_AUTONOMY_XAPP Time=30.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=1919.28 XhaulConnected=1 XhaulChannelVariationDb=1.28927 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=26 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=30.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=775.128 XhaulConnected=1 XhaulChannelVariationDb=-3.40917 RawXhaulState=HEALTHY RawXhaulStateAgeSec=26 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=30.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1296.6 XhaulConnected=1 XhaulChannelVariationDb=1.23778 RawXhaulState=HEALTHY RawXhaulStateAgeSec=0 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=30.5 ----
+  cell 1 (TN) load=3/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=2/10
+  cell 6 (NTN) load=0/10
+  cell 7 (NTN) load=1/10
+UE 23 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=5 candRsrp=-153.341 < min=-110
+UE 47 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=97 currCell=1 candCell=5 candRsrp=-133.418 < min=-110
+UAV_AUTONOMY_XAPP Time=32.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=1994.65 XhaulConnected=1 XhaulChannelVariationDb=-0.64891 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=28 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=32.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=800.536 XhaulConnected=1 XhaulChannelVariationDb=-2.55936 RawXhaulState=HEALTHY RawXhaulStateAgeSec=28 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=32.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1342.98 XhaulConnected=1 XhaulChannelVariationDb=0.381982 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=0 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=32.5 ----
+  cell 1 (TN) load=3/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=3/10
+  cell 6 (NTN) load=0/10
+  cell 7 (NTN) load=1/10
+UE 23 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=7 candRsrp=-127.388 < min=-110
+LM HO_FAIL_LOW_RSRP UE=90 currCell=4 candCell=5 candRsrp=-110.048 < min=-110
+UE 92 TTT_WAIT target=1 elapsed=0s need=2s
+UAV_AUTONOMY_XAPP Time=34.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=2037.4 XhaulConnected=1 XhaulChannelVariationDb=1.48981 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=30 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=34.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=827.247 XhaulConnected=1 XhaulChannelVariationDb=-0.447712 RawXhaulState=HEALTHY RawXhaulStateAgeSec=30 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=34.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1389.85 XhaulConnected=1 XhaulChannelVariationDb=1.3569 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=2 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=34.5 ----
+  cell 1 (TN) load=3/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=3/10
+  cell 6 (NTN) load=0/10
+  cell 7 (NTN) load=1/10
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=7 candRsrp=-132.027 < min=-110
+UE 33 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=7 candRsrp=-143.613 < min=-110
+LM HO_FAIL_LOW_RSRP UE=47 currCell=1 candCell=7 candRsrp=-118.412 < min=-110
+UE 92 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=97 currCell=1 candCell=7 candRsrp=-129.848 < min=-110
+UAV_AUTONOMY_XAPP Time=36.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2009.75 XhaulConnected=1 XhaulChannelVariationDb=-3.8457 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=32 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=36.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=869.074 XhaulConnected=1 XhaulChannelVariationDb=-0.163872 RawXhaulState=HEALTHY RawXhaulStateAgeSec=32 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=36.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1434.75 XhaulConnected=1 XhaulChannelVariationDb=-2.04926 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=4 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+---- LOAD at t=36.5 ----
+  cell 1 (TN) load=3/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=3/10
+  cell 6 (NTN) load=0/10
+  cell 7 (NTN) load=1/10
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-118.266 < min=-110
+LM HO UE=33 rnti=16 7->1 type=TN servingRsrp=-127.366 targetRsrp=-93.481 targetLoadReal=3/20 targetLoadEff=3/20
+UE 47 TTT_WAIT target=7 elapsed=0s need=2s
+UE 59 TTT_WAIT target=1 elapsed=0s need=2s
+UE 92 TTT_WAIT target=4 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=36.6151 IMSI=32 TargetCell=1 Type=TN TargetRSRP=-105.584 ServingRSRP=-124.931 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=38.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=2120.22 XhaulConnected=1 XhaulChannelVariationDb=4.33644 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=34 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=38.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=915.302 XhaulConnected=1 XhaulChannelVariationDb=2.52106 RawXhaulState=HEALTHY RawXhaulStateAgeSec=34 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=38.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1479.41 XhaulConnected=1 XhaulChannelVariationDb=-4.44142 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=6 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=38.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=3/10
+  cell 6 (NTN) load=1/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-119.947 < min=-110
+LM HO_FAIL_LOW_RSRP UE=33 currCell=1 candCell=5 candRsrp=-138.059 < min=-110
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=5 candRsrp=-130.391 < min=-110
+UE 86 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=92 currCell=5 candCell=6 candRsrp=-130.632 < min=-110
+LM HO_FAIL_LOW_RSRP UE=97 currCell=1 candCell=5 candRsrp=-124.025 < min=-110
+UE 100 TTT_WAIT target=1 elapsed=0s need=2s
+UAV_AUTONOMY_XAPP Time=40.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=2163.23 XhaulConnected=1 XhaulChannelVariationDb=-1.7948 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=36 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=40.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=959.701 XhaulConnected=1 XhaulChannelVariationDb=-1.15315 RawXhaulState=HEALTHY RawXhaulStateAgeSec=36 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=40.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1524.39 XhaulConnected=1 XhaulChannelVariationDb=1.00142 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=8 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=40.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=3/10
+  cell 6 (NTN) load=1/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-122.354 < min=-110
+UE 33 TTT_WAIT target=4 elapsed=0s need=2s
+UE 41 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=1 candRsrp=-133.539 < min=-110
+LM HO_FAIL_LOW_RSRP UE=47 currCell=1 candCell=5 candRsrp=-127.67 < min=-110
+LM HO_FAIL_LOW_RSRP UE=59 currCell=5 candCell=6 candRsrp=-127.052 < min=-110
+UE 90 TTT_WAIT target=6 elapsed=0s need=2s
+UAV_AUTONOMY_XAPP Time=42.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2102.44 XhaulConnected=1 XhaulChannelVariationDb=-2.97918 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=38 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=42.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1006.18 XhaulConnected=1 XhaulChannelVariationDb=1.42404 RawXhaulState=HEALTHY RawXhaulStateAgeSec=38 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=42.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1503.55 XhaulConnected=1 XhaulChannelVariationDb=0.383695 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=10 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=42.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=4/10
+  cell 6 (NTN) load=1/10
+  cell 7 (NTN) load=0/10
+UE 23 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=6 candRsrp=-136.892 < min=-110
+LM HO_FAIL_LOW_RSRP UE=90 currCell=4 candCell=6 candRsrp=-121.093 < min=-110
+UE 92 TTT_WAIT target=1 elapsed=0s need=2s
+UE 97 TTT_WAIT target=4 elapsed=0s need=2s
+UAV_AUTONOMY_XAPP Time=44.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2137.01 XhaulConnected=1 XhaulChannelVariationDb=2.49687 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=40 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=44.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1039.89 XhaulConnected=1 XhaulChannelVariationDb=-1.83449 RawXhaulState=HEALTHY RawXhaulStateAgeSec=40 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=44.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1617.21 XhaulConnected=1 XhaulChannelVariationDb=-2.73288 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=12 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=44.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=5/10
+  cell 6 (NTN) load=1/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-120.512 < min=-110
+LM HO_FAIL_LOW_RSRP UE=33 currCell=1 candCell=5 candRsrp=-139.392 < min=-110
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=5 candRsrp=-135.144 < min=-110
+UE 47 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=59 currCell=5 candCell=6 candRsrp=-114.684 < min=-110
+UE 92 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO UE=97 rnti=8 1->4 type=TN servingRsrp=-116.469 targetRsrp=-94.7685 targetLoadReal=4/20 targetLoadEff=4/20
+TRACE HO_SUCCESS Time=44.6151 IMSI=96 TargetCell=4 Type=TN TargetRSRP=-90.518 ServingRSRP=-79.2963 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=46.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=2292.95 XhaulConnected=1 XhaulChannelVariationDb=-1.54565 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=42 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=46.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1084.59 XhaulConnected=1 XhaulChannelVariationDb=0.503886 RawXhaulState=HEALTHY RawXhaulStateAgeSec=42 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=46.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1474.36 XhaulConnected=1 XhaulChannelVariationDb=1.18815 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=14 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=46.5 ----
+  cell 1 (TN) load=3/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=5/20
+  cell 5 (NTN) load=5/10
+  cell 6 (NTN) load=1/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=4 candRsrp=-112.464 < min=-110
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=5 candRsrp=-111.801 < min=-110
+LM HO UE=47 rnti=9 1->4 type=TN servingRsrp=-129.704 targetRsrp=-101.983 targetLoadReal=5/20 targetLoadEff=5/20
+UE 90 TTT_WAIT target=6 elapsed=0s need=2s
+UE 97 TTT_WAIT target=1 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=46.6151 IMSI=46 TargetCell=4 Type=TN TargetRSRP=-131.803 ServingRSRP=-89.9626 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=48.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2203.72 XhaulConnected=1 XhaulChannelVariationDb=-0.787079 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=44 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=48.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1132.6 XhaulConnected=1 XhaulChannelVariationDb=-2.42649 RawXhaulState=HEALTHY RawXhaulStateAgeSec=44 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=48.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1458.31 XhaulConnected=1 XhaulChannelVariationDb=0.261864 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=16 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=48.5 ----
+  cell 1 (TN) load=2/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=6/20
+  cell 5 (NTN) load=5/10
+  cell 6 (NTN) load=1/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-118.834 < min=-110
+UE 33 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=1 candRsrp=-123.967 < min=-110
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-120.349 < min=-110
+LM HO_FAIL_LOW_RSRP UE=59 currCell=5 candCell=7 candRsrp=-132.363 < min=-110
+LM HO_FAIL_LOW_RSRP UE=86 currCell=6 candCell=5 candRsrp=-124.689 < min=-110
+LM HO UE=90 rnti=8 4->6 type=NTN servingRsrp=-110.127 targetRsrp=-87.9727 targetLoadReal=1/10 targetLoadEff=1/10
+LM HO UE=97 rnti=28 4->1 type=TN servingRsrp=-103.425 targetRsrp=-99.9172 targetLoadReal=2/20 targetLoadEff=2/20
+TRACE HO_SUCCESS Time=48.6151 IMSI=96 TargetCell=1 Type=TN TargetRSRP=-115.171 ServingRSRP=-114.551 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=48.6151 IMSI=89 TargetCell=6 Type=NTN TargetRSRP=-131.391 ServingRSRP=-85.0157 BackhaulDlSnr=7.59971 BackhaulUlSnr=3.07911
+UAV_AUTONOMY_XAPP Time=50.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=2379.65 XhaulConnected=1 XhaulChannelVariationDb=-2.84896 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=46 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=50.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1180.47 XhaulConnected=1 XhaulChannelVariationDb=-0.891564 RawXhaulState=HEALTHY RawXhaulStateAgeSec=46 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=50.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=1755.38 XhaulConnected=1 XhaulChannelVariationDb=0.960632 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=18 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=50.5 ----
+  cell 1 (TN) load=3/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=5/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-118.735 < min=-110
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=6 candRsrp=-136.12 < min=-110
+UE 59 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=86 currCell=6 candCell=5 candRsrp=-121.162 < min=-110
+LM HO_FAIL_LOW_RSRP UE=90 currCell=6 candCell=5 candRsrp=-121.475 < min=-110
+UAV_AUTONOMY_XAPP Time=52.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=2425.05 XhaulConnected=1 XhaulChannelVariationDb=0.894557 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=48 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=52.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1214.63 XhaulConnected=1 XhaulChannelVariationDb=-1.13077 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=0 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=52.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1437.08 XhaulConnected=1 XhaulChannelVariationDb=-6.01584 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=20 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=52.5 ----
+  cell 1 (TN) load=3/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=6/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-121.351 < min=-110
+LM HO_FAIL_LOW_RSRP UE=33 currCell=1 candCell=6 candRsrp=-129.994 < min=-110
+UE 41 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=6 candRsrp=-126.341 < min=-110
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-132.285 < min=-110
+LM HO_FAIL_LOW_RSRP UE=53 currCell=5 candCell=6 candRsrp=-122.991 < min=-110
+UE 90 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=97 currCell=1 candCell=2 candRsrp=-113.028 < min=-110
+UAV_AUTONOMY_XAPP Time=54.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2313 XhaulConnected=1 XhaulChannelVariationDb=1.93205 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=50 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=54.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1246.45 XhaulConnected=1 XhaulChannelVariationDb=0.0282538 RawXhaulState=HEALTHY RawXhaulStateAgeSec=0 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=54.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1433.61 XhaulConnected=1 XhaulChannelVariationDb=-3.10409 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=22 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=54.5 ----
+  cell 1 (TN) load=3/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=6/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=33 currCell=1 candCell=6 candRsrp=-142.068 < min=-110
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=6 candRsrp=-141.113 < min=-110
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-127.335 < min=-110
+LM HO_FAIL_LOW_RSRP UE=97 currCell=1 candCell=4 candRsrp=-116.023 < min=-110
+UAV_AUTONOMY_XAPP Time=56.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=2517.13 XhaulConnected=1 XhaulChannelVariationDb=-2.57584 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=52 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=56.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1279.39 XhaulConnected=1 XhaulChannelVariationDb=0.969229 RawXhaulState=HEALTHY RawXhaulStateAgeSec=2 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=56.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1431.84 XhaulConnected=1 XhaulChannelVariationDb=-1.66447 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=24 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=56.5 ----
+  cell 1 (TN) load=3/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=8/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=0/10
+UE 23 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=1 candRsrp=-123.518 < min=-110
+UE 53 TTT_WAIT target=6 elapsed=0s need=2s
+UE 59 TTT_WAIT target=3 elapsed=0s need=2s
+UE 90 TTT_WAIT target=4 elapsed=0s need=2s
+UE 92 TTT_WAIT target=1 elapsed=0s need=2s
+UAV_AUTONOMY_XAPP Time=58.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2388.86 XhaulConnected=1 XhaulChannelVariationDb=-1.22853 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=54 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=58.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1325.88 XhaulConnected=1 XhaulChannelVariationDb=0.4871 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=0 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=58.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1425.25 XhaulConnected=1 XhaulChannelVariationDb=-2.97301 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=26 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=58.5 ----
+  cell 1 (TN) load=3/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=8/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=33 currCell=1 candCell=6 candRsrp=-140.863 < min=-110
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=1 candRsrp=-116.133 < min=-110
+UE 47 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=59 currCell=5 candCell=6 candRsrp=-120.672 < min=-110
+LM HO UE=92 rnti=9 5->1 type=TN servingRsrp=-104.872 targetRsrp=-92.3975 targetLoadReal=3/20 targetLoadEff=3/20
+UE 97 TTT_WAIT target=4 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=58.6151 IMSI=91 TargetCell=1 Type=TN TargetRSRP=-126.324 ServingRSRP=-92.0607 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=60.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2427.74 XhaulConnected=1 XhaulChannelVariationDb=-0.982422 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=56 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=60.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1365.05 XhaulConnected=1 XhaulChannelVariationDb=-3.76143 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=2 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=60.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1424.48 XhaulConnected=1 XhaulChannelVariationDb=-1.35682 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=28 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=60.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=7/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=5 candRsrp=-111.242 < min=-110
+LM HO_FAIL_LOW_RSRP UE=33 currCell=1 candCell=6 candRsrp=-141.185 < min=-110
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=6 candRsrp=-130.023 < min=-110
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-130.794 < min=-110
+LM HO_FAIL_LOW_RSRP UE=59 currCell=5 candCell=6 candRsrp=-128.11 < min=-110
+UE 90 TTT_WAIT target=4 elapsed=0s need=2s
+UE 92 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=97 currCell=1 candCell=2 candRsrp=-114.249 < min=-110
+UAV_AUTONOMY_XAPP Time=62.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2467.64 XhaulConnected=1 XhaulChannelVariationDb=-1.89993 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=58 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=62.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1401.49 XhaulConnected=1 XhaulChannelVariationDb=-4.13753 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=4 XhaulState=HEALTHY DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=STANDBY BackhaulMode=TN_DIRECT RicControlState=TN_E2 ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=TN_CONTROLLED_COVERAGE_EXTENSION
+UAV_AUTONOMY_XAPP Time=62.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1426.86 XhaulConnected=1 XhaulChannelVariationDb=1.54536 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=30 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=62.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=4/20
+  cell 5 (NTN) load=7/10
+  cell 6 (NTN) load=3/10
+  cell 7 (NTN) load=0/10
+UE 23 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=33 currCell=1 candCell=5 candRsrp=-130.941 < min=-110
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=6 candRsrp=-141.565 < min=-110
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-128.443 < min=-110
+LM HO UE=90 rnti=25 6->4 type=TN servingRsrp=-129.646 targetRsrp=-107.883 targetLoadReal=4/20 targetLoadEff=4/20
+UE 97 TTT_WAIT target=4 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=62.6151 IMSI=89 TargetCell=4 Type=TN TargetRSRP=-112.382 ServingRSRP=-127.849 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=64.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2505.14 XhaulConnected=1 XhaulChannelVariationDb=0.352326 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=60 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=64.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1448.58 XhaulConnected=1 XhaulChannelVariationDb=0.114613 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=6 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=64.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1425.05 XhaulConnected=1 XhaulChannelVariationDb=0.313872 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=32 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=64.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=5/20
+  cell 5 (NTN) load=7/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=0/10
+UE 19 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-120.474 < min=-110
+UE 33 TTT_WAIT target=4 elapsed=0s need=2s
+UE 41 TTT_WAIT target=6 elapsed=0s need=2s
+UE 46 TTT_WAIT target=1 elapsed=0s need=2s
+UE 47 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=97 rnti=12 1->4 type=TN servingRsrp=-116.485 targetRsrp=-102.389 targetLoadReal=5/20 targetLoadEff=5/20
+TRACE HO_SUCCESS Time=64.6151 IMSI=96 TargetCell=4 Type=TN TargetRSRP=-87.3504 ServingRSRP=-101.395 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=66.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2545.11 XhaulConnected=1 XhaulChannelVariationDb=-1.36339 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=62 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=66.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1488.92 XhaulConnected=1 XhaulChannelVariationDb=0.368929 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=8 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=66.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1429.09 XhaulConnected=1 XhaulChannelVariationDb=1.69334 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=34 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=66.5 ----
+  cell 1 (TN) load=3/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=6/20
+  cell 5 (NTN) load=7/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=0/10
+LM HO UE=33 rnti=11 1->4 type=TN servingRsrp=-117.142 targetRsrp=-87.4334 targetLoadReal=6/20 targetLoadEff=6/20
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=5 candRsrp=-151.163 < min=-110
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-133.173 < min=-110
+UE 86 TTT_WAIT target=4 elapsed=0s need=2s
+UE 90 TTT_WAIT target=7 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=66.6151 IMSI=32 TargetCell=4 Type=TN TargetRSRP=-96.4733 ServingRSRP=-121.891 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=68.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=2793.06 XhaulConnected=1 XhaulChannelVariationDb=1.65914 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=64 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=68.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1527.18 XhaulConnected=1 XhaulChannelVariationDb=-2.31126 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=10 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=68.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1435.11 XhaulConnected=1 XhaulChannelVariationDb=-2.13283 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=36 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=68.5 ----
+  cell 1 (TN) load=2/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=7/20
+  cell 5 (NTN) load=7/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-121.881 < min=-110
+LM HO_FAIL_LOW_RSRP UE=33 currCell=4 candCell=1 candRsrp=-117.424 < min=-110
+UE 45 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=6 candRsrp=-123.183 < min=-110
+UE 47 TTT_WAIT target=2 elapsed=0s need=2s
+UE 59 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=92 currCell=1 candCell=6 candRsrp=-111.069 < min=-110
+LM HO_FAIL_LOW_RSRP UE=97 currCell=4 candCell=1 candRsrp=-112.026 < min=-110
+UAV_AUTONOMY_XAPP Time=70.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=2838.5 XhaulConnected=1 XhaulChannelVariationDb=-2.88542 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=66 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=70.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1574.61 XhaulConnected=1 XhaulChannelVariationDb=-2.30576 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=12 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=70.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1437.92 XhaulConnected=1 XhaulChannelVariationDb=-3.44298 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=38 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=70.5 ----
+  cell 1 (TN) load=2/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=7/20
+  cell 5 (NTN) load=7/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-112.93 < min=-110
+UE 24 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=33 currCell=4 candCell=6 candRsrp=-137.228 < min=-110
+UE 41 TTT_WAIT target=6 elapsed=0s need=2s
+UE 45 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=6 candRsrp=-138.051 < min=-110
+UE 90 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=92 currCell=1 candCell=5 candRsrp=-131.644 < min=-110
+UE 97 TTT_WAIT target=1 elapsed=0s need=2s
+UE 100 TTT_WAIT target=6 elapsed=0s need=2s
+UAV_AUTONOMY_XAPP Time=72.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=2885.1 XhaulConnected=1 XhaulChannelVariationDb=1.35516 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=68 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=72.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1614.61 XhaulConnected=1 XhaulChannelVariationDb=-1.54976 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=14 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=72.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=2 BestDonorDistanceM=2285.21 XhaulConnected=1 XhaulChannelVariationDb=3.75949 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=40 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=72.5 ----
+  cell 1 (TN) load=2/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=7/20
+  cell 5 (NTN) load=7/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=33 currCell=4 candCell=6 candRsrp=-137.092 < min=-110
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-127.799 < min=-110
+UE 53 TTT_WAIT target=6 elapsed=0s need=2s
+UE 92 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=97 currCell=4 candCell=2 candRsrp=-115.216 < min=-110
+UAV_AUTONOMY_XAPP Time=74.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2707.96 XhaulConnected=1 XhaulChannelVariationDb=0.064473 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=70 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=74.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1652.68 XhaulConnected=1 XhaulChannelVariationDb=-3.30301 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=16 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=74.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1460.03 XhaulConnected=1 XhaulChannelVariationDb=3.35557 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=42 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=74.5 ----
+  cell 1 (TN) load=2/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=7/20
+  cell 5 (NTN) load=7/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=0/10
+UE 19 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-120.111 < min=-110
+LM HO_FAIL_LOW_RSRP UE=33 currCell=4 candCell=1 candRsrp=-119.501 < min=-110
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=6 candRsrp=-141.063 < min=-110
+UE 47 TTT_WAIT target=5 elapsed=0s need=2s
+UE 59 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=90 currCell=4 candCell=6 candRsrp=-132.686 < min=-110
+LM HO_FAIL_LOW_RSRP UE=92 currCell=1 candCell=5 candRsrp=-126.731 < min=-110
+UE 97 TTT_WAIT target=1 elapsed=0s need=2s
+UAV_AUTONOMY_XAPP Time=76.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2747.93 XhaulConnected=1 XhaulChannelVariationDb=-2.57058 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=72 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=76.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1696.57 XhaulConnected=1 XhaulChannelVariationDb=-0.73322 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=18 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=76.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1467.98 XhaulConnected=1 XhaulChannelVariationDb=-0.143345 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=44 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=76.5 ----
+  cell 1 (TN) load=2/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=7/20
+  cell 5 (NTN) load=7/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=33 currCell=4 candCell=6 candRsrp=-125.239 < min=-110
+UE 45 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=1 candRsrp=-122.481 < min=-110
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-118.712 < min=-110
+LM HO_FAIL_LOW_RSRP UE=90 currCell=4 candCell=5 candRsrp=-117.562 < min=-110
+LM HO UE=97 rnti=31 4->1 type=TN servingRsrp=-128.549 targetRsrp=-106.839 targetLoadReal=2/20 targetLoadEff=2/20
+UE 100 TTT_WAIT target=6 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=76.6151 IMSI=96 TargetCell=1 Type=TN TargetRSRP=-118.065 ServingRSRP=-111.227 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=78.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=3023.99 XhaulConnected=1 XhaulChannelVariationDb=2.50609 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=74 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=78.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1741.88 XhaulConnected=1 XhaulChannelVariationDb=-1.59563 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=20 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=78.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1475.99 XhaulConnected=1 XhaulChannelVariationDb=0.55219 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=46 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=78.5 ----
+  cell 1 (TN) load=3/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=6/20
+  cell 5 (NTN) load=7/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=0/10
+UE 19 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-113.843 < min=-110
+UE 41 TTT_WAIT target=6 elapsed=0s need=2s
+UE 46 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-132.075 < min=-110
+LM HO_FAIL_LOW_RSRP UE=90 currCell=4 candCell=6 candRsrp=-126.874 < min=-110
+UAV_AUTONOMY_XAPP Time=80.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2829.67 XhaulConnected=1 XhaulChannelVariationDb=-3.61054 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=76 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=80.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1779.64 XhaulConnected=1 XhaulChannelVariationDb=-3.51462 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=22 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=80.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1491.9 XhaulConnected=1 XhaulChannelVariationDb=-1.74375 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=48 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=80.5 ----
+  cell 1 (TN) load=3/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=6/20
+  cell 5 (NTN) load=7/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=0/10
+LM HO UE=19 rnti=50 5->1 type=TN servingRsrp=-142.164 targetRsrp=-108.504 targetLoadReal=3/20 targetLoadEff=3/20
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-120.523 < min=-110
+LM HO_FAIL_LOW_RSRP UE=33 currCell=4 candCell=6 candRsrp=-137.357 < min=-110
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=6 candRsrp=-145.593 < min=-110
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-128.794 < min=-110
+UE 92 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=97 currCell=1 candCell=2 candRsrp=-115.935 < min=-110
+TRACE HO_SUCCESS Time=80.6151 IMSI=18 TargetCell=1 Type=TN TargetRSRP=-128.09 ServingRSRP=-136.376 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=82.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2872.86 XhaulConnected=1 XhaulChannelVariationDb=1.72359 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=78 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=82.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1816.88 XhaulConnected=1 XhaulChannelVariationDb=-0.714332 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=24 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=82.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1510.81 XhaulConnected=1 XhaulChannelVariationDb=-0.32836 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=50 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=82.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=6/20
+  cell 5 (NTN) load=6/10
+  cell 6 (NTN) load=2/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-119.382 < min=-110
+LM HO_FAIL_LOW_RSRP UE=33 currCell=4 candCell=6 candRsrp=-145.466 < min=-110
+UE 45 TTT_WAIT target=6 elapsed=0s need=2s
+UE 46 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-129.197 < min=-110
+LM HO_FAIL_LOW_RSRP UE=59 currCell=5 candCell=7 candRsrp=-140.176 < min=-110
+LM HO_FAIL_LOW_RSRP UE=92 currCell=1 candCell=5 candRsrp=-136.694 < min=-110
+LM HO_FAIL_LOW_RSRP UE=97 currCell=1 candCell=6 candRsrp=-111.906 < min=-110
+UAV_AUTONOMY_XAPP Time=84.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2916.19 XhaulConnected=1 XhaulChannelVariationDb=-4.98626 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=80 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=84.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1855.06 XhaulConnected=1 XhaulChannelVariationDb=-2.36364 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=26 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=84.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1531.08 XhaulConnected=1 XhaulChannelVariationDb=-3.14687 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=52 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=84.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=6/20
+  cell 5 (NTN) load=6/10
+  cell 6 (NTN) load=4/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=19 currCell=1 candCell=4 candRsrp=-131.638 < min=-110
+UE 33 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=46 rnti=26 4->6 type=NTN servingRsrp=-111.521 targetRsrp=-104.326 targetLoadReal=4/10 targetLoadEff=4/10
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-131.067 < min=-110
+LM HO_FAIL_LOW_RSRP UE=86 currCell=6 candCell=5 candRsrp=-115.761 < min=-110
+UE 97 TTT_WAIT target=4 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=84.6151 IMSI=45 TargetCell=6 Type=NTN TargetRSRP=-145.914 ServingRSRP=-108.088 BackhaulDlSnr=13.1782 BackhaulUlSnr=8.65758
+UAV_AUTONOMY_XAPP Time=86.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2957.32 XhaulConnected=1 XhaulChannelVariationDb=0.828526 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=82 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=86.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1892.49 XhaulConnected=1 XhaulChannelVariationDb=-7.97544 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=28 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=86.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1546.28 XhaulConnected=1 XhaulChannelVariationDb=0.445202 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=54 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=86.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=5/20
+  cell 5 (NTN) load=7/10
+  cell 6 (NTN) load=5/10
+  cell 7 (NTN) load=0/10
+UE 19 TTT_WAIT target=5 elapsed=0s need=2s
+UE 23 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=33 currCell=4 candCell=1 candRsrp=-115.611 < min=-110
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-116.158 < min=-110
+UE 53 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=86 currCell=6 candCell=5 candRsrp=-117.342 < min=-110
+UE 90 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=97 currCell=1 candCell=5 candRsrp=-133.864 < min=-110
+UAV_AUTONOMY_XAPP Time=88.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=3000.61 XhaulConnected=1 XhaulChannelVariationDb=0.0823747 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=84 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=88.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1926.49 XhaulConnected=1 XhaulChannelVariationDb=-3.19135 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=30 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=88.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1569.49 XhaulConnected=1 XhaulChannelVariationDb=-2.19251 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=56 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=88.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=5/20
+  cell 5 (NTN) load=7/10
+  cell 6 (NTN) load=5/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=19 currCell=1 candCell=6 candRsrp=-133.613 < min=-110
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-121.078 < min=-110
+LM HO_FAIL_LOW_RSRP UE=33 currCell=4 candCell=1 candRsrp=-116.003 < min=-110
+UE 42 TTT_WAIT target=1 elapsed=0s need=2s
+UE 45 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-126.994 < min=-110
+UE 59 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=92 currCell=1 candCell=5 candRsrp=-134.989 < min=-110
+UAV_AUTONOMY_XAPP Time=90.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=2 BestDonorDistanceM=3656.1 XhaulConnected=1 XhaulChannelVariationDb=3.28073 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=86 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=90.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1938.78 XhaulConnected=1 XhaulChannelVariationDb=-0.0709221 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=32 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=90.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1555.75 XhaulConnected=1 XhaulChannelVariationDb=-3.17325 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=58 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=90.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=5/20
+  cell 5 (NTN) load=7/10
+  cell 6 (NTN) load=5/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=19 currCell=1 candCell=5 candRsrp=-132.487 < min=-110
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=5 candRsrp=-139.477 < min=-110
+LM HO_FAIL_LOW_RSRP UE=33 currCell=4 candCell=1 candRsrp=-114.423 < min=-110
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-120.432 < min=-110
+LM HO_FAIL_LOW_RSRP UE=92 currCell=1 candCell=6 candRsrp=-131.904 < min=-110
+LM HO_FAIL_LOW_RSRP UE=97 currCell=1 candCell=5 candRsrp=-131.205 < min=-110
+UE 104 TTT_WAIT target=1 elapsed=0s need=2s
+UAV_AUTONOMY_XAPP Time=92.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2924.24 XhaulConnected=1 XhaulChannelVariationDb=-2.01985 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=88 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=92.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1946.6 XhaulConnected=1 XhaulChannelVariationDb=0.509126 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=34 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=92.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1533.22 XhaulConnected=1 XhaulChannelVariationDb=-4.33341 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=60 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=92.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=5/20
+  cell 5 (NTN) load=7/10
+  cell 6 (NTN) load=5/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=19 currCell=1 candCell=5 candRsrp=-128.366 < min=-110
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-120.165 < min=-110
+UE 24 TTT_WAIT target=6 elapsed=0s need=2s
+UE 33 TTT_WAIT target=1 elapsed=0s need=2s
+UE 41 TTT_WAIT target=6 elapsed=0s need=2s
+UE 42 TTT_WAIT target=4 elapsed=0s need=2s
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-129.911 < min=-110
+UE 86 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=90 currCell=4 candCell=6 candRsrp=-137.242 < min=-110
+UE 92 TTT_WAIT target=6 elapsed=0s need=2s
+UE 97 TTT_WAIT target=3 elapsed=0s need=2s
+UAV_AUTONOMY_XAPP Time=94.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2878.09 XhaulConnected=1 XhaulChannelVariationDb=-1.83923 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=90 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=94.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1952.52 XhaulConnected=1 XhaulChannelVariationDb=0.423427 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=36 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=94.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1512 XhaulConnected=1 XhaulChannelVariationDb=-5.86559 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=62 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=94.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=5/20
+  cell 5 (NTN) load=7/10
+  cell 6 (NTN) load=6/10
+  cell 7 (NTN) load=0/10
+LM HO_FAIL_LOW_RSRP UE=19 currCell=1 candCell=5 candRsrp=-127.993 < min=-110
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-117.647 < min=-110
+LM HO_FAIL_LOW_RSRP UE=33 currCell=4 candCell=1 candRsrp=-120.394 < min=-110
+LM HO_FAIL_LOW_RSRP UE=41 currCell=4 candCell=5 candRsrp=-126.608 < min=-110
+LM HO UE=42 rnti=49 6->4 type=TN servingRsrp=-126.766 targetRsrp=-107.607 targetLoadReal=5/20 targetLoadEff=5/20
+LM HO_FAIL_LOW_RSRP UE=45 currCell=5 candCell=6 candRsrp=-118.55 < min=-110
+LM HO UE=46 rnti=50 6->4 type=TN servingRsrp=-120.113 targetRsrp=-96.4781 targetLoadReal=5/20 targetLoadEff=6/20
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-129.583 < min=-110
+UE 88 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=97 currCell=1 candCell=5 candRsrp=-135.671 < min=-110
+TRACE HO_SUCCESS Time=94.6151 IMSI=45 TargetCell=4 Type=TN TargetRSRP=-136.443 ServingRSRP=-112.484 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=94.6151 IMSI=41 TargetCell=4 Type=TN TargetRSRP=-123.845 ServingRSRP=-123.743 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=96.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2831.15 XhaulConnected=1 XhaulChannelVariationDb=4.76032 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=92 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=96.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1962.08 XhaulConnected=1 XhaulChannelVariationDb=-8.05826 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=38 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=96.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1492.04 XhaulConnected=1 XhaulChannelVariationDb=-2.58476 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=64 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=96.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=7/20
+  cell 5 (NTN) load=7/10
+  cell 6 (NTN) load=4/10
+  cell 7 (NTN) load=0/10
+UE 11 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=19 currCell=1 candCell=5 candRsrp=-136.515 < min=-110
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-116.236 < min=-110
+UE 42 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=6 candRsrp=-119.18 < min=-110
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-110.943 < min=-110
+LM HO_FAIL_LOW_RSRP UE=90 currCell=4 candCell=6 candRsrp=-127.698 < min=-110
+UE 92 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=97 currCell=1 candCell=2 candRsrp=-114.738 < min=-110
+UAV_AUTONOMY_XAPP Time=98.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=3032.41 XhaulConnected=1 XhaulChannelVariationDb=0.213411 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=94 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=98.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1974 XhaulConnected=1 XhaulChannelVariationDb=2.57609 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=40 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=98.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1473.58 XhaulConnected=1 XhaulChannelVariationDb=0.938854 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=66 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=98.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=7/20
+  cell 5 (NTN) load=9/10
+  cell 6 (NTN) load=4/10
+  cell 7 (NTN) load=0/10
+UE 24 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=33 currCell=4 candCell=1 candRsrp=-118.778 < min=-110
+UE 41 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=42 currCell=4 candCell=6 candRsrp=-127.269 < min=-110
+UE 46 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-129.925 < min=-110
+LM HO_FAIL_LOW_RSRP UE=53 currCell=5 candCell=6 candRsrp=-112.512 < min=-110
+LM HO_FAIL_LOW_RSRP UE=92 currCell=1 candCell=6 candRsrp=-131.66 < min=-110
+UE 97 TTT_WAIT target=2 elapsed=0s need=2s
+UAV_AUTONOMY_XAPP Time=100.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=3057.43 XhaulConnected=1 XhaulChannelVariationDb=2.10929 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=96 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=100.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=1983.38 XhaulConnected=1 XhaulChannelVariationDb=-0.533539 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=42 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=100.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1477.75 XhaulConnected=1 XhaulChannelVariationDb=-1.64025 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=68 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=100.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=7/20
+  cell 5 (NTN) load=9/10
+  cell 6 (NTN) load=5/10
+  cell 7 (NTN) load=1/10
+LM HO_FAIL_LOW_RSRP UE=19 currCell=1 candCell=5 candRsrp=-140.472 < min=-110
+LM HO_FAIL_LOW_RSRP UE=33 currCell=4 candCell=1 candRsrp=-122.953 < min=-110
+LM HO_FAIL_LOW_RSRP UE=42 currCell=4 candCell=6 candRsrp=-128.454 < min=-110
+UE 45 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-126.394 < min=-110
+LM HO_FAIL_LOW_RSRP UE=89 currCell=6 candCell=5 candRsrp=-118.999 < min=-110
+LM HO_FAIL_LOW_RSRP UE=90 currCell=4 candCell=6 candRsrp=-130.571 < min=-110
+UE 92 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=97 currCell=1 candCell=5 candRsrp=-118.441 < min=-110
+UE 100 TTT_WAIT target=7 elapsed=0s need=2s
+UE 107 TTT_WAIT target=4 elapsed=0s need=2s
+UAV_AUTONOMY_XAPP Time=102.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2845.11 XhaulConnected=1 XhaulChannelVariationDb=-2.14569 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=98 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=102.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=2003.13 XhaulConnected=1 XhaulChannelVariationDb=-3.89363 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=44 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=102.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1488.78 XhaulConnected=1 XhaulChannelVariationDb=-4.10855 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=70 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=102.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=7/20
+  cell 5 (NTN) load=9/10
+  cell 6 (NTN) load=5/10
+  cell 7 (NTN) load=1/10
+UE 11 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=19 currCell=1 candCell=7 candRsrp=-136.961 < min=-110
+UE 23 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=27 currCell=6 candCell=5 candRsrp=-110.769 < min=-110
+LM HO_FAIL_LOW_RSRP UE=33 currCell=4 candCell=7 candRsrp=-132.807 < min=-110
+LM HO_FAIL_LOW_RSRP UE=45 currCell=5 candCell=6 candRsrp=-114.523 < min=-110
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=7 candRsrp=-122.381 < min=-110
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-113.143 < min=-110
+LM HO_FAIL_LOW_RSRP UE=53 currCell=5 candCell=6 candRsrp=-121.465 < min=-110
+LM HO_FAIL_LOW_RSRP UE=90 currCell=4 candCell=6 candRsrp=-112.386 < min=-110
+LM HO_FAIL_LOW_RSRP UE=92 currCell=1 candCell=5 candRsrp=-133.298 < min=-110
+UE 104 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=106 currCell=5 candCell=6 candRsrp=-137.346 < min=-110
+LM HO_FAIL_LOW_RSRP UE=107 currCell=7 candCell=6 candRsrp=-113.144 < min=-110
+UAV_AUTONOMY_XAPP Time=104.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=3152.2 XhaulConnected=1 XhaulChannelVariationDb=0.481545 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=100 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=104.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=2037.23 XhaulConnected=1 XhaulChannelVariationDb=-3.08567 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=46 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=104.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1508.98 XhaulConnected=1 XhaulChannelVariationDb=-1.01236 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=72 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=104.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=7/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=5/10
+  cell 7 (NTN) load=1/10
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-121.308 < min=-110
+UE 24 TTT_WAIT target=6 elapsed=0s need=2s
+UE 33 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=42 currCell=4 candCell=6 candRsrp=-126.51 < min=-110
+UE 46 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-127.586 < min=-110
+UE 52 TTT_WAIT target=1 elapsed=0s need=2s
+UE 59 TTT_WAIT target=7 elapsed=0s need=2s
+UE 90 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=92 currCell=1 candCell=6 candRsrp=-132.828 < min=-110
+LM HO_FAIL_LOW_RSRP UE=97 currCell=1 candCell=6 candRsrp=-117.726 < min=-110
+UE 107 TTT_WAIT target=6 elapsed=0s need=2s
+UAV_AUTONOMY_XAPP Time=106.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2899.28 XhaulConnected=1 XhaulChannelVariationDb=-0.835436 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=102 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=106.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=2048.34 XhaulConnected=1 XhaulChannelVariationDb=-0.532185 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=48 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=106.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1494.2 XhaulConnected=1 XhaulChannelVariationDb=-1.52385 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=74 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=106.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=7/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=5/10
+  cell 7 (NTN) load=1/10
+LM HO_FAIL_LOW_RSRP UE=19 currCell=1 candCell=7 candRsrp=-144.659 < min=-110
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-113.919 < min=-110
+LM HO UE=33 rnti=32 4->1 type=TN servingRsrp=-124.917 targetRsrp=-102.35 targetLoadReal=4/20 targetLoadEff=4/20
+UE 41 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=42 currCell=4 candCell=1 candRsrp=-122.807 < min=-110
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=1 candRsrp=-126.009 < min=-110
+LM HO_FAIL_LOW_RSRP UE=52 currCell=5 candCell=6 candRsrp=-122.139 < min=-110
+LM HO_FAIL_LOW_RSRP UE=89 currCell=6 candCell=7 candRsrp=-128.719 < min=-110
+LM HO UE=90 rnti=30 4->1 type=TN servingRsrp=-117.635 targetRsrp=-109.838 targetLoadReal=4/20 targetLoadEff=5/20
+UE 97 TTT_WAIT target=4 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=106.615 IMSI=32 TargetCell=1 Type=TN TargetRSRP=-121.248 ServingRSRP=-113.601 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+TRACE HO_SUCCESS Time=106.615 IMSI=89 TargetCell=1 Type=TN TargetRSRP=-125.181 ServingRSRP=-97.2156 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=108.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=3162.01 XhaulConnected=1 XhaulChannelVariationDb=-1.07815 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=104 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=108.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=2051.87 XhaulConnected=1 XhaulChannelVariationDb=2.11889 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=50 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=108.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1471.19 XhaulConnected=1 XhaulChannelVariationDb=1.74549 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=76 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=108.5 ----
+  cell 1 (TN) load=6/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=5/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=5/10
+  cell 7 (NTN) load=1/10
+LM HO_FAIL_LOW_RSRP UE=19 currCell=1 candCell=7 candRsrp=-130.681 < min=-110
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-114.787 < min=-110
+LM HO_FAIL_LOW_RSRP UE=33 currCell=1 candCell=7 candRsrp=-112.207 < min=-110
+UE 42 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=45 currCell=5 candCell=6 candRsrp=-122.647 < min=-110
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=7 candRsrp=-122.536 < min=-110
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-127.174 < min=-110
+LM HO_FAIL_LOW_RSRP UE=52 currCell=5 candCell=6 candRsrp=-122.828 < min=-110
+UE 59 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=80 currCell=5 candCell=7 candRsrp=-129.4 < min=-110
+LM HO_FAIL_LOW_RSRP UE=90 currCell=1 candCell=4 candRsrp=-110.827 < min=-110
+LM HO_FAIL_LOW_RSRP UE=92 currCell=1 candCell=7 candRsrp=-124.147 < min=-110
+LM HO UE=97 rnti=14 1->4 type=TN servingRsrp=-115.571 targetRsrp=-99.3682 targetLoadReal=5/20 targetLoadEff=5/20
+LM HO_FAIL_LOW_RSRP UE=106 currCell=5 candCell=6 candRsrp=-124.233 < min=-110
+TRACE HO_SUCCESS Time=108.615 IMSI=96 TargetCell=4 Type=TN TargetRSRP=-124.516 ServingRSRP=-116.539 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+UAV_AUTONOMY_XAPP Time=110.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=3162.01 XhaulConnected=1 XhaulChannelVariationDb=-1.14087 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=106 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=110.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=2058.51 XhaulConnected=1 XhaulChannelVariationDb=0.289899 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=52 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=110.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1450.24 XhaulConnected=1 XhaulChannelVariationDb=-1.20246 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=78 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=110.5 ----
+  cell 1 (TN) load=5/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=6/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=5/10
+  cell 7 (NTN) load=1/10
+UE 11 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=19 currCell=1 candCell=6 candRsrp=-140.866 < min=-110
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-118.07 < min=-110
+LM HO_FAIL_LOW_RSRP UE=33 currCell=1 candCell=4 candRsrp=-114.719 < min=-110
+LM HO_FAIL_LOW_RSRP UE=42 currCell=4 candCell=1 candRsrp=-114.441 < min=-110
+UE 45 TTT_WAIT target=6 elapsed=0s need=2s
+UE 46 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-128.49 < min=-110
+LM HO UE=59 rnti=26 5->7 type=NTN servingRsrp=-120.496 targetRsrp=-109.524 targetLoadReal=1/10 targetLoadEff=1/10
+UE 89 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=90 currCell=1 candCell=4 candRsrp=-110.715 < min=-110
+UE 92 TTT_WAIT target=7 elapsed=0s need=2s
+UE 97 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=106 currCell=5 candCell=6 candRsrp=-116.877 < min=-110
+UE 107 TTT_WAIT target=1 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=110.615 IMSI=58 TargetCell=7 Type=NTN TargetRSRP=-144.19 ServingRSRP=-98.8406 BackhaulDlSnr=13.8131 BackhaulUlSnr=9.29254
+UAV_AUTONOMY_XAPP Time=112.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2862.52 XhaulConnected=1 XhaulChannelVariationDb=-0.691947 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=108 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=112.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=2068.03 XhaulConnected=1 XhaulChannelVariationDb=-0.624787 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=54 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=112.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1433.17 XhaulConnected=1 XhaulChannelVariationDb=-2.61932 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=80 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=112.5 ----
+  cell 1 (TN) load=5/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=6/20
+  cell 5 (NTN) load=9/10
+  cell 6 (NTN) load=5/10
+  cell 7 (NTN) load=3/10
+UE 11 TTT_WAIT target=4 elapsed=0s need=2s
+UE 12 TTT_WAIT target=7 elapsed=0s need=2s
+UE 19 TTT_WAIT target=5 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=20 currCell=5 candCell=6 candRsrp=-112.234 < min=-110
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-115.131 < min=-110
+UE 27 TTT_WAIT target=4 elapsed=0s need=2s
+UE 33 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=42 currCell=4 candCell=6 candRsrp=-125.019 < min=-110
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-126.579 < min=-110
+LM HO_FAIL_LOW_RSRP UE=59 currCell=7 candCell=5 candRsrp=-137.81 < min=-110
+LM HO_FAIL_LOW_RSRP UE=86 currCell=6 candCell=5 candRsrp=-118.908 < min=-110
+UE 90 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=97 currCell=4 candCell=2 candRsrp=-114.897 < min=-110
+LM HO_FAIL_LOW_RSRP UE=107 currCell=7 candCell=5 candRsrp=-116.65 < min=-110
+UAV_AUTONOMY_XAPP Time=114.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=1 BestDonorDistanceM=3073.61 XhaulConnected=1 XhaulChannelVariationDb=1.76639 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=110 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=114.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=2079.06 XhaulConnected=1 XhaulChannelVariationDb=-3.09079 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=56 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=114.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1418.01 XhaulConnected=1 XhaulChannelVariationDb=0.106002 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=82 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=114.5 ----
+  cell 1 (TN) load=5/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=6/20
+  cell 5 (NTN) load=9/10
+  cell 6 (NTN) load=5/10
+  cell 7 (NTN) load=3/10
+UE 11 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=19 rnti=15 1->5 type=NTN servingRsrp=-108.499 targetRsrp=-101.885 targetLoadReal=9/10 targetLoadEff=9/10
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-117.71 < min=-110
+LM HO_FAIL_LOW_RSRP UE=33 currCell=1 candCell=7 candRsrp=-133.534 < min=-110
+UE 41 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=42 currCell=4 candCell=6 candRsrp=-125.859 < min=-110
+UE 45 TTT_WAIT target=1 elapsed=0s need=2s
+UE 46 TTT_WAIT target=1 elapsed=0s need=2s
+UE 47 TTT_WAIT target=1 elapsed=0s need=2s
+UE 59 TTT_WAIT target=1 elapsed=0s need=2s
+UE 71 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=86 currCell=6 candCell=7 candRsrp=-118.883 < min=-110
+LM HO_FAIL_LOW_RSRP UE=90 currCell=1 candCell=4 candRsrp=-115.758 < min=-110
+LM HO_FAIL_LOW_RSRP UE=92 currCell=1 candCell=6 candRsrp=-118.644 < min=-110
+UE 97 TTT_WAIT target=2 elapsed=0s need=2s
+UE 107 TTT_WAIT target=1 elapsed=0s need=2s
+TRACE HO_SUCCESS Time=114.615 IMSI=18 TargetCell=5 Type=NTN TargetRSRP=-102.027 ServingRSRP=-140.141 BackhaulDlSnr=13.2841 BackhaulUlSnr=8.76349
+UAV_AUTONOMY_XAPP Time=116.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2807.54 XhaulConnected=1 XhaulChannelVariationDb=-0.354627 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=112 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=116.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=2085.18 XhaulConnected=1 XhaulChannelVariationDb=-2.99132 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=58 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=116.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1402.21 XhaulConnected=1 XhaulChannelVariationDb=-1.83284 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=84 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=116.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=7/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=6/10
+  cell 7 (NTN) load=4/10
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=6 candRsrp=-112.799 < min=-110
+UE 33 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=41 currCell=4 candCell=7 candRsrp=-131.725 < min=-110
+LM HO_FAIL_LOW_RSRP UE=46 currCell=4 candCell=1 candRsrp=-117.172 < min=-110
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=7 candRsrp=-111.337 < min=-110
+LM HO_FAIL_LOW_RSRP UE=90 currCell=1 candCell=4 candRsrp=-117.58 < min=-110
+UE 96 TTT_WAIT target=6 elapsed=0s need=2s
+UAV_AUTONOMY_XAPP Time=118.5 DeploymentMode=tn-uav-satellite UavIndex=0 UavCellId=5 BestDonorCellId=3 BestDonorDistanceM=2807.54 XhaulConnected=1 XhaulChannelVariationDb=-1.6728 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=114 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=118.5 DeploymentMode=tn-uav-satellite UavIndex=1 UavCellId=6 BestDonorCellId=4 BestDonorDistanceM=2095.37 XhaulConnected=1 XhaulChannelVariationDb=-2.02967 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=60 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+UAV_AUTONOMY_XAPP Time=118.5 DeploymentMode=tn-uav-satellite UavIndex=2 UavCellId=7 BestDonorCellId=4 BestDonorDistanceM=1387.24 XhaulConnected=1 XhaulChannelVariationDb=-1.40619 RawXhaulState=UNREACHABLE RawXhaulStateAgeSec=86 XhaulState=UNREACHABLE DonorUnavailableActive=0 SatBackhaulHealthy=1 UavSwitchingXappAvailable=1 UavSwitchingXappState=ACTIVE BackhaulMode=SATELLITE_FALLBACK RicControlState=NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL ActiveUavRic=TN_NEAR_RT_RIC NormalUeHandoverAllowed=1 UavMode=NEAR_RT_RIC_EMERGENCY_SWITCHING_WITH_SATELLITE_BACKHAUL
+---- LOAD at t=118.5 ----
+  cell 1 (TN) load=4/20
+  cell 2 (TN) load=0/20
+  cell 3 (TN) load=0/20
+  cell 4 (TN) load=7/20
+  cell 5 (NTN) load=10/10
+  cell 6 (NTN) load=6/10
+  cell 7 (NTN) load=4/10
+LM HO_FAIL_LOW_RSRP UE=23 currCell=1 candCell=3 candRsrp=-115.199 < min=-110
+LM HO_FAIL_LOW_RSRP UE=24 currCell=5 candCell=6 candRsrp=-115.545 < min=-110
+LM HO UE=33 rnti=16 1->4 type=TN servingRsrp=-117.887 targetRsrp=-100.14 targetLoadReal=7/20 targetLoadEff=7/20
+UE 41 TTT_WAIT target=6 elapsed=0s need=2s
+UE 42 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=45 currCell=5 candCell=7 candRsrp=-110.584 < min=-110
+UE 46 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=47 currCell=4 candCell=1 candRsrp=-127.271 < min=-110
+UE 52 TTT_WAIT target=1 elapsed=0s need=2s
+UE 59 TTT_WAIT target=1 elapsed=0s need=2s
+UE 71 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=92 currCell=1 candCell=7 candRsrp=-143.069 < min=-110
+TRACE HO_SUCCESS Time=118.615 IMSI=32 TargetCell=4 Type=TN TargetRSRP=-115.484 ServingRSRP=-108.555 BackhaulDlSnr=-999 BackhaulUlSnr=-999
