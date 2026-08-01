@@ -141,6 +141,9 @@ static double UAV_INITIAL_AREA_HALF_H_M = 1500.0; // Initial UAV placement half-
 
 static double UE_AREA_HALF_W_M  = 3000.0; // Half-width for UE mobility.
 static double UE_AREA_HALF_H_M  = 1500.0; // Half-height for UE mobility.
+static bool SPLIT_UE_PLACEMENT = false;   // Place UES1 near TN and UES2 outside TN area.
+static double UE_OUTSIDE_TN_EXCLUSION_HALF_W_M = 2500.0;
+static double UE_OUTSIDE_TN_EXCLUSION_HALF_H_M = 1200.0;
 static double g_uavSpeedMps = 10.0;       // UAV waypoint mobility speed.
 static double g_uavMissionTargetScale = 1.0; // Pushes UAV targets toward/off the underserved cluster.
 
@@ -1545,6 +1548,40 @@ RandomGeoFromCenter(double centerLatDeg,
     return Vector(latDeg, lonDeg, altM); // geographic: lat, lon, alt
 }
 
+static Vector
+RandomGeoOutsideCenter(double centerLatDeg,
+                       double centerLonDeg,
+                       double altM,
+                       double halfWidthM,
+                       double halfHeightM,
+                       double exclusionHalfWidthM,
+                       double exclusionHalfHeightM,
+                       Ptr<UniformRandomVariable> eastRv,
+                       Ptr<UniformRandomVariable> northRv)
+{
+    double eastM = 0.0;
+    double northM = 0.0;
+
+    for (uint32_t attempt = 0; attempt < 1000; ++attempt)
+    {
+        eastM = eastRv->GetValue(-halfWidthM, halfWidthM);
+        northM = northRv->GetValue(-halfHeightM, halfHeightM);
+        if (std::abs(eastM) > exclusionHalfWidthM ||
+            std::abs(northM) > exclusionHalfHeightM)
+        {
+            break;
+        }
+    }
+
+    double metersPerDegLat = 111320.0;
+    double metersPerDegLon = 111320.0 * std::cos(centerLatDeg * M_PI / 180.0);
+
+    double latDeg = centerLatDeg + northM / metersPerDegLat;
+    double lonDeg = centerLonDeg + eastM / metersPerDegLon;
+
+    return Vector(latDeg, lonDeg, altM); // geographic: lat, lon, alt
+}
+
 ///
 struct LocalPoint2d
 {
@@ -1975,8 +2012,8 @@ install_mobility_geocentric(NodeContainer staticNodes,
         Vector initGeo = RandomGeoFromCenter(g_refLat,
                                              g_refLon,
                                              1.5,
-                                             UE_AREA_HALF_W_M,
-                                             UE_AREA_HALF_H_M,
+                                             SPLIT_UE_PLACEMENT ? TN_GNB_HALF_W_M : UE_AREA_HALF_W_M,
+                                             SPLIT_UE_PLACEMENT ? TN_GNB_HALF_H_M : UE_AREA_HALF_H_M,
                                              eastRv,
                                              northRv);
 
@@ -2011,13 +2048,24 @@ install_mobility_geocentric(NodeContainer staticNodes,
         Ptr<UniformRandomVariable> eastRv = CreateObject<UniformRandomVariable>();
         Ptr<UniformRandomVariable> northRv = CreateObject<UniformRandomVariable>();
 
-        Vector initGeo = RandomGeoFromCenter(g_refLat,
-                                             g_refLon,
-                                             1.5,
-                                             UE_AREA_HALF_W_M,
-                                             UE_AREA_HALF_H_M,
-                                             eastRv,
-                                             northRv);
+        Vector initGeo =
+            SPLIT_UE_PLACEMENT
+                ? RandomGeoOutsideCenter(g_refLat,
+                                         g_refLon,
+                                         1.5,
+                                         UE_AREA_HALF_W_M,
+                                         UE_AREA_HALF_H_M,
+                                         UE_OUTSIDE_TN_EXCLUSION_HALF_W_M,
+                                         UE_OUTSIDE_TN_EXCLUSION_HALF_H_M,
+                                         eastRv,
+                                         northRv)
+                : RandomGeoFromCenter(g_refLat,
+                                      g_refLon,
+                                      1.5,
+                                      UE_AREA_HALF_W_M,
+                                      UE_AREA_HALF_H_M,
+                                      eastRv,
+                                      northRv);
 
         auto mob = CreateObject<GeocentricConstantPositionMobilityModel>();
         mob->SetGeographicPosition(initGeo);
@@ -2648,6 +2696,15 @@ main(int argc, char* argv[])
                  UAV_INITIAL_AREA_HALF_H_M);
     cmd.AddValue("ue-area-half-w-m", "Half-width of the UE mobility area in meters", UE_AREA_HALF_W_M);
     cmd.AddValue("ue-area-half-h-m", "Half-height of the UE mobility area in meters", UE_AREA_HALF_H_M);
+    cmd.AddValue("split-ue-placement",
+                 "Place UES1 inside the TN region and UES2 outside the TN region",
+                 SPLIT_UE_PLACEMENT);
+    cmd.AddValue("ue-outside-tn-exclusion-half-w-m",
+                 "Half-width of the central TN exclusion area for outside/underserved UEs",
+                 UE_OUTSIDE_TN_EXCLUSION_HALF_W_M);
+    cmd.AddValue("ue-outside-tn-exclusion-half-h-m",
+                 "Half-height of the central TN exclusion area for outside/underserved UEs",
+                 UE_OUTSIDE_TN_EXCLUSION_HALF_H_M);
     cmd.AddValue("uav-speed-mps", "UAV movement speed in meters per second", g_uavSpeedMps);
     cmd.AddValue("uav-mission-target-scale",
                  "Scale applied to underserved-UE cluster centroids when assigning UAV mission targets",

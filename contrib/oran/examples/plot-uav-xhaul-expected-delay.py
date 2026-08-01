@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate a publication-style PDR comparison figure."""
+"""Generate an expected/target delay figure for UAV TN/NTN fallback."""
 
 from __future__ import annotations
 
@@ -9,28 +9,38 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 
-def make_series():
+def make_series() -> tuple[list[int], dict[str, list[float]]]:
     times = list(range(0, 121, 5))
     series = {
         "TN + UAV, no satellite": [],
         "TN + UAV + satellite": [],
+        "TN + UAV + satellite + AI": [],
     }
 
     for t in times:
-        # No-satellite degraded wireless backhaul: access may exist, but service
-        # continuity drops in the mission interval when distance-loss makes the
-        # TN wireless backhaul unavailable.
-        if 30 <= t <= 75:
-            series["TN + UAV, no satellite"].append(48.0 + 6.0 * ((t // 10) % 2))
-        else:
-            series["TN + UAV, no satellite"].append(94.0 + 1.0 * ((t // 20) % 2))
+        # Normal TN wireless-backhaul delay before/after outage.
+        normal = 28.0 + 3.0 * ((t // 15) % 2)
 
-        # Satellite fallback: small dip and recovery during outage because
-        # packets use UAV gNB -> SAT -> GW -> Core instead of TN wireless backhaul.
+        # No satellite: during backhaul outage, delivered traffic stalls. A
+        # timeout-like delay is used to visualize the service-continuity penalty.
         if 30 <= t <= 75:
-            series["TN + UAV + satellite"].append(88.0 + 2.5 * ((t // 10) % 2))
+            series["TN + UAV, no satellite"].append(720.0 + 35.0 * ((t // 10) % 2))
         else:
-            series["TN + UAV + satellite"].append(94.5 + 1.0 * ((t // 20) % 2))
+            series["TN + UAV, no satellite"].append(normal)
+
+        # Satellite fallback: higher than TN_DIRECT because of the
+        # UAV -> SAT -> GW -> Core path, but much lower than no-service timeout.
+        if 30 <= t <= 75:
+            series["TN + UAV + satellite"].append(255.0 + 18.0 * ((t // 10) % 2))
+        else:
+            series["TN + UAV + satellite"].append(normal + 2.0)
+
+        # AI switching: expected to reduce switching latency/instability during
+        # fallback while still using the same longer satellite path.
+        if 30 <= t <= 75:
+            series["TN + UAV + satellite + AI"].append(225.0 + 12.0 * ((t // 10) % 2))
+        else:
+            series["TN + UAV + satellite + AI"].append(normal + 1.0)
 
     return times, series
 
@@ -38,18 +48,14 @@ def make_series():
 def main() -> None:
     out_dir = Path("docs/figures")
     out_dir.mkdir(parents=True, exist_ok=True)
-    prefix = "expected_uav_xhaul_pdr_over_time_90plus"
-
-    times, series = make_series()
-    styles = {
-        "TN + UAV, no satellite": ("#E15759", "s", "--"),
-        "TN + UAV + satellite": ("#F28E2B", "o", "-."),
-    }
+    prefix = "expected_uav_xhaul_delay_over_time"
 
     style_path = Path("./latex_style.mplstyle")
     if not style_path.exists():
         style_path = Path(__file__).resolve().parents[3] / "latex_style.mplstyle"
-    plt.style.use(style_path)
+    if style_path.exists():
+        plt.style.use(style_path)
+
     plt.rcParams.update(
         {
             "figure.dpi": 150,
@@ -58,10 +64,17 @@ def main() -> None:
             "axes.labelsize": 18,
             "xtick.labelsize": 15,
             "ytick.labelsize": 15,
-            "legend.fontsize": 14,
+            "legend.fontsize": 13,
             "lines.markersize": 6,
         }
     )
+
+    times, series = make_series()
+    styles = {
+        "TN + UAV, no satellite": ("#E15759", "s", "--"),
+        "TN + UAV + satellite": ("#F28E2B", "o", "-."),
+        "TN + UAV + satellite + AI": ("#4C78A8", "D", "-"),
+    }
 
     fig, ax = plt.subplots(figsize=(7.8, 4.8), constrained_layout=True)
     for label, values in series.items():
@@ -81,20 +94,20 @@ def main() -> None:
     ax.axvline(75, color="#C44E52", linestyle=":", linewidth=1.4)
     ax.text(
         52.5,
-        76.0,
+        620,
         "TN wireless backhaul unavailable",
         ha="center",
         va="center",
         color="#8B2E2F",
         fontsize=16,
     )
-    # Keep the plot body clean for LaTeX documents; the figure caption carries
-    # the interpretation.
+
     ax.set_xlabel("Simulation time (s)")
-    ax.set_ylabel(r"PDR (\si{\percent})")
+    ax.set_ylabel("DL delay (ms)")
     ax.set_xlim(0, 120)
-    ax.set_ylim(40, 100)
-    ax.legend(loc="lower left", frameon=True, ncol=1)
+    ax.set_ylim(0, 820)
+    ax.grid(True, linestyle="--", alpha=0.45)
+    ax.legend(loc="upper right", frameon=True)
 
     png = out_dir / f"{prefix}.png"
     pdf = out_dir / f"{prefix}.pdf"
@@ -113,9 +126,9 @@ def main() -> None:
         "\\begin{figure}[!t]\n"
         "  \\centering\n"
         f"  \\includegraphics[width=0.92\\linewidth]{{figures/{pdf.name}}}\n"
-        "  \\caption{Downlink PDR behavior under TN wireless backhaul outage. "
-        "Satellite fallback maintains service continuity during the outage interval.}\n"
-        "  \\label{fig:expected-uav-xhaul-pdr}\n"
+        "  \\caption{Expected downlink delay behavior under TN wireless backhaul outage. "
+        "Satellite fallback increases delay compared with direct TN backhaul but avoids the no-service timeout behavior.}\n"
+        "  \\label{fig:expected-uav-xhaul-delay}\n"
         "\\end{figure}\n",
         encoding="utf-8",
     )
