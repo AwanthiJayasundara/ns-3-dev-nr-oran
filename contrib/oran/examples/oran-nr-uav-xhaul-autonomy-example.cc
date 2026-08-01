@@ -2487,7 +2487,7 @@ main(int argc, char* argv[])
     bool enableFhControl = true;
     bool useFixedMcs = false;
     uint8_t fixedMcs = 0;
-    bool enableHarqRetx = true;
+    bool enableHarqRetx = false;
     bool enableSrsInUlSlots = true;
     bool enableSrsInFSlots = true;
     double txTnPower = 46.0;
