@@ -2473,6 +2473,7 @@ main(int argc, char* argv[])
     bool enableOranAppLossReports = true;
     bool enableOranCellLoadReports = true;
     bool enableDedicatedQosFlows = false;
+    bool enableStartupPing = false;
     bool enablePdcpDiscarding = true;
     uint32_t discardTimerMs = 1000;
     uint32_t reorderingTimerMs = 100;
@@ -2754,6 +2755,9 @@ main(int argc, char* argv[])
                  "Install dedicated QoS flows for monitored/background UDP traffic. "
                  "Leave disabled for robust default-bearer KPI runs.",
                  enableDedicatedQosFlows);
+    cmd.AddValue("enable-startup-ping",
+                 "Enable initial ICMP pings used only to warm EPC/ARP state before monitored traffic",
+                 enableStartupPing);
     cmd.AddValue("quiet-timing", "Disable optional logs/traces/prints for wall-clock timing runs", quietTiming);
     cmd.AddValue("enable-pdcp-discarding", "Enable PDCP discarding for bounded UDP/XR queues", enablePdcpDiscarding);
     cmd.AddValue("pdcp-discard-timer-ms", "PDCP discard timer in milliseconds", discardTimerMs);
@@ -3800,11 +3804,12 @@ main(int argc, char* argv[])
         uint16_t dlPort = 10000 + i;
         uint16_t ulPort = 12000 + i;
 
-        // Seed the EPC/ARP path before XR traffic starts. The 5G-LENA XR
-        // examples use the same workaround so the first application packets are
-        // not lost while neighbor/ARP state is still cold.
-        PingHelper ping(ueIpIfaceS1.GetAddress(i));
-        xrPingApps.Add(ping.Install(remoteHostContainer));
+        if (enableStartupPing)
+        {
+            // Optional EPC/ARP warm-up before monitored traffic starts.
+            PingHelper ping(ueIpIfaceS1.GetAddress(i));
+            xrPingApps.Add(ping.Install(remoteHostContainer));
+        }
 
         if (monitoredTraffic == "udp")
         {
@@ -3939,8 +3944,11 @@ main(int argc, char* argv[])
     xrDlSinks.Start(Seconds(1.0));
     xrDlSinks.Stop(simulationStopTime);
 
-    xrPingApps.Start(Seconds(1.0));
-    xrPingApps.Stop(Seconds(3.8));
+    if (enableStartupPing)
+    {
+        xrPingApps.Start(Seconds(1.0));
+        xrPingApps.Stop(Seconds(3.8));
+    }
 
     xrDlSenders.Start(Seconds(4.0));
     xrDlSenders.Stop(simulationStopTime);
