@@ -47,6 +47,7 @@ COMMON_ARGS="\
 --max-ues-ntn=15 \
 --split-ue-placement=1 \
 --clustered-ues2-placement=1 \
+--uav-target-ues2-only=1 \
 --ues2-cluster-radius-m=500 \
 --ues2-cluster-offset-m=3500 \
 --ue-area-half-w-m=5000 \

@@ -145,6 +145,7 @@ static bool SPLIT_UE_PLACEMENT = false;   // Place UES1 near TN and UES2 outside
 static double UE_OUTSIDE_TN_EXCLUSION_HALF_W_M = 2500.0;
 static double UE_OUTSIDE_TN_EXCLUSION_HALF_H_M = 1200.0;
 static bool CLUSTERED_UES2_PLACEMENT = false; // Place UES2 in three outside underserved clusters.
+static bool UAV_TARGET_UES2_ONLY = false;     // Use only UES2 when computing UAV coverage targets.
 static double UES2_CLUSTER_RADIUS_M = 500.0;
 static double UES2_CLUSTER_OFFSET_M = 3500.0;
 static double g_uavSpeedMps = 10.0;       // UAV waypoint mobility speed.
@@ -1852,17 +1853,21 @@ UpdateUavTargetsFromUnderservedUes(NodeContainer groundUeNodesS1,
 {
     std::vector<LocalPoint2d> underservedPts;
 
-    // 1) collect underserved UEs
-    for (uint32_t i = 0; i < groundUeNodesS1.GetN(); ++i)
+    // 1) collect underserved UEs. Some coverage experiments deliberately keep
+    // UES1 near the TN cells and use UES2 as the outside underserved demand.
+    if (!UAV_TARGET_UES2_ONLY)
     {
-        if (IsUeUnderserved(groundUeNodesS1.Get(i), rsrpThreshDbm))
+        for (uint32_t i = 0; i < groundUeNodesS1.GetN(); ++i)
         {
-            auto mob = DynamicCast<GeocentricConstantPositionMobilityModel>(
-                groundUeNodesS1.Get(i)->GetObject<MobilityModel>());
-            if (mob)
+            if (IsUeUnderserved(groundUeNodesS1.Get(i), rsrpThreshDbm))
             {
-                underservedPts.push_back(
-                    GeoToLocal(mob->GetGeographicPosition(), g_refLat, g_refLon));
+                auto mob = DynamicCast<GeocentricConstantPositionMobilityModel>(
+                    groundUeNodesS1.Get(i)->GetObject<MobilityModel>());
+                if (mob)
+                {
+                    underservedPts.push_back(
+                        GeoToLocal(mob->GetGeographicPosition(), g_refLat, g_refLon));
+                }
             }
         }
     }
@@ -2794,6 +2799,9 @@ main(int argc, char* argv[])
     cmd.AddValue("clustered-ues2-placement",
                  "Place UES2 outside users in three underserved clusters instead of scattering them uniformly",
                  CLUSTERED_UES2_PLACEMENT);
+    cmd.AddValue("uav-target-ues2-only",
+                 "Use only UES2 nodes when assigning UAV mission targets",
+                 UAV_TARGET_UES2_ONLY);
     cmd.AddValue("ues2-cluster-radius-m",
                  "Radius of each UES2 underserved cluster in meters",
                  UES2_CLUSTER_RADIUS_M);
