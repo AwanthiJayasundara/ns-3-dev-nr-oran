@@ -144,6 +144,9 @@ static double UE_AREA_HALF_H_M  = 1500.0; // Half-height for UE mobility.
 static bool SPLIT_UE_PLACEMENT = false;   // Place UES1 near TN and UES2 outside TN area.
 static double UE_OUTSIDE_TN_EXCLUSION_HALF_W_M = 2500.0;
 static double UE_OUTSIDE_TN_EXCLUSION_HALF_H_M = 1200.0;
+static bool CLUSTERED_UES2_PLACEMENT = false; // Place UES2 in three outside underserved clusters.
+static double UES2_CLUSTER_RADIUS_M = 500.0;
+static double UES2_CLUSTER_OFFSET_M = 3500.0;
 static double g_uavSpeedMps = 10.0;       // UAV waypoint mobility speed.
 static double g_uavMissionTargetScale = 1.0; // Pushes UAV targets toward/off the underserved cluster.
 
@@ -1582,6 +1585,59 @@ RandomGeoOutsideCenter(double centerLatDeg,
     return Vector(latDeg, lonDeg, altM); // geographic: lat, lon, alt
 }
 
+static Vector
+UnderservedClusterCenterGeo(double centerLatDeg,
+                            double centerLonDeg,
+                            double altM,
+                            uint32_t clusterIndex,
+                            double clusterOffsetM)
+{
+    static const std::array<std::pair<double, double>, 3> clusterSigns = {{
+        {-1.0, 1.0},
+        {1.0, 1.0},
+        {1.0, -1.0},
+    }};
+
+    const auto& sign = clusterSigns[clusterIndex % clusterSigns.size()];
+    const double clusterEastM = sign.first * clusterOffsetM;
+    const double clusterNorthM = sign.second * clusterOffsetM;
+
+    double metersPerDegLat = 111320.0;
+    double metersPerDegLon = 111320.0 * std::cos(centerLatDeg * M_PI / 180.0);
+
+    double latDeg = centerLatDeg + clusterNorthM / metersPerDegLat;
+    double lonDeg = centerLonDeg + clusterEastM / metersPerDegLon;
+
+    return Vector(latDeg, lonDeg, altM);
+}
+
+static Vector
+RandomGeoInUnderservedCluster(double centerLatDeg,
+                              double centerLonDeg,
+                              double altM,
+                              uint32_t clusterIndex,
+                              double clusterOffsetM,
+                              double clusterRadiusM,
+                              Ptr<UniformRandomVariable> angleRv,
+                              Ptr<UniformRandomVariable> radiusRv)
+{
+    Vector clusterCenter =
+        UnderservedClusterCenterGeo(centerLatDeg, centerLonDeg, altM, clusterIndex, clusterOffsetM);
+
+    const double angle = angleRv->GetValue(0.0, 2.0 * M_PI);
+    const double radius = clusterRadiusM * std::sqrt(radiusRv->GetValue(0.0, 1.0));
+    const double eastM = radius * std::cos(angle);
+    const double northM = radius * std::sin(angle);
+
+    double metersPerDegLat = 111320.0;
+    double metersPerDegLon = 111320.0 * std::cos(clusterCenter.x * M_PI / 180.0);
+
+    double latDeg = clusterCenter.x + northM / metersPerDegLat;
+    double lonDeg = clusterCenter.y + eastM / metersPerDegLon;
+
+    return Vector(latDeg, lonDeg, altM);
+}
+
 ///
 struct LocalPoint2d
 {
@@ -2048,24 +2104,40 @@ install_mobility_geocentric(NodeContainer staticNodes,
         Ptr<UniformRandomVariable> eastRv = CreateObject<UniformRandomVariable>();
         Ptr<UniformRandomVariable> northRv = CreateObject<UniformRandomVariable>();
 
-        Vector initGeo =
-            SPLIT_UE_PLACEMENT
-                ? RandomGeoOutsideCenter(g_refLat,
-                                         g_refLon,
-                                         1.5,
-                                         UE_AREA_HALF_W_M,
-                                         UE_AREA_HALF_H_M,
-                                         UE_OUTSIDE_TN_EXCLUSION_HALF_W_M,
-                                         UE_OUTSIDE_TN_EXCLUSION_HALF_H_M,
-                                         eastRv,
-                                         northRv)
-                : RandomGeoFromCenter(g_refLat,
-                                      g_refLon,
-                                      1.5,
-                                      UE_AREA_HALF_W_M,
-                                      UE_AREA_HALF_H_M,
-                                      eastRv,
-                                      northRv);
+        Vector initGeo;
+        if (SPLIT_UE_PLACEMENT && CLUSTERED_UES2_PLACEMENT)
+        {
+            initGeo = RandomGeoInUnderservedCluster(g_refLat,
+                                                    g_refLon,
+                                                    1.5,
+                                                    i % 3,
+                                                    UES2_CLUSTER_OFFSET_M,
+                                                    UES2_CLUSTER_RADIUS_M,
+                                                    eastRv,
+                                                    northRv);
+        }
+        else if (SPLIT_UE_PLACEMENT)
+        {
+            initGeo = RandomGeoOutsideCenter(g_refLat,
+                                             g_refLon,
+                                             1.5,
+                                             UE_AREA_HALF_W_M,
+                                             UE_AREA_HALF_H_M,
+                                             UE_OUTSIDE_TN_EXCLUSION_HALF_W_M,
+                                             UE_OUTSIDE_TN_EXCLUSION_HALF_H_M,
+                                             eastRv,
+                                             northRv);
+        }
+        else
+        {
+            initGeo = RandomGeoFromCenter(g_refLat,
+                                          g_refLon,
+                                          1.5,
+                                          UE_AREA_HALF_W_M,
+                                          UE_AREA_HALF_H_M,
+                                          eastRv,
+                                          northRv);
+        }
 
         auto mob = CreateObject<GeocentricConstantPositionMobilityModel>();
         mob->SetGeographicPosition(initGeo);
@@ -2074,11 +2146,24 @@ install_mobility_geocentric(NodeContainer staticNodes,
 
         auto st = std::make_unique<GeoWaypointState>();
         st->mob = mob;
-        st->centerLatDeg = g_refLat;
-        st->centerLonDeg = g_refLon;
+        if (SPLIT_UE_PLACEMENT && CLUSTERED_UES2_PLACEMENT)
+        {
+            Vector clusterCenter = UnderservedClusterCenterGeo(g_refLat,
+                                                               g_refLon,
+                                                               1.5,
+                                                               i % 3,
+                                                               UES2_CLUSTER_OFFSET_M);
+            st->centerLatDeg = clusterCenter.x;
+            st->centerLonDeg = clusterCenter.y;
+        }
+        else
+        {
+            st->centerLatDeg = g_refLat;
+            st->centerLonDeg = g_refLon;
+        }
         st->fixedAltM = 1.5;
-        st->halfWidthM = UE_AREA_HALF_W_M;
-        st->halfHeightM = UE_AREA_HALF_H_M;
+        st->halfWidthM = CLUSTERED_UES2_PLACEMENT ? UES2_CLUSTER_RADIUS_M : UE_AREA_HALF_W_M;
+        st->halfHeightM = CLUSTERED_UES2_PLACEMENT ? UES2_CLUSTER_RADIUS_M : UE_AREA_HALF_H_M;
         st->speedMps = 4.0;
 
         SelectNewGeoWaypoint(st.get(), eastRv, northRv);
@@ -2706,6 +2791,15 @@ main(int argc, char* argv[])
     cmd.AddValue("ue-outside-tn-exclusion-half-h-m",
                  "Half-height of the central TN exclusion area for outside/underserved UEs",
                  UE_OUTSIDE_TN_EXCLUSION_HALF_H_M);
+    cmd.AddValue("clustered-ues2-placement",
+                 "Place UES2 outside users in three underserved clusters instead of scattering them uniformly",
+                 CLUSTERED_UES2_PLACEMENT);
+    cmd.AddValue("ues2-cluster-radius-m",
+                 "Radius of each UES2 underserved cluster in meters",
+                 UES2_CLUSTER_RADIUS_M);
+    cmd.AddValue("ues2-cluster-offset-m",
+                 "East/north offset of the three UES2 cluster centers from the TN area center",
+                 UES2_CLUSTER_OFFSET_M);
     cmd.AddValue("uav-speed-mps", "UAV movement speed in meters per second", g_uavSpeedMps);
     cmd.AddValue("uav-mission-target-scale",
                  "Scale applied to underserved-UE cluster centroids when assigning UAV mission targets",
