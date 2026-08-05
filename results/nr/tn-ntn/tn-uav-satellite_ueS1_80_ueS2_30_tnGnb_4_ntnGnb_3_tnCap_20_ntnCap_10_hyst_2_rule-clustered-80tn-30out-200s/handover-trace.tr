@@ -69,3 +69,9 @@
 72.6151 IMSI=79 TargetCell=2 Type=TN TargetRSRP=-118.034 ServingRSRP=-94.9801 BackhaulDlSnr=-999 BackhaulUlSnr=-999
 72.6151 IMSI=86 TargetCell=2 Type=TN TargetRSRP=-84.324 ServingRSRP=-107.967 BackhaulDlSnr=-999 BackhaulUlSnr=-999
 72.6151 IMSI=41 TargetCell=4 Type=TN TargetRSRP=-124.851 ServingRSRP=-123.27 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+74.6151 IMSI=46 TargetCell=1 Type=TN TargetRSRP=-126.031 ServingRSRP=-116.311 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+74.6151 IMSI=74 TargetCell=1 Type=TN TargetRSRP=-126.855 ServingRSRP=-98.6709 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+74.6151 IMSI=35 TargetCell=3 Type=TN TargetRSRP=-98.7238 ServingRSRP=-100.231 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+74.6151 IMSI=13 TargetCell=3 Type=TN TargetRSRP=-114.453 ServingRSRP=-91.1946 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+74.6151 IMSI=64 TargetCell=4 Type=TN TargetRSRP=-93.6843 ServingRSRP=-87.8776 BackhaulDlSnr=-999 BackhaulUlSnr=-999
+74.6151 IMSI=45 TargetCell=4 Type=TN TargetRSRP=-125.62 ServingRSRP=-90.2454 BackhaulDlSnr=-999 BackhaulUlSnr=-999
