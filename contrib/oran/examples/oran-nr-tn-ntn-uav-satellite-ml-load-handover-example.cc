@@ -142,32 +142,34 @@ NS_LOG_COMPONENT_DEFINE("OranNrTnNtnUavSatelliteLoadHandoverExample");
  * ./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example"
  * \endcode
  *
- * To run this example with the trained GRU UAV heatmap predictor, first create
- * the ONNX model from the repository root:
+ * To run this example with a trained UAV heatmap predictor, first create the
+ * ONNX model from the repository root, or use the committed CNN model in
+ * docs/models/best_cnn_predictor.onnx:
+ *
+ * \code{.unparsed}
+ * python3 train_uav_trajectory_final.py --rsrp-thresh -120 --export-onnx --export-model selected
+ * \endcode
+ *
+ * Then run the ML load-handover scenario and point it to the committed CNN ONNX
+ * file:
+ *
+ * \code{.unparsed}
+ * ./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example --sim-time=120 --enable-predictive-uav=1 --uav-predictor-onnx=docs/models/best_cnn_predictor.onnx --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 --db-file=oran-cnn-120.db --run-tag=cnn-120 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --position-trace-interval=5 --enable-sat-backhaul-monitor=0 --enable-oran-info-log=1 --enable-nr-helper-info-log=0 --enable-setup-prints=0 --enable-progress=1 --progress-interval=5 --ground-attach-delay=2 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4 --enable-srs-in-ul-slots=0 --enable-srs-in-f-slots=0"
+ * \endcode
+ *
+ * To compare against another predictor, export that ONNX model and run the same
+ * scenario with a different database and run tag:
  *
  * \code{.unparsed}
  * python3 train_uav_trajectory_final.py --rsrp-thresh -120 --export-onnx --export-model gru
- * \endcode
- *
- * Then run the ML load-handover scenario and point it to the exported ONNX file:
- *
- * \code{.unparsed}
- * ./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example --sim-time=122 --enable-predictive-uav=1 --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 --db-file=oran-gru.db --run-tag=gru --enable-flow-monitor=1 --enable-rsrp-trace=0 --enable-position-trace=1 --position-trace-interval=5 --enable-sat-backhaul-monitor=0 --enable-oran-info-log=1 --enable-nr-helper-info-log=1 --enable-setup-prints=1 --enable-progress=1 --progress-interval=5 --ground-attach-delay=2 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4 --enable-srs-in-ul-slots=0 --enable-srs-in-f-slots=0"
- * \endcode
- *
- * To compare against the CNN predictor, export the CNN ONNX model and run the
- * same scenario with a different database and run tag:
- *
- * \code{.unparsed}
- * python3 train_uav_trajectory_final.py --rsrp-thresh -120 --export-onnx --export-model cnn
- * ./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example --sim-time=40 --enable-predictive-uav=1 --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/best_cnn_predictor.onnx --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 --db-file=oran-cnn.db --run-tag=cnn --enable-flow-monitor=0 --enable-rsrp-trace=0 --enable-position-trace=1 --position-trace-interval=5 --enable-sat-backhaul-monitor=0 --enable-oran-info-log=0 --enable-nr-helper-info-log=0 --enable-setup-prints=0 --enable-progress=1 --progress-interval=5 --ground-attach-delay=2 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4 --enable-srs-in-ul-slots=0 --enable-srs-in-f-slots=0 --uav-control-period=5"
+ * ./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example --sim-time=120 --enable-predictive-uav=1 --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/best_gru_predictor.onnx --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 --db-file=oran-gru-120.db --run-tag=gru-120 --enable-flow-monitor=1 --enable-rsrp-trace=1 --enable-position-trace=1 --position-trace-interval=5 --enable-sat-backhaul-monitor=0 --enable-oran-info-log=1 --enable-nr-helper-info-log=0 --enable-setup-prints=0 --enable-progress=1 --progress-interval=5 --ground-attach-delay=2 --mobility-update-ms=1000 --e2-send-interval=5 --lm-query-interval=5 --channel-update-ms=1000 --channel-condition-update-ms=1000 --enable-fh-control=0 --use-fixed-mcs=1 --fixed-mcs=4 --enable-srs-in-ul-slots=0 --enable-srs-in-f-slots=0"
  * \endcode
  *
  * The `--uav-heat-norm-max` value must match `normalization_max_count` in
- * `results/nr/tn-ntn/ml_uav_final/predictor_config.json`. The
+ * the corresponding `predictor_config.json`. The
  * `--uav-underserved-rsrp-thresh` value must match the RSRP threshold used
- * during training. Use different `--db-file` and `--run-tag` values for GRU
- * and CNN runs so their result folders and O-RAN databases do not overlap.
+ * during training. Use different `--db-file` and `--run-tag` values for each
+ * model so their result folders and O-RAN databases do not overlap.
  */
 
 
@@ -192,7 +194,7 @@ static uint32_t g_gridNy = 12;
 static double g_heatNormMax = 3.0;
 static double g_underservedRsrpThreshDbm = -120.0;
 static std::string g_uavPredictorOnnxPath =
-    "results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx";
+    "docs/models/best_cnn_predictor.onnx";
 /////
 const static float TN_GNB_HEIGHT = 25;
 

@@ -360,21 +360,22 @@ python3 train_uav_trajectory_final.py \
   --train-ratio 0.60 --val-ratio 0.15 --event-time-tolerance 2.5
 ```
 
-Export a GRU model for ONNX inference:
+Export a predictor model for ONNX inference, or use the committed CNN model in
+`docs/models/best_cnn_predictor.onnx`:
 
 ```bash
 python3 train_uav_trajectory_final.py \
-  --rsrp-thresh -120 --export-onnx --export-model gru
+  --rsrp-thresh -120 --export-onnx --export-model selected
 ```
 
-Then pass the generated model to the predictive scenario:
+Then pass the committed CNN model to the predictive scenario:
 
 ```bash
 ./ns3 run "oran-nr-tn-ntn-uav-satellite-ml-load-handover-example \
-  --sim-time=122 --enable-predictive-uav=1 \
-  --uav-predictor-onnx=results/nr/tn-ntn/ml_uav_final/uav_underserved_heatmap_gru_ir8.onnx \
+  --sim-time=120 --enable-predictive-uav=1 \
+  --uav-predictor-onnx=docs/models/best_cnn_predictor.onnx \
   --uav-heat-norm-max=3 --uav-underserved-rsrp-thresh=-120 \
-  --db-file=oran-gru.db --run-tag=gru"
+  --db-file=oran-cnn-120.db --run-tag=cnn-120"
 ```
 
 `--uav-heat-norm-max` must match `normalization_max_count` in the generated `predictor_config.json`, and the inference RSRP threshold must match the training threshold. Use distinct database files and run tags when comparing models.

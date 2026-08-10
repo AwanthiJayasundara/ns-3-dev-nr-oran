@@ -1,0 +1,46 @@
+{
+  "train_test_split": "chronological",
+  "train_ratio": 0.6,
+  "validation_ratio": 0.15,
+  "test_ratio": 0.25,
+  "train_heatmaps": 28,
+  "validation_heatmaps": 8,
+  "test_heatmaps": 12,
+  "lookback": 4,
+  "hotspot_k": 5,
+  "rsrp_thresh_dbm": -120.0,
+  "event_time_alignment": {
+    "raw_event_times": 83.0,
+    "aligned_event_times": 48.0,
+    "dropped_node_events": 0.0,
+    "max_observed_alignment_gap_s": 2.0,
+    "max_allowed_alignment_gap_s": 2.5
+  },
+  "normalization": "train-set max count only",
+  "normalization_max_count": 3.0,
+  "grid": {
+    "east_min": -3000.0,
+    "east_max": 3000.0,
+    "north_min": -1500.0,
+    "north_max": 1500.0,
+    "nx": 24,
+    "ny": 12
+  },
+  "best_model_by_rmse": "cnn",
+  "best_rmse": 0.2325780728346177,
+  "best_model_by_hit_at_k": "cnn",
+  "best_hit_at_k": 1.0,
+  "best_model_by_centroid_error": "cnn",
+  "best_centroid_error_m": 186.41080665669435,
+  "selected_runtime_model": "cnn",
+  "notes": [
+    "Dataset is generated from TN-NTN ns-3 simulation outputs.",
+    "Underserved-event timestamps are aligned to the nearest position-trace timestamp.",
+    "Input is the previous L underserved-user heatmaps.",
+    "Target is the next underserved-user heatmap.",
+    "The validation period is used for model selection.",
+    "The final test period is used only for held-out reporting.",
+    "The split is chronological to avoid future information leakage.",
+    "Predictors compared: persistence, MLP, CNN, GRU."
+  ]
+}
