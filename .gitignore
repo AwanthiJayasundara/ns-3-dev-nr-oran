@@ -54,7 +54,6 @@ vcpkg/
 .cache/
 results/lte/
 results/nr/tn/
-results/nr/tn-ntn/ml_uav_final/
 docs/figures/
 libtorch/
 onnxruntime-linux-x64-1.14.1/
