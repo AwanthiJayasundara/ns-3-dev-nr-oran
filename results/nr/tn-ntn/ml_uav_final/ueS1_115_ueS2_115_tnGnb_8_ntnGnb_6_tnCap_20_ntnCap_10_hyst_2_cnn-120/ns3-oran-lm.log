@@ -1642,3 +1642,414 @@ LM HO_FAIL_LOW_RSRP UE=236 currCell=7 candCell=12 candRsrp=-146.139 < min=-120
 UE 241 TTT_WAIT target=5 elapsed=0s need=2s
 UE 242 TTT_WAIT target=8 elapsed=0s need=2s
 UE 243 TTT_WAIT target=6 elapsed=0s need=2s
+---- LOAD at t=77.5 ----
+  cell 1 (TN) load=16/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=19/20
+  cell 4 (TN) load=16/20
+  cell 5 (TN) load=19/20
+  cell 6 (TN) load=17/20
+  cell 7 (TN) load=19/20
+  cell 8 (TN) load=11/20
+  cell 9 (NTN) load=7/10
+  cell 10 (NTN) load=9/10
+  cell 11 (NTN) load=8/10
+  cell 12 (NTN) load=8/10
+  cell 13 (NTN) load=8/10
+  cell 14 (NTN) load=10/10
+LM HO_FAIL_LOW_RSRP UE=15 currCell=2 candCell=7 candRsrp=-120.93 < min=-120
+UE 16 TTT_WAIT target=7 elapsed=0s need=2s
+UE 17 TTT_WAIT target=3 elapsed=0s need=2s
+UE 18 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=19 rnti=63 11->3 type=TN servingRsrp=-123.475 targetRsrp=-85.8929 targetLoadReal=19/20 targetLoadEff=19/20
+UE 20 TTT_WAIT target=8 elapsed=0s need=2s
+UE 23 TTT_WAIT target=7 elapsed=0s need=2s
+UE 24 TTT_WAIT target=5 elapsed=0s need=2s
+UE 25 TTT_WAIT target=8 elapsed=0s need=2s
+UE 26 TTT_WAIT target=6 elapsed=0s need=2s
+UE 29 TTT_WAIT target=4 elapsed=0s need=2s
+UE 31 TTT_WAIT target=1 elapsed=0s need=2s
+UE 32 TTT_WAIT target=8 elapsed=0s need=2s
+UE 34 TTT_WAIT target=7 elapsed=0s need=2s
+UE 38 TTT_WAIT target=5 elapsed=0s need=2s
+UE 39 TTT_WAIT target=8 elapsed=0s need=2s
+UE 40 TTT_WAIT target=6 elapsed=0s need=2s
+UE 41 TTT_WAIT target=7 elapsed=0s need=2s
+UE 43 TTT_WAIT target=5 elapsed=0s need=2s
+UE 44 TTT_WAIT target=1 elapsed=0s need=2s
+UE 45 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=46 rnti=94 3->5 type=TN servingRsrp=-84.5271 targetRsrp=-70.8892 targetLoadReal=19/20 targetLoadEff=19/20
+UE 47 TTT_WAIT target=6 elapsed=0s need=2s
+UE 50 TTT_WAIT target=7 elapsed=0s need=2s
+UE 51 TTT_WAIT target=7 elapsed=0s need=2s
+UE 53 TTT_WAIT target=8 elapsed=0s need=2s
+UE 54 TTT_WAIT target=8 elapsed=0s need=2s
+UE 58 TTT_WAIT target=4 elapsed=0s need=2s
+UE 62 TTT_WAIT target=2 elapsed=0s need=2s
+UE 63 TTT_WAIT target=6 elapsed=0s need=2s
+UE 67 TTT_WAIT target=4 elapsed=0s need=2s
+UE 70 TTT_WAIT target=1 elapsed=0s need=2s
+UE 71 TTT_WAIT target=8 elapsed=0s need=2s
+UE 72 TTT_WAIT target=1 elapsed=0s need=2s
+UE 75 TTT_WAIT target=4 elapsed=0s need=2s
+UE 76 TTT_WAIT target=11 elapsed=0s need=2s
+UE 77 TTT_WAIT target=9 elapsed=0s need=2s
+UE 78 TTT_WAIT target=9 elapsed=0s need=2s
+UE 86 TTT_WAIT target=12 elapsed=0s need=2s
+UE 90 TTT_WAIT target=1 elapsed=0s need=2s
+UE 91 TTT_WAIT target=1 elapsed=0s need=2s
+UE 93 TTT_WAIT target=1 elapsed=0s need=2s
+UE 95 TTT_WAIT target=13 elapsed=0s need=2s
+UE 96 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=97 currCell=2 candCell=9 candRsrp=-123.264 < min=-120
+UE 99 TTT_WAIT target=8 elapsed=0s need=2s
+UE 101 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=103 rnti=63 2->8 type=TN servingRsrp=-131.44 targetRsrp=-104.976 targetLoadReal=11/20 targetLoadEff=11/20
+LM HO UE=104 rnti=159 7->4 type=TN servingRsrp=-132.932 targetRsrp=-77.0293 targetLoadReal=16/20 targetLoadEff=16/20
+UE 105 TTT_WAIT target=13 elapsed=0s need=2s
+UE 106 TTT_WAIT target=8 elapsed=0s need=2s
+UE 108 TTT_WAIT target=10 elapsed=0s need=2s
+UE 109 TTT_WAIT target=6 elapsed=0s need=2s
+UE 110 TTT_WAIT target=2 elapsed=0s need=2s
+UE 111 TTT_WAIT target=2 elapsed=0s need=2s
+UE 112 TTT_WAIT target=2 elapsed=0s need=2s
+UE 115 TTT_WAIT target=10 elapsed=0s need=2s
+UE 121 TTT_WAIT target=1 elapsed=0s need=2s
+UE 128 TTT_WAIT target=8 elapsed=0s need=2s
+UE 130 TTT_WAIT target=7 elapsed=0s need=2s
+UE 131 TTT_WAIT target=8 elapsed=0s need=2s
+UE 133 TTT_WAIT target=1 elapsed=0s need=2s
+UE 135 TTT_WAIT target=9 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=137 currCell=12 candCell=11 candRsrp=-120.447 < min=-120
+UE 138 TTT_WAIT target=2 elapsed=0s need=2s
+UE 139 TTT_WAIT target=6 elapsed=0s need=2s
+UE 140 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=141 currCell=1 candCell=8 candRsrp=-138.59 < min=-120
+UE 142 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=143 currCell=9 candCell=13 candRsrp=-124.293 < min=-120
+UE 144 TTT_WAIT target=6 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=145 currCell=14 candCell=11 candRsrp=-126.828 < min=-120
+UE 148 TTT_WAIT target=8 elapsed=0s need=2s
+UE 150 TTT_WAIT target=2 elapsed=0s need=2s
+UE 151 TTT_WAIT target=6 elapsed=0s need=2s
+UE 153 TTT_WAIT target=2 elapsed=0s need=2s
+UE 155 TTT_WAIT target=4 elapsed=0s need=2s
+UE 156 TTT_WAIT target=10 elapsed=0s need=2s
+UE 159 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=161 currCell=5 candCell=11 candRsrp=-126.249 < min=-120
+UE 163 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO UE=165 rnti=81 8->4 type=TN servingRsrp=-84.1327 targetRsrp=-74.6934 targetLoadReal=16/20 targetLoadEff=17/20
+UE 166 TTT_WAIT target=8 elapsed=0s need=2s
+UE 168 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=170 rnti=104 10->8 type=TN servingRsrp=-128.657 targetRsrp=-96.1476 targetLoadReal=11/20 targetLoadEff=12/20
+UE 172 TTT_WAIT target=8 elapsed=0s need=2s
+LM HO UE=174 rnti=30 14->8 type=TN servingRsrp=-113.277 targetRsrp=-107.086 targetLoadReal=11/20 targetLoadEff=13/20
+UE 176 TTT_WAIT target=8 elapsed=0s need=2s
+UE 177 TTT_WAIT target=7 elapsed=0s need=2s
+UE 179 TTT_WAIT target=7 elapsed=0s need=2s
+UE 180 TTT_WAIT target=1 elapsed=0s need=2s
+UE 184 TTT_WAIT target=8 elapsed=0s need=2s
+UE 186 TTT_WAIT target=1 elapsed=0s need=2s
+UE 188 TTT_WAIT target=4 elapsed=0s need=2s
+UE 190 TTT_WAIT target=9 elapsed=0s need=2s
+UE 193 TTT_WAIT target=8 elapsed=0s need=2s
+LM HO UE=194 rnti=148 7->4 type=TN servingRsrp=-121.102 targetRsrp=-118.061 targetLoadReal=16/20 targetLoadEff=18/20
+UE 195 TTT_WAIT target=7 elapsed=0s need=2s
+UE 196 TTT_WAIT target=8 elapsed=0s need=2s
+UE 198 TTT_WAIT target=1 elapsed=0s need=2s
+UE 199 TTT_WAIT target=11 elapsed=0s need=2s
+UE 200 TTT_WAIT target=1 elapsed=0s need=2s
+UE 202 TTT_WAIT target=11 elapsed=0s need=2s
+UE 204 TTT_WAIT target=1 elapsed=0s need=2s
+UE 206 TTT_WAIT target=4 elapsed=0s need=2s
+UE 207 TTT_WAIT target=6 elapsed=0s need=2s
+UE 209 TTT_WAIT target=8 elapsed=0s need=2s
+UE 210 TTT_WAIT target=2 elapsed=0s need=2s
+UE 211 TTT_WAIT target=1 elapsed=0s need=2s
+UE 212 TTT_WAIT target=7 elapsed=0s need=2s
+UE 214 TTT_WAIT target=7 elapsed=0s need=2s
+UE 216 TTT_WAIT target=6 elapsed=0s need=2s
+UE 217 TTT_WAIT target=4 elapsed=0s need=2s
+UE 218 TTT_WAIT target=1 elapsed=0s need=2s
+UE 219 TTT_WAIT target=8 elapsed=0s need=2s
+UE 221 TTT_WAIT target=1 elapsed=0s need=2s
+UE 222 TTT_WAIT target=7 elapsed=0s need=2s
+UE 223 TTT_WAIT target=10 elapsed=0s need=2s
+LM HO UE=224 rnti=62 2->6 type=TN servingRsrp=-115.878 targetRsrp=-86.2761 targetLoadReal=17/20 targetLoadEff=17/20
+UE 225 TTT_WAIT target=4 elapsed=0s need=2s
+UE 228 TTT_WAIT target=4 elapsed=0s need=2s
+UE 229 TTT_WAIT target=2 elapsed=0s need=2s
+UE 230 TTT_WAIT target=8 elapsed=0s need=2s
+UE 231 TTT_WAIT target=7 elapsed=0s need=2s
+UE 233 TTT_WAIT target=13 elapsed=0s need=2s
+UE 234 TTT_WAIT target=10 elapsed=0s need=2s
+UE 236 TTT_WAIT target=10 elapsed=0s need=2s
+UE 239 TTT_WAIT target=4 elapsed=0s need=2s
+UE 241 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO UE=243 rnti=88 2->6 type=TN servingRsrp=-138.097 targetRsrp=-110.632 targetLoadReal=17/20 targetLoadEff=18/20
+UE 244 TTT_WAIT target=8 elapsed=0s need=2s
+---- LOAD at t=82.5 ----
+  cell 1 (TN) load=16/20
+  cell 2 (TN) load=15/20
+  cell 3 (TN) load=19/20
+  cell 4 (TN) load=19/20
+  cell 5 (TN) load=20/20
+  cell 6 (TN) load=19/20
+  cell 7 (TN) load=17/20
+  cell 8 (TN) load=13/20
+  cell 9 (NTN) load=7/10
+  cell 10 (NTN) load=9/10
+  cell 11 (NTN) load=10/10
+  cell 12 (NTN) load=8/10
+  cell 13 (NTN) load=9/10
+  cell 14 (NTN) load=10/10
+UE 15 TTT_WAIT target=4 elapsed=0s need=2s
+UE 16 TTT_WAIT target=8 elapsed=0s need=2s
+UE 17 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=18 rnti=86 1->2 type=TN servingRsrp=-108.816 targetRsrp=-73.8744 targetLoadReal=15/20 targetLoadEff=15/20
+LM HO UE=20 rnti=64 3->8 type=TN servingRsrp=-115.981 targetRsrp=-87.4287 targetLoadReal=13/20 targetLoadEff=13/20
+UE 23 TTT_WAIT target=1 elapsed=0s need=2s
+UE 24 TTT_WAIT target=2 elapsed=0s need=2s
+UE 25 TTT_WAIT target=1 elapsed=0s need=2s
+UE 26 TTT_WAIT target=4 elapsed=0s need=2s
+UE 29 TTT_WAIT target=6 elapsed=0s need=2s
+UE 31 TTT_WAIT target=7 elapsed=0s need=2s
+UE 32 TTT_WAIT target=10 elapsed=0s need=2s
+UE 33 TTT_WAIT target=6 elapsed=0s need=2s
+UE 34 TTT_WAIT target=4 elapsed=0s need=2s
+UE 36 TTT_WAIT target=3 elapsed=0s need=2s
+UE 38 TTT_WAIT target=6 elapsed=0s need=2s
+UE 39 TTT_WAIT target=3 elapsed=0s need=2s
+UE 40 TTT_WAIT target=7 elapsed=0s need=2s
+UE 43 TTT_WAIT target=9 elapsed=0s need=2s
+LM HO UE=45 rnti=32 6->2 type=TN servingRsrp=-99.9606 targetRsrp=-81.0827 targetLoadReal=15/20 targetLoadEff=16/20
+UE 46 TTT_WAIT target=4 elapsed=0s need=2s
+UE 47 TTT_WAIT target=7 elapsed=0s need=2s
+UE 48 TTT_WAIT target=3 elapsed=0s need=2s
+UE 49 TTT_WAIT target=9 elapsed=0s need=2s
+UE 50 TTT_WAIT target=4 elapsed=0s need=2s
+UE 52 TTT_WAIT target=2 elapsed=0s need=2s
+UE 56 TTT_WAIT target=6 elapsed=0s need=2s
+UE 58 TTT_WAIT target=6 elapsed=0s need=2s
+UE 63 TTT_WAIT target=3 elapsed=0s need=2s
+UE 64 TTT_WAIT target=1 elapsed=0s need=2s
+UE 67 TTT_WAIT target=3 elapsed=0s need=2s
+UE 68 TTT_WAIT target=2 elapsed=0s need=2s
+UE 71 TTT_WAIT target=9 elapsed=0s need=2s
+UE 72 TTT_WAIT target=6 elapsed=0s need=2s
+UE 75 TTT_WAIT target=6 elapsed=0s need=2s
+UE 76 TTT_WAIT target=6 elapsed=0s need=2s
+UE 77 TTT_WAIT target=2 elapsed=0s need=2s
+UE 82 TTT_WAIT target=8 elapsed=0s need=2s
+UE 84 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=86 currCell=7 candCell=9 candRsrp=-129.235 < min=-120
+UE 87 TTT_WAIT target=10 elapsed=0s need=2s
+LM HO UE=91 rnti=48 4->1 type=TN servingRsrp=-116.241 targetRsrp=-84.4669 targetLoadReal=16/20 targetLoadEff=16/20
+UE 93 TTT_WAIT target=7 elapsed=0s need=2s
+UE 94 TTT_WAIT target=6 elapsed=0s need=2s
+UE 95 TTT_WAIT target=4 elapsed=0s need=2s
+UE 96 TTT_WAIT target=2 elapsed=0s need=2s
+UE 99 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=101 rnti=71 6->4 type=TN servingRsrp=-120.742 targetRsrp=-69.9225 targetLoadReal=19/20 targetLoadEff=19/20
+UE 102 TTT_WAIT target=13 elapsed=0s need=2s
+UE 103 TTT_WAIT target=1 elapsed=0s need=2s
+UE 105 TTT_WAIT target=3 elapsed=0s need=2s
+UE 107 TTT_WAIT target=7 elapsed=0s need=2s
+LM HO UE=111 rnti=62 6->2 type=TN servingRsrp=-113.432 targetRsrp=-82.5664 targetLoadReal=15/20 targetLoadEff=17/20
+UE 112 TTT_WAIT target=8 elapsed=0s need=2s
+UE 113 TTT_WAIT target=10 elapsed=0s need=2s
+UE 115 TTT_WAIT target=3 elapsed=0s need=2s
+UE 121 TTT_WAIT target=8 elapsed=0s need=2s
+UE 123 TTT_WAIT target=3 elapsed=0s need=2s
+UE 126 TTT_WAIT target=3 elapsed=0s need=2s
+UE 128 TTT_WAIT target=6 elapsed=0s need=2s
+UE 130 TTT_WAIT target=2 elapsed=0s need=2s
+UE 132 TTT_WAIT target=2 elapsed=0s need=2s
+UE 133 TTT_WAIT target=3 elapsed=0s need=2s
+UE 135 TTT_WAIT target=2 elapsed=0s need=2s
+UE 138 TTT_WAIT target=6 elapsed=0s need=2s
+UE 140 TTT_WAIT target=1 elapsed=0s need=2s
+UE 141 TTT_WAIT target=3 elapsed=0s need=2s
+UE 142 TTT_WAIT target=8 elapsed=0s need=2s
+UE 143 TTT_WAIT target=10 elapsed=0s need=2s
+LM HO UE=144 rnti=32 4->6 type=TN servingRsrp=-104.774 targetRsrp=-91.0098 targetLoadReal=19/20 targetLoadEff=19/20
+LM HO_FAIL_LOW_RSRP UE=145 currCell=14 candCell=12 candRsrp=-129.965 < min=-120
+UE 146 TTT_WAIT target=2 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=147 currCell=3 candCell=13 candRsrp=-121.247 < min=-120
+LM HO UE=148 rnti=119 1->8 type=TN servingRsrp=-108.956 targetRsrp=-67.335 targetLoadReal=13/20 targetLoadEff=14/20
+UE 149 TTT_WAIT target=8 elapsed=0s need=2s
+UE 150 TTT_WAIT target=13 elapsed=0s need=2s
+UE 151 TTT_WAIT target=1 elapsed=0s need=2s
+UE 155 TTT_WAIT target=1 elapsed=0s need=2s
+UE 156 TTT_WAIT target=3 elapsed=0s need=2s
+UE 157 TTT_WAIT target=1 elapsed=0s need=2s
+UE 159 TTT_WAIT target=9 elapsed=0s need=2s
+UE 163 TTT_WAIT target=7 elapsed=0s need=2s
+UE 165 TTT_WAIT target=8 elapsed=0s need=2s
+UE 168 TTT_WAIT target=8 elapsed=0s need=2s
+UE 170 TTT_WAIT target=7 elapsed=0s need=2s
+UE 172 TTT_WAIT target=13 elapsed=0s need=2s
+UE 174 TTT_WAIT target=2 elapsed=0s need=2s
+UE 175 TTT_WAIT target=3 elapsed=0s need=2s
+UE 179 TTT_WAIT target=1 elapsed=0s need=2s
+UE 181 TTT_WAIT target=3 elapsed=0s need=2s
+UE 182 TTT_WAIT target=1 elapsed=0s need=2s
+UE 186 TTT_WAIT target=2 elapsed=0s need=2s
+UE 187 TTT_WAIT target=1 elapsed=0s need=2s
+UE 188 TTT_WAIT target=3 elapsed=0s need=2s
+UE 190 TTT_WAIT target=3 elapsed=0s need=2s
+UE 191 TTT_WAIT target=1 elapsed=0s need=2s
+UE 193 TTT_WAIT target=1 elapsed=0s need=2s
+UE 194 TTT_WAIT target=8 elapsed=0s need=2s
+UE 195 TTT_WAIT target=9 elapsed=0s need=2s
+LM HO UE=198 rnti=32 9->1 type=TN servingRsrp=-106.198 targetRsrp=-88.7807 targetLoadReal=16/20 targetLoadEff=17/20
+UE 199 TTT_WAIT target=2 elapsed=0s need=2s
+UE 204 TTT_WAIT target=3 elapsed=0s need=2s
+UE 205 TTT_WAIT target=13 elapsed=0s need=2s
+UE 206 TTT_WAIT target=1 elapsed=0s need=2s
+UE 210 TTT_WAIT target=8 elapsed=0s need=2s
+UE 211 TTT_WAIT target=3 elapsed=0s need=2s
+UE 212 TTT_WAIT target=8 elapsed=0s need=2s
+UE 213 TTT_WAIT target=2 elapsed=0s need=2s
+UE 218 TTT_WAIT target=12 elapsed=0s need=2s
+UE 219 TTT_WAIT target=3 elapsed=0s need=2s
+UE 222 TTT_WAIT target=2 elapsed=0s need=2s
+UE 223 TTT_WAIT target=7 elapsed=0s need=2s
+UE 224 TTT_WAIT target=13 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=225 currCell=9 candCell=13 candRsrp=-123.8 < min=-120
+UE 229 TTT_WAIT target=1 elapsed=0s need=2s
+UE 230 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=231 rnti=75 2->7 type=TN servingRsrp=-128.301 targetRsrp=-74.7724 targetLoadReal=17/20 targetLoadEff=17/20
+UE 234 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=236 rnti=112 7->10 type=NTN servingRsrp=-96.2222 targetRsrp=-87.838 targetLoadReal=9/10 targetLoadEff=9/10
+UE 242 TTT_WAIT target=8 elapsed=0s need=2s
+UE 243 TTT_WAIT target=8 elapsed=0s need=2s
+UE 244 TTT_WAIT target=7 elapsed=0s need=2s
+---- LOAD at t=87.5 ----
+  cell 1 (TN) load=16/20
+  cell 2 (TN) load=18/20
+  cell 3 (TN) load=18/20
+  cell 4 (TN) load=18/20
+  cell 5 (TN) load=20/20
+  cell 6 (TN) load=17/20
+  cell 7 (TN) load=18/20
+  cell 8 (TN) load=15/20
+  cell 9 (NTN) load=6/10
+  cell 10 (NTN) load=10/10
+  cell 11 (NTN) load=10/10
+  cell 12 (NTN) load=8/10
+  cell 13 (NTN) load=9/10
+  cell 14 (NTN) load=10/10
+UE 15 TTT_WAIT target=6 elapsed=0s need=2s
+UE 16 TTT_WAIT target=12 elapsed=0s need=2s
+UE 17 TTT_WAIT target=3 elapsed=0s need=2s
+UE 18 TTT_WAIT target=7 elapsed=0s need=2s
+UE 19 TTT_WAIT target=8 elapsed=0s need=2s
+UE 20 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=24 rnti=97 3->2 type=TN servingRsrp=-110.622 targetRsrp=-92.9023 targetLoadReal=18/20 targetLoadEff=18/20
+UE 26 TTT_WAIT target=2 elapsed=0s need=2s
+UE 27 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=29 rnti=98 3->6 type=TN servingRsrp=-118.43 targetRsrp=-86.8329 targetLoadReal=17/20 targetLoadEff=17/20
+UE 32 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=33 rnti=49 2->6 type=TN servingRsrp=-95.4645 targetRsrp=-74.3813 targetLoadReal=17/20 targetLoadEff=18/20
+UE 34 TTT_WAIT target=7 elapsed=0s need=2s
+UE 36 TTT_WAIT target=6 elapsed=0s need=2s
+UE 41 TTT_WAIT target=12 elapsed=0s need=2s
+UE 44 TTT_WAIT target=1 elapsed=0s need=2s
+UE 47 TTT_WAIT target=2 elapsed=0s need=2s
+UE 49 TTT_WAIT target=4 elapsed=0s need=2s
+UE 50 TTT_WAIT target=2 elapsed=0s need=2s
+UE 52 TTT_WAIT target=1 elapsed=0s need=2s
+UE 53 TTT_WAIT target=3 elapsed=0s need=2s
+UE 54 TTT_WAIT target=7 elapsed=0s need=2s
+UE 56 TTT_WAIT target=4 elapsed=0s need=2s
+UE 62 TTT_WAIT target=7 elapsed=0s need=2s
+UE 63 TTT_WAIT target=12 elapsed=0s need=2s
+LM HO UE=64 rnti=105 9->1 type=TN servingRsrp=-122.675 targetRsrp=-89.1037 targetLoadReal=16/20 targetLoadEff=16/20
+UE 66 TTT_WAIT target=12 elapsed=0s need=2s
+UE 67 TTT_WAIT target=4 elapsed=0s need=2s
+UE 68 TTT_WAIT target=3 elapsed=0s need=2s
+UE 70 TTT_WAIT target=1 elapsed=0s need=2s
+UE 71 TTT_WAIT target=6 elapsed=0s need=2s
+UE 72 TTT_WAIT target=8 elapsed=0s need=2s
+LM HO UE=75 rnti=98 13->6 type=TN servingRsrp=-126.701 targetRsrp=-99.8849 targetLoadReal=17/20 targetLoadEff=19/20
+UE 77 TTT_WAIT target=9 elapsed=0s need=2s
+UE 78 TTT_WAIT target=9 elapsed=0s need=2s
+UE 84 TTT_WAIT target=2 elapsed=0s need=2s
+UE 90 TTT_WAIT target=3 elapsed=0s need=2s
+UE 91 TTT_WAIT target=8 elapsed=0s need=2s
+UE 92 TTT_WAIT target=13 elapsed=0s need=2s
+LM HO UE=93 rnti=84 2->7 type=TN servingRsrp=-114.212 targetRsrp=-86.168 targetLoadReal=18/20 targetLoadEff=18/20
+UE 96 TTT_WAIT target=3 elapsed=0s need=2s
+UE 97 TTT_WAIT target=1 elapsed=0s need=2s
+UE 98 TTT_WAIT target=8 elapsed=0s need=2s
+UE 103 TTT_WAIT target=4 elapsed=0s need=2s
+UE 105 TTT_WAIT target=13 elapsed=0s need=2s
+UE 109 TTT_WAIT target=4 elapsed=0s need=2s
+UE 110 TTT_WAIT target=2 elapsed=0s need=2s
+UE 112 TTT_WAIT target=7 elapsed=0s need=2s
+UE 113 TTT_WAIT target=8 elapsed=0s need=2s
+UE 114 TTT_WAIT target=12 elapsed=0s need=2s
+LM HO UE=115 rnti=49 4->3 type=TN servingRsrp=-129.28 targetRsrp=-80.6087 targetLoadReal=18/20 targetLoadEff=18/20
+UE 121 TTT_WAIT target=3 elapsed=0s need=2s
+LM HO UE=130 rnti=22 6->2 type=TN servingRsrp=-105.015 targetRsrp=-70.7435 targetLoadReal=18/20 targetLoadEff=19/20
+UE 131 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=133 rnti=83 6->3 type=TN servingRsrp=-115.86 targetRsrp=-82.3911 targetLoadReal=18/20 targetLoadEff=19/20
+UE 134 TTT_WAIT target=1 elapsed=0s need=2s
+UE 135 TTT_WAIT target=1 elapsed=0s need=2s
+UE 139 TTT_WAIT target=8 elapsed=0s need=2s
+LM HO UE=140 rnti=148 5->1 type=TN servingRsrp=-131.106 targetRsrp=-119.58 targetLoadReal=16/20 targetLoadEff=17/20
+LM HO_FAIL_LOW_RSRP UE=141 currCell=1 candCell=12 candRsrp=-132.902 < min=-120
+UE 142 TTT_WAIT target=12 elapsed=0s need=2s
+UE 143 TTT_WAIT target=13 elapsed=0s need=2s
+UE 144 TTT_WAIT target=4 elapsed=0s need=2s
+UE 145 TTT_WAIT target=12 elapsed=0s need=2s
+UE 146 TTT_WAIT target=4 elapsed=0s need=2s
+UE 147 TTT_WAIT target=8 elapsed=0s need=2s
+UE 150 TTT_WAIT target=8 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=151 currCell=7 candCell=9 candRsrp=-130.163 < min=-120
+UE 153 TTT_WAIT target=12 elapsed=0s need=2s
+LM HO UE=155 rnti=87 8->1 type=TN servingRsrp=-97.2015 targetRsrp=-94.7906 targetLoadReal=16/20 targetLoadEff=18/20
+LM HO_FAIL_LOW_RSRP UE=156 currCell=13 candCell=12 candRsrp=-121.441 < min=-120
+UE 157 TTT_WAIT target=4 elapsed=0s need=2s
+UE 159 TTT_WAIT target=7 elapsed=0s need=2s
+UE 160 TTT_WAIT target=12 elapsed=0s need=2s
+UE 161 TTT_WAIT target=7 elapsed=0s need=2s
+UE 163 TTT_WAIT target=13 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=164 currCell=1 candCell=9 candRsrp=-133.827 < min=-120
+UE 165 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=166 currCell=5 candCell=12 candRsrp=-126.212 < min=-120
+LM HO_FAIL_LOW_RSRP UE=167 currCell=4 candCell=13 candRsrp=-123.993 < min=-120
+UE 168 TTT_WAIT target=4 elapsed=0s need=2s
+LM HO UE=170 rnti=109 8->7 type=TN servingRsrp=-140.287 targetRsrp=-112.741 targetLoadReal=18/20 targetLoadEff=19/20
+UE 172 TTT_WAIT target=4 elapsed=0s need=2s
+UE 173 TTT_WAIT target=4 elapsed=0s need=2s
+UE 174 TTT_WAIT target=4 elapsed=0s need=2s
+UE 176 TTT_WAIT target=9 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=177 currCell=6 candCell=1 candRsrp=-129.967 < min=-120
+UE 179 TTT_WAIT target=8 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=180 currCell=6 candCell=9 candRsrp=-120.526 < min=-120
+UE 181 TTT_WAIT target=1 elapsed=0s need=2s
+UE 182 TTT_WAIT target=8 elapsed=0s need=2s
+UE 184 TTT_WAIT target=4 elapsed=0s need=2s
+UE 186 TTT_WAIT target=1 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=193 currCell=7 candCell=8 candRsrp=-128.428 < min=-120
+UE 194 TTT_WAIT target=1 elapsed=0s need=2s
+UE 198 TTT_WAIT target=8 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=204 currCell=6 candCell=9 candRsrp=-124.398 < min=-120
+UE 210 TTT_WAIT target=12 elapsed=0s need=2s
+UE 211 TTT_WAIT target=1 elapsed=0s need=2s
+UE 213 TTT_WAIT target=8 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=216 currCell=3 candCell=13 candRsrp=-120.685 < min=-120
+UE 217 TTT_WAIT target=1 elapsed=0s need=2s
+UE 218 TTT_WAIT target=1 elapsed=0s need=2s
+UE 220 TTT_WAIT target=4 elapsed=0s need=2s
+UE 221 TTT_WAIT target=1 elapsed=0s need=2s
+UE 225 TTT_WAIT target=4 elapsed=0s need=2s
+UE 229 TTT_WAIT target=13 elapsed=0s need=2s
+UE 230 TTT_WAIT target=8 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=234 currCell=1 candCell=8 candRsrp=-120.351 < min=-120
+UE 239 TTT_WAIT target=4 elapsed=0s need=2s
+UE 241 TTT_WAIT target=8 elapsed=0s need=2s
+LM HO_FAIL_LOW_RSRP UE=243 currCell=6 candCell=8 candRsrp=-123.246 < min=-120
+UE 244 TTT_WAIT target=1 elapsed=0s need=2s
