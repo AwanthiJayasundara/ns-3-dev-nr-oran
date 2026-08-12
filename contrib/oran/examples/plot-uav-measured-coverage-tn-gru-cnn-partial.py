@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-"""Plot measured coverage from available 120 s ML UAV repositioning runs.
+"""Plot measured coverage from available 120 s UAV repositioning runs.
 
 Uses local measured data only:
   - TN baseline / non-predictive reference, available to 120 s
+  - Reactive K-means TN+NTN, included when ml-ho-dataset.csv is present
   - GRU-predictive TN+NTN, available to 120 s
-  - CNN-learning TN+NTN, available locally to about 72 s
-
-Reactive K-means is intentionally omitted here if the full 120 s result is not
-available yet.
+  - CNN-learning TN+NTN, available to 120 s
 """
 
 from __future__ import annotations
@@ -22,6 +20,10 @@ RUNS = {
     "TN baseline": Path(
         "results/nr/tn-ntn/"
         "ueS1_115_ueS2_115_tnGnb_8_ntnGnb_6_tnCap_20_ntnCap_10_hyst_2"
+    ),
+    "Reactive K-means TN+NTN": Path(
+        "results/nr/tn-ntn/ml_uav_final/"
+        "ueS1_115_ueS2_115_tnGnb_8_ntnGnb_6_tnCap_20_ntnCap_10_hyst_2_kmeans-120"
     ),
     "GRU-predictive TN+NTN": Path(
         "results/nr/tn-ntn/ml_uav_final/"
@@ -89,6 +91,7 @@ def main() -> None:
 
     styles = {
         "TN baseline": dict(color="#1F77B4", linestyle="--", marker="o", linewidth=2.6),
+        "Reactive K-means TN+NTN": dict(color="#FF7F0E", linestyle="-", marker="o", linewidth=2.7),
         "GRU-predictive TN+NTN": dict(color="#2CA02C", linestyle="-", marker="s", linewidth=2.8),
         "CNN-learning TN+NTN": dict(color="#9467BD", linestyle="-.", marker="^", linewidth=2.8),
     }

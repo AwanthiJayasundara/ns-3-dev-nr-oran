@@ -71,13 +71,15 @@ def plot_snr_cdf() -> None:
 
 def plot_kpi_bars() -> None:
     metrics = ["HO success", "Low-RSRP fail", "Capacity fail", "TTT-blocked reversals", "Ping-pong"]
+    # HO success and low-RSRP fail use the same attempted-handover denominator,
+    # so they are complementary in this sample comparison.
     data = pd.DataFrame(
         {
             "metric": metrics,
             "TN baseline": [83.6, 16.4, 0.0, 45.1, 13.7],
             "Reactive K-means TN+NTN": [75.5, 24.5, 0.0, 30.1, 8.4],
             "GRU-predictive TN+NTN": [86.1, 13.9, 0.0, 35.4, 10.1],
-            "CNN-learning TN+NTN": [94.8, 8.2, 0.0, 24.6, 5.4],
+            "CNN-learning TN+NTN": [94.8, 5.2, 0.0, 24.6, 5.4],
         }
     )
     data.to_csv(OUT_DIR / "uav_sample_kpis_tn_kmeans_gru_cnn.csv", index=False)
