@@ -17,6 +17,7 @@ set -euo pipefail
 SIM_TIME="${SIM_TIME:-200}"
 SEEDS="${SEEDS:-1}"
 RUN_AI="${RUN_AI:-0}"
+ENABLE_ISAC_SENSING="${ENABLE_ISAC_SENSING:-1}"
 AI_MODEL="${AI_MODEL:-results/ai/uav-switching-xapp-ai-dataset-v2/uav_switching_xapp_model.onnx}"
 
 EXE="${EXE:-}"
@@ -83,6 +84,7 @@ COMMON_ARGS="\
 --uav-control-start=5 \
 --uav-control-period=1 \
 --uav-underserved-rsrp-thresh-dbm=-100 \
+--enable-isac-sensing=${ENABLE_ISAC_SENSING} \
 --uav-mission-target-scale=1 \
 --uav-speed-mps=35 \
 --xhaul-pathloss-exponent=5.6 \

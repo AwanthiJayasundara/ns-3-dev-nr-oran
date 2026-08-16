@@ -59,6 +59,7 @@
 #include <complex>
 #include <cstdint>
 #include <iomanip>
+#include <limits>
 
 using namespace ns3;
 
@@ -207,6 +208,33 @@ static std::string ns3_dir;
 
 static std::string s_satBackhaulTraceFile;
 static std::string s_xhaulAutonomyTraceFile;
+static std::string s_isacSensingTraceFile;
+
+// System-level monostatic ISAC sensing model used by the UAV positioning
+// controller.  The oracle path remains available for controlled comparisons.
+// When enabled, true UE coordinates are used only to generate synthetic radar
+// measurements; K-means receives the inverse-variance fused estimates.
+struct IsacSensingConfig
+{
+    bool enabled = false;
+    double txPowerDbm = 30.0;
+    double antennaGainDbi = 30.0;
+    double carrierFrequencyHz = 3.5e9;
+    double bandwidthHz = 20.0e6;
+    double targetRcsM2 = 1.0;
+    double systemLossLinear = 1.0;
+    double noiseFigureDb = 7.0;
+    double detectionSlope = 0.5;
+    double detectionMidpointDb = -15.0;
+    double positionSigmaRefM = 5.0;
+    double positionSnrRefDb = -10.0;
+    double positionSigmaMinM = 1.0;
+    double positionSigmaMaxM = 50.0;
+};
+
+static IsacSensingConfig g_isacSensing;
+static Ptr<UniformRandomVariable> g_isacDetectionRv = CreateObject<UniformRandomVariable>();
+static Ptr<NormalRandomVariable> g_isacPositionErrorRv = CreateObject<NormalRandomVariable>();
 
 // Latest satellite backhaul SNR per UAV/NTN cell. The satellite monitor updates
 // these maps; the UAV switching xApp reads them to decide if satellite fallback
@@ -1772,6 +1800,117 @@ IsUeUnderserved(Ptr<Node> ueNode, double rsrpThreshDbm)
     return (it->second < rsrpThreshDbm);
 }
 
+/**
+ * Generate one monostatic radar observation per UAV and fuse the successful
+ * detections.  This is a system-level ISAC abstraction: echo SNR follows the
+ * radar range equation, detection is Bernoulli with a logistic SNR response,
+ * and localisation variance decreases with SNR.  Ground truth never leaves
+ * this measurement generator.
+ */
+static bool
+EstimateUePositionViaIsac(Ptr<Node> ueNode,
+                          const std::string& ueGroup,
+                          uint32_t ueIndex,
+                          const NetDeviceContainer& sensingGnbDevs,
+                          std::ofstream& traceOut,
+                          LocalPoint2d* fusedPosition)
+{
+    auto ueMob = ueNode->GetObject<GeocentricConstantPositionMobilityModel>();
+    if (!ueMob || !fusedPosition)
+    {
+        return false;
+    }
+
+    const Vector ueGeo = ueMob->GetGeographicPosition();
+    const LocalPoint2d ueTrue = GeoToLocal(ueGeo, g_refLat, g_refLon);
+    const double txPowerW = std::pow(10.0, (g_isacSensing.txPowerDbm - 30.0) / 10.0);
+    const double gainLinear = std::pow(10.0, g_isacSensing.antennaGainDbi / 10.0);
+    const double wavelengthM = 299792458.0 / g_isacSensing.carrierFrequencyHz;
+    const double noiseDbm = -174.0 + 10.0 * std::log10(g_isacSensing.bandwidthHz) +
+                            g_isacSensing.noiseFigureDb;
+    const double noiseW = std::pow(10.0, (noiseDbm - 30.0) / 10.0);
+    const double radarConstant = txPowerW * gainLinear * gainLinear * wavelengthM * wavelengthM *
+                                 g_isacSensing.targetRcsM2 /
+                                 (std::pow(4.0 * M_PI, 3.0) * g_isacSensing.systemLossLinear);
+
+    double weightedEast = 0.0;
+    double weightedNorth = 0.0;
+    double weightSum = 0.0;
+    double bestSnrDb = -std::numeric_limits<double>::infinity();
+    uint32_t detectionCount = 0;
+
+    for (uint32_t sensorIndex = 0; sensorIndex < sensingGnbDevs.GetN(); ++sensorIndex)
+    {
+        Ptr<NrGnbNetDevice> gnb = DynamicCast<NrGnbNetDevice>(sensingGnbDevs.Get(sensorIndex));
+        Ptr<Node> sensorNode = sensingGnbDevs.Get(sensorIndex)->GetNode();
+        auto sensorMob = sensorNode->GetObject<GeocentricConstantPositionMobilityModel>();
+        if (!gnb || !sensorMob)
+        {
+            continue;
+        }
+
+        const Vector sensorGeo = sensorMob->GetGeographicPosition();
+        const LocalPoint2d sensorLocal = GeoToLocal(sensorGeo, g_refLat, g_refLon);
+        const double dx = ueTrue.eastM - sensorLocal.eastM;
+        const double dy = ueTrue.northM - sensorLocal.northM;
+        const double dz = ueGeo.z - sensorGeo.z;
+        const double rangeM = std::max(1.0, std::sqrt(dx * dx + dy * dy + dz * dz));
+        const double receivedPowerW = radarConstant / std::pow(rangeM, 4.0);
+        const double snrDb = 10.0 * std::log10(receivedPowerW / noiseW);
+        const double logisticArgument = std::clamp(
+            g_isacSensing.detectionSlope * (snrDb - g_isacSensing.detectionMidpointDb),
+            -60.0,
+            60.0);
+        const double detectionProbability = 1.0 / (1.0 + std::exp(-logisticArgument));
+        const bool detected = g_isacDetectionRv->GetValue() < detectionProbability;
+        const double sigmaM = std::clamp(
+            g_isacSensing.positionSigmaRefM *
+                std::pow(10.0, -(snrDb - g_isacSensing.positionSnrRefDb) / 20.0),
+            g_isacSensing.positionSigmaMinM,
+            g_isacSensing.positionSigmaMaxM);
+
+        double estimatedEastM = std::numeric_limits<double>::quiet_NaN();
+        double estimatedNorthM = std::numeric_limits<double>::quiet_NaN();
+        if (detected)
+        {
+            estimatedEastM = ueTrue.eastM +
+                             g_isacPositionErrorRv->GetValue(0.0, sigmaM * sigmaM);
+            estimatedNorthM = ueTrue.northM +
+                              g_isacPositionErrorRv->GetValue(0.0, sigmaM * sigmaM);
+            const double weight = 1.0 / (sigmaM * sigmaM);
+            weightedEast += weight * estimatedEastM;
+            weightedNorth += weight * estimatedNorthM;
+            weightSum += weight;
+            bestSnrDb = std::max(bestSnrDb, snrDb);
+            ++detectionCount;
+        }
+
+        traceOut << Simulator::Now().GetSeconds() << ",OBSERVATION," << ueGroup << ","
+                 << ueIndex << "," << ueNode->GetId() << "," << sensorIndex << ","
+                 << gnb->GetCellId() << ",1," << (detected ? 1 : 0) << ","
+                 << ueTrue.eastM << "," << ueTrue.northM << "," << estimatedEastM << ","
+                 << estimatedNorthM << "," << rangeM << "," << snrDb << ","
+                 << detectionProbability << "," << sigmaM << ",0\n";
+    }
+
+    if (detectionCount == 0 || weightSum <= 0.0)
+    {
+        traceOut << Simulator::Now().GetSeconds() << ",FUSED," << ueGroup << "," << ueIndex
+                 << "," << ueNode->GetId() << ",-1,0,1,0," << ueTrue.eastM << ","
+                 << ueTrue.northM << ",nan,nan,nan,nan,nan,0\n";
+        return false;
+    }
+
+    fusedPosition->eastM = weightedEast / weightSum;
+    fusedPosition->northM = weightedNorth / weightSum;
+    const double fusedSigmaM = std::sqrt(1.0 / weightSum);
+    traceOut << Simulator::Now().GetSeconds() << ",FUSED," << ueGroup << "," << ueIndex << ","
+             << ueNode->GetId() << ",-1,0,1,1," << ueTrue.eastM << "," << ueTrue.northM << ","
+             << fusedPosition->eastM << "," << fusedPosition->northM << ",nan," << bestSnrDb
+             << ",nan," << fusedSigmaM << "," << detectionCount << "\n";
+    return true;
+}
+
 static std::vector<LocalPoint2d>
 RunKMeans(const std::vector<LocalPoint2d>& points, uint32_t k, uint32_t iterations = 10)
 {
@@ -1852,6 +1991,40 @@ UpdateUavTargetsFromUnderservedUes(NodeContainer groundUeNodesS1,
                                    double controlPeriodSec)
 {
     std::vector<LocalPoint2d> underservedPts;
+    std::ofstream isacTraceOut;
+    if (g_isacSensing.enabled)
+    {
+        isacTraceOut.open(s_isacSensingTraceFile, std::ios_base::app);
+    }
+
+    auto addUnderservedPosition = [&](Ptr<Node> ueNode,
+                                      const std::string& ueGroup,
+                                      uint32_t ueIndex)
+    {
+        if (g_isacSensing.enabled)
+        {
+            LocalPoint2d fused{};
+            if (isacTraceOut.is_open() &&
+                EstimateUePositionViaIsac(ueNode,
+                                          ueGroup,
+                                          ueIndex,
+                                          ntnGnbNrDevs,
+                                          isacTraceOut,
+                                          &fused))
+            {
+                underservedPts.push_back(fused);
+            }
+            return;
+        }
+
+        // Oracle baseline: this is intentionally retained for quantifying the
+        // performance cost of imperfect sensing.
+        auto mob = ueNode->GetObject<GeocentricConstantPositionMobilityModel>();
+        if (mob)
+        {
+            underservedPts.push_back(GeoToLocal(mob->GetGeographicPosition(), g_refLat, g_refLon));
+        }
+    };
 
     // 1) collect underserved UEs. Some coverage experiments deliberately keep
     // UES1 near the TN cells and use UES2 as the outside underserved demand.
@@ -1861,13 +2034,7 @@ UpdateUavTargetsFromUnderservedUes(NodeContainer groundUeNodesS1,
         {
             if (IsUeUnderserved(groundUeNodesS1.Get(i), rsrpThreshDbm))
             {
-                auto mob = DynamicCast<GeocentricConstantPositionMobilityModel>(
-                    groundUeNodesS1.Get(i)->GetObject<MobilityModel>());
-                if (mob)
-                {
-                    underservedPts.push_back(
-                        GeoToLocal(mob->GetGeographicPosition(), g_refLat, g_refLon));
-                }
+                addUnderservedPosition(groundUeNodesS1.Get(i), "UES1", i);
             }
         }
     }
@@ -1876,13 +2043,7 @@ UpdateUavTargetsFromUnderservedUes(NodeContainer groundUeNodesS1,
     {
         if (IsUeUnderserved(groundUeNodesS2.Get(i), rsrpThreshDbm))
         {
-            auto mob = DynamicCast<GeocentricConstantPositionMobilityModel>(
-                groundUeNodesS2.Get(i)->GetObject<MobilityModel>());
-            if (mob)
-            {
-                underservedPts.push_back(
-                    GeoToLocal(mob->GetGeographicPosition(), g_refLat, g_refLon));
-            }
+            addUnderservedPosition(groundUeNodesS2.Get(i), "UES2", i);
         }
     }
 
@@ -2910,6 +3071,44 @@ main(int argc, char* argv[])
     cmd.AddValue("uav-underserved-rsrp-thresh-dbm",
                  "UE RSRP threshold below which the UAV autonomy policy treats a UE as underserved",
                  underservedRsrpThreshDbm);
+    cmd.AddValue("enable-isac-sensing",
+                 "Use sampled UAV ISAC detections and fused noisy UE positions instead of oracle coordinates",
+                 g_isacSensing.enabled);
+    cmd.AddValue("isac-sensing-tx-power-dbm",
+                 "Monostatic ISAC sensing transmit power in dBm",
+                 g_isacSensing.txPowerDbm);
+    cmd.AddValue("isac-sensing-antenna-gain-dbi",
+                 "Per-direction sensing antenna gain in dBi (applied twice in the radar equation)",
+                 g_isacSensing.antennaGainDbi);
+    cmd.AddValue("isac-sensing-frequency-hz",
+                 "ISAC sensing carrier frequency in Hz",
+                 g_isacSensing.carrierFrequencyHz);
+    cmd.AddValue("isac-sensing-bandwidth-hz",
+                 "ISAC sensing receiver bandwidth in Hz",
+                 g_isacSensing.bandwidthHz);
+    cmd.AddValue("isac-target-rcs-m2", "Assumed UE radar cross section in square metres", g_isacSensing.targetRcsM2);
+    cmd.AddValue("isac-sensing-system-loss-linear",
+                 "Aggregate linear sensing-system loss factor",
+                 g_isacSensing.systemLossLinear);
+    cmd.AddValue("isac-noise-figure-db", "Sensing receiver noise figure in dB", g_isacSensing.noiseFigureDb);
+    cmd.AddValue("isac-detection-slope",
+                 "Slope of the logistic probability-of-detection curve per dB",
+                 g_isacSensing.detectionSlope);
+    cmd.AddValue("isac-detection-midpoint-db",
+                 "Sensing SNR in dB at which detection probability is 0.5",
+                 g_isacSensing.detectionMidpointDb);
+    cmd.AddValue("isac-position-sigma-ref-m",
+                 "One-axis localisation standard deviation at the reference SNR",
+                 g_isacSensing.positionSigmaRefM);
+    cmd.AddValue("isac-position-snr-ref-db",
+                 "Reference sensing SNR for localisation error scaling",
+                 g_isacSensing.positionSnrRefDb);
+    cmd.AddValue("isac-position-sigma-min-m",
+                 "Minimum one-axis localisation standard deviation",
+                 g_isacSensing.positionSigmaMinM);
+    cmd.AddValue("isac-position-sigma-max-m",
+                 "Maximum one-axis localisation standard deviation",
+                 g_isacSensing.positionSigmaMaxM);
     cmd.Parse(argc, argv);
 
     // ----------------------------------------------------------------------
@@ -2992,6 +3191,22 @@ main(int argc, char* argv[])
                     "Unsupported --rlc-mode. Use um or am.");
     NS_ABORT_MSG_IF(monitoredTraffic != "udp" && monitoredTraffic != "xr",
                     "Unsupported --monitored-traffic. Use udp or xr.");
+    NS_ABORT_MSG_IF(g_isacSensing.carrierFrequencyHz <= 0.0 ||
+                        g_isacSensing.bandwidthHz <= 0.0 ||
+                        g_isacSensing.targetRcsM2 <= 0.0 ||
+                        g_isacSensing.systemLossLinear <= 0.0,
+                    "ISAC frequency, bandwidth, target RCS, and system loss must be positive.");
+    NS_ABORT_MSG_IF(g_isacSensing.detectionSlope <= 0.0,
+                    "--isac-detection-slope must be positive.");
+    NS_ABORT_MSG_IF(g_isacSensing.positionSigmaMinM <= 0.0 ||
+                        g_isacSensing.positionSigmaMaxM < g_isacSensing.positionSigmaMinM ||
+                        g_isacSensing.positionSigmaRefM <= 0.0,
+                    "ISAC position sigmas must be positive and sigma-max must be >= sigma-min.");
+
+    // Fixed stream indices keep sensing repeatable for a given ns-3 RngRun
+    // while separating detection and localisation draws.
+    g_isacDetectionRv->SetStream(91001);
+    g_isacPositionErrorRv->SetStream(91002);
 
     Time simulationStopTime = simTime + Seconds(stopTailSeconds);
 
@@ -3003,6 +3218,7 @@ main(int argc, char* argv[])
     // ----------------------------------------------------------------------
     std::ostringstream runTag;
     runTag << deploymentMode << "_ueS1_" << numGroundUesS1 << "_ueS2_" << numGroundUesS2 << "_tnGnb_" << numTnGnbs << "_ntnGnb_" << numNtnGnbs << "_tnCap_" << maxUesPerCellTn << "_ntnCap_" << maxUesPerCellNtn << "_hyst_" << hysteresisDb;
+    runTag << (g_isacSensing.enabled ? "_isac-sensed" : "_oracle-position");
     if (!runLabel.empty())
     {
         runTag << "_" << runLabel;
@@ -3021,9 +3237,31 @@ main(int argc, char* argv[])
     s_tnInfrastructureTraceFile = ns3_dir + "tn-infrastructure-trace.csv";
     s_satBackhaulTraceFile = ns3_dir + "sat-backhaul-trace.txt";
     s_xhaulAutonomyTraceFile = ns3_dir + "xhaul-autonomy-trace.csv";
+    s_isacSensingTraceFile = ns3_dir + "isac-sensing-trace.csv";
 
     // Ensure results/nr/ directory exists
     std::filesystem::create_directories(ns3_dir);
+
+    if (g_isacSensing.enabled)
+    {
+        std::ofstream sensingOut(s_isacSensingTraceFile, std::ios_base::trunc);
+        sensingOut << "Time,RecordType,UeGroup,UeIndex,UeNodeId,SensorIndex,SensorCellId,"
+                   << "Underserved,Detected,TrueEastM,TrueNorthM,EstimatedEastM,EstimatedNorthM,"
+                   << "RangeM,SensingSnrDb,DetectionProbability,PositionSigmaM,NumFusedObservations\n";
+
+        std::ofstream configOut(ns3_dir + "isac-sensing-config.csv", std::ios_base::trunc);
+        configOut << "TxPowerDbm,AntennaGainDbi,CarrierFrequencyHz,BandwidthHz,TargetRcsM2,"
+                  << "SystemLossLinear,NoiseFigureDb,DetectionSlope,DetectionMidpointDb,"
+                  << "PositionSigmaRefM,PositionSnrRefDb,PositionSigmaMinM,PositionSigmaMaxM\n";
+        configOut << g_isacSensing.txPowerDbm << "," << g_isacSensing.antennaGainDbi << ","
+                  << g_isacSensing.carrierFrequencyHz << "," << g_isacSensing.bandwidthHz << ","
+                  << g_isacSensing.targetRcsM2 << "," << g_isacSensing.systemLossLinear << ","
+                  << g_isacSensing.noiseFigureDb << "," << g_isacSensing.detectionSlope << ","
+                  << g_isacSensing.detectionMidpointDb << "," << g_isacSensing.positionSigmaRefM
+                  << "," << g_isacSensing.positionSnrRefDb << ","
+                  << g_isacSensing.positionSigmaMinM << "," << g_isacSensing.positionSigmaMaxM
+                  << "\n";
+    }
 
     Ptr<OutputStreamWrapper> rsrpRsrqSinrTraceStream;
     if (enableRsrpTrace)

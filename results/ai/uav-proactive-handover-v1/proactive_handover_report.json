@@ -1,0 +1,40 @@
+{
+  "scope": "offline future-handover prediction; not a closed-loop network-KPI result",
+  "horizon_s": 5.0,
+  "group_by": "seed",
+  "input_files": 10,
+  "decision_samples": 8222,
+  "positive_samples": 509,
+  "features": [
+    "serving_rsrp_dbm",
+    "best_neighbor_rsrp_dbm",
+    "rsrp_margin_db",
+    "serving_rsrp_slope_dbps",
+    "neighbor_rsrp_slope_dbps",
+    "best_neighbor_load_ratio",
+    "best_neighbor_is_ntn"
+  ],
+  "partitions": {
+    "train": {
+      "samples": 4492,
+      "groups": [
+        "seed1",
+        "seed3",
+        "seed5"
+      ]
+    },
+    "validation": {
+      "samples": 2264,
+      "groups": [
+        "seed2"
+      ]
+    },
+    "test": {
+      "samples": 1466,
+      "groups": [
+        "seed4"
+      ]
+    }
+  },
+  "selected_model": "random_forest"
+}

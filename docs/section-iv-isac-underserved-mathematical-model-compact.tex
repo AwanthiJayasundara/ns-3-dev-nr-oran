@@ -1,0 +1,128 @@
+\section{ISAC-Assisted Underserved-Region Model}
+\label{sec:mathematical-model}
+
+Consider ground UEs $\mathcal{U}$, ISAC sensing nodes $\mathcal{S}$,
+and UAV gNBs $\mathcal{Q}$. Communication KPIs determine which UEs
+are underserved, while ISAC observations estimate their spatial
+distribution. The near-RT RIC fuses both sources, predicts future
+underserved regions, and supplies target centroids to the UAV
+repositioning controller.
+
+\subsection{Sensing and Communication Fusion}
+
+For sensing node $s$ and UE $u$, the sensing range and system-level
+echo SNR are
+\begin{align}
+ r_{s,u}(t)&=\|\mathbf{p}_s(t)-\mathbf{p}_u(t)\|_2, \\
+ \gamma_{s,u}(t)&=
+ \frac{P_sG_s^2\lambda^2\sigma_u}
+ {(4\pi)^3r_{s,u}^4(t)L_sN_0B_s},
+ \label{eq:isac-snr-compact}
+\end{align}
+where $P_s$, $G_s$, $\lambda$, $\sigma_u$, $L_s$, $N_0$, and
+$B_s$ denote sensing power, antenna gain, wavelength, radar cross
+section, aggregate loss, noise density, and sensing bandwidth,
+respectively. Detection is sampled according to
+\begin{equation}
+ d_{s,u}(t)\sim\operatorname{Bernoulli}\!\left(
+ \frac{1}{1+\exp[-a(\gamma_{s,u}^{\mathrm{dB}}(t)-\gamma_0)]}
+ \right).
+ \label{eq:isac-detection-compact}
+\end{equation}
+For $d_{s,u}(t)=1$, the sensed position is
+\begin{equation}
+ \widehat{\mathbf{p}}_{s,u}(t)=\mathbf{p}_u(t)+\mathbf{e}_{s,u}(t),
+ \quad
+ \mathbf{e}_{s,u}(t)\sim\mathcal{N}
+ (\mathbf{0},\sigma_{s,u}^2(t)\mathbf{I}),
+ \label{eq:isac-position-compact}
+\end{equation}
+where
+\begin{equation}
+ \sigma_{s,u}(t)=\operatorname{clip}\!\left[
+ \sigma_{\mathrm{ref}}
+ 10^{-\frac{\gamma_{s,u}^{\mathrm{dB}}(t)-\gamma_{\mathrm{ref}}}{20}},
+ \sigma_{\min},\sigma_{\max}\right].
+ \label{eq:isac-error-compact}
+\end{equation}
+Multiple detections are fused at the RIC using
+\begin{equation}
+ \widehat{\mathbf{p}}_u(t)=
+ \frac{\sum_{s\in\mathcal{S}_u(t)}
+ \sigma_{s,u}^{-2}(t)\widehat{\mathbf{p}}_{s,u}(t)}
+ {\sum_{s\in\mathcal{S}_u(t)}\sigma_{s,u}^{-2}(t)},
+ \label{eq:isac-fusion-compact}
+\end{equation}
+where $\mathcal{S}_u(t)=\{s:d_{s,u}(t)=1\}$. True positions are
+retained only for simulation evaluation.
+
+Let $R_u$, $P_u$, $C_u$, and $D_u$ denote serving RSRP, PDR,
+throughput, and delay. The communication-derived service indicator is
+\begin{equation}
+ I_u(t)=\mathbf{1}\!\left\{
+ R_u<R_{\min}\lor P_u<P_{\min}\lor
+ C_u<C_{\min}\lor D_u>D_{\max}\right\}.
+ \label{eq:underserved-compact}
+\end{equation}
+Only KPIs measured in the experiment are applied.
+
+\subsection{Underserved Heatmap and RF Prediction}
+
+For grid cell $g\in\mathcal{G}$ with centre $\mathbf{c}_g$, sensed
+density, underserved intensity, and underserved share are
+\begin{align}
+ \rho_g(t)&=\sum_{u}K_h(\widehat{\mathbf{p}}_u^{xy}-\mathbf{c}_g),\\
+ H_g(t)&=\sum_{u}I_u(t)
+ K_h(\widehat{\mathbf{p}}_u^{xy}-\mathbf{c}_g),\\
+ Z_g(t)&=\frac{H_g(t)}{\rho_g(t)+\epsilon}.
+ \label{eq:heatmap-compact}
+\end{align}
+The RF uses the available subset of
+\begin{equation}
+ \mathbf{x}_g(t)=[\rho_g,H_g,Z_g,\overline{R}_g,R_g^{\min},
+ \overline{P}_g,\overline{C}_g,\overline{D}_g,
+ \overline{L}_g,\overline{v}_g,\overline{\sigma}_g]^T.
+ \label{eq:rf-features-compact}
+\end{equation}
+For prediction horizon $\Delta_p$, oracle quantities
+$N_g^\star$ and $Z_g^\star$ are used only to create the training label
+\begin{equation}
+ y_g(t)=\mathbf{1}\!\left\{
+ N_g^\star(t+\Delta_p)\geq N_{\min}\land
+ Z_g^\star(t+\Delta_p)\geq\beta\right\}.
+ \label{eq:rf-label-compact}
+\end{equation}
+The RF estimates $q_g(t)=\Pr[y_g(t)=1\mid\mathbf{x}_g(t)]$, and
+$\widehat{\mathcal{G}}_{\mathrm{US}}(t)=
+\{g:q_g(t)\geq\tau\}$. Training, validation, and testing use
+independent simulation seeds to prevent temporal leakage.
+
+\subsection{Clustering and UAV Repositioning}
+
+For $K\leq|\mathcal{Q}|$ available UAVs, probability-weighted
+K-means obtains target centroids:
+\begin{equation}
+ \min_{\{\boldsymbol{\mu}_k\}_{k=1}^{K}}
+ \sum_{g\in\widehat{\mathcal{G}}_{\mathrm{US}}}
+ q_gH_g\min_k\|\mathbf{c}_g-\boldsymbol{\mu}_k\|_2^2.
+ \label{eq:kmeans-compact}
+\end{equation}
+Each UAV is assigned once to an unassigned centroid by minimum travel
+distance. For assigned centroid $\boldsymbol{\mu}_{k(j)}$, UAV $j$
+updates its horizontal position as
+\begin{equation}
+ \mathbf{q}_j(t+\Delta t)=\mathbf{q}_j(t)+
+ \min\{v_{\max}\Delta t,\|\boldsymbol{\delta}_j\|_2\}
+ \frac{\boldsymbol{\delta}_j}{\|\boldsymbol{\delta}_j\|_2},
+ \quad
+ \boldsymbol{\delta}_j=\boldsymbol{\mu}_{k(j)}-\mathbf{q}_j(t),
+ \label{eq:movement-compact}
+\end{equation}
+with zero displacement when $\|\boldsymbol{\delta}_j\|_2=0$ and
+subject to flight-area and altitude constraints.
+
+Sensing performance is evaluated using detection probability,
+localisation RMSE, hotspot F1, and matched centroid error. The
+end-to-end benefit is evaluated using the underserved-UE fraction,
+coverage probability, fifth-percentile throughput, PDR, and outage
+time before and after repositioning.

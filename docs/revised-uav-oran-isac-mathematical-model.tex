@@ -1,0 +1,190 @@
+% Revised mathematical model for the UAV--O-RAN system-level ISAC paper.
+% This draft deliberately matches the currently available ns-3 observables.
+% It does not claim waveform-level sensing, trajectory optimisation, or UAV
+% energy optimisation. Equations marked "predictive extension" require the
+% proactive handover model to be connected to the runtime controller.
+
+\subsection{System and sensing-data service model}
+
+Let $\mathcal{A}=\{1,\ldots,N\}$ denote the target areas visited by one UAV,
+and let $\mathcal{M}$ denote the set of candidate gNBs. The UAV follows a
+predefined three-dimensional trajectory $\mathbf{p}(t)=[x(t),y(t),z(t)]^T$
+with velocity $\mathbf{v}(t)$. Thus, trajectory and velocity are modeled
+inputs rather than optimisation variables. In area $i$, a terrestrial sensing
+device generates $T_i$ GB and the UAV generates $U_i$ GB of sensing data. The
+aggregate payload is
+\begin{equation}
+    D_i = 8\times 10^9(T_i+U_i) \quad \text{bits}.
+    \label{eq:payload}
+\end{equation}
+The sensing function is represented at the service level: the evaluation
+measures whether the generated sensing payload is reliably delivered and
+processed within its application deadline. It does not evaluate radar target
+detection, waveform estimation, or localisation accuracy.
+
+\subsection{Radio measurements and mobility control}
+
+At E2 reporting epoch $t_k$, let $s_k\in\mathcal{M}$ be the serving gNB and
+let $R_m(t_k)$ be the RSRP reported for candidate gNB $m$. The strongest
+eligible neighbour is
+\begin{equation}
+    n_k^* = \arg\max_{m\in\mathcal{M}\setminus\{s_k\}} R_m(t_k),
+    \label{eq:best-neighbour}
+\end{equation}
+where an eligible cell satisfies the configured capacity and minimum-RSRP
+requirements. Define the RSRP advantage
+\begin{equation}
+    \Delta R_k = R_{n_k^*}(t_k)-R_{s_k}(t_k).
+    \label{eq:rsrp-margin}
+\end{equation}
+For the conventional NR A3 baseline, a handover is triggered when
+\begin{equation}
+    \Delta R(t) \geq H
+    \quad \text{continuously for } T_{\mathrm{TTT}},
+    \label{eq:a3}
+\end{equation}
+where $H$ and $T_{\mathrm{TTT}}$ are the hysteresis and time-to-trigger,
+respectively. The O-RAN rule-based controller evaluates the same radio
+condition at the near-RT RIC while additionally rejecting candidates that
+violate the xApp's capacity or service constraints. The comparison therefore
+isolates the benefit of programmable, constraint-aware control; both schemes
+must use identical topology, traffic, propagation, mobility, and random seeds.
+
+For the predictive extension, the feature vector is
+\begin{equation}
+ \mathbf{x}_k = [R_{s_k},R_{n_k^*},\Delta R_k,
+ \dot R_{s_k},\dot R_{n_k^*},v_k,z_k,
+ d_{s_k},d_{n_k^*},\ell_{s_k},\ell_{n_k^*}]^T,
+ \label{eq:features}
+\end{equation}
+where $v_k=\lVert\mathbf{v}(t_k)\rVert$, $d_m$ is the UAV--gNB distance, and
+$\ell_m$ is the cell-load ratio. Features that are not recorded by a given
+experiment are omitted rather than synthetically generated. With prediction
+horizon $\Delta_p$, the future-only training label is
+\begin{equation}
+ y_k = \mathbf{1}\!\left\{\text{a handover occurs in }
+ (t_k,t_k+\Delta_p]\right\}.
+ \label{eq:future-label}
+\end{equation}
+The predictor estimates $q_k=\Pr(y_k=1\mid\mathbf{x}_k)$. A proactive
+handover may be prepared when $q_k\geq\theta$ and $n_k^*$ remains eligible.
+This predictive policy is evaluated only after its decisions are applied in a
+closed-loop ns-3 run; offline classification accuracy alone is not considered
+a network-performance result.
+
+\subsection{Communication and handover performance}
+
+For $N_{\mathrm{rx}}$ successfully received packets, mean one-way delay,
+packet-delivery ratio, and effective throughput are
+\begin{align}
+ \bar d &= \frac{1}{N_{\mathrm{rx}}}
+           \sum_{q=1}^{N_{\mathrm{rx}}} d_q, \\
+ P_{\mathrm{PDR}} &= \frac{N_{\mathrm{rx}}}{N_{\mathrm{tx}}}, \\
+ \Gamma &= \frac{8B_{\mathrm{rx}}}{t_{\mathrm{last}}-t_{\mathrm{first}}},
+ \label{eq:communication-kpis}
+\end{align}
+where $B_{\mathrm{rx}}$ is the number of received bytes. Unlike packet-loss
+ratio, $P_{\mathrm{PDR}}$ is directly available from the current QoS traces.
+
+Let $R_{s(t)}(t)$ denote the RSRP of the cell serving the UAV at time $t$ and
+let $R_{\min}$ be the configured service threshold. The normalised radio
+outage time is
+\begin{equation}
+ P_{\mathrm{out}} = \frac{1}{T}\int_0^T
+ \mathbf{1}\!\left\{R_{s(t)}(t)<R_{\min}\right\}\,dt.
+ \label{eq:outage}
+\end{equation}
+If $N_{\mathrm{succ}}$ and $N_{\mathrm{fail}}$ are the observed successful
+and failed handover attempts, the handover success probability is
+\begin{equation}
+ P_{\mathrm{HO}} = \frac{N_{\mathrm{succ}}}
+ {N_{\mathrm{succ}}+N_{\mathrm{fail}}}.
+ \label{eq:ho-success}
+\end{equation}
+A ping-pong event is an association sequence $a\!\rightarrow\!b\!\rightarrow\!a$
+completed within a specified window $T_{\mathrm{PP}}$. Its normalised rate is
+\begin{equation}
+ P_{\mathrm{PP}} = \frac{N_{\mathrm{PP}}}{\max(N_{\mathrm{succ}},1)}.
+ \label{eq:ping-pong}
+\end{equation}
+
+\subsection{Processing delay and mission completion}
+
+Let $\bar r_i$ be the measured or configured uplink service rate in area $i$.
+For the traditional-RAN baseline, sensing data are transmitted through the
+radio access, backhaul, and central-processing stages:
+\begin{equation}
+ t_i^{\mathrm{RAN}} = \frac{D_i}{\bar r_i^{\mathrm{LTE}}}
+ +\frac{D_i}{r_i^{\mathrm{bh}}}+\delta_i^{\mathrm{bh}}
+ +\frac{D_i}{c_i^{\mathrm{central}}}.
+ \label{eq:ran-delay}
+\end{equation}
+For O-RAN with processing at the gNB-associated edge,
+\begin{equation}
+ t_i^{\mathrm{ORAN}} = \frac{D_i}{\bar r_i^{\mathrm{NR}}}
+ +\frac{D_i}{c_i^{\mathrm{edge}}}.
+ \label{eq:oran-delay}
+\end{equation}
+If the flight time between areas $i$ and $i+1$ is
+\begin{equation}
+ t_i^{\mathrm{fly}}=\frac{\lVert\mathbf{p}_{i+1}-\mathbf{p}_i\rVert}
+ {\bar v_i},
+ \label{eq:flight-time}
+\end{equation}
+the total mission-completion time under architecture $X$ is
+\begin{equation}
+ T_{\mathrm{mission}}^X = \sum_{i=1}^{N}t_i^X
+ +\sum_{i=1}^{N-1}t_i^{\mathrm{fly}},
+ \quad X\in\{\mathrm{RAN},\mathrm{ORAN}\}.
+ \label{eq:mission-time}
+\end{equation}
+Every rate and processing-capacity value used in
+Eqs.~\eqref{eq:ran-delay}--\eqref{eq:mission-time} must be reported in the
+simulation-parameter table and identified as measured or configured.
+
+\subsection{Deadline-constrained sensing-data service}
+
+Let $g_i$, $r_i$, and $f_i$ denote the generation, successful reception, and
+completion-of-processing times of area-$i$ sensing data. For an
+application-specific deadline $T_{\max}$, define
+\begin{equation}
+ S_i(T_{\max}) = \mathbf{1}\!\left\{f_i-g_i\leq T_{\max}\right\},
+ \qquad
+ P_{\mathrm{service}}(T_{\max})=
+ \frac{1}{N}\sum_{i=1}^{N}S_i(T_{\max}).
+ \label{eq:service-deadline}
+\end{equation}
+Because the acceptable deadline depends on the application,
+$P_{\mathrm{service}}$ is evaluated over a range of $T_{\max}$ rather than
+assuming one universal ISAC latency threshold.
+
+\subsection{Controller evaluation problem}
+
+The current study optimises the mobility-control policy $\pi$, not the
+predefined UAV trajectory. A constraint-based formulation avoids hiding
+trade-offs behind arbitrary normalisation weights:
+\begin{align}
+ \max_{\pi}\quad & P_{\mathrm{service}}(T_{\max}) \\
+ \text{s.t.}\quad
+ &P_{\mathrm{PDR}}(\pi)\geq \eta_{\min}, \\
+ &P_{\mathrm{out}}(\pi)\leq \epsilon_{\mathrm{out}}, \\
+ &P_{\mathrm{PP}}(\pi)\leq \epsilon_{\mathrm{PP}}, \\
+ &\ell_m(t)\leq 1, \quad \forall m\in\mathcal{M}, \\
+ &t_{\mathrm{decision}}(\pi)\leq 1\ \mathrm{s}.
+ \label{eq:controller-problem}
+\end{align}
+Here $\eta_{\min}$, $\epsilon_{\mathrm{out}}$, and
+$\epsilon_{\mathrm{PP}}$ are explicitly reported design requirements. If a
+single score is needed only for ranking configurations, the measured KPIs may
+be normalised using bounds fixed before evaluation and combined as
+\begin{equation}
+ J(\pi)=w_s\widetilde P_{\mathrm{service}}
+ +w_p\widetilde P_{\mathrm{PDR}}
+ +w_h\widetilde P_{\mathrm{HO}}
+ -w_d\widetilde{\bar d}
+ -w_o\widetilde P_{\mathrm{out}}
+ -w_{pp}\widetilde P_{\mathrm{PP}},
+ \label{eq:optional-score}
+\end{equation}
+where $w_j\geq0$, $\sum_jw_j=1$, and all weights and normalisation bounds are
+declared before comparing controllers.
