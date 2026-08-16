@@ -1,128 +1,131 @@
 \section{ISAC-Assisted Underserved-Region Model}
 \label{sec:mathematical-model}
 
-Consider ground UEs $\mathcal{U}$, ISAC sensing nodes $\mathcal{S}$,
-and UAV gNBs $\mathcal{Q}$. Communication KPIs determine which UEs
-are underserved, while ISAC observations estimate their spatial
-distribution. The near-RT RIC fuses both sources, predicts future
-underserved regions, and supplies target centroids to the UAV
-repositioning controller.
+Let $\mathcal{U}$ denote the ground UEs and $\mathcal{Q}$ the UAV
+gNBs. In the simulation, every UAV gNB carries a co-located
+transmit--receive ISAC subsystem and acts as a sensing node; hence,
+$\mathcal{S}=\mathcal{Q}$. Terrestrial gNBs and terrestrial sensing
+devices do not perform radar sensing. The ground UEs, or their
+associated monitored targets, are passive targets with radar cross
+section (RCS) $\sigma_u$. Communication measurements identify weakly
+served UEs, while ISAC observations estimate their horizontal
+locations for UAV repositioning.
 
-\subsection{Sensing and Communication Fusion}
+\subsection{System-Level ISAC Sensing}
 
-For sensing node $s$ and UE $u$, the sensing range and system-level
-echo SNR are
+Under a monostatic system-level sensing abstraction, the 3-D range
+and received echo power between UAV $s$ and UE $u$ are
 \begin{align}
- r_{s,u}(t)&=\|\mathbf{p}_s(t)-\mathbf{p}_u(t)\|_2, \\
- \gamma_{s,u}(t)&=
+ r_{s,u}(t)&=\|\mathbf{p}_s(t)-\mathbf{p}_u(t)\|_2,\label{eq:isac-range}\\
+ P^{\rm r}_{s,u}(t)&=
  \frac{P_sG_s^2\lambda^2\sigma_u}
- {(4\pi)^3r_{s,u}^4(t)L_sN_0B_s},
- \label{eq:isac-snr-compact}
+ {(4\pi)^3r_{s,u}^4(t)L_s}.\label{eq:isac-echo}
 \end{align}
-where $P_s$, $G_s$, $\lambda$, $\sigma_u$, $L_s$, $N_0$, and
-$B_s$ denote sensing power, antenna gain, wavelength, radar cross
-section, aggregate loss, noise density, and sensing bandwidth,
-respectively. Detection is sampled according to
+Here, $P_s$, $G_s$, $\lambda$, and $L_s$ are the sensing power,
+antenna gain, wavelength, and aggregate system loss. With noise
+density $N_0$, bandwidth $B_s$, and noise factor $F_s$, the echo SNR
+is
 \begin{equation}
- d_{s,u}(t)\sim\operatorname{Bernoulli}\!\left(
- \frac{1}{1+\exp[-a(\gamma_{s,u}^{\mathrm{dB}}(t)-\gamma_0)]}
- \right).
+ \gamma_{s,u}(t)=
+ \frac{P^{\rm r}_{s,u}(t)}{N_0B_sF_s}.
+ \label{eq:isac-snr-compact}
+\end{equation}
+
+The simulator uses the following probabilistic detection abstraction:
+\begin{align}
+ p^{\rm D}_{s,u}(t)&=
+ \left[1+e^{-a(\gamma^{\rm dB}_{s,u}(t)-\gamma_0)}\right]^{-1},\\
+ d_{s,u}(t)&\sim\operatorname{Bernoulli}
+ \bigl(p^{\rm D}_{s,u}(t)\bigr).
  \label{eq:isac-detection-compact}
-\end{equation}
-For $d_{s,u}(t)=1$, the sensed position is
+\end{align}
+Here, $a$ and $\gamma_0$ control the slope and midpoint. For a
+successful detection, the horizontal position estimate is
+\begin{align}
+ \widehat{\mathbf{p}}^{xy}_{s,u}(t)
+ &=\mathbf{p}^{xy}_u(t)+\mathbf{e}_{s,u}(t),\label{eq:isac-position}\\
+ \mathbf{e}_{s,u}(t)&\sim\mathcal{N}
+ \bigl(\mathbf{0},\sigma_{s,u}^2(t)\mathbf{I}_2\bigr).
+\end{align}
+This localisation-error model is a system-level simulation
+abstraction. Defining
 \begin{equation}
- \widehat{\mathbf{p}}_{s,u}(t)=\mathbf{p}_u(t)+\mathbf{e}_{s,u}(t),
- \quad
- \mathbf{e}_{s,u}(t)\sim\mathcal{N}
- (\mathbf{0},\sigma_{s,u}^2(t)\mathbf{I}),
- \label{eq:isac-position-compact}
+ \Delta\gamma_{s,u}(t)=
+ \gamma^{\rm dB}_{s,u}(t)-\gamma_{\rm ref},
 \end{equation}
-where
+its standard deviation is
 \begin{equation}
- \sigma_{s,u}(t)=\operatorname{clip}\!\left[
- \sigma_{\mathrm{ref}}
- 10^{-\frac{\gamma_{s,u}^{\mathrm{dB}}(t)-\gamma_{\mathrm{ref}}}{20}},
- \sigma_{\min},\sigma_{\max}\right].
+ \sigma_{s,u}(t)=\operatorname{clip}
+ \left(\sigma_{\rm ref}10^{-\Delta\gamma_{s,u}(t)/20},
+ \sigma_{\min},\sigma_{\max}\right).
  \label{eq:isac-error-compact}
 \end{equation}
-Multiple detections are fused at the RIC using
+
+Let $\mathcal{S}_u(t)=\{s\in\mathcal{S}:d_{s,u}(t)=1\}$ and
+$w_{s,u}(t)=\sigma_{s,u}^{-2}(t)$. Assuming independent, unbiased
+Gaussian localisation errors, the near-RT RIC forms
 \begin{equation}
- \widehat{\mathbf{p}}_u(t)=
- \frac{\sum_{s\in\mathcal{S}_u(t)}
- \sigma_{s,u}^{-2}(t)\widehat{\mathbf{p}}_{s,u}(t)}
- {\sum_{s\in\mathcal{S}_u(t)}\sigma_{s,u}^{-2}(t)},
+ \widehat{\mathbf{p}}^{xy}_u(t)=
+ \frac{\sum_{s\in\mathcal{S}_u(t)}w_{s,u}(t)
+ \widehat{\mathbf{p}}^{xy}_{s,u}(t)}
+ {\sum_{s\in\mathcal{S}_u(t)}w_{s,u}(t)}.
  \label{eq:isac-fusion-compact}
 \end{equation}
-where $\mathcal{S}_u(t)=\{s:d_{s,u}(t)=1\}$. True positions are
-retained only for simulation evaluation.
+No estimate is produced when $\mathcal{S}_u(t)=\varnothing$. True UE
+coordinates are used only inside the sensing-measurement generator
+and for offline evaluation; the controller receives only fused
+estimates.
 
-Let $R_u$, $P_u$, $C_u$, and $D_u$ denote serving RSRP, PDR,
-throughput, and delay. The communication-derived service indicator is
+\subsection{Underserved UEs and UAV Repositioning}
+
+The implemented controller uses serving RSRP $R_u(t)$ to define
 \begin{equation}
- I_u(t)=\mathbf{1}\!\left\{
- R_u<R_{\min}\lor P_u<P_{\min}\lor
- C_u<C_{\min}\lor D_u>D_{\max}\right\}.
+ I_u(t)=\mathbf{1}\{R_u(t)<R_{\min}\}.
  \label{eq:underserved-compact}
 \end{equation}
-Only KPIs measured in the experiment are applied.
-
-\subsection{Underserved Heatmap and RF Prediction}
-
-For grid cell $g\in\mathcal{G}$ with centre $\mathbf{c}_g$, sensed
-density, underserved intensity, and underserved share are
-\begin{align}
- \rho_g(t)&=\sum_{u}K_h(\widehat{\mathbf{p}}_u^{xy}-\mathbf{c}_g),\\
- H_g(t)&=\sum_{u}I_u(t)
- K_h(\widehat{\mathbf{p}}_u^{xy}-\mathbf{c}_g),\\
- Z_g(t)&=\frac{H_g(t)}{\rho_g(t)+\epsilon}.
- \label{eq:heatmap-compact}
-\end{align}
-The RF uses the available subset of
+Thus, the UEs available to the clustering controller are
 \begin{equation}
- \mathbf{x}_g(t)=[\rho_g,H_g,Z_g,\overline{R}_g,R_g^{\min},
- \overline{P}_g,\overline{C}_g,\overline{D}_g,
- \overline{L}_g,\overline{v}_g,\overline{\sigma}_g]^T.
- \label{eq:rf-features-compact}
+ \widehat{\mathcal{U}}_{\rm US}(t)=
+ \{u\in\mathcal{U}:I_u(t)=1,\,
+ \mathcal{S}_u(t)\neq\varnothing\}.
+ \label{eq:sensed-underserved-set}
 \end{equation}
-For prediction horizon $\Delta_p$, oracle quantities
-$N_g^\star$ and $Z_g^\star$ are used only to create the training label
+Let $\mathcal{Q}_{\rm a}(t)$ contain UAVs with remaining serving
+capacity. The number of clusters is
 \begin{equation}
- y_g(t)=\mathbf{1}\!\left\{
- N_g^\star(t+\Delta_p)\geq N_{\min}\land
- Z_g^\star(t+\Delta_p)\geq\beta\right\}.
- \label{eq:rf-label-compact}
+ K(t)=\min\bigl\{|\mathcal{Q}_{\rm a}(t)|,
+ |\widehat{\mathcal{U}}_{\rm US}(t)|\bigr\}.
+ \label{eq:k-selection}
 \end{equation}
-The RF estimates $q_g(t)=\Pr[y_g(t)=1\mid\mathbf{x}_g(t)]$, and
-$\widehat{\mathcal{G}}_{\mathrm{US}}(t)=
-\{g:q_g(t)\geq\tau\}$. Training, validation, and testing use
-independent simulation seeds to prevent temporal leakage.
-
-\subsection{Clustering and UAV Repositioning}
-
-For $K\leq|\mathcal{Q}|$ available UAVs, probability-weighted
-K-means obtains target centroids:
+Ordinary K-means determines the horizontal target centroids:
 \begin{equation}
- \min_{\{\boldsymbol{\mu}_k\}_{k=1}^{K}}
- \sum_{g\in\widehat{\mathcal{G}}_{\mathrm{US}}}
- q_gH_g\min_k\|\mathbf{c}_g-\boldsymbol{\mu}_k\|_2^2.
+ \{\boldsymbol{\mu}_k^\star\}=
+ \arg\min_{\{\boldsymbol{\mu}_k\}}
+ \sum_{u\in\widehat{\mathcal{U}}_{\rm US}(t)}
+ \min_{1\leq k\leq K}
+ \|\widehat{\mathbf{p}}^{xy}_u(t)-\boldsymbol{\mu}_k\|_2^2.
  \label{eq:kmeans-compact}
 \end{equation}
-Each UAV is assigned once to an unassigned centroid by minimum travel
-distance. For assigned centroid $\boldsymbol{\mu}_{k(j)}$, UAV $j$
-updates its horizontal position as
+Each available UAV is greedily assigned once to its nearest
+unassigned centroid, matching the implemented controller. For UAV
+$j$ and assigned centroid $\boldsymbol{\mu}_{k(j)}^\star$, define
+\begin{align}
+ \boldsymbol{\delta}_j(t)&=
+ \boldsymbol{\mu}_{k(j)}^\star-\mathbf{q}^{xy}_j(t),\\
+ \alpha_j(t)&=\min\left\{1,
+ \frac{v_{\max}\Delta t}{\|\boldsymbol{\delta}_j(t)\|_2}\right\}.
+\end{align}
+The horizontal update is
 \begin{equation}
- \mathbf{q}_j(t+\Delta t)=\mathbf{q}_j(t)+
- \min\{v_{\max}\Delta t,\|\boldsymbol{\delta}_j\|_2\}
- \frac{\boldsymbol{\delta}_j}{\|\boldsymbol{\delta}_j\|_2},
- \quad
- \boldsymbol{\delta}_j=\boldsymbol{\mu}_{k(j)}-\mathbf{q}_j(t),
+ \mathbf{q}^{xy}_j(t+\Delta t)=
+ \mathbf{q}^{xy}_j(t)+\alpha_j(t)\boldsymbol{\delta}_j(t).
  \label{eq:movement-compact}
 \end{equation}
-with zero displacement when $\|\boldsymbol{\delta}_j\|_2=0$ and
-subject to flight-area and altitude constraints.
+When $\|\boldsymbol{\delta}_j(t)\|_2=0$, displacement is zero;
+altitude remains fixed and flight-area constraints are enforced.
 
-Sensing performance is evaluated using detection probability,
-localisation RMSE, hotspot F1, and matched centroid error. The
-end-to-end benefit is evaluated using the underserved-UE fraction,
-coverage probability, fifth-percentile throughput, PDR, and outage
-time before and after repositioning.
+We evaluate detection probability, localisation RMSE, and matched
+centroid error, followed by the underserved-UE fraction,
+fifth-percentile throughput, and coverage probability. Future-hotspot
+prediction is left for a subsequent extension and is not assumed by
+the present controller.
