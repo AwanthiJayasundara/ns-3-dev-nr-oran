@@ -24,6 +24,7 @@ EXPERIMENT_TAG="${EXPERIMENT_TAG:-main}"
 RUN_HOTSPOT_RF="${RUN_HOTSPOT_RF:-0}"
 ENABLE_ISAC_SENSING="${ENABLE_ISAC_SENSING:-1}"
 ENABLE_UAV_REPOSITIONING="${ENABLE_UAV_REPOSITIONING:-1}"
+METHODS="${METHODS:-}"
 ALLOW_EXISTING_RESULTS="${ALLOW_EXISTING_RESULTS:-0}"
 NUM_TN_GNBS="${NUM_TN_GNBS:-4}"
 NUM_UAVS="${NUM_UAVS:-3}"
@@ -62,6 +63,16 @@ if ! [[ "${EXPERIMENT_TAG}" =~ ^[A-Za-z0-9._-]+$ ]]; then
   echo "[clustered-coverage] EXPERIMENT_TAG may contain only letters, digits, dot, underscore, and hyphen" >&2
   exit 1
 fi
+for requested_method in ${METHODS}; do
+  case "${requested_method}" in
+    static|oracle-reactive|isac-reactive|isac-rf-predictive) ;;
+    *)
+      echo "[clustered-coverage] unsupported method '${requested_method}'" >&2
+      echo "[clustered-coverage] allowed methods: static oracle-reactive isac-reactive isac-rf-predictive" >&2
+      exit 1
+      ;;
+  esac
+done
 
 mkdir -p "${DB_DIR}"
 
@@ -169,7 +180,6 @@ ${GEOMETRY_ARGS} \
 --rem-mode=0 \
 --enable-sat-backhaul-monitor=0 \
 --enable-uav-switching-xapp=0 \
---enable-uav-repositioning=${ENABLE_UAV_REPOSITIONING} \
 --uav-control-start=${UAV_CONTROL_START_S} \
 --uav-control-period=${UAV_CONTROL_PERIOD_S} \
 --uav-underserved-rsrp-thresh-dbm=${UNDERSERVED_RSRP_DBM} \
@@ -177,14 +187,12 @@ ${GEOMETRY_ARGS} \
 --uav-unknown-timeout-s=${UNKNOWN_TIMEOUT_S} \
 --uav-rsrp-measurement-max-age-s=${RSRP_MAX_AGE_S} \
 --handover-ttt-s=${HANDOVER_TTT_S} \
---enable-isac-sensing=${ENABLE_ISAC_SENSING} \
 --isac-sensing-frequency-hz=4.0e9 \
 --isac-sensing-tx-power-dbm=${ISAC_TX_POWER_DBM} \
 --isac-target-rcs-m2=${ISAC_RCS_M2} \
 --isac-sensing-system-loss-linear=${ISAC_SYSTEM_LOSS_LINEAR} \
 --isac-detection-midpoint-db=${ISAC_DETECTION_MIDPOINT_DB} \
 --uav-access-scenario=UMa \
---enable-hotspot-rf=${RUN_HOTSPOT_RF} \
 --hotspot-rf-model=${HOTSPOT_RF_MODEL} \
 --uav-mission-target-scale=1 \
 --uav-speed-mps=${UAV_SPEED_MPS} \
@@ -199,6 +207,36 @@ run_case() {
   local seed="$3"
   local label="$4"
   local db_file="${DB_DIR}/${label}.db"
+  local method_repositioning
+  local method_sensing
+  local method_rf
+
+  case "${controller}" in
+    static)
+      method_repositioning=0
+      method_sensing=0
+      method_rf=0
+      ;;
+    oracle-reactive)
+      method_repositioning=1
+      method_sensing=0
+      method_rf=0
+      ;;
+    isac-reactive)
+      method_repositioning=1
+      method_sensing=1
+      method_rf=0
+      ;;
+    isac-rf-predictive)
+      method_repositioning=1
+      method_sensing=1
+      method_rf=1
+      ;;
+    *)
+      echo "[clustered-coverage] internal error: unsupported method '${controller}'" >&2
+      return 1
+      ;;
+  esac
 
   if [[ -e "${db_file}" && "${ALLOW_EXISTING_RESULTS}" != "1" ]]; then
     echo "[clustered-coverage] refusing to overwrite existing database: ${db_file}" >&2
@@ -207,6 +245,9 @@ run_case() {
   fi
   echo "[clustered-coverage] controller=${controller} seed=${seed} ues2=${ues2} sim=${SIM_TIME}s label=${label}"
   "${EXE}" ${COMMON_ARGS} \
+    --enable-uav-repositioning="${method_repositioning}" \
+    --enable-isac-sensing="${method_sensing}" \
+    --enable-hotspot-rf="${method_rf}" \
     --RngRun="${seed}" \
     --num-ground-ues="${ues2}" \
     --db-file="${db_file}" \
@@ -253,14 +294,19 @@ run_seed_batches() {
   done
 }
 
-if [[ "${ENABLE_UAV_REPOSITIONING}" == "0" ]]; then
-  METHOD="static"
-elif [[ "${RUN_HOTSPOT_RF}" == "1" ]]; then
-  METHOD="isac-rf-predictive"
-elif [[ "${ENABLE_ISAC_SENSING}" == "1" ]]; then
-  METHOD="isac-reactive"
+if [[ -n "${METHODS}" ]]; then
+  for METHOD in ${METHODS}; do
+    run_seed_batches "${METHOD}" "${EXPERIMENT_TAG}-${SCENARIO_PROFILE}-${METHOD}"
+  done
 else
-  METHOD="oracle-reactive"
+  if [[ "${ENABLE_UAV_REPOSITIONING}" == "0" ]]; then
+    METHOD="static"
+  elif [[ "${RUN_HOTSPOT_RF}" == "1" ]]; then
+    METHOD="isac-rf-predictive"
+  elif [[ "${ENABLE_ISAC_SENSING}" == "1" ]]; then
+    METHOD="isac-reactive"
+  else
+    METHOD="oracle-reactive"
+  fi
+  run_seed_batches "${METHOD}" "${EXPERIMENT_TAG}-${SCENARIO_PROFILE}-${METHOD}"
 fi
-
-run_seed_batches "${METHOD}" "${EXPERIMENT_TAG}-${SCENARIO_PROFILE}-${METHOD}"

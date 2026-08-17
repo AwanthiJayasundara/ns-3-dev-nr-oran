@@ -470,6 +470,43 @@ The minimum method comparison is:
 | ISAC reactive K-means | Fused sensed coordinates | Detected persistent UAV-repositioning demand | Measures sensing penalty |
 | ISAC + RF proactive K-means | Fused sensed coordinates | Predicted future repositioning-demand cells weighted by \(q_g\) | Proposed method; pending implementation |
 
+### What is trained and what runs online
+
+K-means is **not trained** and does not produce a reusable model file. In each reactive
+controller update, the simulator first identifies UEs in `MOVE_REQUIRED`, constructs a new
+set of target points, and runs K-means again. It chooses
+
+\[
+K=\min\{\text{available UAVs},\text{target points}\},
+\]
+
+uses 10 Lloyd iterations in the current implementation, and greedily assigns available UAVs
+to the nearest unassigned centroids. Thus, K-means is an online target-calculation step.
+
+The four methods differ as follows:
+
+1. **Static UAV:** the target-update controller is not scheduled. The UAVs remain at their
+   initial locations, so there is no target-point set and no K-means execution. This baseline
+   measures performance without repositioning.
+2. **Oracle reactive:** the normal communication logic identifies persistent
+   `MOVE_REQUIRED` UEs, and their true simulator coordinates are passed to unweighted
+   K-means. Ground truth replaces only the position input; it does not replace the RSRP,
+   capacity, UNKNOWN, or persistence decisions. This is the localisation upper reference.
+3. **ISAC reactive:** every relevant UE is sensed before service classification. A
+   `MOVE_REQUIRED` UE enters unweighted K-means only when at least one sensing node detects
+   it and a fused position is available. This comparison measures losses caused by missed
+   detections and localisation error.
+4. **RF predictive:** the Random Forest is the only learned component. It must first be
+   trained offline from grid features \(\mathbf{x}_g(t)\) and future labels generated under
+   the frozen RF-disabled reference policy \(\pi_{\mathrm{ref}}\). Online, it predicts
+   \(q_g(t)\), selects future repositioning-demand cells, and uses \(q_g(t)\) as the K-means
+   weight. The grid reporter, RF training/inference path, and weighted K-means are not yet
+   implemented and must not be included in current result claims.
+
+The current runnable comparison therefore contains the first three methods. Running
+`METHODS="static oracle-reactive isac-reactive"` does not train any model; it executes the
+static baseline and two online reactive-clustering baselines.
+
 For final statistics, use at least 10 independent seeds if server time permits. Use 3 seeds
 only for debugging and preliminary plots. Report mean with a confidence interval or show the
 per-seed distribution. The three load points 80, 90, and 100 UEs should use identical method
@@ -593,6 +630,25 @@ for every compared method. Do not select the pair using end-to-end method gain.
 Set the values chosen during calibration. The values below are examples and must be replaced
 if calibration selects a different pair.
 
+Run all three implemented methods with one runner invocation:
+
+```bash
+EXPERIMENT_TAG=reactive-comparison-v1 \
+  METHODS="static oracle-reactive isac-reactive" \
+  SCENARIO_PROFILE=compact SIM_TIME=90 UES2_LOADS="20 30 40" \
+  SEEDS="1" JOBS=1 NUM_TN_GNBS=4 NUM_UAVS=3 UAV_SPEED_MPS=15 \
+  TN_TX_POWER_DBM=37 UNDERSERVED_RSRP_DBM=-100 \
+  contrib/oran/examples/run-uav-clustered-coverage-rule-ai.sh
+```
+
+This is nine simulations: three methods multiplied by three UE-load cases. Methods run
+sequentially; `JOBS` controls parallel seed batches within each method. The runner assigns
+the required switches automatically: static disables repositioning, oracle reactive uses
+true positions, and ISAC reactive uses sampled/fused positions.
+
+The equivalent individual-method commands are retained below for debugging or selective
+reruns.
+
 ```bash
 CAL_TN_DBM=37
 CAL_RMIN_DBM=-100
@@ -673,6 +729,10 @@ the final matrix until the checklist in Section 16 passes.
 ### 15.6 Runner behaviour and RF limitation
 
 `UES2_LOADS="30"` runs only the middle-load development case; omit it to run 20, 30, and 40.
+Set `METHODS="static oracle-reactive isac-reactive"` to execute all three implemented methods
+in one invocation. When `METHODS` is set, it overrides the individual
+`ENABLE_UAV_REPOSITIONING`, `ENABLE_ISAC_SENSING`, and `RUN_HOTSPOT_RF` method-selection
+switches.
 `RUN_HOTSPOT_RF` is deliberately separate from the old xHaul ONNX controller. The executable
 currently rejects `RUN_HOTSPOT_RF=1` until grid-feature generation and RF inference are
 implemented, preventing an xHaul model from being mislabeled as the hotspot predictor.
@@ -685,6 +745,41 @@ The runner automatically labels outputs as `static`, `oracle-reactive`, `isac-re
 Use a new `EXPERIMENT_TAG` for every intentional rerun. By default, the runner refuses to
 overwrite an existing SQLite database; `ALLOW_EXISTING_RESULTS=1` should be used only when
 that overwrite is deliberate.
+
+### 15.7 Plotting the method comparison
+
+After the three-method development matrix finishes, generate the available comparison plots:
+
+```bash
+python3 contrib/oran/examples/plot-isac-method-comparison.py \
+  --tags reactive-comparison-v1 \
+  --warmup-s 20 \
+  --output-dir results/plots/reactive-comparison-v1
+```
+
+The script writes PNG/PDF figures and per-run/aggregate CSV summaries. It uses a fixed
+four-method order but never fabricates a missing curve. Before RF is implemented, it plots
+static, oracle-reactive, and ISAC-reactive results and reports RF-predictive as missing.
+After genuine RF-predictive runs exist under a separate tag, combine both tags:
+
+```bash
+python3 contrib/oran/examples/plot-isac-method-comparison.py \
+  --tags reactive-comparison-v1 rf-predictive-test-v1 \
+  --warmup-s 20 \
+  --output-dir results/plots/four-method-comparison-v1
+```
+
+The current `qos-vs-time.txt` records the 60 monitored central UEs (UES1), so these figures
+are explicitly labelled as central-UE QoS. Use `uav-service-decision-trace.csv` for all-UE
+service/repositioning-state analysis. Do not describe the central-UE QoS curves as outer-UE
+or all-UE metrics.
+
+The initial nine runs validate the baseline controllers, sensing, traces, and plotting; they
+are not yet an RF-training dataset. After implementing the grid reporter, rerun the frozen
+ISAC-reactive reference policy over the declared training/validation seeds to export
+\(\mathbf{x}_g(t)\) and policy-conditioned future labels. Train the RF offline, freeze its
+model and threshold, and then run `isac-rf-predictive` on disjoint test seeds before creating
+the four-method figure.
 
 ## 16. Go/no-go checklist
 

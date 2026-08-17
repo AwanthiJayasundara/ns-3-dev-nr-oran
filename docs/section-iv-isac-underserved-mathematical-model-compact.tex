@@ -253,6 +253,9 @@ and selects
 Training, validation, and testing use independent simulation seeds
 to prevent temporal leakage. RF hyperparameters and $\Delta_p$ are
 reported in the simulation-parameter table.
+The RF is the only learned component: it is trained offline, whereas
+K-means has no training phase and is re-solved at each online
+controller epoch.
 
 \subsection{Predictive Clustering and Repositioning}
 
