@@ -150,6 +150,8 @@ static bool UAV_TARGET_UES2_ONLY = false;     // Use only UES2 when computing UA
 static double UES2_CLUSTER_RADIUS_M = 500.0;
 static double UES2_CLUSTER_OFFSET_M = 3500.0;
 static double g_uavSpeedMps = 10.0;       // UAV waypoint mobility speed.
+static double g_ueS1SpeedMps = 5.0;       // Central UE random-waypoint speed.
+static double g_ueS2SpeedMps = 4.0;       // Outer/clustered UE random-waypoint speed.
 static double g_uavMissionTargetScale = 1.0; // Pushes UAV targets toward/off the underserved cluster.
 
 uint32_t maxUesPerCellTn  = 20;
@@ -209,6 +211,8 @@ static std::string ns3_dir;
 static std::string s_satBackhaulTraceFile;
 static std::string s_xhaulAutonomyTraceFile;
 static std::string s_isacSensingTraceFile;
+static std::string s_uavServiceDecisionTraceFile;
+static std::string s_uavTargetAssignmentTraceFile;
 
 // System-level monostatic ISAC sensing model used by the UAV positioning
 // controller.  The oracle path remains available for controlled comparisons.
@@ -219,7 +223,7 @@ struct IsacSensingConfig
     bool enabled = false;
     double txPowerDbm = 30.0;
     double antennaGainDbi = 30.0;
-    double carrierFrequencyHz = 3.5e9;
+    double carrierFrequencyHz = 4.0e9;
     double bandwidthHz = 20.0e6;
     double targetRcsM2 = 1.0;
     double systemLossLinear = 1.0;
@@ -248,6 +252,15 @@ static std::map<uint16_t, double> g_backhaulUlSnrDb;
 static std::set<uint16_t> g_ntnCellIds;
 static std::map<std::pair<uint16_t,uint16_t>, double> g_latestRsrp;
 static std::map<std::pair<uint64_t,uint16_t>, double> g_latestRsrpByImsiCell;
+static std::map<std::pair<uint64_t,uint16_t>, double> g_latestRsrpTimeByImsiCell;
+
+// Per-UE controller state. Missing radio information is held in UNKNOWN for a
+// configurable timeout. A separate timer then requires a confirmed weak state
+// with no feasible TN or already-deployed UAV alternative to persist before a
+// sensed position can influence UAV movement.
+static std::map<uint32_t, double> g_uavUnknownSinceSec;
+static std::map<uint32_t, double> g_uavNoAlternativeSinceSec;
+static std::set<uint32_t> g_uavMovementAssigned;
 
 // Pointer to the UE mobility logic module so the UAV switching xApp can expose
 // "UAV usable / not usable" through effective per-cell capacity.
@@ -431,6 +444,14 @@ TraceRsrpRsrqSinr(Ptr<OutputStreamWrapper> stream,
                   uint8_t componentCarrierId)
 {
     g_latestRsrp[{rnti,cellId}] = rsrp;
+    if (stream)
+    {
+        *stream->GetStream() << Simulator::Now().GetSeconds() << " " << rnti << " "
+                             << cellId << " "
+                             << (g_ntnCellIds.count(cellId) ? "UAV" : "TN") << " "
+                             << rsrp << " " << rsrq << " " << servingCell << " "
+                             << static_cast<uint32_t>(componentCarrierId) << "\n";
+    }
 }
 
 void
@@ -445,6 +466,7 @@ TraceRsrpRsrqSinrForImsi(Ptr<OutputStreamWrapper> stream,
 {
     TraceRsrpRsrqSinr(stream, rnti, cellId, rsrp, rsrq, servingCell, componentCarrierId);
     g_latestRsrpByImsiCell[{imsi, cellId}] = rsrp;
+    g_latestRsrpTimeByImsiCell[{imsi, cellId}] = Simulator::Now().GetSeconds();
 }
 
 std::string
@@ -1758,46 +1780,196 @@ MoveGeoNodeToAssignedTarget(GeoWaypointState* st, double stepMs)
                         stepMs);
 }
 
-static bool
-IsUeUnderserved(Ptr<Node> ueNode, double rsrpThreshDbm)
+enum class UavServiceState
 {
-    Ptr<NrUeNetDevice> ueDev = nullptr;
+    UNKNOWN,
+    SERVED,
+    ALTERNATIVE_AVAILABLE,
+    PERSISTING,
+    MOVE_REQUIRED
+};
 
+struct UavServiceAssessment
+{
+    UavServiceState state = UavServiceState::UNKNOWN;
+    uint64_t imsi = 0;
+    uint16_t servingCell = 0;
+    double servingRsrpDbm = -std::numeric_limits<double>::infinity();
+    double bestTnRsrpDbm = -std::numeric_limits<double>::infinity();
+    double bestUavRsrpDbm = -std::numeric_limits<double>::infinity();
+    bool hasServingRsrp = false;
+    bool hasBestTn = false;
+    bool hasBestUav = false;
+    double stateAgeSec = 0.0;
+};
+
+static const char*
+ToString(UavServiceState state)
+{
+    switch (state)
+    {
+    case UavServiceState::UNKNOWN:
+        return "UNKNOWN";
+    case UavServiceState::SERVED:
+        return "SERVED";
+    case UavServiceState::ALTERNATIVE_AVAILABLE:
+        return "ALTERNATIVE_AVAILABLE";
+    case UavServiceState::PERSISTING:
+        return "PERSISTING";
+    case UavServiceState::MOVE_REQUIRED:
+        return "MOVE_REQUIRED";
+    }
+    return "UNKNOWN";
+}
+
+static Ptr<NrUeNetDevice>
+GetNrUeDevice(Ptr<Node> ueNode)
+{
     for (uint32_t i = 0; i < ueNode->GetNDevices(); ++i)
     {
-        ueDev = DynamicCast<NrUeNetDevice>(ueNode->GetDevice(i));
+        Ptr<NrUeNetDevice> ueDev = DynamicCast<NrUeNetDevice>(ueNode->GetDevice(i));
         if (ueDev)
         {
-            break;
+            return ueDev;
         }
     }
+    return nullptr;
+}
 
-    if (!ueDev)
+static bool
+IsCandidateCellFeasible(uint16_t cellId,
+                        uint16_t servingCell,
+                        const NetDeviceContainer& tnGnbNrDevs,
+                        const NetDeviceContainer& uavGnbNrDevs)
+{
+    if (cellId == 0 || cellId == servingCell)
     {
         return false;
     }
 
+    const bool isUav = g_ntnCellIds.count(cellId) != 0;
+    const NetDeviceContainer& devices = isUav ? uavGnbNrDevs : tnGnbNrDevs;
+    const uint32_t capacity = isUav ? maxUesPerCellNtn : maxUesPerCellTn;
+    for (uint32_t i = 0; i < devices.GetN(); ++i)
+    {
+        Ptr<NrGnbNetDevice> gnb = DynamicCast<NrGnbNetDevice>(devices.Get(i));
+        if (gnb && gnb->GetCellId() == cellId && gnb->GetRrc())
+        {
+            return capacity == 0 || gnb->GetRrc()->GetUeCount() < capacity;
+        }
+    }
+    return false;
+}
+
+static UavServiceAssessment
+AssessUeForUavMovement(Ptr<Node> ueNode,
+                       const NetDeviceContainer& tnGnbNrDevs,
+                       const NetDeviceContainer& uavGnbNrDevs,
+                       double rsrpThreshDbm,
+                       double persistenceSec,
+                       double unknownTimeoutSec,
+                       double measurementMaxAgeSec)
+{
+    UavServiceAssessment result;
+    const double now = Simulator::Now().GetSeconds();
+    const uint32_t nodeId = ueNode->GetId();
+    Ptr<NrUeNetDevice> ueDev = GetNrUeDevice(ueNode);
+    if (!ueDev)
+    {
+        return result;
+    }
+
+    result.imsi = ueDev->GetImsi();
     Ptr<NrUeRrc> rrc = ueDev->GetRrc();
-    if (!rrc)
+    const bool connected = rrc && rrc->GetCellId() != 0 &&
+                           rrc->GetState() == NrUeRrc::CONNECTED_NORMALLY;
+    if (connected)
     {
-        return true;
+        result.servingCell = rrc->GetCellId();
     }
 
-    if (rrc->GetCellId() == 0 || rrc->GetState() != NrUeRrc::CONNECTED_NORMALLY)
+    for (const auto& entry : g_latestRsrpByImsiCell)
     {
-        return true;
+        if (entry.first.first != result.imsi)
+        {
+            continue;
+        }
+        auto timeIt = g_latestRsrpTimeByImsiCell.find(entry.first);
+        if (timeIt == g_latestRsrpTimeByImsiCell.end() ||
+            now - timeIt->second > measurementMaxAgeSec)
+        {
+            continue;
+        }
+
+        const uint16_t cellId = entry.first.second;
+        const double rsrp = entry.second;
+        if (cellId == result.servingCell)
+        {
+            result.servingRsrpDbm = rsrp;
+            result.hasServingRsrp = true;
+            continue;
+        }
+        if (!IsCandidateCellFeasible(cellId,
+                                     result.servingCell,
+                                     tnGnbNrDevs,
+                                     uavGnbNrDevs))
+        {
+            continue;
+        }
+        if (g_ntnCellIds.count(cellId))
+        {
+            if (!result.hasBestUav || rsrp > result.bestUavRsrpDbm)
+            {
+                result.bestUavRsrpDbm = rsrp;
+                result.hasBestUav = true;
+            }
+        }
+        else if (!result.hasBestTn || rsrp > result.bestTnRsrpDbm)
+        {
+            result.bestTnRsrpDbm = rsrp;
+            result.hasBestTn = true;
+        }
     }
 
-    uint16_t servingCell = rrc->GetCellId();
-    uint16_t rnti = rrc->GetRnti();
-
-    auto it = g_latestRsrp.find({rnti, servingCell});
-    if (it == g_latestRsrp.end())
+    const bool radioStateKnown = connected && result.hasServingRsrp;
+    if (!radioStateKnown)
     {
-        return true;
+        auto it = g_uavUnknownSinceSec.emplace(nodeId, now).first;
+        result.stateAgeSec = now - it->second;
+        if (result.stateAgeSec < unknownTimeoutSec)
+        {
+            g_uavNoAlternativeSinceSec.erase(nodeId);
+            return result;
+        }
+    }
+    else
+    {
+        g_uavUnknownSinceSec.erase(nodeId);
+        if (result.servingRsrpDbm >= rsrpThreshDbm)
+        {
+            result.state = UavServiceState::SERVED;
+            g_uavNoAlternativeSinceSec.erase(nodeId);
+            return result;
+        }
     }
 
-    return (it->second < rsrpThreshDbm);
+    // TN is evaluated first to match the operational handover preference. An
+    // already deployed UAV is then considered. Repositioning is requested only
+    // if neither family has a feasible cell above the service threshold.
+    if ((result.hasBestTn && result.bestTnRsrpDbm >= rsrpThreshDbm) ||
+        (result.hasBestUav && result.bestUavRsrpDbm >= rsrpThreshDbm))
+    {
+        result.state = UavServiceState::ALTERNATIVE_AVAILABLE;
+        result.stateAgeSec = 0.0;
+        g_uavNoAlternativeSinceSec.erase(nodeId);
+        return result;
+    }
+
+    auto weakIt = g_uavNoAlternativeSinceSec.emplace(nodeId, now).first;
+    result.stateAgeSec = now - weakIt->second;
+    result.state = result.stateAgeSec >= persistenceSec ? UavServiceState::MOVE_REQUIRED
+                                                        : UavServiceState::PERSISTING;
+    return result;
 }
 
 /**
@@ -1887,7 +2059,7 @@ EstimateUePositionViaIsac(Ptr<Node> ueNode,
 
         traceOut << Simulator::Now().GetSeconds() << ",OBSERVATION," << ueGroup << ","
                  << ueIndex << "," << ueNode->GetId() << "," << sensorIndex << ","
-                 << gnb->GetCellId() << ",1," << (detected ? 1 : 0) << ","
+                 << gnb->GetCellId() << ",-1," << (detected ? 1 : 0) << ","
                  << ueTrue.eastM << "," << ueTrue.northM << "," << estimatedEastM << ","
                  << estimatedNorthM << "," << rangeM << "," << snrDb << ","
                  << detectionProbability << "," << sigmaM << ",0\n";
@@ -1896,7 +2068,7 @@ EstimateUePositionViaIsac(Ptr<Node> ueNode,
     if (detectionCount == 0 || weightSum <= 0.0)
     {
         traceOut << Simulator::Now().GetSeconds() << ",FUSED," << ueGroup << "," << ueIndex
-                 << "," << ueNode->GetId() << ",-1,0,1,0," << ueTrue.eastM << ","
+                 << "," << ueNode->GetId() << ",-1,0,-1,0," << ueTrue.eastM << ","
                  << ueTrue.northM << ",nan,nan,nan,nan,nan,0\n";
         return false;
     }
@@ -1905,7 +2077,7 @@ EstimateUePositionViaIsac(Ptr<Node> ueNode,
     fusedPosition->northM = weightedNorth / weightSum;
     const double fusedSigmaM = std::sqrt(1.0 / weightSum);
     traceOut << Simulator::Now().GetSeconds() << ",FUSED," << ueGroup << "," << ueIndex << ","
-             << ueNode->GetId() << ",-1,0,1,1," << ueTrue.eastM << "," << ueTrue.northM << ","
+             << ueNode->GetId() << ",-1,0,-1,1," << ueTrue.eastM << "," << ueTrue.northM << ","
              << fusedPosition->eastM << "," << fusedPosition->northM << ",nan," << bestSnrDb
              << ",nan," << fusedSigmaM << "," << detectionCount << "\n";
     return true;
@@ -1986,65 +2158,99 @@ SetUavTargetToCurrentPosition(GeoWaypointState* st)
 static void
 UpdateUavTargetsFromUnderservedUes(NodeContainer groundUeNodesS1,
                                    NodeContainer groundUeNodesS2,
+                                   NetDeviceContainer tnGnbNrDevs,
                                    NetDeviceContainer ntnGnbNrDevs,
                                    double rsrpThreshDbm,
+                                   double persistenceSec,
+                                   double unknownTimeoutSec,
+                                   double measurementMaxAgeSec,
                                    double controlPeriodSec)
 {
     std::vector<LocalPoint2d> underservedPts;
     std::ofstream isacTraceOut;
+    std::ofstream decisionTraceOut(s_uavServiceDecisionTraceFile, std::ios_base::app);
+    std::ofstream targetTraceOut(s_uavTargetAssignmentTraceFile, std::ios_base::app);
     if (g_isacSensing.enabled)
     {
         isacTraceOut.open(s_isacSensingTraceFile, std::ios_base::app);
     }
 
-    auto addUnderservedPosition = [&](Ptr<Node> ueNode,
-                                      const std::string& ueGroup,
-                                      uint32_t ueIndex)
+    auto processUe = [&](Ptr<Node> ueNode,
+                         const std::string& ueGroup,
+                         uint32_t ueIndex)
     {
+        // ISAC detection/localisation deliberately happens before the radio
+        // service decision. The sensing function has no underserved label as
+        // an input and therefore cannot use oracle UES1/UES2 service identity.
+        LocalPoint2d controllerPosition{};
+        bool positionAvailable = false;
         if (g_isacSensing.enabled)
         {
-            LocalPoint2d fused{};
-            if (isacTraceOut.is_open() &&
-                EstimateUePositionViaIsac(ueNode,
-                                          ueGroup,
-                                          ueIndex,
-                                          ntnGnbNrDevs,
-                                          isacTraceOut,
-                                          &fused))
+            positionAvailable = isacTraceOut.is_open() &&
+                                EstimateUePositionViaIsac(ueNode,
+                                                         ueGroup,
+                                                         ueIndex,
+                                                         ntnGnbNrDevs,
+                                                         isacTraceOut,
+                                                         &controllerPosition);
+        }
+        else
+        {
+            // Oracle baseline retained only to quantify the cost of sensing
+            // uncertainty; it is not used by the proposed ISAC controller.
+            auto mob = ueNode->GetObject<GeocentricConstantPositionMobilityModel>();
+            if (mob)
             {
-                underservedPts.push_back(fused);
+                controllerPosition =
+                    GeoToLocal(mob->GetGeographicPosition(), g_refLat, g_refLon);
+                positionAvailable = true;
             }
-            return;
         }
 
-        // Oracle baseline: this is intentionally retained for quantifying the
-        // performance cost of imperfect sensing.
-        auto mob = ueNode->GetObject<GeocentricConstantPositionMobilityModel>();
-        if (mob)
+        const UavServiceAssessment service =
+            AssessUeForUavMovement(ueNode,
+                                   tnGnbNrDevs,
+                                   ntnGnbNrDevs,
+                                   rsrpThreshDbm,
+                                   persistenceSec,
+                                   unknownTimeoutSec,
+                                   measurementMaxAgeSec);
+
+        if (decisionTraceOut.is_open())
         {
-            underservedPts.push_back(GeoToLocal(mob->GetGeographicPosition(), g_refLat, g_refLon));
+            decisionTraceOut
+                << Simulator::Now().GetSeconds() << "," << ueGroup << "," << ueIndex << ","
+                << ueNode->GetId() << "," << service.imsi << "," << service.servingCell << ","
+                << FormatOptionalTraceDouble(service.hasServingRsrp, service.servingRsrpDbm)
+                << "," << FormatOptionalTraceDouble(service.hasBestTn, service.bestTnRsrpDbm)
+                << "," << FormatOptionalTraceDouble(service.hasBestUav, service.bestUavRsrpDbm)
+                << "," << ToString(service.state) << "," << service.stateAgeSec << ","
+                << (positionAvailable ? 1 : 0) << ","
+                << (positionAvailable ? std::to_string(controllerPosition.eastM) : "NA") << ","
+                << (positionAvailable ? std::to_string(controllerPosition.northM) : "NA") << ","
+                << (service.state == UavServiceState::MOVE_REQUIRED && positionAvailable ? 1 : 0)
+                << "\n";
+        }
+
+        if (service.state == UavServiceState::MOVE_REQUIRED && positionAvailable)
+        {
+            underservedPts.push_back(controllerPosition);
         }
     };
 
-    // 1) collect underserved UEs. Some coverage experiments deliberately keep
-    // UES1 near the TN cells and use UES2 as the outside underserved demand.
+    // The proposed controller evaluates every UE. The UES2-only switch is kept
+    // solely for legacy ablation runs and must remain false for discovery claims.
     if (!UAV_TARGET_UES2_ONLY)
     {
         for (uint32_t i = 0; i < groundUeNodesS1.GetN(); ++i)
         {
-            if (IsUeUnderserved(groundUeNodesS1.Get(i), rsrpThreshDbm))
-            {
-                addUnderservedPosition(groundUeNodesS1.Get(i), "UES1", i);
-            }
+            processUe(groundUeNodesS1.Get(i), "UES1", i);
         }
     }
 
     for (uint32_t i = 0; i < groundUeNodesS2.GetN(); ++i)
     {
-        if (IsUeUnderserved(groundUeNodesS2.Get(i), rsrpThreshDbm))
-        {
-            addUnderservedPosition(groundUeNodesS2.Get(i), "UES2", i);
-        }
+        processUe(groundUeNodesS2.Get(i), "UES2", i);
     }
 
     // 2) build available-UAV list
@@ -2074,12 +2280,44 @@ UpdateUavTargetsFromUnderservedUes(NodeContainer groundUeNodesS1,
     // Nothing to do
     if (underservedPts.empty() || availableUavs.empty())
     {
+        if (targetTraceOut.is_open())
+        {
+            for (uint32_t i = 0; i < g_uavStates.size(); ++i)
+            {
+                GeoWaypointState* st = g_uavStates[i];
+                const Vector geo = st->mob->GetGeographicPosition();
+                const LocalPoint2d cur =
+                    GeoToLocal(geo, st->centerLatDeg, st->centerLonDeg);
+                const double dx = st->targetEastM - cur.eastM;
+                const double dy = st->targetNorthM - cur.northM;
+                const double distanceM = std::sqrt(dx * dx + dy * dy);
+                const bool hasMovementAssignment = g_uavMovementAssigned.count(i) != 0;
+                Ptr<NrGnbNetDevice> gnb = i < ntnGnbNrDevs.GetN()
+                                                  ? DynamicCast<NrGnbNetDevice>(
+                                                        ntnGnbNrDevs.Get(i))
+                                                  : nullptr;
+                targetTraceOut << Simulator::Now().GetSeconds() << ",TRACK," << i << ","
+                               << (gnb ? gnb->GetCellId() : 0) << ",-1," << cur.eastM << ","
+                               << cur.northM << "," << st->targetEastM << ","
+                               << st->targetNorthM << "," << distanceM << ","
+                               << st->reachThresholdM << "," << (hasMovementAssignment ? 1 : 0)
+                               << ","
+                               << (hasMovementAssignment && distanceM <= st->reachThresholdM ? 1
+                                                                                              : 0)
+                               << ","
+                               << underservedPts.size() << ",0\n";
+            }
+        }
         Simulator::Schedule(Seconds(controlPeriodSec),
                             &UpdateUavTargetsFromUnderservedUes,
                             groundUeNodesS1,
                             groundUeNodesS2,
+                            tnGnbNrDevs,
                             ntnGnbNrDevs,
                             rsrpThreshDbm,
+                            persistenceSec,
+                            unknownTimeoutSec,
+                            measurementMaxAgeSec,
                             controlPeriodSec);
         return;
     }
@@ -2130,6 +2368,21 @@ UpdateUavTargetsFromUnderservedUes(NodeContainer groundUeNodesS1,
             st->targetNorthM = centroids[bestCentroid].northM;
             st->hasTarget = true;
             centroidUsed[bestCentroid] = true;
+            g_uavMovementAssigned.insert(uavIdx);
+
+            if (targetTraceOut.is_open())
+            {
+                Ptr<NrGnbNetDevice> gnb =
+                    DynamicCast<NrGnbNetDevice>(ntnGnbNrDevs.Get(uavIdx));
+                const double distanceM = std::sqrt(bestDist);
+                targetTraceOut << Simulator::Now().GetSeconds() << ",ASSIGN," << uavIdx << ","
+                               << (gnb ? gnb->GetCellId() : 0) << "," << bestCentroid << ","
+                               << cur.eastM << "," << cur.northM << ","
+                               << st->targetEastM << "," << st->targetNorthM << ","
+                               << distanceM << "," << st->reachThresholdM << ","
+                               << "1," << (distanceM <= st->reachThresholdM ? 1 : 0) << ","
+                               << underservedPts.size() << "," << centroids.size() << "\n";
+            }
         }
         else
         {
@@ -2141,8 +2394,12 @@ UpdateUavTargetsFromUnderservedUes(NodeContainer groundUeNodesS1,
                         &UpdateUavTargetsFromUnderservedUes,
                         groundUeNodesS1,
                         groundUeNodesS2,
+                        tnGnbNrDevs,
                         ntnGnbNrDevs,
                         rsrpThreshDbm,
+                        persistenceSec,
+                        unknownTimeoutSec,
+                        measurementMaxAgeSec,
                         controlPeriodSec);
 }
 ///
@@ -2251,7 +2508,7 @@ install_mobility_geocentric(NodeContainer staticNodes,
         st->fixedAltM = 1.5;
         st->halfWidthM = UE_AREA_HALF_W_M;
         st->halfHeightM = UE_AREA_HALF_H_M;
-        st->speedMps = 5.0;
+        st->speedMps = g_ueS1SpeedMps;
 
         SelectNewGeoWaypoint(st.get(), eastRv, northRv);
 
@@ -2330,7 +2587,7 @@ install_mobility_geocentric(NodeContainer staticNodes,
         st->fixedAltM = 1.5;
         st->halfWidthM = CLUSTERED_UES2_PLACEMENT ? UES2_CLUSTER_RADIUS_M : UE_AREA_HALF_W_M;
         st->halfHeightM = CLUSTERED_UES2_PLACEMENT ? UES2_CLUSTER_RADIUS_M : UE_AREA_HALF_H_M;
-        st->speedMps = 4.0;
+        st->speedMps = g_ueS2SpeedMps;
 
         SelectNewGeoWaypoint(st.get(), eastRv, northRv);
 
@@ -2810,6 +3067,7 @@ main(int argc, char* argv[])
     double satBackhaulMinSnrDb = 0.0;
 
     std::string satBackhaulScenario = "NTN-Suburban";
+    std::string uavAccessScenario = "UMa";
     double satBackhaulFrequencyHz = 20e9;
     double satBackhaulBandwidthHz = 400e6;
     double satBackhaulRbBandwidthHz = 120e3;
@@ -2842,7 +3100,14 @@ main(int argc, char* argv[])
     uint32_t monitoredPacketSizeBytes = 1000;
     double uavControlStartSec = 7.0;
     double uavControlPeriodSec = 2.0;
+    bool enableUavRepositioning = true;
     double underservedRsrpThreshDbm = -110.0;
+    double uavUnderservedPersistenceSec = 6.0;
+    double uavUnknownTimeoutSec = 6.0;
+    double uavRsrpMeasurementMaxAgeSec = 5.0;
+    double handoverTttSec = 2.0;
+    bool enableHotspotRf = false;
+    std::string hotspotRfModelPath;
 
     CommandLine cmd;
     cmd.AddValue("verbose", "Enable printing SQL queries results", verbose);
@@ -2970,6 +3235,8 @@ main(int argc, char* argv[])
                  "East/north offset of the three UES2 cluster centers from the TN area center",
                  UES2_CLUSTER_OFFSET_M);
     cmd.AddValue("uav-speed-mps", "UAV movement speed in meters per second", g_uavSpeedMps);
+    cmd.AddValue("ues1-speed-mps", "Central UE random-waypoint speed in meters per second", g_ueS1SpeedMps);
+    cmd.AddValue("ues2-speed-mps", "Outer UE random-waypoint speed in meters per second", g_ueS2SpeedMps);
     cmd.AddValue("uav-mission-target-scale",
                  "Scale applied to underserved-UE cluster centroids when assigning UAV mission targets",
                  g_uavMissionTargetScale);
@@ -2997,6 +3264,10 @@ main(int argc, char* argv[])
     cmd.AddValue("sat-backhaul-scenario",
                  "Satellite backhaul scenario: NTN-DenseUrban | NTN-Urban | NTN-Suburban | NTN-Rural",
                  satBackhaulScenario);
+    cmd.AddValue("uav-access-scenario",
+                 "Channel scenario for the auxiliary 4.2 GHz UAV/NTN band: "
+                 "UMa | UMi-StreetCanyon | NTN-Urban",
+                 uavAccessScenario);
     cmd.AddValue("mobility-update-ms", "Waypoint mobility update period in milliseconds", g_mobilityUpdateMs);
     cmd.AddValue("position-trace-interval", "UE/UAV position trace interval in seconds", g_positionTraceIntervalSec);
     cmd.AddValue("enable-flow-monitor", "Enable FlowMonitor and periodic QoS files", enableFlowMonitor);
@@ -3065,12 +3336,33 @@ main(int argc, char* argv[])
     cmd.AddValue("uav-control-start",
                  "Time when the UAV autonomy movement policy starts moving UAVs toward underserved UEs",
                  uavControlStartSec);
+    cmd.AddValue("enable-uav-repositioning",
+                 "Enable reactive/predictive UAV target updates; disable for the static baseline",
+                 enableUavRepositioning);
     cmd.AddValue("uav-control-period",
                  "Period of the UAV autonomy movement policy in seconds",
                  uavControlPeriodSec);
     cmd.AddValue("uav-underserved-rsrp-thresh-dbm",
-                 "UE RSRP threshold below which the UAV autonomy policy treats a UE as underserved",
+                 "Serving/best-feasible RSRP threshold used by the UAV movement controller",
                  underservedRsrpThreshDbm);
+    cmd.AddValue("uav-underserved-persistence-s",
+                 "Continuous weak/no-alternative time required before UAV movement",
+                 uavUnderservedPersistenceSec);
+    cmd.AddValue("uav-unknown-timeout-s",
+                 "Time an unattached UE or missing serving measurement remains UNKNOWN",
+                 uavUnknownTimeoutSec);
+    cmd.AddValue("uav-rsrp-measurement-max-age-s",
+                 "Maximum age of an RSRP sample used for feasible-cell assessment",
+                 uavRsrpMeasurementMaxAgeSec);
+    cmd.AddValue("handover-ttt-s",
+                 "O-RAN handover candidate time-to-trigger",
+                 handoverTttSec);
+    cmd.AddValue("enable-hotspot-rf",
+                 "Enable the future-hotspot RF predictor (separate from xHaul switching AI)",
+                 enableHotspotRf);
+    cmd.AddValue("hotspot-rf-model",
+                 "Path to the future-hotspot RF model",
+                 hotspotRfModelPath);
     cmd.AddValue("enable-isac-sensing",
                  "Use sampled UAV ISAC detections and fused noisy UE positions instead of oracle coordinates",
                  g_isacSensing.enabled);
@@ -3116,7 +3408,7 @@ main(int argc, char* argv[])
     //
     // The three deployment modes intentionally enable different subsystems:
     //   tn-only          -> no UAV cells, no satellite monitor, no switching xApp
-    //   tn-uav          -> UAV cells and switching xApp, but no satellite fallback
+    //   tn-uav          -> UAV cells, optional switching xApp, no satellite fallback
     //   tn-uav-satellite-> UAV cells, switching xApp, and satellite fallback monitor
     // ----------------------------------------------------------------------
     NS_ABORT_MSG_IF(deploymentMode != "tn-only" &&
@@ -3140,7 +3432,6 @@ main(int argc, char* argv[])
     else if (deploymentMode == "tn-uav")
     {
         enableSatBackhaulMonitor = false;
-        enableUavSwitchingXapp = true;
     }
     else
     {
@@ -3191,6 +3482,12 @@ main(int argc, char* argv[])
                     "Unsupported --rlc-mode. Use um or am.");
     NS_ABORT_MSG_IF(monitoredTraffic != "udp" && monitoredTraffic != "xr",
                     "Unsupported --monitored-traffic. Use udp or xr.");
+    NS_ABORT_MSG_IF(uavAccessScenario != "UMa" &&
+                        uavAccessScenario != "UMi-StreetCanyon" &&
+                        uavAccessScenario != "NTN-Urban",
+                    "Unsupported --uav-access-scenario. Use UMa, UMi-StreetCanyon, or NTN-Urban.");
+    NS_ABORT_MSG_IF(g_uavSpeedMps < 0.0 || g_ueS1SpeedMps < 0.0 || g_ueS2SpeedMps < 0.0,
+                    "UE and UAV speeds must be non-negative.");
     NS_ABORT_MSG_IF(g_isacSensing.carrierFrequencyHz <= 0.0 ||
                         g_isacSensing.bandwidthHz <= 0.0 ||
                         g_isacSensing.targetRcsM2 <= 0.0 ||
@@ -3202,6 +3499,12 @@ main(int argc, char* argv[])
                         g_isacSensing.positionSigmaMaxM < g_isacSensing.positionSigmaMinM ||
                         g_isacSensing.positionSigmaRefM <= 0.0,
                     "ISAC position sigmas must be positive and sigma-max must be >= sigma-min.");
+    NS_ABORT_MSG_IF(uavUnderservedPersistenceSec < 0.0 || uavUnknownTimeoutSec < 0.0 ||
+                        uavRsrpMeasurementMaxAgeSec <= 0.0 || handoverTttSec < 0.0,
+                    "UAV persistence/unknown/measurement-age and handover TTT values are invalid.");
+    NS_ABORT_MSG_IF(enableHotspotRf,
+                    "--enable-hotspot-rf is reserved for the future-hotspot RF pipeline, which "
+                    "is not implemented yet; it is intentionally separate from xHaul AI.");
 
     // Fixed stream indices keep sensing repeatable for a given ns-3 RngRun
     // while separating detection and localisation draws.
@@ -3238,6 +3541,8 @@ main(int argc, char* argv[])
     s_satBackhaulTraceFile = ns3_dir + "sat-backhaul-trace.txt";
     s_xhaulAutonomyTraceFile = ns3_dir + "xhaul-autonomy-trace.csv";
     s_isacSensingTraceFile = ns3_dir + "isac-sensing-trace.csv";
+    s_uavServiceDecisionTraceFile = ns3_dir + "uav-service-decision-trace.csv";
+    s_uavTargetAssignmentTraceFile = ns3_dir + "uav-target-assignment-trace.csv";
 
     // Ensure results/nr/ directory exists
     std::filesystem::create_directories(ns3_dir);
@@ -3246,7 +3551,7 @@ main(int argc, char* argv[])
     {
         std::ofstream sensingOut(s_isacSensingTraceFile, std::ios_base::trunc);
         sensingOut << "Time,RecordType,UeGroup,UeIndex,UeNodeId,SensorIndex,SensorCellId,"
-                   << "Underserved,Detected,TrueEastM,TrueNorthM,EstimatedEastM,EstimatedNorthM,"
+                   << "PreClassificationUnderserved,Detected,TrueEastM,TrueNorthM,EstimatedEastM,EstimatedNorthM,"
                    << "RangeM,SensingSnrDb,DetectionProbability,PositionSigmaM,NumFusedObservations\n";
 
         std::ofstream configOut(ns3_dir + "isac-sensing-config.csv", std::ios_base::trunc);
@@ -3261,6 +3566,21 @@ main(int argc, char* argv[])
                   << "," << g_isacSensing.positionSnrRefDb << ","
                   << g_isacSensing.positionSigmaMinM << "," << g_isacSensing.positionSigmaMaxM
                   << "\n";
+    }
+
+    {
+        std::ofstream decisionOut(s_uavServiceDecisionTraceFile, std::ios_base::trunc);
+        decisionOut << "Time,UeGroup,UeIndex,UeNodeId,Imsi,ServingCell,ServingRsrpDbm,"
+                       "BestFeasibleTnRsrpDbm,BestFeasibleUavRsrpDbm,ServiceState,StateAgeSec,"
+                       "SensedOrOraclePositionAvailable,ControllerEastM,ControllerNorthM,"
+                       "IncludedInMovementTarget\n";
+    }
+    {
+        std::ofstream targetOut(s_uavTargetAssignmentTraceFile, std::ios_base::trunc);
+        targetOut << "Time,RecordType,UavIndex,UavCellId,CentroidIndex,CurrentEastM,CurrentNorthM,"
+                     "TargetEastM,TargetNorthM,DistanceToTargetM,ReachThresholdM,"
+                     "HasMovementAssignment,Arrived,"
+                     "NumMovementUes,NumCentroids\n";
     }
 
     Ptr<OutputStreamWrapper> rsrpRsrqSinrTraceStream;
@@ -3331,7 +3651,9 @@ main(int argc, char* argv[])
     // ----------------------------------------------------------------------
     // Channel models.
     //
-    // TN access uses 3GPP UMa. UAV/NTN access uses 3GPP NTN-Urban.
+    // The monitored TN and UAV service flows use the shared 4.0 GHz BWP0,
+    // whose channel is 3GPP UMa. The auxiliary 4.2 GHz UAV/NTN band defaults
+    // to UMa; NTN-Urban remains available only for a justified sensitivity.
     // The separate satellite fallback monitor later uses NTN-Suburban by
     // default. NR fading is required because initial attach uses measured RSRP.
     // ----------------------------------------------------------------------
@@ -3339,11 +3661,9 @@ main(int argc, char* argv[])
     tnChannelHelper->ConfigureFactories("UMa", "Default");
     tnChannelHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(enableShadowing));
 
-    // --- NTN channel helper ---
-    // The 3GPP NTN channel models (NTN-Urban, NTN-Suburban etc.) were designed for satellites
-    // at 600km–35,000km altitude where geocentric coordinates matter because the Earth's curvature
+    // --- UAV access channel helper ---
     Ptr<NrChannelHelper> ntnChannelHelper = CreateObject<NrChannelHelper>();
-    ntnChannelHelper->ConfigureFactories("NTN-Urban", "Default");
+    ntnChannelHelper->ConfigureFactories(uavAccessScenario, "Default");
     ntnChannelHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(enableShadowing));
 
     tnChannelHelper->SetChannelConditionModelAttribute(
@@ -3645,8 +3965,9 @@ main(int argc, char* argv[])
     // ------------------------------------------------------------
     // Service BWP mapping
     // ------------------------------------------------------------
-    // Keep BWP1/BWP2 available for NTN/REM experiments, but put the actual UE
-    // service flows on BWP0. The satellite in this scenario is the UAV backhaul
+    // Keep BWP1/BWP2 available for auxiliary UAV/NTN/REM experiments, but put
+    // the actual TN and UAV UE-facing service flows on the shared 4.0 GHz BWP0.
+    // The satellite in this scenario is the UAV backhaul
     // fallback path, not the UE-facing NR access carrier. Mapping XR traffic to
     // the NTN access BWPs makes the low-altitude UAV/UE data path unrealistically
     // fragile and can leave the monitored DL flows with zero received packets.
@@ -3666,13 +3987,20 @@ main(int argc, char* argv[])
     // In the final distance-loss scenarios this is set to 5 s. UAVs then move
     // toward weak UE clusters; their TN donor-backhaul quality is determined by
     // distance/path loss and optional shadowing/fading, not by a fixed RSRP penalty.
-    Simulator::Schedule(Seconds(uavControlStartSec),
-                        &UpdateUavTargetsFromUnderservedUes,
-                        groundUeNodesS1,
-                        groundUeNodesS2,
-                        ntnGnbNrDevs,
-                        underservedRsrpThreshDbm,
-                        uavControlPeriodSec);
+    if (enableUavRepositioning)
+    {
+        Simulator::Schedule(Seconds(uavControlStartSec),
+                            &UpdateUavTargetsFromUnderservedUes,
+                            groundUeNodesS1,
+                            groundUeNodesS2,
+                            tnGnbNrDevs,
+                            ntnGnbNrDevs,
+                            underservedRsrpThreshDbm,
+                            uavUnderservedPersistenceSec,
+                            uavUnknownTimeoutSec,
+                            uavRsrpMeasurementMaxAgeSec,
+                            uavControlPeriodSec);
+    }
 
     allGnbNrDevs.Add(tnGnbNrDevs);
     allGnbNrDevs.Add(ntnGnbNrDevs);
@@ -3683,9 +4011,9 @@ main(int argc, char* argv[])
     const uint32_t ueNumBwps = numBwps;
 
     // ------------------------------------------------------------
-    // Tx power per family
-    // TN gNBs: only BWP0 active
-    // NTN gNBs: only BWP1 active for DL, BWP2 is UL-only
+    // Tx power per family. Monitored service bearers are mapped to BWP0 for
+    // both TN and UAV gNBs. BWP1/BWP2 remain auxiliary experiment BWPs and are
+    // not the carriers used for the main QoS comparison.
     // ------------------------------------------------------------
     for (uint32_t i = 0; i < tnGnbNrDevs.GetN(); ++i)
     {
@@ -4450,6 +4778,10 @@ main(int argc, char* argv[])
         // Hysteresis protects against ping-pong handovers by requiring the
         // target cell to be better than the current cell by this margin.
         defaultLm->SetAttribute("HysteresisDb", DoubleValue(hysteresisDb));
+        if (useRsrp)
+        {
+            defaultLm->SetAttribute("TimeToTrigger", TimeValue(Seconds(handoverTttSec)));
+        }
 
         dataRepository->SetAttribute("DatabaseFile", StringValue(dbFileName));
         defaultLm->SetName("UE_MOBILITY_XAPP");
@@ -4829,7 +5161,9 @@ main(int argc, char* argv[])
                         MakeCallback(&NotifyHandoverEndErrorUe));
     }
 
-    if (enableRsrpTrace)
+    // Always connect measurement callbacks because the movement controller
+    // needs the cache even when file output is disabled. The callback writes
+    // rows only when rsrpRsrqSinrTraceStream is non-null.
     {
         for (NetDeviceContainer::Iterator it = groundNrDevsS1.Begin(); it != groundNrDevsS1.End(); ++it)
         {

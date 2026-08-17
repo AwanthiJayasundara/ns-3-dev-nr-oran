@@ -1,29 +1,36 @@
-\section{ISAC-Assisted Underserved-Region Model}
+\section{ISAC-Assisted Underserved-Region Detection and UAV Repositioning}
 \label{sec:mathematical-model}
 
-Let $\mathcal{U}$ denote the ground UEs and $\mathcal{Q}$ the UAV
-gNBs. In the simulation, every UAV gNB carries a co-located
+Let $\mathcal{U}$ and $\mathcal{Q}$ denote the ground UEs and
+gNB-mounted UAVs, respectively. Each gNB-mounted UAV carries a co-located
 transmit--receive ISAC subsystem and acts as a sensing node; hence,
 $\mathcal{S}=\mathcal{Q}$. Terrestrial gNBs and terrestrial sensing
-devices do not perform radar sensing. The ground UEs, or their
-associated monitored targets, are passive targets with radar cross
-section (RCS) $\sigma_u$. Communication measurements identify weakly
-served UEs, while ISAC observations estimate their horizontal
-locations for UAV repositioning.
+devices do not perform radar sensing. Each ground UE is represented
+by a co-located passive target with effective radar cross section
+(RCS) $\sigma_u$. The near-RT RIC combines ISAC observations with
+communication measurements, predicts future UAV-repositioning hotspots
+using a Random Forest (RF), and supplies target centroids to the UAV
+repositioning controller.
+The prototype represents ISAC at the system/control level through
+co-located sensing and communication functions. Joint waveform
+design and explicit sensing--communication resource sharing are
+outside the present scope.
 
 \subsection{System-Level ISAC Sensing}
 
 Under a monostatic system-level sensing abstraction, the 3-D range
 and received echo power between UAV $s$ and UE $u$ are
 \begin{align}
- r_{s,u}(t)&=\|\mathbf{p}_s(t)-\mathbf{p}_u(t)\|_2,\label{eq:isac-range}\\
+ r_{s,u}(t)&=\|\mathbf{p}_s(t)-\mathbf{p}_u(t)\|_2,
+ \label{eq:isac-range}\\
  P^{\rm r}_{s,u}(t)&=
  \frac{P_sG_s^2\lambda^2\sigma_u}
- {(4\pi)^3r_{s,u}^4(t)L_s}.\label{eq:isac-echo}
+ {(4\pi)^3r_{s,u}^4(t)L_s},
+ \label{eq:isac-echo}
 \end{align}
-Here, $P_s$, $G_s$, $\lambda$, and $L_s$ are the sensing power,
-antenna gain, wavelength, and aggregate system loss. With noise
-density $N_0$, bandwidth $B_s$, and noise factor $F_s$, the echo SNR
+where $P_s$, $G_s$, $\lambda$, and $L_s$ are the sensing power,
+antenna gain, wavelength, and aggregate loss. With noise density
+$N_0$, sensing bandwidth $B_s$, and noise factor $F_s$, the echo SNR
 is
 \begin{equation}
  \gamma_{s,u}(t)=
@@ -31,29 +38,32 @@ is
  \label{eq:isac-snr-compact}
 \end{equation}
 
-The simulator uses the following probabilistic detection abstraction:
+The logistic function provides a smooth system-level SNR-to-detection
+mapping rather than modelling a particular radar detector:
 \begin{align}
  p^{\rm D}_{s,u}(t)&=
  \left[1+e^{-a(\gamma^{\rm dB}_{s,u}(t)-\gamma_0)}\right]^{-1},\\
  d_{s,u}(t)&\sim\operatorname{Bernoulli}
- \bigl(p^{\rm D}_{s,u}(t)\bigr).
+ \bigl(p^{\rm D}_{s,u}(t)\bigr),
  \label{eq:isac-detection-compact}
 \end{align}
-Here, $a$ and $\gamma_0$ control the slope and midpoint. For a
-successful detection, the horizontal position estimate is
+where $\gamma^{\rm dB}_{s,u}(t)=10\log_{10}\gamma_{s,u}(t)$,
+$a$ is the detection-curve slope, and $\gamma_0$ is the SNR at which
+$p^{\rm D}_{s,u}=0.5$. For $d_{s,u}(t)=1$, the horizontal
+position observation is
 \begin{align}
  \widehat{\mathbf{p}}^{xy}_{s,u}(t)
- &=\mathbf{p}^{xy}_u(t)+\mathbf{e}_{s,u}(t),\label{eq:isac-position}\\
+ &=\mathbf{p}^{xy}_u(t)+\mathbf{e}_{s,u}(t),
+ \label{eq:isac-position}\\
  \mathbf{e}_{s,u}(t)&\sim\mathcal{N}
  \bigl(\mathbf{0},\sigma_{s,u}^2(t)\mathbf{I}_2\bigr).
 \end{align}
-This localisation-error model is a system-level simulation
-abstraction. Defining
+This error model is a system-level simulation abstraction. Let
 \begin{equation}
  \Delta\gamma_{s,u}(t)=
- \gamma^{\rm dB}_{s,u}(t)-\gamma_{\rm ref},
+ \gamma^{\rm dB}_{s,u}(t)-\gamma_{\rm ref}.
 \end{equation}
-its standard deviation is
+The localisation standard deviation is
 \begin{equation}
  \sigma_{s,u}(t)=\operatorname{clip}
  \left(\sigma_{\rm ref}10^{-\Delta\gamma_{s,u}(t)/20},
@@ -61,9 +71,9 @@ its standard deviation is
  \label{eq:isac-error-compact}
 \end{equation}
 
-Let $\mathcal{S}_u(t)=\{s\in\mathcal{S}:d_{s,u}(t)=1\}$ and
+Define $\mathcal{S}_u(t)=\{s\in\mathcal{S}:d_{s,u}(t)=1\}$ and
 $w_{s,u}(t)=\sigma_{s,u}^{-2}(t)$. Assuming independent, unbiased
-Gaussian localisation errors, the near-RT RIC forms
+Gaussian errors, the RIC forms the inverse-variance estimate
 \begin{equation}
  \widehat{\mathbf{p}}^{xy}_u(t)=
  \frac{\sum_{s\in\mathcal{S}_u(t)}w_{s,u}(t)
@@ -71,61 +81,229 @@ Gaussian localisation errors, the near-RT RIC forms
  {\sum_{s\in\mathcal{S}_u(t)}w_{s,u}(t)}.
  \label{eq:isac-fusion-compact}
 \end{equation}
-No estimate is produced when $\mathcal{S}_u(t)=\varnothing$. True UE
-coordinates are used only inside the sensing-measurement generator
-and for offline evaluation; the controller receives only fused
-estimates.
-
-\subsection{Underserved UEs and UAV Repositioning}
-
-The implemented controller uses serving RSRP $R_u(t)$ to define
+No estimate is produced when $\mathcal{S}_u(t)=\varnothing$. Hence,
+the detected UE set is
 \begin{equation}
- I_u(t)=\mathbf{1}\{R_u(t)<R_{\min}\}.
- \label{eq:underserved-compact}
+ \mathcal{U}_{\rm det}(t)=
+ \{u\in\mathcal{U}:\mathcal{S}_u(t)\neq\varnothing\}.
+ \label{eq:detected-set}
 \end{equation}
-Thus, the UEs available to the clustering controller are
+True UE coordinates are used only by the measurement generator and
+for offline evaluation and training labels; online control receives
+only fused estimates.
+Importantly, sensing is attempted for every relevant UE before its
+communication service state is evaluated. Thus, UE group identity or
+an oracle underserved label is not supplied to the online controller.
+
+\subsection{RF-Based Future Repositioning-Demand Prediction}
+
+Let $A_u(t)=1$ when UE $u$ is normally attached and has a fresh
+serving-cell measurement, and let $A_u(t)=0$ otherwise. When
+$A_u(t)=1$, its experienced serving RSRP is
 \begin{equation}
- \widehat{\mathcal{U}}_{\rm US}(t)=
- \{u\in\mathcal{U}:I_u(t)=1,\,
- \mathcal{S}_u(t)\neq\varnothing\}.
- \label{eq:sensed-underserved-set}
+ R_u^{\rm serv}(t)=R_{u,c_u(t)}(t).
+ \label{eq:serving-rsrp}
 \end{equation}
+The measurable weak-service indicator is
+\begin{equation}
+ I_u^{\rm weak}(t)=
+ \begin{cases}
+ \mathbf{1}\{R_u^{\rm serv}(t)<R_{\min}\},&A_u(t)=1,\\
+ 0,&A_u(t)=0.
+ \end{cases}
+ \label{eq:weak-service}
+\end{equation}
+The service threshold $R_{\min}$ is intentionally stricter than the
+minimum attachment and handover threshold. A UE may therefore remain
+connected while still being classified as weak for repositioning
+analysis.
+Weak serving RSRP alone does not imply a coverage hole because a
+handover candidate may already provide adequate service. Let
+$\mathcal{C}^{\rm f}_{\rm TN,u}(t)$ and
+$\mathcal{C}^{\rm f}_{\rm UAV,u}(t)$ contain candidate TN and UAV
+cells, respectively, that satisfy the configured RSRP-freshness and
+spare-capacity requirements. Define
+\begin{align}
+ R_u^{\rm TN}(t)&=
+ \max_{c\in\mathcal{C}^{\rm f}_{\rm TN,u}(t)}R_{u,c}(t),\\
+ R_u^{\rm UAV}(t)&=
+ \max_{c\in\mathcal{C}^{\rm f}_{\rm UAV,u}(t)}R_{u,c}(t),
+ \label{eq:best-feasible-rsrp}
+\end{align}
+where the maximum of an empty set is $-\infty$. Runtime handover
+selection prioritises a feasible TN cell and uses a UAV cell only
+when TN service is insufficient.
+
+Let $T_u^{\rm unk}(t)$ be the duration of the current unattached or
+missing-measurement interval. The service-eligibility gate is
+\begin{equation}
+ W_u(t)=
+ \begin{cases}
+ 1,&A_u(t)=1,\ R_u^{\rm serv}(t)<R_{\min},\\
+ 1,&A_u(t)=0,\ T_u^{\rm unk}(t)\geq T_{\rm unk},\\
+ 0,&\text{otherwise}.
+ \end{cases}
+ \label{eq:service-eligibility}
+\end{equation}
+Thus, a missing radio state cannot be interpreted as weak service
+until its UNKNOWN timeout expires. Define the no-alternative gate
+\begin{equation}
+ N_u(t)=\mathbf{1}\!\left\{
+ R_u^{\rm TN}(t)<R_{\min},\quad
+ R_u^{\rm UAV}(t)<R_{\min}\right\}.
+ \label{eq:no-alternative}
+\end{equation}
+To avoid repositioning during handover evaluation, the joint weak
+or timed-out UNKNOWN and no-alternative condition must persist:
+\begin{equation}
+\Pi_u(t)=\mathbf{1}\!\left\{
+ W_u(\xi)N_u(\xi)=1,\quad
+ \forall\xi\in[t-T_{\rm US},t]\right\},
+ \label{eq:weak-persistence}
+\end{equation}
+where
+\begin{equation}
+ T_{\rm US}>T_{\rm TTT}+T_{\rm ctrl}.
+ \label{eq:persistence-condition}
+\end{equation}
+Here, $T_{\rm TTT}$ is the handover time-to-trigger and
+$T_{\rm ctrl}$ is the UAV-controller evaluation period, which is
+distinct from the E2 reporting and logic-module query intervals. The
+universal condition is evaluated at the discrete controller epochs within
+the stated interval, as in the simulation. The repositioning demand
+indicator is therefore
+\begin{equation}
+ I_u^{\rm move}(t)=\Pi_u(t).
+ \label{eq:reposition-trigger}
+\end{equation}
+For grid cell $g\in\mathcal{G}$, define the sensed assignment
+\begin{equation}
+ b_{u,g}(t)=
+ \mathbf{1}\{\widehat{\mathbf{p}}^{xy}_u(t)\in g\}.
+ \label{eq:grid-assignment}
+\end{equation}
+The detected density, persistent UAV-repositioning demand, and its
+share are
+\begin{align}
+ \rho_g(t)&=\sum_{u\in\mathcal{U}_{\rm det}(t)}b_{u,g}(t),\\
+ H_g(t)&=\sum_{u\in\mathcal{U}_{\rm det}(t)}
+ I_u^{\rm move}(t)b_{u,g}(t),\\
+ Z_g(t)&=\frac{H_g(t)}{\max\{\rho_g(t),1\}}.
+ \label{eq:grid-statistics}
+\end{align}
+The exact RF feature vector is
+\begin{equation}
+ \mathbf{x}_g(t)=
+ [\rho_g,H_g,Z_g,\overline{R}_g,
+ \overline{\sigma}_g,\Delta H_g,d_g^{\rm Q}]^{\mathsf T},
+ \label{eq:rf-features-compact}
+\end{equation}
+where $\overline{R}_g$ is the mean serving RSRP over detected UEs in
+$g$ having a fresh serving measurement, and $\overline{\sigma}_g$ is
+the mean fused localisation uncertainty over all detected UEs in
+$g$. Also, $\Delta H_g=H_g(t)-H_g(t-\Delta t)$ and $d_g^{\rm Q}$ is
+the distance to the nearest UAV. If no fresh serving-RSRP sample is
+available in $g$, set $\overline{R}_g=R_{\rm floor}$. If $\rho_g=0$,
+also set $H_g=Z_g=0$ and
+$\overline{\sigma}_g=\sigma_{\max}$; $\Delta H_g$ remains the stated
+temporal difference.
+Here and in the movement equations below, $\Delta t=T_{\rm ctrl}$
+denotes the controller update interval. The simulator may use a
+smaller internal mobility-integration step. A separately clocked RF
+reporter would require its own feature-sampling interval.
+
+Let $\pi_{\rm ref}$ denote a fixed RF-disabled reference policy,
+which is the sensed reactive controller in this work. Using the true
+future UE positions and the same persistent no-feasible-alternative
+criterion, define offline
+\begin{equation}
+ \begin{aligned}
+ H_{g,\pi_{\rm ref}}^{\rm true}(t+\Delta_p)
+ &=\sum_{u\in\mathcal{U}}
+ I_{u,\pi_{\rm ref}}^{\rm move}(t+\Delta_p)\\[-1mm]
+ &\quad\times
+ \mathbf{1}\{\mathbf{p}^{xy}_u(t+\Delta_p)\in g\}.
+ \end{aligned}
+ \label{eq:true-future-hotspot}
+\end{equation}
+This quantity is generated only from trajectories collected under
+$\pi_{\rm ref}$; the proactive RF controller is not active during
+label generation. It is used only as a supervised-learning target
+and is never exposed to online control. Consequently, the label is
+conditional on $\pi_{\rm ref}$ rather than a policy-independent
+demand quantity. For prediction horizon
+$\Delta_p$, the label is
+\begin{equation}
+ y_g(t)=\mathbf{1}\!\left\{
+ H_{g,\pi_{\rm ref}}^{\rm true}(t+\Delta_p)
+ \geq N_{\min}\right\}.
+ \label{eq:rf-label-compact}
+\end{equation}
+The RF estimates
+\begin{equation}
+ q_g(t)=\Pr\{y_g(t)=1\mid\mathbf{x}_g(t)\},
+ \label{eq:rf-probability}
+\end{equation}
+and selects
+\begin{equation}
+ \widehat{\mathcal{G}}_{\rm RH}(t)=
+ \{g\in\mathcal{G}:q_g(t)\geq\tau\}.
+ \label{eq:predicted-hotspots}
+\end{equation}
+Training, validation, and testing use independent simulation seeds
+to prevent temporal leakage. RF hyperparameters and $\Delta_p$ are
+reported in the simulation-parameter table.
+
+\subsection{Predictive Clustering and Repositioning}
+
 Let $\mathcal{Q}_{\rm a}(t)$ contain UAVs with remaining serving
-capacity. The number of clusters is
+capacity. The number of target clusters is
 \begin{equation}
  K(t)=\min\bigl\{|\mathcal{Q}_{\rm a}(t)|,
- |\widehat{\mathcal{U}}_{\rm US}(t)|\bigr\}.
+ |\widehat{\mathcal{G}}_{\rm RH}(t)|\bigr\}.
  \label{eq:k-selection}
 \end{equation}
-Ordinary K-means determines the horizontal target centroids:
+If either set is empty, no repositioning action is generated. To
+avoid suppressing newly emerging hotspots with the current value of
+$H_g(t)$, probability-weighted K-means uses $q_g(t)$ alone:
 \begin{equation}
  \{\boldsymbol{\mu}_k^\star\}=
  \arg\min_{\{\boldsymbol{\mu}_k\}}
- \sum_{u\in\widehat{\mathcal{U}}_{\rm US}(t)}
+ \sum_{g\in\widehat{\mathcal{G}}_{\rm RH}(t)}q_g(t)
  \min_{1\leq k\leq K}
- \|\widehat{\mathbf{p}}^{xy}_u(t)-\boldsymbol{\mu}_k\|_2^2.
+ \|\mathbf{c}_g-\boldsymbol{\mu}_k\|_2^2.
  \label{eq:kmeans-compact}
 \end{equation}
 Each available UAV is greedily assigned once to its nearest
-unassigned centroid, matching the implemented controller. For UAV
-$j$ and assigned centroid $\boldsymbol{\mu}_{k(j)}^\star$, define
-\begin{align}
- \boldsymbol{\delta}_j(t)&=
- \boldsymbol{\mu}_{k(j)}^\star-\mathbf{q}^{xy}_j(t),\\
- \alpha_j(t)&=\min\left\{1,
- \frac{v_{\max}\Delta t}{\|\boldsymbol{\delta}_j(t)\|_2}\right\}.
-\end{align}
-The horizontal update is
+unassigned centroid, matching the controller. For UAV $j$, define
+\begin{equation}
+ \boldsymbol{\delta}_j(t)=
+ \boldsymbol{\mu}_{k(j)}^\star-\mathbf{q}^{xy}_j(t).
+\end{equation}
+The bounded movement factor is
+\begin{equation}
+ \alpha_j(t)=
+ \begin{cases}
+ \displaystyle\min\!\left\{1,
+ \dfrac{v_{\max}\Delta t}{\|\boldsymbol{\delta}_j(t)\|_2}\right\},
+ &\|\boldsymbol{\delta}_j(t)\|_2>0,\\[1mm]
+ 0,&\text{otherwise}.
+ \end{cases}
+ \label{eq:movement-step}
+\end{equation}
+The horizontal position update is
 \begin{equation}
  \mathbf{q}^{xy}_j(t+\Delta t)=
- \mathbf{q}^{xy}_j(t)+\alpha_j(t)\boldsymbol{\delta}_j(t).
+ \mathbf{q}^{xy}_j(t)+
+ \alpha_j(t)\boldsymbol{\delta}_j(t),
  \label{eq:movement-compact}
 \end{equation}
-When $\|\boldsymbol{\delta}_j(t)\|_2=0$, displacement is zero;
-altitude remains fixed and flight-area constraints are enforced.
+while altitude remains fixed and flight-area constraints are
+enforced.
 
-We evaluate detection probability, localisation RMSE, and matched
-centroid error, followed by the underserved-UE fraction,
-fifth-percentile throughput, and coverage probability. Future-hotspot
-prediction is left for a subsequent extension and is not assumed by
-the present controller.
+We evaluate detection probability, localisation RMSE, matched
+hotspot-centroid error, the weak-service and persistent
+reposition-trigger fractions, fifth-percentile throughput, and outage
+time. The proposed RF-assisted predictive controller is compared
+with a static-UAV baseline, an oracle-position reactive K-means
+controller, and an ISAC-sensed reactive K-means controller.
