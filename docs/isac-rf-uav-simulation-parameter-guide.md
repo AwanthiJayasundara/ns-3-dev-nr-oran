@@ -746,6 +746,18 @@ Use a new `EXPERIMENT_TAG` for every intentional rerun. By default, the runner r
 overwrite an existing SQLite database; `ALLOW_EXISTING_RESULTS=1` should be used only when
 that overwrite is deliberate.
 
+Each experiment is stored under `results/nr/tn-ntn/<EXPERIMENT_TAG>/`. Individual ns-3 runs
+receive separate subdirectories, SQLite files are placed in `db/`, and captured stdout/stderr
+is placed in `runner-logs/`. Set `OUTPUT_ROOT` or `OUTPUT_PARENT_DIR` only when a different
+layout is required.
+
+Set `ENABLE_NS3_LOG=1` to create `ns3-oran-lm.log` inside every run directory. The runner
+always creates a separate `<run-label>.console.log`, even when ns-3 component logging is
+disabled. For full compiled `NS_LOG` output, build with `--enable-logs`; a binary configured
+with `--disable-logs` still records explicit scenario trace messages but compiles out normal
+component logging. `ENABLE_NR_HELPER_INFO_LOG=1` is available for focused debugging but is
+too verbose for routine experiment matrices.
+
 ### 15.7 Plotting the method comparison
 
 After the three-method development matrix finishes, generate the available comparison plots:

@@ -24,6 +24,8 @@ EXPERIMENT_TAG="${EXPERIMENT_TAG:-main}"
 RUN_HOTSPOT_RF="${RUN_HOTSPOT_RF:-0}"
 ENABLE_ISAC_SENSING="${ENABLE_ISAC_SENSING:-1}"
 ENABLE_UAV_REPOSITIONING="${ENABLE_UAV_REPOSITIONING:-1}"
+ENABLE_NS3_LOG="${ENABLE_NS3_LOG:-0}"
+ENABLE_NR_HELPER_INFO_LOG="${ENABLE_NR_HELPER_INFO_LOG:-0}"
 METHODS="${METHODS:-}"
 ALLOW_EXISTING_RESULTS="${ALLOW_EXISTING_RESULTS:-0}"
 NUM_TN_GNBS="${NUM_TN_GNBS:-4}"
@@ -46,13 +48,16 @@ ISAC_RCS_M2="${ISAC_RCS_M2:-1}"
 ISAC_SYSTEM_LOSS_LINEAR="${ISAC_SYSTEM_LOSS_LINEAR:-1}"
 ISAC_DETECTION_MIDPOINT_DB="${ISAC_DETECTION_MIDPOINT_DB:--15}"
 HOTSPOT_RF_MODEL="${HOTSPOT_RF_MODEL:-results/ai/hotspot-rf/hotspot_rf.onnx}"
-DB_DIR="${DB_DIR:-results/nr/tn-ntn/db}"
+OUTPUT_ROOT="${OUTPUT_ROOT:-results/nr/tn-ntn}"
+OUTPUT_PARENT_DIR="${OUTPUT_PARENT_DIR:-${OUTPUT_ROOT}/${EXPERIMENT_TAG}}"
+DB_DIR="${DB_DIR:-${OUTPUT_PARENT_DIR}/db}"
+RUNNER_LOG_DIR="${RUNNER_LOG_DIR:-${OUTPUT_PARENT_DIR}/runner-logs}"
 
 if ! [[ "${JOBS}" =~ ^[1-9][0-9]*$ ]]; then
   echo "[clustered-coverage] JOBS must be a positive integer; got '${JOBS}'" >&2
   exit 1
 fi
-for bool_name in RUN_HOTSPOT_RF ENABLE_ISAC_SENSING ENABLE_UAV_REPOSITIONING ALLOW_EXISTING_RESULTS; do
+for bool_name in RUN_HOTSPOT_RF ENABLE_ISAC_SENSING ENABLE_UAV_REPOSITIONING ENABLE_NS3_LOG ENABLE_NR_HELPER_INFO_LOG ALLOW_EXISTING_RESULTS; do
   bool_value="${!bool_name}"
   if [[ "${bool_value}" != "0" && "${bool_value}" != "1" ]]; then
     echo "[clustered-coverage] ${bool_name} must be 0 or 1; got '${bool_value}'" >&2
@@ -74,7 +79,7 @@ for requested_method in ${METHODS}; do
   esac
 done
 
-mkdir -p "${DB_DIR}"
+mkdir -p "${DB_DIR}" "${RUNNER_LOG_DIR}"
 
 case "${SCENARIO_PROFILE}" in
   compact)
@@ -140,6 +145,7 @@ fi
 COMMON_ARGS="\
 --deployment-mode=tn-uav \
 --sim-time=${SIM_TIME} \
+--output-parent-dir=${OUTPUT_PARENT_DIR} \
 --num-uess1=60 \
 --ground-attach-delay=5 \
 --num-tn-gnbs=${NUM_TN_GNBS} \
@@ -170,8 +176,8 @@ ${GEOMETRY_ARGS} \
 --enable-handover-trace=1 \
 --enable-handover-failure-trace=1 \
 --enable-decision-csv=0 \
---enable-oran-info-log=0 \
---enable-nr-helper-info-log=0 \
+--enable-oran-info-log=${ENABLE_NS3_LOG} \
+--enable-nr-helper-info-log=${ENABLE_NR_HELPER_INFO_LOG} \
 --enable-setup-prints=0 \
 --enable-progress=0 \
 --enable-oran-app-loss-reports=0 \
@@ -207,6 +213,7 @@ run_case() {
   local seed="$3"
   local label="$4"
   local db_file="${DB_DIR}/${label}.db"
+  local console_log="${RUNNER_LOG_DIR}/${label}.console.log"
   local method_repositioning
   local method_sensing
   local method_rf
@@ -251,7 +258,7 @@ run_case() {
     --RngRun="${seed}" \
     --num-ground-ues="${ues2}" \
     --db-file="${db_file}" \
-    --run-label="${label}"
+    --run-label="${label}" 2>&1 | tee "${console_log}"
 }
 
 run_seed() {
