@@ -54,6 +54,12 @@ class UavIsacEnv(gym.Env[np.ndarray, int]):
         self._log_handle = None
         self._current_message: dict[str, Any] | None = None
 
+    @property
+    def episode_dir(self) -> Path:
+        if not hasattr(self, "_episode_dir"):
+            raise RuntimeError("No episode directory exists before reset()")
+        return self._episode_dir
+
     @staticmethod
     def _free_port() -> int:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:

@@ -1,0 +1,58 @@
+[RL] Waiting for synchronous controller on 127.0.0.1:47731
+[RL] Controller connected
+[RL] action=2 role=0 sensing=1->1.1 speed=8.20599->8.20599 altitude=60->60
+[RL] action=7 role=1 sensing=1->0.9 speed=21.2026->21.2026 altitude=80->80
+[RL] action=7 role=1 sensing=0.9->0.8 speed=21.2026->21.2026 altitude=80->80
+[RL] action=7 role=1 sensing=0.8->0.7 speed=21.2026->21.2026 altitude=80->80
+[RL] action=7 role=1 sensing=0.7->0.6 speed=21.2026->21.2026 altitude=80->80
+[RL] action=7 role=1 sensing=0.6->0.5 speed=21.2026->21.2026 altitude=80->80
+[RL] action=7 role=1 sensing=0.5->0.4 speed=21.2026->21.2026 altitude=80->80
+[RL] action=19 role=3 sensing=1->0.9 speed=20.1602->20.1602 altitude=120->120
+[RL] action=19 role=3 sensing=0.9->0.8 speed=20.1602->20.1602 altitude=120->120
+[RL] action=19 role=3 sensing=0.8->0.7 speed=20.1602->20.1602 altitude=120->120
+[RL] action=23 role=3 sensing=0.7->0.7 speed=20.1602->20.1602 altitude=120->120
+[RL] action=23 role=3 sensing=0.7->0.7 speed=20.1602->20.1602 altitude=120->120
+[RL] action=23 role=3 sensing=0.7->0.7 speed=20.1602->20.1602 altitude=120->120
+[RL] action=23 role=3 sensing=0.7->0.7 speed=20.1602->20.1602 altitude=120->120
+[RL] action=23 role=3 sensing=0.7->0.7 speed=20.1602->20.1602 altitude=120->120
+[RL] action=11 role=1 sensing=0.4->0.4 speed=21.2026->21.2026 altitude=80->80
+[RL] action=11 role=1 sensing=0.4->0.4 speed=21.2026->21.2026 altitude=80->80
+[RL] action=11 role=1 sensing=0.4->0.4 speed=21.2026->21.2026 altitude=80->80
+[RL] action=7 role=1 sensing=0.4->0.3 speed=21.2026->21.2026 altitude=80->80
+[RL] action=11 role=1 sensing=0.3->0.3 speed=21.2026->21.2026 altitude=80->80
+[RL] action=23 role=3 sensing=0.7->0.7 speed=20.1602->20.1602 altitude=120->120
+[RL] action=23 role=3 sensing=0.7->0.7 speed=20.1602->20.1602 altitude=120->120
+[RL] action=23 role=3 sensing=0.7->0.7 speed=20.1602->20.1602 altitude=120->120
+[RL] action=19 role=3 sensing=0.7->0.6 speed=20.1602->20.1602 altitude=120->120
+[RL] action=23 role=3 sensing=0.6->0.6 speed=20.1602->20.1602 altitude=120->120
+[RL] action=23 role=3 sensing=0.6->0.6 speed=20.1602->20.1602 altitude=120->120
+[RL] action=23 role=3 sensing=0.6->0.6 speed=20.1602->20.1602 altitude=120->120
+[RL] action=23 role=3 sensing=0.6->0.6 speed=20.1602->20.1602 altitude=120->120
+[RL] action=7 role=1 sensing=0.3->0.3 speed=21.2026->21.2026 altitude=80->80
+
+===== APP (ISAC REPORTS + TELEMETRY) FLOW KPIs =====
+[TELEMETRY] Flow 7.0.0.2 -> 1.0.0.2 Tx=2985 Rx=2985 Loss%=0 AvgDelay(ms)=12.1492 Throughput(Mbps)=0.0982729
+[TELEMETRY] Flow 7.0.0.2 -> 1.0.0.2 Tx=155677 Rx=155677 Loss%=0 AvgDelay(ms)=12.6782 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.3 -> 1.0.0.2 Tx=155651 Rx=155651 Loss%=0 AvgDelay(ms)=12.6775 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.3 -> 1.0.0.2 Tx=2984 Rx=2984 Loss%=0 AvgDelay(ms)=12.3457 Throughput(Mbps)=0.0982729
+[TELEMETRY] Flow 7.0.0.4 -> 1.0.0.2 Tx=155624 Rx=155624 Loss%=0 AvgDelay(ms)=12.6622 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.5 -> 1.0.0.2 Tx=155598 Rx=155598 Loss%=0 AvgDelay(ms)=12.7284 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.4 -> 1.0.0.2 Tx=2983 Rx=2983 Loss%=0 AvgDelay(ms)=12.2091 Throughput(Mbps)=0.0982729
+[TELEMETRY] Flow 7.0.0.5 -> 1.0.0.2 Tx=2982 Rx=2982 Loss%=0 AvgDelay(ms)=13.0322 Throughput(Mbps)=0.098273
+[ISAC_REPORT] Flow 7.0.0.2 -> 1.0.0.2 Tx=271 Rx=271 Loss%=0 AvgDelay(ms)=12.1051 Throughput(Mbps)=0.00111627
+[ISAC_REPORT] Flow 7.0.0.3 -> 1.0.0.2 Tx=756 Rx=756 Loss%=0 AvgDelay(ms)=11.2445 Throughput(Mbps)=0.00229155
+[ISAC_REPORT] Flow 7.0.0.4 -> 1.0.0.2 Tx=297 Rx=297 Loss%=0 AvgDelay(ms)=11.5669 Throughput(Mbps)=0.000860108
+[ISAC_REPORT] Flow 7.0.0.5 -> 1.0.0.2 Tx=400 Rx=400 Loss%=0 AvgDelay(ms)=12.7374 Throughput(Mbps)=0.000821776
+
+===== PER-UAV ENERGY =====
+UAV 0 | Eprop=75799 J | ERF=59.6583 J | Eproc=12.92 J | Etot=75871.6 J
+UAV 1 | Eprop=86413.7 J | ERF=59.6583 J | Eproc=26.505 J | Etot=86499.8 J
+UAV 2 | Eprop=99294.7 J | ERF=59.6583 J | Eproc=9.945 J | Etot=99364.3 J
+UAV 3 | Eprop=85300.8 J | ERF=59.6583 J | Eproc=9.505 J | Etot=85369.9 J
+
+FINAL_PDET=0.932048
+FINAL_RMSE=38.0332
+FINAL_J=2.10911
+
+Done.
+Generated: cow_truth.csv, uav_isac_reports.csv, uav_isac_fused.csv

@@ -54,7 +54,7 @@ vcpkg/
 .cache/
 results/lte/
 results/nr/tn/
-docs/figures/
+docs/
 libtorch/
 onnxruntime-linux-x64-1.14.1/
 .venv/

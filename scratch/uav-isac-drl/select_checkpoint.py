@@ -15,6 +15,7 @@ from pathlib import Path
 import numpy as np
 
 from dqn_agent import DqnAgent
+from evaluation_metrics import action_changed_state, build_episode_row
 from mock_uav_env import MockUavEnv
 from uav_isac_env import UavIsacEnv
 
@@ -37,28 +38,26 @@ def evaluate(checkpoint: Path, args, candidate_index: int) -> list[dict]:
         for seed in args.validation_seeds:
             state, info = env.reset(seed=seed)
             episode_return = 0.0
-            steps = 0
+            actions = []
+            effective_flags = []
             while True:
                 action = agent.select_action(state, explore=False)
+                previous_state = state
                 state, reward, terminated, truncated, info = env.step(action)
+                actions.append(action)
+                effective_flags.append(action_changed_state(action, previous_state, state))
                 episode_return += reward
-                steps += 1
                 if terminated or truncated:
                     break
-            rows.append(
-                {
-                    "checkpoint": str(checkpoint.resolve()),
-                    "seed": seed,
-                    "return": episode_return,
-                    "steps": steps,
-                    "pdet": info.get("pdet", ""),
-                    "rmse_m": info.get("rmse_m", ""),
-                    "throughput_mbps": info.get("throughput_mbps", ""),
-                    "delay_ms": info.get("delay_ms", ""),
-                    "loss_pct": info.get("loss_pct", ""),
-                    "delta_energy_j": info.get("delta_energy_j", ""),
-                }
+            row = build_episode_row(
+                seed=seed,
+                episode_return=episode_return,
+                actions=actions,
+                effective_flags=effective_flags,
+                final_info=info,
+                episode_dir=None if args.environment == "mock" else env.episode_dir,
             )
+            rows.append({"checkpoint": str(checkpoint.resolve()), **row})
     finally:
         env.close()
     return rows
@@ -90,7 +89,7 @@ def main() -> None:
     means = {}
     for checkpoint in args.checkpoints:
         values = [
-            row["return"]
+            row["episode_return"]
             for row in rows
             if row["checkpoint"] == str(checkpoint.resolve())
         ]

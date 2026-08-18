@@ -1,0 +1,13 @@
+checkpoint,seed,return,steps,pdet,rmse_m,throughput_mbps,delay_ms,loss_pct,delta_energy_j
+/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/pilot-v2/agent-seed-31/checkpoint-episode-000005.pt,7001,43.21742344119999,29,1,50.92519578,0.0014272,11.68501636,0,11254.95267
+/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/pilot-v2/agent-seed-31/checkpoint-episode-000005.pt,7002,42.6238118334,29,1,53.66362837,0.00144,11.72517603,0,10854.43918
+/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/pilot-v2/agent-seed-31/checkpoint-episode-000005.pt,7003,47.7036574617,29,1,53.70924104,0.0014144,11.75970786,0,10931.24766
+/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/pilot-v2/agent-seed-31/checkpoint-episode-000010.pt,7001,44.96244244969999,29,1,50.11877449,0.0017888,12.07983291,0,11022.93075
+/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/pilot-v2/agent-seed-31/checkpoint-episode-000010.pt,7002,40.057458706999995,29,1,53.18648029,0.0017088,11.22920049,0,11062.63267
+/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/pilot-v2/agent-seed-31/checkpoint-episode-000010.pt,7003,48.901994757200015,29,1,53.30918649,0.0021952,11.93212065,0,10819.54278
+/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/pilot-v2/agent-seed-31/checkpoint-episode-000015.pt,7001,29.372539142900006,29,1,52.30892354,0.0012672,11.63285681,0,10874.72769
+/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/pilot-v2/agent-seed-31/checkpoint-episode-000015.pt,7002,33.338602943,29,1,54.54178763,0.001568,11.34567048,0,10887.05895
+/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/pilot-v2/agent-seed-31/checkpoint-episode-000015.pt,7003,35.9513677547,29,1,53.21303065,0.00096,11.81763974,0,11048.05299
+/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/pilot-v2/agent-seed-31/checkpoint-episode-000020.pt,7001,28.519702702400004,29,1,53.02719035,0.0011008,11.83260943,0,11289.32905
+/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/pilot-v2/agent-seed-31/checkpoint-episode-000020.pt,7002,28.093807973800004,29,1,57.8131414,0.0009952,11.60773596,0,10853.74418
+/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/pilot-v2/agent-seed-31/checkpoint-episode-000020.pt,7003,37.603813355499994,29,1,53.57933763,0.000928,11.84789404,0,10912.69709

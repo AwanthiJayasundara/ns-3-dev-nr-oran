@@ -12,6 +12,11 @@ import numpy as np
 import pandas as pd
 
 from dqn_agent import DqnAgent
+from evaluation_metrics import (
+    STATISTICS_METRICS,
+    action_changed_state,
+    build_episode_row,
+)
 from offline_rf_benchmark import FEATURES
 from uav_isac_env import UavIsacEnv
 
@@ -35,10 +40,7 @@ def rule_action(info: dict, step: int) -> int:
 
 def write_statistics(frame: pd.DataFrame, output: Path) -> None:
     """Write method CIs and matched-seed differences against static control."""
-    metrics = [
-        "return", "pdet", "rmse_m", "throughput_mbps", "delay_ms",
-        "loss_pct", "final_window_energy_j",
-    ]
+    metrics = STATISTICS_METRICS
     summary_rows = []
     for method, group in frame.groupby("method"):
         for metric in metrics:
@@ -118,6 +120,8 @@ def main() -> None:
                 state, info = env.reset(seed=seed)
                 total_reward = 0.0
                 step = 0
+                actions = []
+                effective_flags = []
                 while True:
                     if method in {"static", "rf-static"}:
                         action = 0
@@ -129,23 +133,27 @@ def main() -> None:
                         action = dqn.select_action(state, explore=False)
                     else:
                         raise ValueError(f"Unknown method {method}")
+                    previous_state = state
                     state, reward, terminated, truncated, info = env.step(action)
+                    actions.append(action)
+                    effective_flags.append(
+                        action_changed_state(action, previous_state, state)
+                    )
                     total_reward += reward
                     step += 1
                     if terminated or truncated:
                         break
-                rows.append({
-                    "method": method,
-                    "seed": seed,
-                    "return": total_reward,
-                    "steps": step,
-                    "pdet": info.get("pdet"),
-                    "rmse_m": info.get("rmse_m"),
-                    "throughput_mbps": info.get("throughput_mbps"),
-                    "delay_ms": info.get("delay_ms"),
-                    "loss_pct": info.get("loss_pct"),
-                    "final_window_energy_j": info.get("delta_energy_j"),
-                })
+                rows.append(
+                    build_episode_row(
+                        method=method,
+                        seed=seed,
+                        episode_return=total_reward,
+                        actions=actions,
+                        effective_flags=effective_flags,
+                        final_info=info,
+                        episode_dir=env.episode_dir,
+                    )
+                )
         finally:
             env.close()
 
@@ -156,7 +164,7 @@ def main() -> None:
         writer.writerows(rows)
     frame = pd.DataFrame(rows)
     write_statistics(frame, args.output)
-    print(frame.groupby("method").agg(["mean", "std"]))
+    print(frame.groupby("method")[STATISTICS_METRICS].agg(["mean", "std"]))
     print(f"Wrote {args.output}")
 
 

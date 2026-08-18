@@ -1,0 +1,16 @@
+{
+  "selection_metric": "mean validation episodic return",
+  "validation_seeds": [
+    7001,
+    7002,
+    7003
+  ],
+  "candidate_mean_returns": {
+    "/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/pilot-v2/agent-seed-31/checkpoint-episode-000005.pt": 44.51496424543333,
+    "/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/pilot-v2/agent-seed-31/checkpoint-episode-000010.pt": 44.6406319713,
+    "/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/pilot-v2/agent-seed-31/checkpoint-episode-000015.pt": 32.8875032802,
+    "/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/pilot-v2/agent-seed-31/checkpoint-episode-000020.pt": 31.405774677233335
+  },
+  "selected_checkpoint": "/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/pilot-v2/agent-seed-31/checkpoint-episode-000010.pt",
+  "test_seeds_used": false
+}
