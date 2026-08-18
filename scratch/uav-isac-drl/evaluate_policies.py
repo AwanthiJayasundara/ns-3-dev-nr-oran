@@ -10,6 +10,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from scipy.stats import t as student_t
 
 from dqn_agent import DqnAgent
 from evaluation_metrics import (
@@ -38,8 +39,39 @@ def rule_action(info: dict, step: int) -> int:
     return 0
 
 
+def _paired_rows(
+    frame: pd.DataFrame, candidate_method: str, reference_methods: list[str]
+) -> list[dict]:
+    """Return matched-seed candidate-minus-reference statistics."""
+    rows = []
+    candidate = frame[frame["method"] == candidate_method].set_index("seed")
+    for reference_method in reference_methods:
+        reference = frame[frame["method"] == reference_method].set_index("seed")
+        shared_seeds = reference.index.intersection(candidate.index)
+        for metric in STATISTICS_METRICS:
+            differences = (
+                candidate.loc[shared_seeds, metric].astype(float)
+                - reference.loc[shared_seeds, metric].astype(float)
+            )
+            count = len(differences)
+            std = float(differences.std(ddof=1)) if count > 1 else float("nan")
+            critical = float(student_t.ppf(0.975, count - 1)) if count > 1 else float("nan")
+            half_width = critical * std / math.sqrt(count) if count > 1 else float("nan")
+            mean = float(differences.mean())
+            rows.append({
+                "method": candidate_method,
+                "reference": reference_method,
+                "metric": metric,
+                "n_pairs": count,
+                "mean_difference": mean,
+                "ci95_low": mean - half_width,
+                "ci95_high": mean + half_width,
+            })
+    return rows
+
+
 def write_statistics(frame: pd.DataFrame, output: Path) -> None:
-    """Write method CIs and matched-seed differences against static control."""
+    """Write method CIs and matched-seed policy differences."""
     metrics = STATISTICS_METRICS
     summary_rows = []
     for method, group in frame.groupby("method"):
@@ -47,7 +79,8 @@ def write_statistics(frame: pd.DataFrame, output: Path) -> None:
             values = group[metric].astype(float)
             count = len(values)
             std = float(values.std(ddof=1)) if count > 1 else float("nan")
-            half_width = 1.96 * std / math.sqrt(count) if count > 1 else float("nan")
+            critical = float(student_t.ppf(0.975, count - 1)) if count > 1 else float("nan")
+            half_width = critical * std / math.sqrt(count) if count > 1 else float("nan")
             summary_rows.append({
                 "method": method,
                 "metric": metric,
@@ -63,31 +96,21 @@ def write_statistics(frame: pd.DataFrame, output: Path) -> None:
 
     if "static" not in set(frame["method"]):
         return
-    baseline = frame[frame["method"] == "static"].set_index("seed")
     paired_rows = []
     for method in sorted(set(frame["method"]) - {"static"}):
-        candidate = frame[frame["method"] == method].set_index("seed")
-        shared_seeds = baseline.index.intersection(candidate.index)
-        for metric in metrics:
-            differences = (
-                candidate.loc[shared_seeds, metric].astype(float)
-                - baseline.loc[shared_seeds, metric].astype(float)
-            )
-            count = len(differences)
-            std = float(differences.std(ddof=1)) if count > 1 else float("nan")
-            half_width = 1.96 * std / math.sqrt(count) if count > 1 else float("nan")
-            paired_rows.append({
-                "method": method,
-                "reference": "static",
-                "metric": metric,
-                "n_pairs": count,
-                "mean_difference": float(differences.mean()),
-                "ci95_low": float(differences.mean()) - half_width,
-                "ci95_high": float(differences.mean()) + half_width,
-            })
+        paired_rows.extend(_paired_rows(frame, method, ["static"]))
     pd.DataFrame(paired_rows).to_csv(
         output.with_name(output.stem + "-paired-vs-static.csv"), index=False
     )
+
+    # Make comparison with the strongest non-DRL policy explicit rather than
+    # presenting DQN-versus-static alone.
+    if "dqn" in set(frame["method"]):
+        references = sorted(set(frame["method"]) - {"dqn"})
+        pd.DataFrame(_paired_rows(frame, "dqn", references)).to_csv(
+            output.with_name(output.stem + "-paired-dqn-vs-baselines.csv"),
+            index=False,
+        )
 
 
 def main() -> None:

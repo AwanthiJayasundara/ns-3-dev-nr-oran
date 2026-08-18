@@ -127,3 +127,38 @@ For the paper, use more than one unseen test seed, for example:
 
 Do not inspect or rerun individual test seeds while choosing a model. Report
 paired per-seed differences and confidence intervals, not only a pooled mean.
+
+## Evaluation output semantics
+
+`comparison.csv` now separates two different quantities that must not be
+mixed in a paper:
+
+- `episode_*` columns are whole-episode KPIs read from `run_summary.csv` and
+  are the primary scientific outcomes.
+- `final_window_*` columns describe only the last control window and are kept
+  for trajectory diagnosis.
+- `terminated`, `truncated`, `mission_duration_s`, `mission_completed`, and
+  `battery_terminated` record whether a nominal-duration mission finished.
+- `effective_control_actions` counts commands that actually changed the
+  controlled state; `clipped_no_effect_actions` counts non-zero commands that
+  were already at a bound or otherwise had no observable effect.
+
+The evaluator writes Student-t 95% confidence intervals in
+`comparison-summary.csv`,
+`comparison-paired-vs-static.csv`, and
+`comparison-paired-dqn-vs-baselines.csv`. The last file directly compares DQN
+with every included baseline on matched seeds, including the rule policy.
+
+Older comparison files can be corrected from preserved episode artifacts
+without rerunning ns-3:
+
+```bash
+.venv/bin/python scratch/uav-isac-drl/reprocess_comparison.py \
+  --input results/uav-isac-drl/pilot-v2/comparison/comparison.csv \
+  --output results/uav-isac-drl/pilot-v2/comparison/comparison-corrected.csv
+```
+
+The corrected three-seed pilot is an analysis check, not a final performance
+campaign. Its DQN mean return is 41.3591 versus 41.1188 for the rule baseline,
+and only 37 of 87 DQN control attempts changed the controlled state. This is
+not enough evidence for a DRL improvement or significance claim.
