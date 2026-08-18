@@ -1,0 +1,4 @@
+checkpoint,seed,return,steps,pdet,rmse_m,throughput_mbps,delay_ms,loss_pct,delta_energy_j
+/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/ns3-smoke-training/checkpoint-episode-000001.pt,7001,4.328523246,2,0.7,10.53728577,0.0007744,11.53967487,0,11111.63025
+/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/ns3-smoke-training/checkpoint-episode-000002.pt,7001,4.342091182,2,0.7,10.55732642,0.0008064,11.81673295,0,11040.61349
+/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/ns3-smoke-training/checkpoint-episode-000003.pt,7001,4.342091182,2,0.7,10.55732642,0.0008064,11.81673295,0,11040.61349

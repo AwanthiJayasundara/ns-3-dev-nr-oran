@@ -1,0 +1,31 @@
+[RL] Waiting for synchronous controller on 127.0.0.1:35613
+[RL] Controller connected
+[RL] action=6 role=0 sensing=1->1 speed=11.4308->11.4308 altitude=60->65
+[RL] action=15 role=2 sensing=1->1 speed=33.4627->32.4627 altitude=100->100
+
+===== APP (ISAC REPORTS + TELEMETRY) FLOW KPIs =====
+[TELEMETRY] Flow 7.0.0.2 -> 1.0.0.2 Tx=285 Rx=285 Loss%=0 AvgDelay(ms)=12.0058 Throughput(Mbps)=0.0985859
+[TELEMETRY] Flow 7.0.0.2 -> 1.0.0.2 Tx=15052 Rx=15052 Loss%=0 AvgDelay(ms)=12.6515 Throughput(Mbps)=5.11701
+[TELEMETRY] Flow 7.0.0.3 -> 1.0.0.2 Tx=15026 Rx=15026 Loss%=0 AvgDelay(ms)=12.6674 Throughput(Mbps)=5.11701
+[TELEMETRY] Flow 7.0.0.3 -> 1.0.0.2 Tx=284 Rx=284 Loss%=0 AvgDelay(ms)=12.574 Throughput(Mbps)=0.0985871
+[TELEMETRY] Flow 7.0.0.4 -> 1.0.0.2 Tx=14999 Rx=14999 Loss%=0 AvgDelay(ms)=12.5872 Throughput(Mbps)=5.11701
+[TELEMETRY] Flow 7.0.0.5 -> 1.0.0.2 Tx=14973 Rx=14973 Loss%=0 AvgDelay(ms)=12.6848 Throughput(Mbps)=5.11701
+[TELEMETRY] Flow 7.0.0.4 -> 1.0.0.2 Tx=283 Rx=283 Loss%=0 AvgDelay(ms)=12.6745 Throughput(Mbps)=0.0985884
+[TELEMETRY] Flow 7.0.0.5 -> 1.0.0.2 Tx=282 Rx=282 Loss%=0 AvgDelay(ms)=12.6344 Throughput(Mbps)=0.0985896
+[ISAC_REPORT] Flow 7.0.0.2 -> 1.0.0.2 Tx=27 Rx=27 Loss%=0 AvgDelay(ms)=11.7366 Throughput(Mbps)=0.00166892
+[ISAC_REPORT] Flow 7.0.0.3 -> 1.0.0.2 Tx=27 Rx=27 Loss%=0 AvgDelay(ms)=12.276 Throughput(Mbps)=0.00111262
+[ISAC_REPORT] Flow 7.0.0.4 -> 1.0.0.2 Tx=27 Rx=27 Loss%=0 AvgDelay(ms)=12.1067 Throughput(Mbps)=0.00157046
+[ISAC_REPORT] Flow 7.0.0.5 -> 1.0.0.2 Tx=27 Rx=27 Loss%=0 AvgDelay(ms)=11.3371 Throughput(Mbps)=0.00138831
+
+===== PER-UAV ENERGY =====
+UAV 0 | Eprop=7818.4 J | ERF=5.98579 J | Eproc=1.695 J | Etot=7826.08 J
+UAV 1 | Eprop=8029.76 J | ERF=5.98579 J | Eproc=1.13 J | Etot=8036.88 J
+UAV 2 | Eprop=10352.7 J | ERF=5.98579 J | Eproc=1.595 J | Etot=10360.3 J
+UAV 3 | Eprop=8037.16 J | ERF=5.98579 J | Eproc=1.41 J | Etot=8044.56 J
+
+FINAL_PDET=0.81794
+FINAL_RMSE=7.56893
+FINAL_J=3.50864
+
+Done.
+Generated: cow_truth.csv, uav_isac_reports.csv, uav_isac_fused.csv

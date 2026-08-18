@@ -1,0 +1,57 @@
+[RL] Waiting for synchronous controller on 127.0.0.1:46739
+[RL] Controller connected
+[RL] action=18 role=2 sensing=1->1 speed=31.6103->31.6103 altitude=100->105
+[RL] action=5 role=0 sensing=1->1 speed=9.13232->9.13232 altitude=60->60
+[RL] action=5 role=0 sensing=1->1 speed=9.13232->9.13232 altitude=60->60
+[RL] action=5 role=0 sensing=1->1 speed=9.13232->9.13232 altitude=60->60
+[RL] action=19 role=3 sensing=1->0.9 speed=19.1123->19.1123 altitude=120->120
+[RL] action=16 role=2 sensing=1->1 speed=31.6103->32.6103 altitude=105->105
+[RL] action=3 role=0 sensing=1->1 speed=9.13232->8.13232 altitude=60->60
+[RL] action=9 role=1 sensing=1->1 speed=22.3729->21.3729 altitude=80->80
+[RL] action=5 role=0 sensing=1->1 speed=8.13232->8.13232 altitude=60->60
+[RL] action=5 role=0 sensing=1->1 speed=8.13232->8.13232 altitude=60->60
+[RL] action=5 role=0 sensing=1->1 speed=8.13232->8.13232 altitude=60->60
+[RL] action=5 role=0 sensing=1->1 speed=8.13232->8.13232 altitude=60->60
+[RL] action=2 role=0 sensing=1->1.1 speed=8.13232->8.13232 altitude=60->60
+[RL] action=5 role=0 sensing=1.1->1.1 speed=8.13232->8.13232 altitude=60->60
+[RL] action=19 role=3 sensing=0.9->0.8 speed=19.1123->19.1123 altitude=120->120
+[RL] action=19 role=3 sensing=0.8->0.7 speed=19.1123->19.1123 altitude=120->120
+[RL] action=14 role=2 sensing=1->1.1 speed=32.6103->32.6103 altitude=105->105
+[RL] action=18 role=2 sensing=1.1->1.1 speed=32.6103->32.6103 altitude=105->110
+[RL] action=7 role=1 sensing=1->0.9 speed=21.3729->21.3729 altitude=80->80
+[RL] action=9 role=1 sensing=0.9->0.9 speed=21.3729->20.3729 altitude=80->80
+[RL] action=18 role=2 sensing=1.1->1.1 speed=32.6103->32.6103 altitude=110->110
+[RL] action=18 role=2 sensing=1.1->1.1 speed=32.6103->32.6103 altitude=110->110
+[RL] action=18 role=2 sensing=1.1->1.1 speed=32.6103->32.6103 altitude=110->110
+[RL] action=18 role=2 sensing=1.1->1.1 speed=32.6103->32.6103 altitude=110->110
+[RL] action=18 role=2 sensing=1.1->1.1 speed=32.6103->32.6103 altitude=110->110
+[RL] action=18 role=2 sensing=1.1->1.1 speed=32.6103->32.6103 altitude=110->110
+[RL] action=18 role=2 sensing=1.1->1.1 speed=32.6103->32.6103 altitude=110->110
+[RL] action=3 role=0 sensing=1.1->1.1 speed=8.13232->7.13232 altitude=60->60
+
+===== APP (ISAC REPORTS + TELEMETRY) FLOW KPIs =====
+[TELEMETRY] Flow 7.0.0.2 -> 1.0.0.2 Tx=2985 Rx=2985 Loss%=0 AvgDelay(ms)=12.7593 Throughput(Mbps)=0.0982729
+[TELEMETRY] Flow 7.0.0.2 -> 1.0.0.2 Tx=155677 Rx=155677 Loss%=0 AvgDelay(ms)=12.6728 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.3 -> 1.0.0.2 Tx=155651 Rx=155651 Loss%=0 AvgDelay(ms)=12.6239 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.3 -> 1.0.0.2 Tx=2984 Rx=2984 Loss%=0 AvgDelay(ms)=12.3188 Throughput(Mbps)=0.0982729
+[TELEMETRY] Flow 7.0.0.4 -> 1.0.0.2 Tx=155624 Rx=155624 Loss%=0 AvgDelay(ms)=12.6827 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.5 -> 1.0.0.2 Tx=155598 Rx=155598 Loss%=0 AvgDelay(ms)=12.6981 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.4 -> 1.0.0.2 Tx=2983 Rx=2983 Loss%=0 AvgDelay(ms)=12.6481 Throughput(Mbps)=0.0982729
+[TELEMETRY] Flow 7.0.0.5 -> 1.0.0.2 Tx=2982 Rx=2982 Loss%=0 AvgDelay(ms)=12.2736 Throughput(Mbps)=0.098273
+[ISAC_REPORT] Flow 7.0.0.2 -> 1.0.0.2 Tx=282 Rx=282 Loss%=0 AvgDelay(ms)=12.052 Throughput(Mbps)=0.00133355
+[ISAC_REPORT] Flow 7.0.0.3 -> 1.0.0.2 Tx=309 Rx=309 Loss%=0 AvgDelay(ms)=11.6679 Throughput(Mbps)=0.00100661
+[ISAC_REPORT] Flow 7.0.0.4 -> 1.0.0.2 Tx=285 Rx=285 Loss%=0 AvgDelay(ms)=11.6129 Throughput(Mbps)=0.000765749
+[ISAC_REPORT] Flow 7.0.0.5 -> 1.0.0.2 Tx=370 Rx=370 Loss%=0 AvgDelay(ms)=12.0034 Throughput(Mbps)=0.000765664
+
+===== PER-UAV ENERGY =====
+UAV 0 | Eprop=76154.6 J | ERF=59.8579 J | Eproc=15.44 J | Etot=76229.9 J
+UAV 1 | Eprop=86939.8 J | ERF=59.8579 J | Eproc=11.635 J | Etot=87011.3 J
+UAV 2 | Eprop=104293 J | ERF=59.8579 J | Eproc=8.845 J | Etot=104362 J
+UAV 3 | Eprop=84070 J | ERF=59.8579 J | Eproc=8.85 J | Etot=84138.7 J
+
+FINAL_PDET=0.979645
+FINAL_RMSE=38.8091
+FINAL_J=1.79907
+
+Done.
+Generated: cow_truth.csv, uav_isac_reports.csv, uav_isac_fused.csv

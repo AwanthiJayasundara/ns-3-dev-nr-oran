@@ -1,0 +1,8 @@
+[RL] Waiting for synchronous controller on 127.0.0.1:58817
+[RL] Controller connected
+[RL] action=19 role=3 sensing=1->0.9 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.9->0.8 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.8->0.7 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.7->0.6 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.6->0.5 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.5->0.4 speed=21.4819->21.4819 altitude=120->120

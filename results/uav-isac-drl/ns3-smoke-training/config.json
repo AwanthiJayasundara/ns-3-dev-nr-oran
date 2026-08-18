@@ -1,0 +1,12 @@
+{
+  "environment": "ns3",
+  "episodes": 3,
+  "seed": 21,
+  "simulation_time": 30.0,
+  "control_interval": 10.0,
+  "mock_episode_length": 40,
+  "output": "results/uav-isac-drl/ns3-smoke-training",
+  "learning_starts": 2,
+  "batch_size": 2,
+  "checkpoint_every": 1
+}

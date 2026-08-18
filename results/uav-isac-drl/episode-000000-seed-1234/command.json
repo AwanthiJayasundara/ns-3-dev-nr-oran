@@ -1,0 +1,8 @@
+[
+  "/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/ns3",
+  "run",
+  "--no-build",
+  "--cwd",
+  "/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/episode-000000-seed-1234",
+  "uav-isac-drl --enableRl=1 --rlPort=41523 --episodeId=0 --RngRun=1234 --simulationTime=40.0 --controlInterval=10.0"
+]

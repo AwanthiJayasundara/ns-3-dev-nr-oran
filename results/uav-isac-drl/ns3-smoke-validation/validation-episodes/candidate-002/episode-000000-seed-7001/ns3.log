@@ -1,0 +1,31 @@
+[RL] Waiting for synchronous controller on 127.0.0.1:58507
+[RL] Controller connected
+[RL] action=15 role=2 sensing=1->1 speed=21.5489->20.5489 altitude=100->100
+[RL] action=15 role=2 sensing=1->1 speed=20.5489->19.5489 altitude=100->100
+
+===== APP (ISAC REPORTS + TELEMETRY) FLOW KPIs =====
+[TELEMETRY] Flow 7.0.0.2 -> 1.0.0.2 Tx=285 Rx=285 Loss%=0 AvgDelay(ms)=11.6794 Throughput(Mbps)=0.0985859
+[TELEMETRY] Flow 7.0.0.2 -> 1.0.0.2 Tx=15052 Rx=15052 Loss%=0 AvgDelay(ms)=12.6833 Throughput(Mbps)=5.11701
+[TELEMETRY] Flow 7.0.0.3 -> 1.0.0.2 Tx=15026 Rx=15026 Loss%=0 AvgDelay(ms)=12.6106 Throughput(Mbps)=5.11701
+[TELEMETRY] Flow 7.0.0.3 -> 1.0.0.2 Tx=284 Rx=284 Loss%=0 AvgDelay(ms)=12.8602 Throughput(Mbps)=0.0985871
+[TELEMETRY] Flow 7.0.0.4 -> 1.0.0.2 Tx=14999 Rx=14999 Loss%=0 AvgDelay(ms)=12.5446 Throughput(Mbps)=5.11701
+[TELEMETRY] Flow 7.0.0.5 -> 1.0.0.2 Tx=14973 Rx=14973 Loss%=0 AvgDelay(ms)=12.7214 Throughput(Mbps)=5.11701
+[TELEMETRY] Flow 7.0.0.4 -> 1.0.0.2 Tx=283 Rx=283 Loss%=0 AvgDelay(ms)=12.3524 Throughput(Mbps)=0.0985884
+[TELEMETRY] Flow 7.0.0.5 -> 1.0.0.2 Tx=282 Rx=282 Loss%=0 AvgDelay(ms)=11.6487 Throughput(Mbps)=0.0985896
+[ISAC_REPORT] Flow 7.0.0.2 -> 1.0.0.2 Tx=27 Rx=27 Loss%=0 AvgDelay(ms)=12.1067 Throughput(Mbps)=0.00122585
+[ISAC_REPORT] Flow 7.0.0.3 -> 1.0.0.2 Tx=27 Rx=27 Loss%=0 AvgDelay(ms)=11.4402 Throughput(Mbps)=0.000699077
+[ISAC_REPORT] Flow 7.0.0.4 -> 1.0.0.2 Tx=27 Rx=27 Loss%=0 AvgDelay(ms)=12.255 Throughput(Mbps)=0.00140308
+[ISAC_REPORT] Flow 7.0.0.5 -> 1.0.0.2 Tx=27 Rx=27 Loss%=0 AvgDelay(ms)=11.6625 Throughput(Mbps)=0.00096
+
+===== PER-UAV ENERGY =====
+UAV 0 | Eprop=7529.72 J | ERF=5.98579 J | Eproc=1.245 J | Etot=7536.95 J
+UAV 1 | Eprop=8546.78 J | ERF=5.98579 J | Eproc=0.71 J | Etot=8553.47 J
+UAV 2 | Eprop=8666.28 J | ERF=5.98579 J | Eproc=1.425 J | Etot=8673.69 J
+UAV 3 | Eprop=8591.54 J | ERF=5.98579 J | Eproc=0.975 J | Etot=8598.5 J
+
+FINAL_PDET=0.667477
+FINAL_RMSE=8.94218
+FINAL_J=2.42098
+
+Done.
+Generated: cow_truth.csv, uav_isac_reports.csv, uav_isac_fused.csv

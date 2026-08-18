@@ -1,0 +1,57 @@
+[RL] Waiting for synchronous controller on 127.0.0.1:56519
+[RL] Controller connected
+[RL] action=9 role=1 sensing=1->1 speed=21.7112->20.7112 altitude=80->80
+[RL] action=9 role=1 sensing=1->1 speed=20.7112->19.7112 altitude=80->80
+[RL] action=5 role=0 sensing=1->1 speed=10.278->10.278 altitude=60->60
+[RL] action=5 role=0 sensing=1->1 speed=10.278->10.278 altitude=60->60
+[RL] action=5 role=0 sensing=1->1 speed=10.278->10.278 altitude=60->60
+[RL] action=5 role=0 sensing=1->1 speed=10.278->10.278 altitude=60->60
+[RL] action=9 role=1 sensing=1->1 speed=19.7112->18.7112 altitude=80->80
+[RL] action=9 role=1 sensing=1->1 speed=18.7112->17.7112 altitude=80->80
+[RL] action=9 role=1 sensing=1->1 speed=17.7112->16.7112 altitude=80->80
+[RL] action=9 role=1 sensing=1->1 speed=16.7112->15.7112 altitude=80->80
+[RL] action=21 role=3 sensing=1->1 speed=20.5624->19.5624 altitude=120->120
+[RL] action=21 role=3 sensing=1->1 speed=19.5624->18.5624 altitude=120->120
+[RL] action=18 role=2 sensing=1->1 speed=21.4434->21.4434 altitude=100->105
+[RL] action=19 role=3 sensing=1->0.9 speed=18.5624->18.5624 altitude=120->120
+[RL] action=23 role=3 sensing=0.9->0.9 speed=18.5624->18.5624 altitude=120->120
+[RL] action=17 role=2 sensing=1->1 speed=21.4434->21.4434 altitude=105->100
+[RL] action=23 role=3 sensing=0.9->0.9 speed=18.5624->18.5624 altitude=120->120
+[RL] action=22 role=3 sensing=0.9->0.9 speed=18.5624->19.5624 altitude=120->120
+[RL] action=18 role=2 sensing=1->1 speed=21.4434->21.4434 altitude=100->105
+[RL] action=7 role=1 sensing=1->0.9 speed=15.7112->15.7112 altitude=80->80
+[RL] action=19 role=3 sensing=0.9->0.8 speed=19.5624->19.5624 altitude=120->120
+[RL] action=2 role=0 sensing=1->1.1 speed=10.278->10.278 altitude=60->60
+[RL] action=2 role=0 sensing=1.1->1.2 speed=10.278->10.278 altitude=60->60
+[RL] action=11 role=1 sensing=0.9->0.9 speed=15.7112->15.7112 altitude=80->80
+[RL] action=5 role=0 sensing=1.2->1.2 speed=10.278->10.278 altitude=60->60
+[RL] action=5 role=0 sensing=1.2->1.2 speed=10.278->10.278 altitude=60->60
+[RL] action=20 role=3 sensing=0.8->0.9 speed=19.5624->19.5624 altitude=120->120
+[RL] action=5 role=0 sensing=1.2->1.2 speed=10.278->10.278 altitude=60->60
+
+===== APP (ISAC REPORTS + TELEMETRY) FLOW KPIs =====
+[TELEMETRY] Flow 7.0.0.2 -> 1.0.0.2 Tx=2985 Rx=2985 Loss%=0 AvgDelay(ms)=11.9682 Throughput(Mbps)=0.0982729
+[TELEMETRY] Flow 7.0.0.2 -> 1.0.0.2 Tx=155677 Rx=155677 Loss%=0 AvgDelay(ms)=12.6383 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.3 -> 1.0.0.2 Tx=155651 Rx=155651 Loss%=0 AvgDelay(ms)=12.4989 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.3 -> 1.0.0.2 Tx=2984 Rx=2984 Loss%=0 AvgDelay(ms)=12.9766 Throughput(Mbps)=0.0982729
+[TELEMETRY] Flow 7.0.0.4 -> 1.0.0.2 Tx=155624 Rx=155624 Loss%=0 AvgDelay(ms)=12.527 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.5 -> 1.0.0.2 Tx=155598 Rx=155598 Loss%=0 AvgDelay(ms)=12.6766 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.4 -> 1.0.0.2 Tx=2983 Rx=2983 Loss%=0 AvgDelay(ms)=12.021 Throughput(Mbps)=0.0982729
+[TELEMETRY] Flow 7.0.0.5 -> 1.0.0.2 Tx=2982 Rx=2982 Loss%=0 AvgDelay(ms)=12.5231 Throughput(Mbps)=0.098273
+[ISAC_REPORT] Flow 7.0.0.2 -> 1.0.0.2 Tx=286 Rx=286 Loss%=0 AvgDelay(ms)=12.1234 Throughput(Mbps)=0.00101499
+[ISAC_REPORT] Flow 7.0.0.3 -> 1.0.0.2 Tx=307 Rx=307 Loss%=0 AvgDelay(ms)=11.8538 Throughput(Mbps)=0.00105391
+[ISAC_REPORT] Flow 7.0.0.4 -> 1.0.0.2 Tx=297 Rx=297 Loss%=0 AvgDelay(ms)=11.5604 Throughput(Mbps)=0.000962595
+[ISAC_REPORT] Flow 7.0.0.5 -> 1.0.0.2 Tx=322 Rx=322 Loss%=0 AvgDelay(ms)=11.7226 Throughput(Mbps)=0.000699439
+
+===== PER-UAV ENERGY =====
+UAV 0 | Eprop=77183.4 J | ERF=59.8579 J | Eproc=11.72 J | Etot=77255 J
+UAV 1 | Eprop=83128 J | ERF=59.8579 J | Eproc=12.19 J | Etot=83200.1 J
+UAV 2 | Eprop=87557.4 J | ERF=59.8579 J | Eproc=11.13 J | Etot=87628.4 J
+UAV 3 | Eprop=83906.7 J | ERF=59.8579 J | Eproc=8.09 J | Etot=83974.6 J
+
+FINAL_PDET=0.925206
+FINAL_RMSE=41.716
+FINAL_J=1.58397
+
+Done.
+Generated: cow_truth.csv, uav_isac_reports.csv, uav_isac_fused.csv
