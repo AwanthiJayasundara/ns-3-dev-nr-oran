@@ -1,0 +1,58 @@
+[RL] Waiting for synchronous controller on 127.0.0.1:54147
+[RL] Controller connected
+[RL] action=3 role=0 sensing=1->1 speed=8.20599->7.20599 altitude=60->60
+[RL] action=17 role=2 sensing=1->1 speed=29.7894->29.7894 altitude=100->95
+[RL] action=23 role=3 sensing=1->1 speed=20.1602->20.1602 altitude=120->120
+[RL] action=4 role=0 sensing=1->1 speed=7.20599->8.20599 altitude=60->60
+[RL] action=11 role=1 sensing=1->1 speed=21.2026->21.2026 altitude=80->80
+[RL] action=19 role=3 sensing=1->0.9 speed=20.1602->20.1602 altitude=120->120
+[RL] action=6 role=0 sensing=1->1 speed=8.20599->8.20599 altitude=60->65
+[RL] action=6 role=0 sensing=1->1 speed=8.20599->8.20599 altitude=65->70
+[RL] action=15 role=2 sensing=1->1 speed=29.7894->28.7894 altitude=95->95
+[RL] action=7 role=1 sensing=1->0.9 speed=21.2026->21.2026 altitude=80->80
+[RL] action=15 role=2 sensing=1->1 speed=28.7894->27.7894 altitude=95->95
+[RL] action=9 role=1 sensing=0.9->0.9 speed=21.2026->20.2026 altitude=80->80
+[RL] action=4 role=0 sensing=1->1 speed=8.20599->9.20599 altitude=70->70
+[RL] action=2 role=0 sensing=1->1.1 speed=9.20599->9.20599 altitude=70->70
+[RL] action=1 role=0 sensing=1.1->1 speed=9.20599->9.20599 altitude=70->70
+[RL] action=4 role=0 sensing=1->1 speed=9.20599->10.206 altitude=70->70
+[RL] action=16 role=2 sensing=1->1 speed=27.7894->28.7894 altitude=95->95
+[RL] action=12 role=1 sensing=0.9->0.9 speed=20.2026->20.2026 altitude=80->85
+[RL] action=1 role=0 sensing=1->0.9 speed=10.206->10.206 altitude=70->70
+[RL] action=22 role=3 sensing=0.9->0.9 speed=20.1602->21.1602 altitude=120->120
+[RL] action=3 role=0 sensing=0.9->0.9 speed=10.206->9.20599 altitude=70->70
+[RL] action=19 role=3 sensing=0.9->0.8 speed=21.1602->21.1602 altitude=120->120
+[RL] action=19 role=3 sensing=0.8->0.7 speed=21.1602->21.1602 altitude=120->120
+[RL] action=16 role=2 sensing=1->1 speed=28.7894->29.7894 altitude=95->95
+[RL] action=15 role=2 sensing=1->1 speed=29.7894->28.7894 altitude=95->95
+[RL] action=7 role=1 sensing=0.9->0.8 speed=20.2026->20.2026 altitude=85->85
+[RL] action=18 role=2 sensing=1->1 speed=28.7894->28.7894 altitude=95->100
+[RL] action=7 role=1 sensing=0.8->0.7 speed=20.2026->20.2026 altitude=85->85
+[RL] action=9 role=1 sensing=0.7->0.7 speed=20.2026->19.2026 altitude=85->85
+
+===== APP (ISAC REPORTS + TELEMETRY) FLOW KPIs =====
+[TELEMETRY] Flow 7.0.0.2 -> 1.0.0.2 Tx=2985 Rx=2985 Loss%=0 AvgDelay(ms)=12.1479 Throughput(Mbps)=0.0982729
+[TELEMETRY] Flow 7.0.0.2 -> 1.0.0.2 Tx=155677 Rx=155677 Loss%=0 AvgDelay(ms)=12.6804 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.3 -> 1.0.0.2 Tx=155651 Rx=155651 Loss%=0 AvgDelay(ms)=12.6788 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.3 -> 1.0.0.2 Tx=2984 Rx=2984 Loss%=0 AvgDelay(ms)=12.339 Throughput(Mbps)=0.0982729
+[TELEMETRY] Flow 7.0.0.4 -> 1.0.0.2 Tx=155624 Rx=155624 Loss%=0 AvgDelay(ms)=12.6533 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.5 -> 1.0.0.2 Tx=155598 Rx=155598 Loss%=0 AvgDelay(ms)=12.7292 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.4 -> 1.0.0.2 Tx=2983 Rx=2983 Loss%=0 AvgDelay(ms)=12.1947 Throughput(Mbps)=0.0982729
+[TELEMETRY] Flow 7.0.0.5 -> 1.0.0.2 Tx=2982 Rx=2982 Loss%=0 AvgDelay(ms)=13.0322 Throughput(Mbps)=0.098273
+[ISAC_REPORT] Flow 7.0.0.2 -> 1.0.0.2 Tx=308 Rx=308 Loss%=0 AvgDelay(ms)=12.0543 Throughput(Mbps)=0.00126486
+[ISAC_REPORT] Flow 7.0.0.3 -> 1.0.0.2 Tx=328 Rx=328 Loss%=0 AvgDelay(ms)=12.0936 Throughput(Mbps)=0.00102582
+[ISAC_REPORT] Flow 7.0.0.4 -> 1.0.0.2 Tx=297 Rx=297 Loss%=0 AvgDelay(ms)=11.5495 Throughput(Mbps)=0.000902486
+[ISAC_REPORT] Flow 7.0.0.5 -> 1.0.0.2 Tx=347 Rx=347 Loss%=0 AvgDelay(ms)=12.747 Throughput(Mbps)=0.000690794
+
+===== PER-UAV ENERGY =====
+UAV 0 | Eprop=76031.6 J | ERF=59.6583 J | Eproc=14.62 J | Etot=76105.9 J
+UAV 1 | Eprop=85783.3 J | ERF=59.6583 J | Eproc=11.865 J | Etot=85854.8 J
+UAV 2 | Eprop=97816.8 J | ERF=59.6583 J | Eproc=10.435 J | Etot=97886.9 J
+UAV 3 | Eprop=85576.3 J | ERF=59.6583 J | Eproc=7.99 J | Etot=85644 J
+
+FINAL_PDET=0.90252
+FINAL_RMSE=34.5838
+FINAL_J=1.55849
+
+Done.
+Generated: cow_truth.csv, uav_isac_reports.csv, uav_isac_fused.csv

@@ -6,3 +6,53 @@
 [RL] action=19 role=3 sensing=0.7->0.6 speed=21.4819->21.4819 altitude=120->120
 [RL] action=19 role=3 sensing=0.6->0.5 speed=21.4819->21.4819 altitude=120->120
 [RL] action=19 role=3 sensing=0.5->0.4 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.4->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+[RL] action=19 role=3 sensing=0.3->0.3 speed=21.4819->21.4819 altitude=120->120
+
+===== APP (ISAC REPORTS + TELEMETRY) FLOW KPIs =====
+[TELEMETRY] Flow 7.0.0.2 -> 1.0.0.2 Tx=2985 Rx=2985 Loss%=0 AvgDelay(ms)=11.6264 Throughput(Mbps)=0.0982729
+[TELEMETRY] Flow 7.0.0.2 -> 1.0.0.2 Tx=155677 Rx=155677 Loss%=0 AvgDelay(ms)=12.6621 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.3 -> 1.0.0.2 Tx=155651 Rx=155651 Loss%=0 AvgDelay(ms)=12.6255 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.3 -> 1.0.0.2 Tx=2984 Rx=2984 Loss%=0 AvgDelay(ms)=12.787 Throughput(Mbps)=0.0982729
+[TELEMETRY] Flow 7.0.0.4 -> 1.0.0.2 Tx=155624 Rx=155624 Loss%=0 AvgDelay(ms)=12.4352 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.5 -> 1.0.0.2 Tx=155598 Rx=155598 Loss%=0 AvgDelay(ms)=12.6906 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.4 -> 1.0.0.2 Tx=2983 Rx=2983 Loss%=0 AvgDelay(ms)=12.2214 Throughput(Mbps)=0.0982729
+[TELEMETRY] Flow 7.0.0.5 -> 1.0.0.2 Tx=2982 Rx=2982 Loss%=0 AvgDelay(ms)=11.6489 Throughput(Mbps)=0.098273
+[ISAC_REPORT] Flow 7.0.0.2 -> 1.0.0.2 Tx=297 Rx=297 Loss%=0 AvgDelay(ms)=12.0293 Throughput(Mbps)=0.00121124
+[ISAC_REPORT] Flow 7.0.0.3 -> 1.0.0.2 Tx=297 Rx=297 Loss%=0 AvgDelay(ms)=11.4402 Throughput(Mbps)=0.00092973
+[ISAC_REPORT] Flow 7.0.0.4 -> 1.0.0.2 Tx=297 Rx=297 Loss%=0 AvgDelay(ms)=12.4135 Throughput(Mbps)=0.00097773
+[ISAC_REPORT] Flow 7.0.0.5 -> 1.0.0.2 Tx=871 Rx=871 Loss%=0 AvgDelay(ms)=11.3412 Throughput(Mbps)=0.00196607
+
+===== PER-UAV ENERGY =====
+UAV 0 | Eprop=75378.8 J | ERF=59.6583 J | Eproc=14.005 J | Etot=75452.5 J
+UAV 1 | Eprop=86265.3 J | ERF=59.6583 J | Eproc=10.75 J | Etot=86335.7 J
+UAV 2 | Eprop=87574 J | ERF=59.6583 J | Eproc=11.305 J | Etot=87644.9 J
+UAV 3 | Eprop=86332.2 J | ERF=59.6583 J | Eproc=22.725 J | Etot=86414.6 J
+
+FINAL_PDET=0.932222
+FINAL_RMSE=38.1013
+FINAL_J=2.11315
+
+Done.
+Generated: cow_truth.csv, uav_isac_reports.csv, uav_isac_fused.csv

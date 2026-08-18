@@ -8,6 +8,7 @@ import csv
 from pathlib import Path
 
 from dqn_agent import DqnAgent
+from evaluation_metrics import action_changed_state, build_episode_row
 from mock_uav_env import MockUavEnv
 from uav_isac_env import UavIsacEnv
 
@@ -31,25 +32,27 @@ def main() -> None:
         for seed in (int(value) for value in args.seeds.split(",")):
             state, info = env.reset(seed=seed)
             total_reward = 0.0
-            steps = 0
+            actions = []
+            effective_flags = []
             while True:
                 action = agent.select_action(state, explore=False)
+                previous_state = state
                 state, reward, terminated, truncated, info = env.step(action)
+                actions.append(action)
+                effective_flags.append(action_changed_state(action, previous_state, state))
                 total_reward += reward
-                steps += 1
                 if terminated or truncated:
                     break
-            rows.append({
-                "seed": seed,
-                "return": total_reward,
-                "steps": steps,
-                "pdet": info.get("pdet", ""),
-                "rmse_m": info.get("rmse_m", ""),
-                "throughput_mbps": info.get("throughput_mbps", ""),
-                "delay_ms": info.get("delay_ms", ""),
-                "loss_pct": info.get("loss_pct", ""),
-                "delta_energy_j": info.get("delta_energy_j", ""),
-            })
+            rows.append(
+                build_episode_row(
+                    seed=seed,
+                    episode_return=total_reward,
+                    actions=actions,
+                    effective_flags=effective_flags,
+                    final_info=info,
+                    episode_dir=None if args.environment == "mock" else env.episode_dir,
+                )
+            )
     finally:
         env.close()
 
@@ -63,4 +66,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
