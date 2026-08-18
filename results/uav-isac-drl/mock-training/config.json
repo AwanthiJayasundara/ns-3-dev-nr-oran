@@ -1,0 +1,11 @@
+{
+  "environment": "mock",
+  "episodes": 50,
+  "seed": 1,
+  "simulation_time": 300.0,
+  "control_interval": 10.0,
+  "mock_episode_length": 40,
+  "output": "results/uav-isac-drl/mock-training",
+  "learning_starts": 64,
+  "batch_size": 32
+}

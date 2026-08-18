@@ -1,0 +1,8 @@
+[
+  "/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/ns3",
+  "run",
+  "--no-build",
+  "--cwd",
+  "results/uav-isac-drl/ns3-smoke-comparison-fixed/comparison-episodes/random/episode-000000-seed-9002",
+  "uav-isac-drl --enableRl=1 --rlPort=47763 --episodeId=0 --RngRun=9002 --simulationTime=30.0 --controlInterval=10.0"
+]

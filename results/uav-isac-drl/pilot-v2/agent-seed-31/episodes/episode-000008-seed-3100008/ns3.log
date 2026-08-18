@@ -1,0 +1,58 @@
+[RL] Waiting for synchronous controller on 127.0.0.1:54941
+[RL] Controller connected
+[RL] action=5 role=0 sensing=1->1 speed=14.5239->14.5239 altitude=60->60
+[RL] action=9 role=1 sensing=1->1 speed=16.6632->15.6632 altitude=80->80
+[RL] action=7 role=1 sensing=1->0.9 speed=15.6632->15.6632 altitude=80->80
+[RL] action=22 role=3 sensing=1->1 speed=13.4614->14.4614 altitude=120->120
+[RL] action=17 role=2 sensing=1->1 speed=28.0853->28.0853 altitude=100->95
+[RL] action=7 role=1 sensing=0.9->0.8 speed=15.6632->15.6632 altitude=80->80
+[RL] action=7 role=1 sensing=0.8->0.7 speed=15.6632->15.6632 altitude=80->80
+[RL] action=7 role=1 sensing=0.7->0.6 speed=15.6632->15.6632 altitude=80->80
+[RL] action=21 role=3 sensing=1->1 speed=14.4614->13.4614 altitude=120->120
+[RL] action=6 role=0 sensing=1->1 speed=14.5239->14.5239 altitude=60->65
+[RL] action=9 role=1 sensing=0.6->0.6 speed=15.6632->14.6632 altitude=80->80
+[RL] action=9 role=1 sensing=0.6->0.6 speed=14.6632->13.6632 altitude=80->80
+[RL] action=22 role=3 sensing=1->1 speed=13.4614->14.4614 altitude=120->120
+[RL] action=21 role=3 sensing=1->1 speed=14.4614->13.4614 altitude=120->120
+[RL] action=5 role=0 sensing=1->1 speed=14.5239->14.5239 altitude=65->60
+[RL] action=14 role=2 sensing=1->1.1 speed=28.0853->28.0853 altitude=95->95
+[RL] action=8 role=1 sensing=0.6->0.7 speed=13.6632->13.6632 altitude=80->80
+[RL] action=19 role=3 sensing=1->0.9 speed=13.4614->13.4614 altitude=120->120
+[RL] action=20 role=3 sensing=0.9->1 speed=13.4614->13.4614 altitude=120->120
+[RL] action=18 role=2 sensing=1.1->1.1 speed=28.0853->28.0853 altitude=95->100
+[RL] action=1 role=0 sensing=1->0.9 speed=14.5239->14.5239 altitude=60->60
+[RL] action=11 role=1 sensing=0.7->0.7 speed=13.6632->13.6632 altitude=80->80
+[RL] action=7 role=1 sensing=0.7->0.6 speed=13.6632->13.6632 altitude=80->80
+[RL] action=7 role=1 sensing=0.6->0.5 speed=13.6632->13.6632 altitude=80->80
+[RL] action=23 role=3 sensing=1->1 speed=13.4614->13.4614 altitude=120->120
+[RL] action=7 role=1 sensing=0.5->0.4 speed=13.6632->13.6632 altitude=80->80
+[RL] action=17 role=2 sensing=1.1->1.1 speed=28.0853->28.0853 altitude=100->95
+[RL] action=21 role=3 sensing=1->1 speed=13.4614->12.4614 altitude=120->120
+[RL] action=21 role=3 sensing=1->1 speed=12.4614->11.4614 altitude=120->120
+
+===== APP (ISAC REPORTS + TELEMETRY) FLOW KPIs =====
+[TELEMETRY] Flow 7.0.0.2 -> 1.0.0.2 Tx=2985 Rx=2985 Loss%=0 AvgDelay(ms)=12.0358 Throughput(Mbps)=0.0982729
+[TELEMETRY] Flow 7.0.0.2 -> 1.0.0.2 Tx=155677 Rx=155677 Loss%=0 AvgDelay(ms)=12.6632 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.3 -> 1.0.0.2 Tx=155651 Rx=155651 Loss%=0 AvgDelay(ms)=12.6939 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.3 -> 1.0.0.2 Tx=2984 Rx=2984 Loss%=0 AvgDelay(ms)=12.1304 Throughput(Mbps)=0.0982729
+[TELEMETRY] Flow 7.0.0.4 -> 1.0.0.2 Tx=155624 Rx=155624 Loss%=0 AvgDelay(ms)=12.6496 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.5 -> 1.0.0.2 Tx=155598 Rx=155598 Loss%=0 AvgDelay(ms)=12.6657 Throughput(Mbps)=5.1167
+[TELEMETRY] Flow 7.0.0.4 -> 1.0.0.2 Tx=2983 Rx=2983 Loss%=0 AvgDelay(ms)=11.8989 Throughput(Mbps)=0.0982729
+[TELEMETRY] Flow 7.0.0.5 -> 1.0.0.2 Tx=2982 Rx=2982 Loss%=0 AvgDelay(ms)=12.2825 Throughput(Mbps)=0.098273
+[ISAC_REPORT] Flow 7.0.0.2 -> 1.0.0.2 Tx=307 Rx=307 Loss%=0 AvgDelay(ms)=11.4693 Throughput(Mbps)=0.000993826
+[ISAC_REPORT] Flow 7.0.0.3 -> 1.0.0.2 Tx=478 Rx=478 Loss%=0 AvgDelay(ms)=11.6354 Throughput(Mbps)=0.00165479
+[ISAC_REPORT] Flow 7.0.0.4 -> 1.0.0.2 Tx=284 Rx=284 Loss%=0 AvgDelay(ms)=11.4662 Throughput(Mbps)=0.00088249
+[ISAC_REPORT] Flow 7.0.0.5 -> 1.0.0.2 Tx=298 Rx=298 Loss%=0 AvgDelay(ms)=11.9017 Throughput(Mbps)=0.000752687
+
+===== PER-UAV ENERGY =====
+UAV 0 | Eprop=79276.2 J | ERF=59.6583 J | Eproc=11.495 J | Etot=79347.3 J
+UAV 1 | Eprop=79890.2 J | ERF=59.6583 J | Eproc=19.14 J | Etot=79968.9 J
+UAV 2 | Eprop=95973.8 J | ERF=59.6583 J | Eproc=10.19 J | Etot=96043.7 J
+UAV 3 | Eprop=78705.5 J | ERF=59.6583 J | Eproc=8.7 J | Etot=78773.9 J
+
+FINAL_PDET=0.939457
+FINAL_RMSE=35.0217
+FINAL_J=1.84389
+
+Done.
+Generated: cow_truth.csv, uav_isac_reports.csv, uav_isac_fused.csv
