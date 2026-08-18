@@ -1870,6 +1870,7 @@ Ptr<Ipv4FlowClassifier> classifier =
   std::map<FlowId, FlowSnapshot> previousFlowStats;
   double previousTotalEnergy = 0.0;
   uint32_t rlStep = 0;
+  bool rlEpisodeEnded = false;
 
   std::function<void()> controlCycle;
   controlCycle = [&]() {
@@ -2108,10 +2109,23 @@ Ptr<Ipv4FlowClassifier> classifier =
                           "RL controller sent an invalid action or disconnected");
           applyDiscreteAction(action);
         }
+        else
+        {
+          // The terminal transition is the final message for this episode.
+          // Do not schedule another control cycle after Python closes its
+          // socket; stop ns-3 cleanly so final CSV output can be written.
+          rlEpisodeEnded = true;
+        }
         rlStep++;
       }
 
       fusionRx->ResetWindowStats();
+    }
+
+    if (rlEpisodeEnded)
+    {
+      Simulator::Stop();
+      return;
     }
 
     double next = Simulator::Now().GetSeconds() + controlInterval;

@@ -31,6 +31,31 @@ class Ns3IntegrationTest(unittest.TestCase):
             finally:
                 env.close()
 
+    def test_battery_termination_exits_cleanly_and_writes_summary(self):
+        with tempfile.TemporaryDirectory() as output_root:
+            env = UavIsacEnv(
+                simulation_time=40.0,
+                output_root=output_root,
+                extra_sim_args={"batteryBudgetJ": 5000.0},
+            )
+            try:
+                _, initial_info = env.reset(seed=4321)
+                self.assertFalse(initial_info["terminated"])
+
+                _, _, terminated, truncated, _ = env.step(0)
+                self.assertTrue(terminated)
+                self.assertFalse(truncated)
+                self.assertIsNotNone(env._process)
+                self.assertEqual(env._process.poll(), 0)
+
+                summary = env._episode_dir / "run_summary.csv"
+                self.assertTrue(summary.is_file())
+                log = (env._episode_dir / "ns3.log").read_text(encoding="utf-8")
+                self.assertNotIn("NS_FATAL", log)
+                self.assertNotIn("disconnected", log.lower())
+            finally:
+                env.close()
+
 
 if __name__ == "__main__":
     unittest.main()

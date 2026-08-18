@@ -127,6 +127,32 @@ class UavIsacEnv(gym.Env[np.ndarray, int]):
     def _info(message: dict[str, Any]) -> dict[str, Any]:
         return {key: value for key, value in message.items() if key != "observation"}
 
+    def _wait_for_episode_completion(self) -> None:
+        """Wait for ns-3 to flush final logs and reject an unclean exit."""
+        if self._process is None:
+            return
+        try:
+            return_code = self._process.wait(timeout=self.step_timeout)
+        except subprocess.TimeoutExpired as error:
+            raise TimeoutError(
+                "ns-3 did not exit after its terminal transition; "
+                f"see {self._episode_dir / 'ns3.log'}"
+            ) from error
+        if self._log_handle is not None:
+            self._log_handle.flush()
+        if return_code != 0:
+            raise RuntimeError(
+                f"ns-3 exited with code {return_code} after its terminal transition; "
+                f"see {self._episode_dir / 'ns3.log'}"
+            )
+
+        summary_name = Path(str(self.extra_sim_args.get("summaryFile", "run_summary.csv")))
+        summary_path = summary_name if summary_name.is_absolute() else self._episode_dir / summary_name
+        if not summary_path.is_file():
+            raise RuntimeError(
+                f"ns-3 exited cleanly but did not write its final summary: {summary_path}"
+            )
+
     def reset(
         self,
         *,
@@ -188,11 +214,15 @@ class UavIsacEnv(gym.Env[np.ndarray, int]):
         if int(message["step_id"]) != int(self._current_message["step_id"]) + 1:
             raise RuntimeError("Received non-consecutive transition step")
         self._current_message = message
+        terminated = bool(message["terminated"])
+        truncated = bool(message["truncated"])
+        if terminated or truncated:
+            self._wait_for_episode_completion()
         return (
             self._observation(message),
             float(message["reward"]),
-            bool(message["terminated"]),
-            bool(message["truncated"]),
+            terminated,
+            truncated,
             self._info(message),
         )
 

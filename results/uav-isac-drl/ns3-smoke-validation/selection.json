@@ -1,0 +1,13 @@
+{
+  "selection_metric": "mean validation episodic return",
+  "validation_seeds": [
+    7001
+  ],
+  "candidate_mean_returns": {
+    "/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/ns3-smoke-training/checkpoint-episode-000001.pt": 4.328523246,
+    "/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/ns3-smoke-training/checkpoint-episode-000002.pt": 4.342091182,
+    "/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/ns3-smoke-training/checkpoint-episode-000003.pt": 4.342091182
+  },
+  "selected_checkpoint": "/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/results/uav-isac-drl/ns3-smoke-training/checkpoint-episode-000002.pt",
+  "test_seeds_used": false
+}

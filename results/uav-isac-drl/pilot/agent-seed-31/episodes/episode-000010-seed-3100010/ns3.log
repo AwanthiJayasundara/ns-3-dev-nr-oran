@@ -1,0 +1,41 @@
+[RL] Waiting for synchronous controller on 127.0.0.1:39761
+[RL] Controller connected
+[RL] action=11 role=1 sensing=1->1 speed=22.8153->22.8153 altitude=80->80
+[RL] action=11 role=1 sensing=1->1 speed=22.8153->22.8153 altitude=80->80
+[RL] action=11 role=1 sensing=1->1 speed=22.8153->22.8153 altitude=80->80
+[RL] action=7 role=1 sensing=1->0.9 speed=22.8153->22.8153 altitude=80->80
+[RL] action=10 role=1 sensing=0.9->0.9 speed=22.8153->23.8153 altitude=80->80
+[RL] action=7 role=1 sensing=0.9->0.8 speed=23.8153->23.8153 altitude=80->80
+[RL] action=9 role=1 sensing=0.8->0.8 speed=23.8153->22.8153 altitude=80->80
+[RL] action=7 role=1 sensing=0.8->0.7 speed=22.8153->22.8153 altitude=80->80
+[RL] action=23 role=3 sensing=1->1 speed=13.5609->13.5609 altitude=120->120
+[RL] action=23 role=3 sensing=1->1 speed=13.5609->13.5609 altitude=120->120
+[RL] action=17 role=2 sensing=1->1 speed=34.8689->34.8689 altitude=100->95
+[RL] action=17 role=2 sensing=1->1 speed=34.8689->34.8689 altitude=95->95
+[RL] action=24 role=3 sensing=1->1 speed=13.5609->13.5609 altitude=120->125
+[RL] action=23 role=3 sensing=1->1 speed=13.5609->13.5609 altitude=125->120
+[RL] action=5 role=0 sensing=1->1 speed=11.328->11.328 altitude=60->60
+[RL] action=23 role=3 sensing=1->1 speed=13.5609->13.5609 altitude=120->120
+[RL] action=7 role=1 sensing=0.7->0.6 speed=22.8153->22.8153 altitude=80->80
+[RL] action=8 role=1 sensing=0.6->0.7 speed=22.8153->22.8153 altitude=80->80
+[RL] action=16 role=2 sensing=1->1 speed=34.8689->35.8689 altitude=95->95
+[RL] action=5 role=0 sensing=1->1 speed=11.328->11.328 altitude=60->60
+[RL] action=5 role=0 sensing=1->1 speed=11.328->11.328 altitude=60->60
+[RL] action=14 role=2 sensing=1->1.1 speed=35.8689->35.8689 altitude=95->95
+[RL] action=2 role=0 sensing=1->1.1 speed=11.328->11.328 altitude=60->60
+[RL] action=9 role=1 sensing=0.7->0.7 speed=22.8153->21.8153 altitude=80->80
+[RL] action=5 role=0 sensing=1.1->1.1 speed=11.328->11.328 altitude=60->60
+[RL] action=5 role=0 sensing=1.1->1.1 speed=11.328->11.328 altitude=60->60
+[RL] action=13 role=2 sensing=1.1->1 speed=35.8689->35.8689 altitude=95->95
+aborted. cond="!rlBridge->SendLine(state.str())", msg="RL controller disconnected while receiving state", +300.000000000s -1 file=/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/scratch/uav-isac-drl/uav-isac-drl.cc, line=2102
+NS_FATAL, terminating
+   0# main::{lambda()#3}::operator()() const at :0
+   1# ns3::DefaultSimulatorImpl::ProcessOneEvent() at :0
+   2# ns3::DefaultSimulatorImpl::Run() [clone .localalias] at :0
+   3# main at :0
+   4# __libc_start_call_main at ../sysdeps/nptl/libc_start_call_main.h:58
+   5# __libc_start_main_impl at ../csu/libc-start.c:360
+   6# _start at :0
+   7# 
+
+terminate called without an active exception

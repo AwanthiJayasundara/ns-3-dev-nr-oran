@@ -1,0 +1,17 @@
+{
+  "environment": "ns3",
+  "episodes": 20,
+  "seed": 31,
+  "simulation_time": 300.0,
+  "control_interval": 10.0,
+  "mock_episode_length": 40,
+  "output": "results/uav-isac-drl/pilot/agent-seed-31",
+  "learning_starts": 100,
+  "batch_size": 64,
+  "gamma": null,
+  "learning_rate": null,
+  "hidden_dim": null,
+  "target_update_interval": 200,
+  "epsilon_decay_steps": 500,
+  "checkpoint_every": 5
+}
