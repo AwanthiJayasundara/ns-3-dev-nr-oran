@@ -1,0 +1,2 @@
+TxPowerDbm,AntennaGainDbi,CarrierFrequencyHz,BandwidthHz,TargetRcsM2,SystemLossLinear,NoiseFigureDb,DetectionSlope,DetectionMidpointDb,PositionSigmaRefM,PositionSnrRefDb,PositionSigmaMinM,PositionSigmaMaxM
+30,30,4e+09,2e+07,1,1,7,0.5,-15,5,-10,1,50

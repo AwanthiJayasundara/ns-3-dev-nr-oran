@@ -1,0 +1,1 @@
+Time,RecordType,UavIndex,UavCellId,CentroidIndex,CurrentEastM,CurrentNorthM,TargetEastM,TargetNorthM,DistanceToTargetM,ReachThresholdM,HasMovementAssignment,Arrived,NumMovementUes,NumCentroids
