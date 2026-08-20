@@ -1,0 +1,8 @@
+[
+  "/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/ns3",
+  "run",
+  "--no-build",
+  "--cwd",
+  "results/uav-isac-drl/rf-paper-v1/comparison-episodes/static/episode-000007-seed-9008",
+  "uav-isac-drl --enableRl=1 --rlPort=53121 --episodeId=7 --RngRun=9008 --simulationTime=300.0 --controlInterval=10.0"
+]

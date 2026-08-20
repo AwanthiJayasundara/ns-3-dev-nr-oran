@@ -1,5 +1,11 @@
 # UAV–ISAC DRL implementation
 
+**Documentation version: 2 — 18 August 2026**
+
+Version 2 corrects whole-episode versus final-window reporting, adds mission
+outcomes and effective-action diagnostics, generates direct paired
+DQN-versus-baseline comparisons, and updates the paper and beginner guide.
+
 This directory preserves the released random-forest method as a benchmark and
 adds a genuine sequential Double-DQN environment and agent.
 
@@ -162,3 +168,14 @@ The corrected three-seed pilot is an analysis check, not a final performance
 campaign. Its DQN mean return is 41.3591 versus 41.1188 for the rule baseline,
 and only 37 of 87 DQN control attempts changed the controlled state. This is
 not enough evidence for a DRL improvement or significance claim.
+
+## Documentation revision history
+
+| Version | Date | Main change |
+|---|---|---|
+| 1 | 18 August 2026 | Initial synchronized DRL implementation and smoke-test documentation. |
+| 2 | 18 August 2026 | Corrected pilot KPIs, outcomes, action effectiveness, paired comparisons, commands, and rebuilt documents. |
+
+Increment this integer whenever the README, paper, or beginner guide is
+materially revised, and record the change in this table and in the generated
+documents.

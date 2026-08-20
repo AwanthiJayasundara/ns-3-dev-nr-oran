@@ -1,0 +1,8 @@
+[
+  "/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/ns3",
+  "run",
+  "--no-build",
+  "--cwd",
+  "results/uav-isac-drl/rf-paper-v1-rf-temp/comparison-episodes/rf-static/episode-000006-seed-9007",
+  "uav-isac-drl --enableRl=1 --rlPort=33473 --episodeId=6 --RngRun=9007 --simulationTime=300.0 --controlInterval=10.0 --survSenseDt=0.6839656202735569 --patSenseDt=0.5913788675606688 --rapidSenseDt=1.2293353210954812 --stratSenseDt=0.9179736383649476 --alphaSurv=0.6340480025566547 --alphaPat=0.8147913524379711 --alphaRapid=0.693887798092585 --alphaStrat=0.6381885328730519 --survVmin=7.490614583036612 --survVmax=24.23436406310973 --patVmin=10.235097495265356 --patVmax=24.802097910237368 --rapidVmin=18.443866855857745 --rapidVmax=33.162812205664856 --stratVmin=11.87969925036857 --stratVmax=22.46563681635005 --survZmin=51.57318041412721 --survZmax=85.06020018125989 --patZmin=75.99114439721481 --patZmax=91.4040912497258 --rapidZmin=92.66910020504636 --rapidZmax=124.21830187566624 --stratZmin=115.96646909975102 --stratZmax=132.77888434689265 --survDt=0.9414841922192182 --patDt=0.9638988882459392 --rapidDt=0.7501417077024511 --stratDt=1.855958453772777"
+]

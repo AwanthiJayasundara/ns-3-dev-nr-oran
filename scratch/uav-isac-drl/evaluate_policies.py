@@ -30,6 +30,24 @@ def load_rf_configuration(path: Path | None) -> dict[str, float]:
     return {feature: float(row[feature]) for feature in FEATURES if feature in row}
 
 
+def parse_fixed_candidates(values: list[str] | None) -> dict[str, Path]:
+    """Parse repeatable NAME=CSV fixed-configuration arguments."""
+    candidates: dict[str, Path] = {}
+    for value in values or []:
+        if "=" not in value:
+            raise ValueError(
+                f"Invalid --fixed-candidate {value!r}; expected METHOD=CSV"
+            )
+        name, path = value.split("=", 1)
+        name = name.strip()
+        if not name or name in {"static", "random", "rule", "dqn"}:
+            raise ValueError(f"Invalid fixed-candidate method name {name!r}")
+        if name in candidates:
+            raise ValueError(f"Duplicate fixed-candidate method name {name!r}")
+        candidates[name] = Path(path)
+    return candidates
+
+
 def rule_action(info: dict, step: int) -> int:
     role = step % 4
     if info.get("pdet", 1.0) < 0.97:
@@ -119,11 +137,23 @@ def main() -> None:
     parser.add_argument("--seeds", default="9001,9002,9003,9004,9005")
     parser.add_argument("--checkpoint", type=Path)
     parser.add_argument("--rf-candidate", type=Path)
+    parser.add_argument(
+        "--fixed-candidate",
+        action="append",
+        default=[],
+        metavar="METHOD=CSV",
+        help="Named fixed configuration; repeat for multiple candidates.",
+    )
     parser.add_argument("--simulation-time", type=float, default=300.0)
     parser.add_argument("--output", type=Path, default=Path("results/uav-isac-drl/comparison.csv"))
     args = parser.parse_args()
 
     methods = args.methods.split(",")
+    fixed_candidates = parse_fixed_candidates(args.fixed_candidate)
+    if args.rf_candidate is not None:
+        if "rf-static" in fixed_candidates:
+            parser.error("Specify rf-static using either --rf-candidate or --fixed-candidate, not both")
+        fixed_candidates["rf-static"] = args.rf_candidate
     if "dqn" in methods and args.checkpoint is None:
         parser.error("--checkpoint is required when evaluating dqn")
     dqn = DqnAgent.load(args.checkpoint, device="cpu") if args.checkpoint else None
@@ -131,7 +161,11 @@ def main() -> None:
     rows = []
 
     for method in methods:
-        extra = load_rf_configuration(args.rf_candidate) if method == "rf-static" else {}
+        if method not in {"static", "random", "rule", "dqn"} and method not in fixed_candidates:
+            raise ValueError(
+                f"Unknown method {method!r}; provide --fixed-candidate {method}=CSV"
+            )
+        extra = load_rf_configuration(fixed_candidates.get(method))
         env = UavIsacEnv(
             simulation_time=args.simulation_time,
             output_root=args.output.parent / "comparison-episodes" / method,
@@ -146,7 +180,7 @@ def main() -> None:
                 actions = []
                 effective_flags = []
                 while True:
-                    if method in {"static", "rf-static"}:
+                    if method == "static" or method in fixed_candidates:
                         action = 0
                     elif method == "random":
                         action = int(rng.integers(25))

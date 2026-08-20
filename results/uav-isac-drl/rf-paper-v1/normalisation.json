@@ -1,0 +1,29 @@
+{
+  "source": "5th and 95th percentiles of the 300-run design dataset",
+  "limits": {
+    "throughput": {
+      "lower": 0.0004470085,
+      "upper": 0.0010284345
+    },
+    "rmse": {
+      "lower": 31.63105,
+      "upper": 44.866475
+    },
+    "delay": {
+      "lower": 11.07929,
+      "upper": 11.849055
+    },
+    "energy": {
+      "lower": 330379.35,
+      "upper": 360904.05
+    }
+  },
+  "weights": {
+    "pdet": 3.0,
+    "throughput": 2.0,
+    "rmse": 2.0,
+    "delay": 1.0,
+    "energy": 1.0
+  },
+  "packet_loss": "reported separately; constant zero in all design runs"
+}

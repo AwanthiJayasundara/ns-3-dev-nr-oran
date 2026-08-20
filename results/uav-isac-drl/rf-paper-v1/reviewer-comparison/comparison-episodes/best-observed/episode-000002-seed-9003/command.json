@@ -1,0 +1,8 @@
+[
+  "/home/awanthidel/workspace/MyNewWorspace/ns-3-dev-nr-oran/ns3",
+  "run",
+  "--no-build",
+  "--cwd",
+  "results/uav-isac-drl/rf-paper-v1/reviewer-comparison/comparison-episodes/best-observed/episode-000002-seed-9003",
+  "uav-isac-drl --enableRl=1 --rlPort=33153 --episodeId=2 --RngRun=9003 --simulationTime=300.0 --controlInterval=10.0 --survSenseDt=0.506302 --patSenseDt=1.62283 --rapidSenseDt=0.76424 --stratSenseDt=1.69309 --alphaSurv=0.545541 --alphaPat=0.74639 --alphaRapid=0.54646 --alphaStrat=0.880569 --survVmin=7.75625 --survVmax=18.662 --patVmin=12.0292 --patVmax=31.9519 --rapidVmin=20.362 --rapidVmax=30.6653 --stratVmin=12.0886 --stratVmax=21.1439 --survZmin=60.943 --survZmax=83.8948 --patZmin=77.0779 --patZmax=94.8078 --rapidZmin=107.996 --rapidZmax=121.049 --stratZmin=126.573 --stratZmax=132.821 --survDt=1.89751 --patDt=1.04818 --rapidDt=0.784035 --stratDt=0.884084"
+]

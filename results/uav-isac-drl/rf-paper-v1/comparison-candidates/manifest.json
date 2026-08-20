@@ -1,0 +1,15 @@
+{
+  "selection_rule": "maximum corrected utility among the original 300 design runs",
+  "best_observed_source_row": 107,
+  "best_observed_rng_run": 108,
+  "best_observed_design_utility": 4.2764887201249735,
+  "rf_ranked_source": "results/uav-isac-drl/rf-paper-v1/top_candidates.csv",
+  "files": {
+    "best-observed": "results/uav-isac-drl/rf-paper-v1/comparison-candidates/best-observed-300.csv",
+    "rf-rank-1": "results/uav-isac-drl/rf-paper-v1/comparison-candidates/rf-rank-1.csv",
+    "rf-rank-2": "results/uav-isac-drl/rf-paper-v1/comparison-candidates/rf-rank-2.csv",
+    "rf-rank-3": "results/uav-isac-drl/rf-paper-v1/comparison-candidates/rf-rank-3.csv",
+    "rf-rank-4": "results/uav-isac-drl/rf-paper-v1/comparison-candidates/rf-rank-4.csv",
+    "rf-rank-5": "results/uav-isac-drl/rf-paper-v1/comparison-candidates/rf-rank-5.csv"
+  }
+}

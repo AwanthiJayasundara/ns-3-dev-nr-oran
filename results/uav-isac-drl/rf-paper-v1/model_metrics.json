@@ -1,0 +1,22 @@
+{
+  "method": "Random-Forest surrogate-assisted configuration search (not RL)",
+  "design_runs": 300,
+  "features": 28,
+  "candidate_samples": 100000,
+  "candidate_search_seed": 20260819,
+  "cross_validation": "shuffled 5-fold; fixed random seed",
+  "train_mae": 0.3003203268109158,
+  "train_r2": 0.8642020960184996,
+  "cv_mae": 0.6473218966542583,
+  "cv_r2": 0.386167624038831,
+  "dummy_cv_mae": 0.8097137419017149,
+  "feasible_design_runs_100kJ": 209,
+  "infeasible_design_runs_100kJ": 91,
+  "candidate_predicted_utility": 2.799602172748233,
+  "candidate_predicted_max_uav_energy_j": 94131.35350340704,
+  "candidate_energy_screen_j": 95000.0,
+  "final_equal_seed_evaluation_complete": true,
+  "final_evaluation_seeds": "9001-9020",
+  "final_evaluation_pairs": 20,
+  "final_results_directory": "paper-results"
+}

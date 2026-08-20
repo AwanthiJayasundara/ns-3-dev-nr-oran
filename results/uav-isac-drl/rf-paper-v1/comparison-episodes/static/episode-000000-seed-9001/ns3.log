@@ -1,0 +1,29 @@
+[RL] Waiting for synchronous controller on 127.0.0.1:51345
+[RL] Controller connected
+
+===== APP (ISAC REPORTS + TELEMETRY) FLOW KPIs =====
+[TELEMETRY] Flow 7.0.0.2 -> 1.0.0.2 Tx=2890 Rx=2890 Loss%=0 AvgDelay(ms)=12.0045 Throughput(Mbps)=0.098274
+[TELEMETRY] Flow 7.0.0.2 -> 1.0.0.2 Tx=150520 Rx=150512 Loss%=0.00531491 AvgDelay(ms)=12.628 Throughput(Mbps)=5.11643
+[TELEMETRY] Flow 7.0.0.3 -> 1.0.0.2 Tx=150494 Rx=150487 Loss%=0.00465135 AvgDelay(ms)=12.6403 Throughput(Mbps)=5.11646
+[TELEMETRY] Flow 7.0.0.3 -> 1.0.0.2 Tx=2889 Rx=2889 Loss%=0 AvgDelay(ms)=12.6687 Throughput(Mbps)=0.098274
+[TELEMETRY] Flow 7.0.0.4 -> 1.0.0.2 Tx=150468 Rx=150461 Loss%=0.00465215 AvgDelay(ms)=12.4376 Throughput(Mbps)=5.11646
+[TELEMETRY] Flow 7.0.0.5 -> 1.0.0.2 Tx=150442 Rx=150436 Loss%=0.00398825 AvgDelay(ms)=12.6797 Throughput(Mbps)=5.1165
+[TELEMETRY] Flow 7.0.0.4 -> 1.0.0.2 Tx=2888 Rx=2888 Loss%=0 AvgDelay(ms)=12.6477 Throughput(Mbps)=0.098274
+[TELEMETRY] Flow 7.0.0.5 -> 1.0.0.2 Tx=2887 Rx=2887 Loss%=0 AvgDelay(ms)=12.6012 Throughput(Mbps)=0.098274
+[ISAC_REPORT] Flow 7.0.0.2 -> 1.0.0.2 Tx=287 Rx=287 Loss%=0 AvgDelay(ms)=11.7088 Throughput(Mbps)=0.00115066
+[ISAC_REPORT] Flow 7.0.0.3 -> 1.0.0.2 Tx=287 Rx=287 Loss%=0 AvgDelay(ms)=12.0911 Throughput(Mbps)=0.000990434
+[ISAC_REPORT] Flow 7.0.0.4 -> 1.0.0.2 Tx=287 Rx=287 Loss%=0 AvgDelay(ms)=12.2556 Throughput(Mbps)=0.00085214
+[ISAC_REPORT] Flow 7.0.0.5 -> 1.0.0.2 Tx=287 Rx=287 Loss%=0 AvgDelay(ms)=11.4179 Throughput(Mbps)=0.000708028
+
+===== PER-UAV ENERGY =====
+UAV 0 | Eprop=74774.4 J | ERF=57.6631 J | Eproc=12.855 J | Etot=74844.9 J
+UAV 1 | Eprop=78375.3 J | ERF=57.6631 J | Eproc=11.065 J | Etot=78444 J
+UAV 2 | Eprop=101677 J | ERF=57.6631 J | Eproc=9.52 J | Etot=101744 J
+UAV 3 | Eprop=76903.5 J | ERF=57.6631 J | Eproc=7.91 J | Etot=76969.1 J
+
+FINAL_PDET=0.958852
+FINAL_RMSE=36.851
+FINAL_J=1.67111
+
+Done.
+Generated: cow_truth.csv, uav_isac_reports.csv, uav_isac_fused.csv
