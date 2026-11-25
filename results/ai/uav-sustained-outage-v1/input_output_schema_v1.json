@@ -1,0 +1,110 @@
+{
+  "feature_order": [
+    "BestDonorDistanceM",
+    "XhaulConnected",
+    "XhaulChannelVariationDb",
+    "XhaulRsrpDbm",
+    "RawXhaulStateAgeSec",
+    "delta_distance_2s",
+    "delta_rsrp_2s",
+    "delta_rsrp_4s"
+  ],
+  "features": {
+    "BestDonorDistanceM": {
+      "description": "Current distance to the strongest eligible TN donor",
+      "disconnected_default": -1.0,
+      "unit": "m"
+    },
+    "RawXhaulStateAgeSec": {
+      "default": 0.0,
+      "description": "Elapsed time in the current instantaneous donor state",
+      "unit": "s"
+    },
+    "XhaulChannelVariationDb": {
+      "description": "Current donor shadowing-minus-fading realization",
+      "disconnected_default": 0.0,
+      "unit": "dB"
+    },
+    "XhaulConnected": {
+      "default": 0.0,
+      "description": "1 when an eligible terrestrial donor exists, else 0",
+      "unit": "binary"
+    },
+    "XhaulRsrpDbm": {
+      "description": "Current RSRP proxy for the strongest eligible TN donor",
+      "disconnected_default": -999.0,
+      "unit": "dBm"
+    },
+    "delta_distance_2s": {
+      "description": "Current donor distance minus its value two seconds earlier",
+      "invalid_or_disconnected_default": 0.0,
+      "unit": "m_per_2s"
+    },
+    "delta_rsrp_2s": {
+      "description": "Current donor RSRP minus its value two seconds earlier",
+      "invalid_or_disconnected_default": 0.0,
+      "unit": "dB_per_2s"
+    },
+    "delta_rsrp_4s": {
+      "description": "Current donor RSRP minus its value four seconds earlier",
+      "invalid_or_disconnected_default": 0.0,
+      "unit": "dB_per_4s"
+    }
+  },
+  "labels": {
+    "0": "NO_SUSTAINED_LOSS",
+    "1": "SUSTAINED_LOSS"
+  },
+  "onnx_interface": {
+    "inputs": [
+      {
+        "name": "features",
+        "shape": [
+          null,
+          8
+        ],
+        "type": "tensor(float)"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "label",
+        "shape": [
+          null
+        ],
+        "type": "tensor(int64)"
+      },
+      {
+        "name": "probabilities",
+        "shape": [
+          null,
+          2
+        ],
+        "type": "tensor(float)"
+      }
+    ]
+  },
+  "policy_note": "The ONNX output is a donor-loss forecast. Satellite feasibility and the applied backhaul action are external guarded policy decisions.",
+  "positive_class_probability_column": 1,
+  "preprocessing": {
+    "disconnected_normalization": {
+      "BestDonorDistanceM": -1.0,
+      "XhaulChannelVariationDb": 0.0,
+      "XhaulRsrpDbm": -999.0,
+      "delta_distance_2s": 0.0,
+      "delta_rsrp_2s": 0.0,
+      "delta_rsrp_4s": 0.0
+    },
+    "dtype": "float32",
+    "history_requirement_s": 4.0,
+    "invalid_history_behavior": "FeatureValid=0 and use the rule policy",
+    "nonfinite_values": "invalid; do not invoke the model"
+  },
+  "schema_version": "uav-sustained-outage-v1",
+  "target": {
+    "cadence_s": 2.0,
+    "definition": "1 iff RawXhaulState is UNREACHABLE at t+2 s, t+4 s, and t+6 s",
+    "horizon_s": 6.0,
+    "name": "SustainedLossNext6s"
+  }
+}

@@ -54,9 +54,71 @@ AddGatewayHostRoute(Ptr<Node> node,
     routing->AddHostRouteTo(destination, nextHop, interface);
 }
 
+void
+RemoveConnectedNetworkRoutes(Ptr<Node> node, uint32_t interface)
+{
+    Ptr<Ipv4> ipv4 = node->GetObject<Ipv4>();
+    Ipv4StaticRoutingHelper routingHelper;
+    Ptr<Ipv4StaticRouting> routing = routingHelper.GetStaticRouting(ipv4);
+
+    // Keep the interface and its address up because the S1-U UDP socket is
+    // bound to that address. Remove only the automatically installed
+    // connected-network routes for this interface.
+    for (uint32_t addressIndex = 0; addressIndex < ipv4->GetNAddresses(interface);
+         ++addressIndex)
+    {
+        const Ipv4InterfaceAddress address = ipv4->GetAddress(interface, addressIndex);
+        const Ipv4Address local = address.GetLocal();
+        const Ipv4Mask mask = address.GetMask();
+        if (local == Ipv4Address() || mask == Ipv4Mask() || mask == Ipv4Mask::GetOnes())
+        {
+            continue;
+        }
+
+        const Ipv4Address network = local.CombineMask(mask);
+        for (int32_t routeIndex = static_cast<int32_t>(routing->GetNRoutes()) - 1;
+             routeIndex >= 0;
+             --routeIndex)
+        {
+            const Ipv4RoutingTableEntry route =
+                routing->GetRoute(static_cast<uint32_t>(routeIndex));
+            if (route.GetInterface() == interface && route.IsNetwork() && !route.IsGateway() &&
+                route.GetDestNetwork() == network && route.GetDestNetworkMask() == mask)
+            {
+                routing->RemoveRoute(static_cast<uint32_t>(routeIndex));
+            }
+        }
+    }
+}
+
 } // namespace
 
 NS_LOG_COMPONENT_DEFINE("HybridSatEpcHelper");
+
+namespace
+{
+
+void
+LogStaticRouteTable(const char* role, Ptr<Node> node)
+{
+    Ipv4StaticRoutingHelper routingHelper;
+    Ptr<Ipv4> ipv4 = node->GetObject<Ipv4>();
+    Ptr<Ipv4StaticRouting> routing = routingHelper.GetStaticRouting(ipv4);
+    NS_LOG_INFO("NTN_ROUTE_TABLE role=" << role << " node=" << node->GetId()
+                                        << " entries=" << routing->GetNRoutes());
+    for (uint32_t index = 0; index < routing->GetNRoutes(); ++index)
+    {
+        const Ipv4RoutingTableEntry route = routing->GetRoute(index);
+        NS_LOG_INFO("NTN_ROUTE role=" << role << " node=" << node->GetId()
+                                      << " dest=" << route.GetDestNetwork()
+                                      << " mask=" << route.GetDestNetworkMask()
+                                      << " gateway=" << route.GetGateway()
+                                      << " interface=" << route.GetInterface()
+                                      << " interfaceUp=" << ipv4->IsUp(route.GetInterface()));
+    }
+}
+
+} // namespace
 
 NS_OBJECT_ENSURE_REGISTERED(HybridSatEpcHelper);
 
@@ -413,6 +475,11 @@ HybridSatEpcHelper::ApplyNtnDualBackhaulMode(NtnDualBackhaulRouteInfo& info,
 {
     const std::string normalizedMode =
         (mode == "satellite") ? "satellite" : ((mode == "unavailable" || mode == "blocked") ? "unavailable" : "tn");
+
+    // Enforce the no-connected-route invariant even when a repeated mode
+    // request arrives after another component has toggled an interface.
+    RemoveConnectedNetworkRoutes(info.gnb, info.gnbTnIf);
+    RemoveConnectedNetworkRoutes(info.sgw, info.sgwTnIf);
     if (info.mode == normalizedMode)
     {
         return;
@@ -424,6 +491,13 @@ HybridSatEpcHelper::ApplyNtnDualBackhaulMode(NtnDualBackhaulRouteInfo& info,
     RemoveHostRoutesTo(info.sat, info.gnbTnAddr);
     RemoveHostRoutesTo(info.gw, info.sgwTnAddr);
     RemoveHostRoutesTo(info.gw, info.gnbTnAddr);
+
+    // A point-to-point /30 receives an automatic connected-network route when
+    // its IPv4 interface is up.  Removing only the /32 host route therefore
+    // does not disable the TN leg: lookup can fall back to the connected /30.
+    // The interface itself must remain up because the gNB S1-U UDP socket is
+    // bound to its address. Keep that /30 absent in all modes and select the
+    // direct TN path only with the explicit peer /32 routes below.
 
     if (normalizedMode == "satellite")
     {
@@ -440,14 +514,19 @@ HybridSatEpcHelper::ApplyNtnDualBackhaulMode(NtnDualBackhaulRouteInfo& info,
         AddDirectHostRoute(info.gnb, info.sgwTnAddr, info.gnbTnIf);
         AddDirectHostRoute(info.sgw, info.gnbTnAddr, info.sgwTnIf);
     }
-    // unavailable: leave the S1-U endpoint routes removed. This models a UAV
-    // donor/backhaul outage when no satellite fallback path is allowed.
+    // unavailable: leave the S1-U endpoint and direct connected-network routes
+    // removed. The addressed interfaces stay up so the stable S1-U endpoints
+    // can be reached again when a physical route is selected.
 
     info.mode = normalizedMode;
     NS_LOG_INFO("NTN_BACKHAUL_MODE cell=" << info.cellId
                                           << " gnbS1u=" << info.gnbTnAddr
                                           << " sgwS1u=" << info.sgwTnAddr
                                           << " mode=" << info.mode);
+    LogStaticRouteTable("gnb", info.gnb);
+    LogStaticRouteTable("sgw", info.sgw);
+    LogStaticRouteTable("sat", info.sat);
+    LogStaticRouteTable("gw", info.gw);
 }
 
 } // namespace ns3

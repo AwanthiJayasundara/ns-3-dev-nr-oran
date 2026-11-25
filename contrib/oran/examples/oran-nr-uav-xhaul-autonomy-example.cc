@@ -13,6 +13,7 @@
 #include "ns3/nr-ue-net-device.h"   
 
 #include "ns3/packet-sink-helper.h"
+#include "ns3/seq-ts-header.h"
 #include "ns3/traffic-generator-helper.h"
 #include "ns3/traffic-generator-3gpp-generic-video.h"
 #include "ns3/traffic-generator-ngmn-voip.h"
@@ -56,9 +57,12 @@
 #include <map>
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <complex>
 #include <cstdint>
+#include <deque>
 #include <iomanip>
+#include <limits>
 
 using namespace ns3;
 
@@ -142,6 +146,14 @@ static double UAV_INITIAL_AREA_HALF_H_M = 1500.0; // Initial UAV placement half-
 static double UE_AREA_HALF_W_M  = 3000.0; // Half-width for UE mobility.
 static double UE_AREA_HALF_H_M  = 1500.0; // Half-height for UE mobility.
 static bool SPLIT_UE_PLACEMENT = false;   // Place UES1 near TN and UES2 outside TN area.
+// Deterministic capacity-stratified placement is intended for matched reviewer
+// experiments. It places the first TN-capacity-worth of monitored UEs close to
+// individual TN cells, the remaining monitored UEs close to UAV cells, and all
+// background UEs close to UAV cells. UEs subsequently move only inside their
+// local anchor cluster. This makes the access exposure explicit instead of
+// hoping that a large random region happens to fill TN admission capacity.
+static bool CAPACITY_STRATIFIED_UE_PLACEMENT = false;
+static double UE_ANCHOR_CLUSTER_RADIUS_M = 100.0;
 static double UE_OUTSIDE_TN_EXCLUSION_HALF_W_M = 2500.0;
 static double UE_OUTSIDE_TN_EXCLUSION_HALF_H_M = 1200.0;
 static bool CLUSTERED_UES2_PLACEMENT = false; // Place UES2 in three outside underserved clusters.
@@ -150,6 +162,7 @@ static double UES2_CLUSTER_RADIUS_M = 500.0;
 static double UES2_CLUSTER_OFFSET_M = 3500.0;
 static double g_uavSpeedMps = 10.0;       // UAV waypoint mobility speed.
 static double g_uavMissionTargetScale = 1.0; // Pushes UAV targets toward/off the underserved cluster.
+static bool g_closedLoopUavTargeting = true;
 
 uint32_t maxUesPerCellTn  = 20;
 uint32_t maxUesPerCellNtn = 10;
@@ -207,6 +220,11 @@ static std::string ns3_dir;
 
 static std::string s_satBackhaulTraceFile;
 static std::string s_xhaulAutonomyTraceFile;
+static std::string s_uavSwitchingAiTraceFile;
+static std::string s_uavSwitchingEventTraceFile;
+static std::string s_ueIdentityMapFile;
+static std::string s_monitoredPacketTraceFile;
+static std::ofstream g_monitoredPacketTrace;
 
 // Latest satellite backhaul SNR per UAV/NTN cell. The satellite monitor updates
 // these maps; the UAV switching xApp reads them to decide if satellite fallback
@@ -237,6 +255,12 @@ static bool g_enableUavSwitchingXapp = true;
 static bool g_enableAiUavSwitchingXapp = false;
 static std::string g_uavSwitchingAiModelPath =
     "results/ai/uav-switching-xapp-ai-dataset-v2/uav_switching_xapp_model.onnx";
+static std::string g_uavOutagePredictorMode = "off"; // off | shadow | active
+static std::string g_uavOutagePredictorModelPath =
+    "results/ai/uav-sustained-outage-v1/sustained_outage_rf_v1.onnx";
+static std::string g_uavOutagePredictorModelSha256 = "UNSPECIFIED";
+static constexpr const char* g_uavOutagePredictorFeatureSchema =
+    "uav-sustained-outage-v1";
 static bool g_enableXhaulChannelVariation = false;
 static double g_xhaulShadowingStddevDb = 0.0;
 static double g_xhaulFadingStddevDb = 0.0;
@@ -301,6 +325,112 @@ class UavSwitchingOnnxModel
 
 static UavSwitchingOnnxModel g_uavSwitchingOnnxModel;
 
+struct UavOutagePrediction
+{
+    bool inferenceOk = false;
+    int64_t label = -1;
+    float probability = std::numeric_limits<float>::quiet_NaN();
+    double inferenceUs = 0.0;
+};
+
+// Binary forward-looking predictor used only by the reviewer-evidence policy.
+// Its eight inputs are causal donor-link/history features, and class 1 means
+// that the next three 2 s raw-link samples are all UNREACHABLE.  This contract
+// is intentionally separate from the historical 14-input, three-class rule
+// imitation model above.
+class UavSustainedOutageOnnxModel
+{
+  public:
+    void
+    Load(const std::string& modelPath)
+    {
+        std::ifstream f(modelPath.c_str());
+        NS_ABORT_MSG_IF(!f.good(), "UAV outage-predictor ONNX model file not found: " << modelPath);
+        f.close();
+
+        Ort::SessionOptions sessionOptions;
+        sessionOptions.SetIntraOpNumThreads(1);
+        m_session = std::make_unique<Ort::Session>(m_env, modelPath.c_str(), sessionOptions);
+
+        NS_ABORT_MSG_IF(m_session->GetInputCount() != 1,
+                        "UAV outage predictor must expose exactly one input tensor");
+        NS_ABORT_MSG_IF(m_session->GetOutputCount() < 2,
+                        "UAV outage predictor must expose label and probability tensors");
+        const auto inputTypeInfo = m_session->GetInputTypeInfo(0);
+        const auto inputInfo = inputTypeInfo.GetTensorTypeAndShapeInfo();
+        const auto inputShape = inputInfo.GetShape();
+        NS_ABORT_MSG_IF(inputShape.size() != 2 ||
+                            (inputShape[1] > 0 && inputShape[1] != 8),
+                        "UAV outage predictor input must have shape [N,8]");
+        m_loaded = true;
+    }
+
+    bool
+    IsLoaded() const
+    {
+        return m_loaded;
+    }
+
+    UavOutagePrediction
+    Predict(const std::array<float, 8>& features)
+    {
+        NS_ABORT_MSG_IF(!m_loaded, "UAV outage predictor requested before loading");
+        for (float value : features)
+        {
+            NS_ABORT_MSG_IF(!std::isfinite(value),
+                            "Non-finite feature passed to UAV outage predictor");
+        }
+
+        const auto start = std::chrono::steady_clock::now();
+        std::array<int64_t, 2> inputShape = {1, static_cast<int64_t>(features.size())};
+        Ort::Value inputTensor = Ort::Value::CreateTensor<float>(m_memoryInfo,
+                                                                 const_cast<float*>(features.data()),
+                                                                 features.size(),
+                                                                 inputShape.data(),
+                                                                 inputShape.size());
+
+        auto inputName = m_session->GetInputNameAllocated(0UL, m_allocator);
+        auto labelName = m_session->GetOutputNameAllocated(0UL, m_allocator);
+        auto probabilityName = m_session->GetOutputNameAllocated(1UL, m_allocator);
+        std::array<const char*, 1> inputNames{inputName.get()};
+        std::array<const char*, 2> outputNames{labelName.get(), probabilityName.get()};
+
+        auto output = m_session->Run(Ort::RunOptions{},
+                                     inputNames.data(),
+                                     &inputTensor,
+                                     1UL,
+                                     outputNames.data(),
+                                     outputNames.size());
+        NS_ABORT_MSG_IF(output.size() != 2 || !output[0].IsTensor() || !output[1].IsTensor(),
+                        "Unexpected UAV outage-predictor ONNX outputs");
+
+        UavOutagePrediction result;
+        result.label = output[0].GetTensorData<int64_t>()[0];
+        const auto probabilityInfo = output[1].GetTensorTypeAndShapeInfo();
+        NS_ABORT_MSG_IF(probabilityInfo.GetElementCount() < 2,
+                        "UAV outage predictor probability output must contain two classes");
+        result.probability = output[1].GetTensorData<float>()[1];
+        NS_ABORT_MSG_IF(result.label < 0 || result.label > 1 ||
+                            !std::isfinite(result.probability) ||
+                            result.probability < 0.0f || result.probability > 1.0f,
+                        "Invalid UAV outage-predictor output");
+        result.inferenceOk = true;
+        result.inferenceUs = std::chrono::duration<double, std::micro>(
+                                 std::chrono::steady_clock::now() - start)
+                                 .count();
+        return result;
+    }
+
+  private:
+    bool m_loaded = false;
+    Ort::Env m_env{ORT_LOGGING_LEVEL_WARNING, "UavSustainedOutageOnnx"};
+    std::unique_ptr<Ort::Session> m_session;
+    Ort::MemoryInfo m_memoryInfo{Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU)};
+    Ort::AllocatorWithDefaultOptions m_allocator;
+};
+
+static UavSustainedOutageOnnxModel g_uavOutagePredictor;
+
 // Context passed to the UAV TN/satellite switching xApp.
 // It keeps the callback signature small and groups all state needed to:
 //   1. estimate the best terrestrial donor for each UAV,
@@ -325,6 +455,7 @@ struct UavAutonomyXappContext
     double degradationStartSec = -1.0;  // Optional old synthetic RSRP penalty start.
     double degradationStopSec = -1.0;   // Optional old synthetic RSRP penalty stop.
     double degradationPenaltyDb = 0.0;  // Optional old synthetic RSRP penalty amount.
+    double degradationRampSec = 0.0;    // Linear ramp duration at each impairment edge.
     double donorUnavailableStartSec = -1.0; // Start of explicit TN donor/gateway outage.
     double donorUnavailableStopSec = -1.0;  // End of explicit TN donor/gateway outage.
     double switchToSatTttSec = 5.0;     // Time-to-trigger before leaving TN_DIRECT.
@@ -337,12 +468,99 @@ struct UavAutonomyXappContext
     double xhaulFadingStddevDb = 0.0;    // Fast fading-loss proxy for donor RSRP.
     bool enableUavSwitchingXapp = true;  // Enables the proposed switching policy.
     bool enableAiUavSwitchingXapp = false; // Uses ONNX inference for the switching decision.
+    std::string outagePredictorMode = "off"; // off | shadow | active.
+    double outagePredictorThreshold = 0.5;
+    uint32_t outagePredictorConsecutive = 2;
+    double outagePredictorMinDwellSec = 6.0;
+    double outagePredictorMaxFeatureGapSec = 3.0;
+    double routeUpdateDelaySec = 0.05;
+    bool backhaulAwareHandover = true;
 };
 
 static std::unique_ptr<UavAutonomyXappContext> g_uavAutonomyXappCtx;
 static std::unordered_map<uint16_t, std::string> g_xhaulRawStateByCell;
 static std::unordered_map<uint16_t, std::string> g_xhaulEffectiveStateByCell;
 static std::unordered_map<uint16_t, double> g_xhaulRawStateSinceSecByCell;
+
+struct UavDonorHistorySample
+{
+    double timeSec = 0.0;
+    bool connected = false;
+    double distanceM = -1.0;
+    double rsrpDbm = -999.0;
+};
+
+struct UavOutagePredictorState
+{
+    std::deque<UavDonorHistorySample> history;
+    uint32_t consecutivePositive = 0;
+};
+
+struct UavAppliedBackhaulState
+{
+    std::string appliedMode = "TN_DIRECT";
+    std::string actualRouteMode = "TN_DIRECT";
+    std::string pendingMode;
+    std::string lastTraceAppliedMode = "TN_DIRECT";
+    std::string lastTraceActualRouteMode = "TN_DIRECT";
+    EventId pendingEvent;
+    bool hasPendingEvent = false;
+    double lastAppliedTimeSec = 0.0;
+};
+
+static std::unordered_map<uint16_t, UavOutagePredictorState> g_uavOutagePredictorStateByCell;
+static std::unordered_map<uint16_t, UavAppliedBackhaulState> g_uavAppliedBackhaulStateByCell;
+
+struct HandoverStartRecord
+{
+    uint64_t attemptId = 0;
+    double timeSec = 0.0;
+    uint16_t sourceCellId = 0;
+    uint16_t targetCellId = 0;
+};
+
+static std::unordered_map<uint64_t, HandoverStartRecord> g_handoverStartByImsi;
+static uint64_t g_nextHandoverAttemptId = 1;
+static std::unordered_map<uint64_t, uint32_t> g_monitoredTxSequenceByFlow;
+
+static void
+TraceMonitoredPacketEvent(uint32_t ueIndex,
+                          std::string direction,
+                          std::string event,
+                          Ptr<const Packet> packet)
+{
+    if (!g_monitoredPacketTrace.is_open() || !packet)
+    {
+        return;
+    }
+    int64_t sequence = -1;
+    double senderTimestampSec = -1.0;
+    if (event == "TX")
+    {
+        const uint64_t flowKey = (static_cast<uint64_t>(ueIndex) << 1) |
+                                 ((direction == "UL") ? 1U : 0U);
+        sequence = g_monitoredTxSequenceByFlow[flowKey]++;
+        senderTimestampSec = Simulator::Now().GetSeconds();
+    }
+    else if (event == "RX")
+    {
+        SeqTsHeader header;
+        if (packet->PeekHeader(header) > 0)
+        {
+            sequence = header.GetSeq();
+            senderTimestampSec = header.GetTs().GetSeconds();
+        }
+    }
+    g_monitoredPacketTrace << std::fixed << std::setprecision(9)
+                           << Simulator::Now().GetSeconds() << ","
+                           << ueIndex << ","
+                           << direction << ","
+                           << event << ","
+                           << packet->GetUid() << ","
+                           << packet->GetSize() << ","
+                           << sequence << ","
+                           << senderTimestampSec << "\n";
+}
 
 // --- ns-3 NS_LOG output redirection (LogComponentEnable -> file via std::clog) ---
 static std::ofstream g_nsLogFile;
@@ -417,6 +635,18 @@ TraceRsrpRsrqSinrForImsi(Ptr<OutputStreamWrapper> stream,
 {
     TraceRsrpRsrqSinr(stream, rnti, cellId, rsrp, rsrq, servingCell, componentCarrierId);
     g_latestRsrpByImsiCell[{imsi, cellId}] = rsrp;
+    if (servingCell && stream)
+    {
+        *stream->GetStream() << Simulator::Now().GetSeconds() << " "
+                             << imsi << " "
+                             << rnti << " "
+                             << cellId << " "
+                             << (g_ntnCellIds.count(cellId) ? "NTN" : "TN") << " "
+                             << rsrp << " "
+                             << rsrq << " "
+                             << 1 << " "
+                             << static_cast<uint32_t>(componentCarrierId) << "\n";
+    }
 }
 
 std::string
@@ -569,13 +799,25 @@ ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
                     << user_delay_dl[ue] << ","
                     << user_jitter_dl[ue] << ","
                     << user_throughput_dl[ue] << ","
-                    << user_pdr_dl[ue] << "\n";
+                    << user_pdr_dl[ue] << ","
+                    << dlTxPackets[ue] << ","
+                    << dlRxPackets[ue] << ","
+                    << dlRxBytes[ue] << ","
+                    << dlDelaySum[ue].GetSeconds() << ","
+                    << dlJitterSum[ue].GetSeconds() << ","
+                    << monitorIntervalSec << "\n";
 
         qos_vs_time << t << "," << ue << ",UL,"
                     << user_delay_ul[ue] << ","
                     << user_jitter_ul[ue] << ","
                     << user_throughput_ul[ue] << ","
-                    << user_pdr_ul[ue] << "\n";
+                    << user_pdr_ul[ue] << ","
+                    << ulTxPackets[ue] << ","
+                    << ulRxPackets[ue] << ","
+                    << ulRxBytes[ue] << ","
+                    << ulDelaySum[ue].GetSeconds() << ","
+                    << ulJitterSum[ue].GetSeconds() << ","
+                    << monitorIntervalSec << "\n";
     }
 
     g_lastQosSampleTime = now;
@@ -778,6 +1020,256 @@ SanitizeAiBackhaulMode(const std::string& predictedMode,
     return "NO_BACKHAUL_AVAILABLE";
 }
 
+static const char*
+ToEpcBackhaulMode(const std::string& mode)
+{
+    if (mode == "SATELLITE_FALLBACK")
+    {
+        return "satellite";
+    }
+    if (mode == "TN_DIRECT")
+    {
+        return "tn";
+    }
+    return "unavailable";
+}
+
+static bool
+IsSatelliteBackhaulHealthy(uint16_t uavCellId)
+{
+    const auto dlIt = g_backhaulDlSnrDb.find(uavCellId);
+    const auto ulIt = g_backhaulUlSnrDb.find(uavCellId);
+    return dlIt != g_backhaulDlSnrDb.end() && ulIt != g_backhaulUlSnrDb.end() &&
+           std::min(dlIt->second, ulIt->second) >= g_satBackhaulMinSnrDb;
+}
+
+static std::string
+ResolveActualUavRouteMode(uint16_t uavCellId, const std::string& selectedMode)
+{
+    if (selectedMode == "SATELLITE_FALLBACK")
+    {
+        return IsSatelliteBackhaulHealthy(uavCellId) ? "SATELLITE_FALLBACK"
+                                                     : "NO_BACKHAUL_AVAILABLE";
+    }
+    if (selectedMode == "TN_DIRECT")
+    {
+        const auto rawIt = g_xhaulRawStateByCell.find(uavCellId);
+        // Before the first donor observation, retain the helper's initialized
+        // TN route.  Treating unknown as failed would create an artificial
+        // startup outage when the 0.1-s satellite monitor runs first.
+        if (rawIt == g_xhaulRawStateByCell.end())
+        {
+            return "TN_DIRECT";
+        }
+        return rawIt->second == "HEALTHY" ? "TN_DIRECT"
+                                           : "NO_BACKHAUL_AVAILABLE";
+    }
+    return "NO_BACKHAUL_AVAILABLE";
+}
+
+static void
+ApplyActualUavRoute(Ptr<HybridSatEpcHelper> epcHelper,
+                    uint16_t uavCellId,
+                    const std::string& actualRouteMode,
+                    bool backhaulAwareHandover)
+{
+    if (epcHelper)
+    {
+        epcHelper->SetNtnBackhaulMode(uavCellId, ToEpcBackhaulMode(actualRouteMode));
+    }
+    if (g_rsrpLm)
+    {
+        const bool serviceAvailable = actualRouteMode != "NO_BACKHAUL_AVAILABLE";
+        g_rsrpLm->SetCellCapacity(
+            uavCellId,
+            (!backhaulAwareHandover || serviceAvailable) ? maxUesPerCellNtn : 0);
+    }
+    g_uavAppliedBackhaulStateByCell[uavCellId].actualRouteMode = actualRouteMode;
+}
+
+static void
+AppendUavRouteEvent(double decisionTimeSec,
+                    uint16_t uavCellId,
+                    const std::string& eventType,
+                    const std::string& controllerMode,
+                    const std::string& guardResult,
+                    const std::string& previousSelectedMode,
+                    const std::string& selectedMode,
+                    const std::string& previousRouteMode,
+                    const std::string& actualRouteMode,
+                    bool backhaulAwareHandover)
+{
+    std::ofstream eventOut(s_uavSwitchingEventTraceFile, std::ios_base::app);
+    eventOut << decisionTimeSec << ","
+             << Simulator::Now().GetSeconds() << ","
+             << (Simulator::Now().GetSeconds() - decisionTimeSec) << ","
+             << uavCellId << ","
+             << controllerMode << ","
+             << guardResult << ","
+             << previousSelectedMode << ","
+             << selectedMode << ","
+             << (previousSelectedMode != selectedMode ? 1 : 0) << ","
+             << (backhaulAwareHandover ? 1 : 0) << ","
+             << eventType << ","
+             << previousRouteMode << ","
+             << actualRouteMode << ","
+             << (previousRouteMode != actualRouteMode ? 1 : 0) << "\n";
+}
+
+static void
+ApplyScheduledUavBackhaulMode(Ptr<HybridSatEpcHelper> epcHelper,
+                              uint16_t uavCellId,
+                              std::string requestedMode,
+                              bool backhaulAwareHandover,
+                              double decisionTimeSec,
+                              std::string controllerMode,
+                              std::string guardResult)
+{
+    auto& state = g_uavAppliedBackhaulStateByCell[uavCellId];
+    const std::string previousMode = state.appliedMode;
+    const std::string previousRouteMode = state.actualRouteMode;
+
+    state.appliedMode = requestedMode;
+    const std::string actualRouteMode = ResolveActualUavRouteMode(uavCellId, requestedMode);
+    ApplyActualUavRoute(epcHelper,
+                       uavCellId,
+                       actualRouteMode,
+                       backhaulAwareHandover);
+    state.lastAppliedTimeSec = Simulator::Now().GetSeconds();
+    state.hasPendingEvent = false;
+    state.pendingMode.clear();
+
+    AppendUavRouteEvent(decisionTimeSec,
+                        uavCellId,
+                        "POLICY_APPLY",
+                        controllerMode,
+                        guardResult,
+                        previousMode,
+                        requestedMode,
+                        previousRouteMode,
+                        actualRouteMode,
+                        backhaulAwareHandover);
+}
+
+static void
+RequestUavBackhaulMode(const UavAutonomyXappContext& ctx,
+                       uint16_t uavCellId,
+                       const std::string& requestedMode,
+                       const std::string& controllerMode,
+                       const std::string& guardResult)
+{
+    auto& state = g_uavAppliedBackhaulStateByCell[uavCellId];
+    if (state.hasPendingEvent && requestedMode == state.pendingMode)
+    {
+        return;
+    }
+
+    if (state.hasPendingEvent)
+    {
+        Simulator::Cancel(state.pendingEvent);
+        state.hasPendingEvent = false;
+        state.pendingMode.clear();
+    }
+
+    if (requestedMode == state.appliedMode)
+    {
+        return;
+    }
+
+    const double decisionTimeSec = Simulator::Now().GetSeconds();
+    const double actuationDelaySec = std::max(0.0, ctx.e2TxDelaySec + ctx.routeUpdateDelaySec);
+    state.pendingMode = requestedMode;
+    state.hasPendingEvent = true;
+    state.pendingEvent = Simulator::Schedule(Seconds(actuationDelaySec),
+                                              &ApplyScheduledUavBackhaulMode,
+                                              ctx.epcHelper,
+                                              uavCellId,
+                                              requestedMode,
+                                              ctx.backhaulAwareHandover,
+                                              decisionTimeSec,
+                                              controllerMode,
+                                              guardResult);
+}
+
+static bool
+BuildUavOutagePredictorFeatures(uint16_t uavCellId,
+                                double nowSec,
+                                double donorDistanceM,
+                                bool xhaulConnected,
+                                double channelVariationDb,
+                                double rsrpDbm,
+                                double rawStateAgeSec,
+                                double maxFeatureGapSec,
+                                std::array<float, 8>& features)
+{
+    const auto stateIt = g_uavOutagePredictorStateByCell.find(uavCellId);
+    if (!std::isfinite(rawStateAgeSec) || rawStateAgeSec < 0.0 ||
+        stateIt == g_uavOutagePredictorStateByCell.end() ||
+        stateIt->second.history.size() < 2)
+    {
+        return false;
+    }
+
+    const double normalizedDistanceM = xhaulConnected ? donorDistanceM : -1.0;
+    const double normalizedVariationDb = xhaulConnected ? channelVariationDb : 0.0;
+    const double normalizedRsrpDbm = xhaulConnected ? rsrpDbm : -999.0;
+    if (!std::isfinite(normalizedDistanceM) || !std::isfinite(normalizedVariationDb) ||
+        !std::isfinite(normalizedRsrpDbm) ||
+        (xhaulConnected && (normalizedDistanceM < 0.0 || normalizedRsrpDbm <= -999.0)))
+    {
+        return false;
+    }
+
+    const auto& history = stateIt->second.history;
+    const UavDonorHistorySample& previous = history[history.size() - 1];
+    const UavDonorHistorySample& previous2 = history[history.size() - 2];
+    if (nowSec - previous.timeSec <= 0.0 ||
+        nowSec - previous.timeSec > maxFeatureGapSec ||
+        previous.timeSec - previous2.timeSec <= 0.0 ||
+        previous.timeSec - previous2.timeSec > maxFeatureGapSec)
+    {
+        return false;
+    }
+
+    features = {
+        static_cast<float>(normalizedDistanceM),
+        static_cast<float>(xhaulConnected ? 1.0 : 0.0),
+        static_cast<float>(normalizedVariationDb),
+        static_cast<float>(normalizedRsrpDbm),
+        static_cast<float>(rawStateAgeSec),
+        static_cast<float>(xhaulConnected && previous.connected
+                               ? normalizedDistanceM - previous.distanceM
+                               : 0.0),
+        static_cast<float>(xhaulConnected && previous.connected
+                               ? normalizedRsrpDbm - previous.rsrpDbm
+                               : 0.0),
+        static_cast<float>(xhaulConnected && previous2.connected
+                               ? normalizedRsrpDbm - previous2.rsrpDbm
+                               : 0.0),
+    };
+    return std::all_of(features.begin(), features.end(), [](float value) {
+        return std::isfinite(value);
+    });
+}
+
+static void
+RememberUavDonorSample(uint16_t uavCellId,
+                       double nowSec,
+                       bool xhaulConnected,
+                       double donorDistanceM,
+                       double rsrpDbm)
+{
+    auto& history = g_uavOutagePredictorStateByCell[uavCellId].history;
+    history.push_back({nowSec,
+                       xhaulConnected,
+                       xhaulConnected ? donorDistanceM : -1.0,
+                       xhaulConnected ? rsrpDbm : -999.0});
+    while (history.size() > 2)
+    {
+        history.pop_front();
+    }
+}
+
 static void
 RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
 {
@@ -795,10 +1287,20 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
     // This trace is meant to be joined with qos-vs-time.txt, handover-trace.tr,
     // handover-failure-trace.tr, and sat-backhaul-trace.txt during analysis.
     std::ofstream out(s_xhaulAutonomyTraceFile, std::ios_base::app);
+    out << std::setprecision(std::numeric_limits<double>::max_digits10);
     const double now = Simulator::Now().GetSeconds();
     const bool degradationActive =
         ctx.degradationStartSec >= 0.0 && now >= ctx.degradationStartSec &&
         now <= ctx.degradationStopSec;
+    double degradationPenaltyNowDb = degradationActive ? ctx.degradationPenaltyDb : 0.0;
+    if (degradationActive && ctx.degradationRampSec > 0.0)
+    {
+        const double rampUp =
+            std::clamp((now - ctx.degradationStartSec) / ctx.degradationRampSec, 0.0, 1.0);
+        const double rampDown =
+            std::clamp((ctx.degradationStopSec - now) / ctx.degradationRampSec, 0.0, 1.0);
+        degradationPenaltyNowDb *= std::min(rampUp, rampDown);
+    }
     const bool donorUnavailableActive =
         ctx.donorUnavailableStartSec >= 0.0 && now >= ctx.donorUnavailableStartSec &&
         now <= ctx.donorUnavailableStopSec;
@@ -868,7 +1370,7 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
             {
                 // Legacy controlled-degradation knob. The final article runs
                 // keep this disabled and use donorUnavailableActive instead.
-                rsrpDbm -= ctx.degradationPenaltyDb;
+                rsrpDbm -= degradationPenaltyNowDb;
             }
 
             // Keep the donor with the strongest estimated RSRP. The selected
@@ -945,6 +1447,34 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
             itDl != g_backhaulDlSnrDb.end() && itUl != g_backhaulUlSnrDb.end() &&
             std::min(satDl, satUl) >= g_satBackhaulMinSnrDb;
 
+        // Physical link availability is independent of the controller's
+        // selected mode.  If TN_DIRECT is still selected when the sampled raw
+        // donor becomes unreachable, remove the abstract TN route immediately;
+        // otherwise a controller could appear to "recover" service even though
+        // packets never stopped traversing the failed donor path.  The selected
+        // policy mode remains unchanged until its command is applied.
+        auto& physicalRouteState = g_uavAppliedBackhaulStateByCell[uavCellId];
+        const std::string previousPhysicalRouteMode = physicalRouteState.actualRouteMode;
+        const std::string refreshedPhysicalRouteMode =
+            ResolveActualUavRouteMode(uavCellId, physicalRouteState.appliedMode);
+        if (refreshedPhysicalRouteMode != previousPhysicalRouteMode)
+        {
+            ApplyActualUavRoute(ctx.epcHelper,
+                               uavCellId,
+                               refreshedPhysicalRouteMode,
+                               ctx.backhaulAwareHandover);
+            AppendUavRouteEvent(now,
+                                uavCellId,
+                                "PHYSICAL_GATE",
+                                "physical-link-monitor",
+                                "RAW_LINK_OR_SATELLITE_HEALTH_CHANGE",
+                                physicalRouteState.appliedMode,
+                                physicalRouteState.appliedMode,
+                                previousPhysicalRouteMode,
+                                refreshedPhysicalRouteMode,
+                                ctx.backhaulAwareHandover);
+        }
+
         // ------------------------------------------------------------------
         // 4. UAV TN/satellite switching xApp decision.
         //
@@ -958,8 +1488,32 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
             uavSwitchingXappAvailable && xhaulState != "HEALTHY";
         const bool satelliteFallbackAllowed = g_deploymentMode == "tn-uav-satellite";
 
-        std::string backhaulMode;
+        const bool useSatelliteRule =
+            uavSwitchingXappActive && satelliteFallbackAllowed && satHealthy;
+        const std::string ruleBackhaulMode =
+            useSatelliteRule ? "SATELLITE_FALLBACK"
+                             : (xhaulState == "HEALTHY" ? "TN_DIRECT"
+                                                        : "NO_BACKHAUL_AVAILABLE");
+
+        std::string requestedBackhaulMode = ruleBackhaulMode;
         std::string aiPredictedBackhaulMode = "RULE_BASED";
+        std::string controllerMode = "rule";
+        std::string guardResult = "RULE_POLICY";
+        std::array<float, 8> outageFeatures{};
+        const double rawStateAgeSec = now - g_xhaulRawStateSinceSecByCell[uavCellId];
+        const bool outageFeatureValid =
+            BuildUavOutagePredictorFeatures(uavCellId,
+                                            now,
+                                            bestDonorDistanceM,
+                                            xhaulConnected,
+                                            bestChannelVariationDb,
+                                            bestRsrpDbm,
+                                            rawStateAgeSec,
+                                            ctx.outagePredictorMaxFeatureGapSec,
+                                            outageFeatures);
+        UavOutagePrediction outagePrediction;
+        bool outageRawPrediction = false;
+
         if (ctx.enableAiUavSwitchingXapp && uavSwitchingXappAvailable)
         {
             std::array<float, 14> aiFeatures = {
@@ -980,19 +1534,78 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
             };
             aiPredictedBackhaulMode =
                 BackhaulModeFromAiLabel(g_uavSwitchingOnnxModel.PredictLabel(aiFeatures));
-            backhaulMode = SanitizeAiBackhaulMode(aiPredictedBackhaulMode,
-                                                  xhaulState,
-                                                  satelliteFallbackAllowed,
-                                                  satHealthy);
+            requestedBackhaulMode = SanitizeAiBackhaulMode(aiPredictedBackhaulMode,
+                                                           xhaulState,
+                                                           satelliteFallbackAllowed,
+                                                           satHealthy);
+            controllerMode = "legacy-rule-imitation";
+            guardResult = requestedBackhaulMode == aiPredictedBackhaulMode
+                              ? "LEGACY_FEASIBLE"
+                              : "LEGACY_FEASIBILITY_OVERRIDE";
         }
-        else
+        else if (ctx.outagePredictorMode != "off" && outageFeatureValid)
         {
-            const bool useSatelliteRule =
-                uavSwitchingXappActive && satelliteFallbackAllowed && satHealthy;
-            backhaulMode = useSatelliteRule ? "SATELLITE_FALLBACK"
-                                            : (xhaulState == "HEALTHY" ? "TN_DIRECT"
-                                                                       : "NO_BACKHAUL_AVAILABLE");
+            outagePrediction = g_uavOutagePredictor.Predict(outageFeatures);
+            outageRawPrediction =
+                outagePrediction.inferenceOk &&
+                outagePrediction.probability >= ctx.outagePredictorThreshold;
+            auto& predictorState = g_uavOutagePredictorStateByCell[uavCellId];
+            predictorState.consecutivePositive =
+                outageRawPrediction ? predictorState.consecutivePositive + 1 : 0;
+
+            controllerMode = ctx.outagePredictorMode == "active" ? "predictive-active"
+                                                                  : "predictive-shadow";
+            guardResult = ctx.outagePredictorMode == "active" ? "PREDICTOR_BELOW_GUARD"
+                                                               : "SHADOW_ONLY";
+            if (ctx.outagePredictorMode == "active" &&
+                predictorState.consecutivePositive >= ctx.outagePredictorConsecutive)
+            {
+                if (uavSwitchingXappAvailable && satelliteFallbackAllowed && satHealthy)
+                {
+                    requestedBackhaulMode = "SATELLITE_FALLBACK";
+                    guardResult = "PREDICTED_SUSTAINED_LOSS";
+                }
+                else
+                {
+                    requestedBackhaulMode = ruleBackhaulMode;
+                    guardResult = "PREDICTOR_FEASIBILITY_OVERRIDE";
+                }
+            }
         }
+        else if (ctx.outagePredictorMode != "off")
+        {
+            g_uavOutagePredictorStateByCell[uavCellId].consecutivePositive = 0;
+            controllerMode = ctx.outagePredictorMode == "active" ? "predictive-active"
+                                                                  : "predictive-shadow";
+            guardResult = "INVALID_OR_STALE_HISTORY_RULE_FALLBACK";
+        }
+
+        auto& appliedState = g_uavAppliedBackhaulStateByCell[uavCellId];
+        if (ctx.outagePredictorMode == "active" &&
+            appliedState.appliedMode == "SATELLITE_FALLBACK" &&
+            requestedBackhaulMode == "TN_DIRECT" &&
+            now - appliedState.lastAppliedTimeSec < ctx.outagePredictorMinDwellSec)
+        {
+            requestedBackhaulMode = "SATELLITE_FALLBACK";
+            guardResult = "MINIMUM_DWELL_HOLD";
+        }
+
+        RememberUavDonorSample(uavCellId,
+                               now,
+                               xhaulConnected,
+                               bestDonorDistanceM,
+                               bestRsrpDbm);
+        RequestUavBackhaulMode(ctx,
+                              uavCellId,
+                              requestedBackhaulMode,
+                              controllerMode,
+                              guardResult);
+
+        // Route and capacity changes occur after the configured E2 and route
+        // update delay.  The applied state, not this cycle's request, drives
+        // data-plane and handover-eligibility traces.
+        const std::string backhaulMode = appliedState.appliedMode;
+        const std::string actualRouteMode = appliedState.actualRouteMode;
 
         const bool useSatelliteBackhaul = backhaulMode == "SATELLITE_FALLBACK";
         const std::string uavMode =
@@ -1003,52 +1616,96 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
         //   2. satellite fallback is selected and healthy.
         // Otherwise the UE mobility xApp must not hand normal UEs to this UAV,
         // because access coverage without a core-network path is not useful.
-        const bool allowNormalUeHandover = backhaulMode != "NO_BACKHAUL_AVAILABLE";
-        const bool directTnBackhaulUsable = backhaulMode == "TN_DIRECT";
-
-        // This string is consumed by HybridSatEpcHelper, which switches the
-        // actual UAV user/core route between TN, satellite, and unavailable.
-        const std::string epcBackhaulMode =
-            useSatelliteBackhaul ? "satellite" : (directTnBackhaulUsable ? "tn" : "unavailable");
+        const bool allowNormalUeHandover =
+            !ctx.backhaulAwareHandover || actualRouteMode != "NO_BACKHAUL_AVAILABLE";
 
         // These strings are human-readable trace labels for the article plots.
         const std::string ricControlState =
             backhaulMode == "TN_DIRECT"
                 ? "TN_E2"
-                : (uavSwitchingXappActive
-                       ? (useSatelliteBackhaul ? "NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL"
-                                               : "NEAR_RT_RIC_SWITCHING_NO_SATELLITE_BACKHAUL")
-                       : "LOCAL_AUTONOMY");
+                : (useSatelliteBackhaul ? "NEAR_RT_RIC_SWITCHING_TO_SATELLITE_BACKHAUL"
+                                        : "NEAR_RT_RIC_SWITCHING_NO_SATELLITE_BACKHAUL");
         const std::string activeUavRic =
             uavSwitchingXappAvailable ? "TN_NEAR_RT_RIC" : "LOCAL_UAV_AUTONOMY";
         const std::string uavSwitchingXappState =
             uavSwitchingXappAvailable
-                ? (ctx.enableAiUavSwitchingXapp ? "AI_ACTIVE"
-                                                : (uavSwitchingXappActive ? "ACTIVE" : "STANDBY"))
+                ? (ctx.enableAiUavSwitchingXapp
+                       ? "LEGACY_AI_ACTIVE"
+                       : (ctx.outagePredictorMode == "active"
+                              ? "PREDICTOR_ACTIVE"
+                              : (ctx.outagePredictorMode == "shadow"
+                                     ? "PREDICTOR_SHADOW"
+                                     : (uavSwitchingXappActive ? "ACTIVE" : "STANDBY"))))
                 : "DISABLED";
 
         // ------------------------------------------------------------------
-        // 5. Apply the decision to the simulated data plane and UE mobility xApp.
+        // 5. Update satellite measurements exposed to the mobility xApp.
+        // Route and capacity actuation is handled by the scheduled callback.
         // ------------------------------------------------------------------
-        if (ctx.epcHelper)
-        {
-            // User/core traffic route:
-            //   "tn"          -> UE -> UAV gNB -> TN donor/core
-            //   "satellite"   -> UE -> UAV gNB -> SAT -> GW -> core
-            //   "unavailable" -> packets cannot use the UAV core route
-            ctx.epcHelper->SetNtnBackhaulMode(uavCellId, epcBackhaulMode);
-        }
         if (g_rsrpLm)
         {
-            // Coupling between the two xApps:
-            //   - switching xApp sets effective UAV capacity to 0 when there is
-            //     no backhaul;
-            //   - UE mobility xApp then rejects normal handover to that UAV.
-            g_rsrpLm->SetCellCapacity(uavCellId,
-                                      allowNormalUeHandover ? maxUesPerCellNtn : 0);
             g_rsrpLm->SetCellBackhaulDlSnrDb(uavCellId, satDl);
             g_rsrpLm->SetCellBackhaulUlSnrDb(uavCellId, satUl);
         }
+
+        const std::string previousTraceAppliedMode = appliedState.lastTraceAppliedMode;
+        const bool appliedModeChangedSinceTrace = previousTraceAppliedMode != backhaulMode;
+        appliedState.lastTraceAppliedMode = backhaulMode;
+        const std::string previousTraceActualRouteMode =
+            appliedState.lastTraceActualRouteMode;
+        const bool actualRouteChangedSinceTrace =
+            previousTraceActualRouteMode != actualRouteMode;
+        appliedState.lastTraceActualRouteMode = actualRouteMode;
+
+        // Separate, versioned predictor trace.  Invalid-history rows contain
+        // empty feature/probability fields and are never passed to ONNX.
+        std::ofstream aiOut(s_uavSwitchingAiTraceFile, std::ios_base::app);
+        aiOut << std::setprecision(std::numeric_limits<float>::max_digits10);
+        aiOut << now << ","
+              << uavIdx << ","
+              << uavCellId << ","
+              << g_uavOutagePredictorFeatureSchema << ","
+              << g_uavOutagePredictorModelSha256 << ","
+              << 6.0 << ",";
+        for (std::size_t featureIndex = 0; featureIndex < outageFeatures.size(); ++featureIndex)
+        {
+            if (outageFeatureValid)
+            {
+                aiOut << outageFeatures[featureIndex];
+            }
+            aiOut << ",";
+        }
+        aiOut << (outageFeatureValid ? 1 : 0) << ",";
+        if (outagePrediction.inferenceOk)
+        {
+            aiOut << outagePrediction.probability;
+        }
+        aiOut << ","
+              << ctx.outagePredictorThreshold << ","
+              << g_uavOutagePredictorStateByCell[uavCellId].consecutivePositive << ",";
+        if (outagePrediction.inferenceOk)
+        {
+            aiOut << (outageRawPrediction ? 1 : 0);
+        }
+        aiOut << ","
+              << ruleBackhaulMode << ","
+              << requestedBackhaulMode << ","
+              << guardResult << ","
+              << previousTraceAppliedMode << ","
+              << backhaulMode << ","
+              << (appliedState.hasPendingEvent ? appliedState.pendingMode : "") << ","
+              << (appliedModeChangedSinceTrace ? 1 : 0) << ","
+              << (outagePrediction.inferenceOk ? 1 : 0) << ",";
+        if (outagePrediction.inferenceOk)
+        {
+            aiOut << outagePrediction.inferenceUs;
+        }
+        aiOut << ","
+              << controllerMode << ","
+              << (ctx.backhaulAwareHandover ? 1 : 0) << ","
+              << previousTraceActualRouteMode << ","
+              << actualRouteMode << ","
+              << (actualRouteChangedSinceTrace ? 1 : 0) << "\n";
 
         // Verbose human-readable xApp log for ns3-oran-lm.log.
         if (g_nsLogFile.is_open())
@@ -1070,7 +1727,16 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
                       << " UavSwitchingXappAvailable=" << (uavSwitchingXappAvailable ? 1 : 0)
                       << " UavSwitchingXappState=" << uavSwitchingXappState
                       << " AiPredictedBackhaulMode=" << aiPredictedBackhaulMode
+                      << " OutagePredictorMode=" << ctx.outagePredictorMode
+                      << " OutagePredictorFeatureValid=" << (outageFeatureValid ? 1 : 0)
+                      << " OutagePredictorProbability="
+                      << (outagePrediction.inferenceOk ? outagePrediction.probability : -1.0)
+                      << " OutagePredictorConsecutive="
+                      << g_uavOutagePredictorStateByCell[uavCellId].consecutivePositive
+                      << " RequestedBackhaulMode=" << requestedBackhaulMode
+                      << " DecisionGuard=" << guardResult
                       << " BackhaulMode=" << backhaulMode
+                      << " ActualRouteMode=" << actualRouteMode
                       << " RicControlState=" << ricControlState
                       << " ActiveUavRic=" << activeUavRic
                       << " NormalUeHandoverAllowed=" << (allowNormalUeHandover ? 1 : 0)
@@ -1092,6 +1758,7 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
             << (now - g_xhaulRawStateSinceSecByCell[uavCellId]) << ","
             << xhaulState << ","
             << (degradationActive ? 1 : 0) << ","
+            << degradationPenaltyNowDb << ","
             << (donorUnavailableActive ? 1 : 0) << ","
             << satDl << ","
             << satUl << ","
@@ -1099,6 +1766,7 @@ RunUavAutonomyXappPolicy(const UavAutonomyXappContext& ctx)
             << (uavSwitchingXappAvailable ? 1 : 0) << ","
             << uavSwitchingXappState << ","
             << backhaulMode << ","
+            << actualRouteMode << ","
             << ricControlState << ","
             << activeUavRic << ","
             << (allowNormalUeHandover ? 1 : 0) << ","
@@ -1125,6 +1793,7 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
                    double degradationStartSec,
                    double degradationStopSec,
                    double degradationPenaltyDb,
+                   double degradationRampSec,
                    double donorUnavailableStartSec,
                    double donorUnavailableStopSec,
                    double switchToSatTttSec,
@@ -1150,6 +1819,7 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
     ctx.degradationStartSec = degradationStartSec;
     ctx.degradationStopSec = degradationStopSec;
     ctx.degradationPenaltyDb = degradationPenaltyDb;
+    ctx.degradationRampSec = degradationRampSec;
     ctx.donorUnavailableStartSec = donorUnavailableStartSec;
     ctx.donorUnavailableStopSec = donorUnavailableStopSec;
     ctx.switchToSatTttSec = switchToSatTttSec;
@@ -1182,6 +1852,7 @@ TraceXhaulAutonomy(NodeContainer tnGnbs,
                         degradationStartSec,
                         degradationStopSec,
                         degradationPenaltyDb,
+                        degradationRampSec,
                         donorUnavailableStartSec,
                         donorUnavailableStopSec,
                         switchToSatTttSec,
@@ -1236,6 +1907,47 @@ OranLmUavAutonomyControl::Run()
     }
 
     return {};
+}
+
+void
+NotifyHandoverStartGnb(std::string context,
+                       uint64_t imsi,
+                       uint16_t sourceCellId,
+                       uint16_t rnti,
+                       uint16_t targetCellId)
+{
+    const double nowSec = Simulator::Now().GetSeconds();
+    const uint64_t attemptId = g_nextHandoverAttemptId++;
+
+    auto previous = g_handoverStartByImsi.find(imsi);
+    if (previous != g_handoverStartByImsi.end())
+    {
+        std::ofstream failure(s_handoverFailureTraceFile, std::ios_base::app);
+        failure << nowSec
+                << " Side=GNB"
+                << " Reason=SupersededByNewStart"
+                << " IMSI=" << imsi
+                << " Cell=" << previous->second.sourceCellId
+                << " RNTI=" << rnti
+                << " AttemptId=" << previous->second.attemptId
+                << " StartTime=" << previous->second.timeSec
+                << " SourceCell=" << previous->second.sourceCellId
+                << " TargetCell=" << previous->second.targetCellId
+                << " Context=" << context
+                << "\n";
+    }
+    g_handoverStartByImsi[imsi] = {attemptId, nowSec, sourceCellId, targetCellId};
+
+    std::ofstream f(s_handoverTraceFile, std::ios_base::app);
+    f << nowSec
+      << " Event=START"
+      << " AttemptId=" << attemptId
+      << " IMSI=" << imsi
+      << " SourceCell=" << sourceCellId
+      << " TargetCell=" << targetCellId
+      << " RNTI=" << rnti
+      << " Context=" << context
+      << "\n";
 }
 
 void
@@ -1320,12 +2032,31 @@ NotifyHandoverEndOkGnb(std::string context, uint64_t imsi, uint16_t targetCellId
     const char* type =
         g_ntnCellIds.count(targetCellId) ? "NTN" : "TN";
 
+    uint16_t sourceCellId = 0;
+    uint64_t attemptId = 0;
+    double startTimeSec = -1.0;
+    double completionDelaySec = -1.0;
+    auto startIt = g_handoverStartByImsi.find(imsi);
+    if (startIt != g_handoverStartByImsi.end())
+    {
+        attemptId = startIt->second.attemptId;
+        sourceCellId = startIt->second.sourceCellId;
+        startTimeSec = startIt->second.timeSec;
+        completionDelaySec = Simulator::Now().GetSeconds() - startTimeSec;
+        g_handoverStartByImsi.erase(startIt);
+    }
+
     std::ofstream f(s_handoverTraceFile,std::ios_base::app);
 
     f << Simulator::Now().GetSeconds()
+      << " Event=END_OK"
+      << " AttemptId=" << attemptId
       << " IMSI=" << imsi
+      << " SourceCell=" << sourceCellId
       << " TargetCell=" << targetCellId
       << " Type=" << type
+      << " StartTime=" << startTimeSec
+      << " CompletionDelay=" << completionDelaySec
       << " TargetRSRP=" << targetRsrpText
       << " ServingRSRP=" << servingRsrpText
       << " BackhaulDlSnr=" << bhDl
@@ -1354,6 +2085,20 @@ NotifyHandoverFailureGnb(std::string reason,
                          uint16_t rnti,
                          uint16_t cellId)
 {
+    uint64_t attemptId = 0;
+    double startTimeSec = -1.0;
+    uint16_t sourceCellId = 0;
+    uint16_t targetCellId = 0;
+    auto startIt = g_handoverStartByImsi.find(imsi);
+    if (startIt != g_handoverStartByImsi.end())
+    {
+        attemptId = startIt->second.attemptId;
+        startTimeSec = startIt->second.timeSec;
+        sourceCellId = startIt->second.sourceCellId;
+        targetCellId = startIt->second.targetCellId;
+        g_handoverStartByImsi.erase(startIt);
+    }
+
     std::ofstream f(s_handoverFailureTraceFile, std::ios_base::app);
     f << Simulator::Now().GetSeconds()
       << " Side=GNB"
@@ -1361,6 +2106,10 @@ NotifyHandoverFailureGnb(std::string reason,
       << " IMSI=" << imsi
       << " Cell=" << cellId
       << " RNTI=" << rnti
+      << " AttemptId=" << attemptId
+      << " StartTime=" << startTimeSec
+      << " SourceCell=" << sourceCellId
+      << " TargetCell=" << targetCellId
       << " Context=" << context
       << "\n";
 
@@ -1381,6 +2130,20 @@ NotifyHandoverFailureGnb(std::string reason,
 void
 NotifyHandoverEndErrorUe(std::string context, uint64_t imsi, uint16_t cellId, uint16_t rnti)
 {
+    uint64_t attemptId = 0;
+    double startTimeSec = -1.0;
+    uint16_t sourceCellId = 0;
+    uint16_t targetCellId = 0;
+    auto startIt = g_handoverStartByImsi.find(imsi);
+    if (startIt != g_handoverStartByImsi.end())
+    {
+        attemptId = startIt->second.attemptId;
+        startTimeSec = startIt->second.timeSec;
+        sourceCellId = startIt->second.sourceCellId;
+        targetCellId = startIt->second.targetCellId;
+        g_handoverStartByImsi.erase(startIt);
+    }
+
     std::ofstream f(s_handoverFailureTraceFile, std::ios_base::app);
     f << Simulator::Now().GetSeconds()
       << " Side=UE"
@@ -1388,6 +2151,10 @@ NotifyHandoverEndErrorUe(std::string context, uint64_t imsi, uint16_t cellId, ui
       << " IMSI=" << imsi
       << " Cell=" << cellId
       << " RNTI=" << rnti
+      << " AttemptId=" << attemptId
+      << " StartTime=" << startTimeSec
+      << " SourceCell=" << sourceCellId
+      << " TargetCell=" << targetCellId
       << " Context=" << context
       << "\n";
 
@@ -1984,6 +2751,25 @@ UpdateUavTargetsFromUnderservedUes(NodeContainer groundUeNodesS1,
                         rsrpThreshDbm,
                         controlPeriodSec);
 }
+
+void
+AssignOpenLoopUavTargets()
+{
+    const std::size_t count = g_uavStates.size();
+    if (count == 0)
+    {
+        return;
+    }
+    for (std::size_t index = 0; index < count; ++index)
+    {
+        GeoWaypointState* state = g_uavStates[index];
+        const double angle = 2.0 * M_PI * (static_cast<double>(index) + 0.25) /
+                             static_cast<double>(count);
+        state->targetEastM = 0.8 * state->halfWidthM * std::cos(angle);
+        state->targetNorthM = 0.8 * state->halfHeightM * std::sin(angle);
+        state->hasTarget = true;
+    }
+}
 ///
 
 ///
@@ -2012,13 +2798,34 @@ install_mobility_geocentric(NodeContainer staticNodes,
 
     for (uint32_t i = 0; i < tnGnbNodes.GetN(); ++i)
     {
-        Vector geo = RandomGeoFromCenter(g_refLat,
-                                         g_refLon,
-                                         25.0,
-                                         TN_GNB_HALF_W_M,
-                                         TN_GNB_HALF_H_M,
-                                         tnEast,
-                                         tnNorth);
+        Vector geo;
+        if (CAPACITY_STRATIFIED_UE_PLACEMENT && tnGnbNodes.GetN() == 4)
+        {
+            // Four reproducible, well-separated donor/access anchors. Random
+            // placement previously produced sub-kilometre TN separations and
+            // severe seed-specific UL interference in the feasibility smoke.
+            static const std::array<std::pair<double, double>, 4> signs = {{
+                {-1.0, -1.0},
+                {1.0, -1.0},
+                {-1.0, 1.0},
+                {1.0, 1.0},
+            }};
+            geo = LocalToGeo(0.8 * TN_GNB_HALF_W_M * signs[i].first,
+                             0.8 * TN_GNB_HALF_H_M * signs[i].second,
+                             25.0,
+                             g_refLat,
+                             g_refLon);
+        }
+        else
+        {
+            geo = RandomGeoFromCenter(g_refLat,
+                                      g_refLon,
+                                      25.0,
+                                      TN_GNB_HALF_W_M,
+                                      TN_GNB_HALF_H_M,
+                                      tnEast,
+                                      tnNorth);
+        }
 
         setFixedGeo(tnGnbNodes.Get(i), geo.x, geo.y, geo.z);
     }
@@ -2029,13 +2836,26 @@ install_mobility_geocentric(NodeContainer staticNodes,
         Ptr<UniformRandomVariable> northRv = CreateObject<UniformRandomVariable>();
 
         double uavAlt = 120.0 + 5.0 * i;
-        Vector initGeo = RandomGeoFromCenter(g_refLat,
-                                             g_refLon,
-                                             uavAlt,
-                                             UAV_INITIAL_AREA_HALF_W_M,
-                                             UAV_INITIAL_AREA_HALF_H_M,
-                                             eastRv,
-                                             northRv);
+        Vector initGeo;
+        if (CAPACITY_STRATIFIED_UE_PLACEMENT && ntnGnbNodes.GetN() == 3)
+        {
+            const double angle = M_PI / 2.0 + 2.0 * M_PI * i / 3.0;
+            initGeo = LocalToGeo(0.7 * UAV_INITIAL_AREA_HALF_W_M * std::cos(angle),
+                                 0.7 * UAV_INITIAL_AREA_HALF_H_M * std::sin(angle),
+                                 uavAlt,
+                                 g_refLat,
+                                 g_refLon);
+        }
+        else
+        {
+            initGeo = RandomGeoFromCenter(g_refLat,
+                                          g_refLon,
+                                          uavAlt,
+                                          UAV_INITIAL_AREA_HALF_W_M,
+                                          UAV_INITIAL_AREA_HALF_H_M,
+                                          eastRv,
+                                          northRv);
+        }
 
         auto mob = CreateObject<GeocentricConstantPositionMobilityModel>();
         mob->SetGeographicPosition(initGeo);
@@ -2070,11 +2890,57 @@ install_mobility_geocentric(NodeContainer staticNodes,
         Ptr<UniformRandomVariable> eastRv = CreateObject<UniformRandomVariable>();
         Ptr<UniformRandomVariable> northRv = CreateObject<UniformRandomVariable>();
 
-        Vector initGeo = RandomGeoFromCenter(g_refLat,
-                                             g_refLon,
+        double mobilityCenterLatDeg = g_refLat;
+        double mobilityCenterLonDeg = g_refLon;
+        double mobilityHalfWidthM = UE_AREA_HALF_W_M;
+        double mobilityHalfHeightM = UE_AREA_HALF_H_M;
+
+        if (CAPACITY_STRATIFIED_UE_PLACEMENT)
+        {
+            const uint64_t tnAnchorSlots =
+                static_cast<uint64_t>(tnGnbNodes.GetN()) * maxUesPerCellTn;
+            const uint32_t tnAnchoredUes = static_cast<uint32_t>(
+                std::min<uint64_t>(groundUeNodesS1.GetN(), tnAnchorSlots));
+
+            Ptr<Node> anchor;
+            if (i < tnAnchoredUes && tnGnbNodes.GetN() > 0 && maxUesPerCellTn > 0)
+            {
+                const uint32_t anchorIndex =
+                    std::min<uint32_t>(i / maxUesPerCellTn, tnGnbNodes.GetN() - 1);
+                anchor = tnGnbNodes.Get(anchorIndex);
+            }
+            else if (ntnGnbNodes.GetN() > 0)
+            {
+                anchor = ntnGnbNodes.Get((i - tnAnchoredUes) % ntnGnbNodes.GetN());
+            }
+            else if (tnGnbNodes.GetN() > 0)
+            {
+                anchor = tnGnbNodes.Get(i % tnGnbNodes.GetN());
+            }
+
+            NS_ABORT_MSG_IF(anchor == nullptr,
+                            "Capacity-stratified UE placement requires at least one access cell");
+            Ptr<GeocentricConstantPositionMobilityModel> anchorMob =
+                anchor->GetObject<GeocentricConstantPositionMobilityModel>();
+            NS_ABORT_MSG_IF(anchorMob == nullptr,
+                            "Capacity-stratified UE anchor has no geocentric mobility model");
+            const Vector anchorGeo = anchorMob->GetGeographicPosition();
+            mobilityCenterLatDeg = anchorGeo.x;
+            mobilityCenterLonDeg = anchorGeo.y;
+            mobilityHalfWidthM = UE_ANCHOR_CLUSTER_RADIUS_M;
+            mobilityHalfHeightM = UE_ANCHOR_CLUSTER_RADIUS_M;
+        }
+        else if (SPLIT_UE_PLACEMENT)
+        {
+            mobilityHalfWidthM = TN_GNB_HALF_W_M;
+            mobilityHalfHeightM = TN_GNB_HALF_H_M;
+        }
+
+        Vector initGeo = RandomGeoFromCenter(mobilityCenterLatDeg,
+                                             mobilityCenterLonDeg,
                                              1.5,
-                                             SPLIT_UE_PLACEMENT ? TN_GNB_HALF_W_M : UE_AREA_HALF_W_M,
-                                             SPLIT_UE_PLACEMENT ? TN_GNB_HALF_H_M : UE_AREA_HALF_H_M,
+                                             mobilityHalfWidthM,
+                                             mobilityHalfHeightM,
                                              eastRv,
                                              northRv);
 
@@ -2085,11 +2951,11 @@ install_mobility_geocentric(NodeContainer staticNodes,
 
         auto st = std::make_unique<GeoWaypointState>();
         st->mob = mob;
-        st->centerLatDeg = g_refLat;
-        st->centerLonDeg = g_refLon;
+        st->centerLatDeg = mobilityCenterLatDeg;
+        st->centerLonDeg = mobilityCenterLonDeg;
         st->fixedAltM = 1.5;
-        st->halfWidthM = UE_AREA_HALF_W_M;
-        st->halfHeightM = UE_AREA_HALF_H_M;
+        st->halfWidthM = mobilityHalfWidthM;
+        st->halfHeightM = mobilityHalfHeightM;
         st->speedMps = 5.0;
 
         SelectNewGeoWaypoint(st.get(), eastRv, northRv);
@@ -2110,7 +2976,31 @@ install_mobility_geocentric(NodeContainer staticNodes,
         Ptr<UniformRandomVariable> northRv = CreateObject<UniformRandomVariable>();
 
         Vector initGeo;
-        if (SPLIT_UE_PLACEMENT && CLUSTERED_UES2_PLACEMENT)
+        double mobilityCenterLatDeg = g_refLat;
+        double mobilityCenterLonDeg = g_refLon;
+        double mobilityHalfWidthM = UE_AREA_HALF_W_M;
+        double mobilityHalfHeightM = UE_AREA_HALF_H_M;
+        if (CAPACITY_STRATIFIED_UE_PLACEMENT && ntnGnbNodes.GetN() > 0)
+        {
+            Ptr<Node> anchor = ntnGnbNodes.Get(i % ntnGnbNodes.GetN());
+            Ptr<GeocentricConstantPositionMobilityModel> anchorMob =
+                anchor->GetObject<GeocentricConstantPositionMobilityModel>();
+            NS_ABORT_MSG_IF(anchorMob == nullptr,
+                            "Capacity-stratified UE anchor has no geocentric mobility model");
+            const Vector anchorGeo = anchorMob->GetGeographicPosition();
+            mobilityCenterLatDeg = anchorGeo.x;
+            mobilityCenterLonDeg = anchorGeo.y;
+            mobilityHalfWidthM = UE_ANCHOR_CLUSTER_RADIUS_M;
+            mobilityHalfHeightM = UE_ANCHOR_CLUSTER_RADIUS_M;
+            initGeo = RandomGeoFromCenter(mobilityCenterLatDeg,
+                                          mobilityCenterLonDeg,
+                                          1.5,
+                                          mobilityHalfWidthM,
+                                          mobilityHalfHeightM,
+                                          eastRv,
+                                          northRv);
+        }
+        else if (SPLIT_UE_PLACEMENT && CLUSTERED_UES2_PLACEMENT)
         {
             initGeo = RandomGeoInUnderservedCluster(g_refLat,
                                                     g_refLon,
@@ -2158,17 +3048,16 @@ install_mobility_geocentric(NodeContainer staticNodes,
                                                                1.5,
                                                                i % 3,
                                                                UES2_CLUSTER_OFFSET_M);
-            st->centerLatDeg = clusterCenter.x;
-            st->centerLonDeg = clusterCenter.y;
+            mobilityCenterLatDeg = clusterCenter.x;
+            mobilityCenterLonDeg = clusterCenter.y;
+            mobilityHalfWidthM = UES2_CLUSTER_RADIUS_M;
+            mobilityHalfHeightM = UES2_CLUSTER_RADIUS_M;
         }
-        else
-        {
-            st->centerLatDeg = g_refLat;
-            st->centerLonDeg = g_refLon;
-        }
+        st->centerLatDeg = mobilityCenterLatDeg;
+        st->centerLonDeg = mobilityCenterLonDeg;
         st->fixedAltM = 1.5;
-        st->halfWidthM = CLUSTERED_UES2_PLACEMENT ? UES2_CLUSTER_RADIUS_M : UE_AREA_HALF_W_M;
-        st->halfHeightM = CLUSTERED_UES2_PLACEMENT ? UES2_CLUSTER_RADIUS_M : UE_AREA_HALF_H_M;
+        st->halfWidthM = mobilityHalfWidthM;
+        st->halfHeightM = mobilityHalfHeightM;
         st->speedMps = 4.0;
 
         SelectNewGeoWaypoint(st.get(), eastRv, northRv);
@@ -2396,7 +3285,43 @@ ApplySatelliteBackhaulState(SatBackhaulContext* ctx, bool writeLog)
         bool backhaulHealthy =
             (std::min(backhaulDlSnrDb, backhaulUlSnrDb) >= ctx->minAcceptableBackhaulSnrDb);
 
-        uint32_t newCap = backhaulHealthy ? ctx->healthyNtnCapacity : 0;
+        // Compose satellite health with the controller-selected and physically
+        // usable route.  Satellite SNR alone must not re-enable a UAV whose
+        // selected TN route is currently unavailable.
+        if (g_uavAutonomyXappCtx)
+        {
+            auto& routeState = g_uavAppliedBackhaulStateByCell[cell.cellId];
+            const std::string previousRouteMode = routeState.actualRouteMode;
+            const std::string refreshedRouteMode =
+                ResolveActualUavRouteMode(cell.cellId, routeState.appliedMode);
+            if (refreshedRouteMode != previousRouteMode)
+            {
+                ApplyActualUavRoute(g_uavAutonomyXappCtx->epcHelper,
+                                   cell.cellId,
+                                   refreshedRouteMode,
+                                   g_uavAutonomyXappCtx->backhaulAwareHandover);
+                AppendUavRouteEvent(t,
+                                    cell.cellId,
+                                    "PHYSICAL_GATE",
+                                    "satellite-link-monitor",
+                                    "SATELLITE_HEALTH_CHANGE",
+                                    routeState.appliedMode,
+                                    routeState.appliedMode,
+                                    previousRouteMode,
+                                    refreshedRouteMode,
+                                    g_uavAutonomyXappCtx->backhaulAwareHandover);
+            }
+        }
+
+        const auto routeIt = g_uavAppliedBackhaulStateByCell.find(cell.cellId);
+        const std::string actualRouteMode =
+            routeIt == g_uavAppliedBackhaulStateByCell.end()
+                ? "TN_DIRECT"
+                : routeIt->second.actualRouteMode;
+        const bool backhaulAware =
+            !g_uavAutonomyXappCtx || g_uavAutonomyXappCtx->backhaulAwareHandover;
+        const bool routeAvailable = actualRouteMode != "NO_BACKHAUL_AVAILABLE";
+        uint32_t newCap = (!backhaulAware || routeAvailable) ? ctx->healthyNtnCapacity : 0;
 
         // 1) update xApp / HO side
         if (g_rsrpLm)
@@ -2624,6 +3549,7 @@ main(int argc, char* argv[])
     double xhaulDegradationStartSec = -1.0;
     double xhaulDegradationStopSec = -1.0;
     double xhaulDegradationPenaltyDb = 25.0;
+    double xhaulDegradationRampSec = 0.0;
     double xhaulDonorUnavailableStartSec = -1.0;
     double xhaulDonorUnavailableStopSec = -1.0;
     double xhaulSwitchToSatTttSec = 5.0;
@@ -2645,6 +3571,17 @@ main(int argc, char* argv[])
     bool enableUavSwitchingXapp = true;
     bool enableAiUavSwitchingXapp = false;
     std::string uavSwitchingAiModelPath = g_uavSwitchingAiModelPath;
+    std::string uavOutagePredictorMode = "off";
+    std::string uavOutagePredictorModelPath = g_uavOutagePredictorModelPath;
+    std::string uavOutagePredictorModelSha256 = "UNSPECIFIED";
+    double uavOutagePredictorThreshold = 0.5;
+    uint32_t uavOutagePredictorConsecutive = 2;
+    double uavOutagePredictorMinDwellSec = 6.0;
+    double uavOutagePredictorMaxFeatureGapSec = 3.0;
+    double xhaulRouteUpdateDelaySec = 0.05;
+    bool backhaulAwareHandover = true;
+    int64_t xhaulShadowingStream = 7301;
+    int64_t xhaulFadingStream = 7302;
     double satBackhaulLogStepMs = 500.0;
     double satBackhaulMinSnrDb = 0.0;
 
@@ -2666,6 +3603,7 @@ main(int argc, char* argv[])
     double satRxNoiseFigureDb = 1.2;
     
     double groundAttachDelay = 6.0; // seconds
+    double initialAttachStaggerSec = 0.0;
     // Scheduler CLI knobs (safe defaults to a concrete scheduler)
     bool ofdma = true;            // true=OFDMA, false=TDMA
     //In this scenario, BWPs already separate the main service types (voice, UES1 DL, UES1 UL).
@@ -2679,6 +3617,8 @@ main(int argc, char* argv[])
     double monitoredDlRateMbps = 1.0;
     double monitoredUlRateMbps = 0.25;
     uint32_t monitoredPacketSizeBytes = 1000;
+    double monitoredDlStartSec = 4.0;
+    double monitoredUlStartSec = 4.5;
     double uavControlStartSec = 7.0;
     double uavControlPeriodSec = 2.0;
     double underservedRsrpThreshDbm = -110.0;
@@ -2734,6 +3674,9 @@ main(int argc, char* argv[])
     cmd.AddValue("xhaul-degradation-penalty-db",
                  "RSRP penalty applied during synthetic xHaul degradation",
                  xhaulDegradationPenaltyDb);
+    cmd.AddValue("xhaul-degradation-ramp-s",
+                 "Linear degradation/recovery ramp duration at each edge; zero is a step",
+                 xhaulDegradationRampSec);
     cmd.AddValue("xhaul-donor-unavailable-start",
                  "Start time when the TN donor/gateway path is unavailable; negative disables it",
                  xhaulDonorUnavailableStartSec);
@@ -2773,6 +3716,9 @@ main(int argc, char* argv[])
     cmd.AddValue("sched", "Scheduler kind: RR, PF, MR, Qos", schedKind);
     cmd.AddValue("num-ground-ues", "Number of ground UEs", numGroundUesS2);
     cmd.AddValue("ground-attach-delay", "Delay before attaching ground UEs (s)", groundAttachDelay);
+    cmd.AddValue("initial-attach-stagger-s",
+                 "Delay between consecutive UE initial-attach requests (s)",
+                 initialAttachStaggerSec);
     cmd.AddValue("max-ues-tn",  "Max UEs per TN cell",  maxUesPerCellTn);
     cmd.AddValue("max-ues-ntn", "Max UEs per NTN cell", maxUesPerCellNtn);
     cmd.AddValue("tn-area-half-w-m", "Half-width of the terrestrial gNB placement area in meters", TN_GNB_HALF_W_M);
@@ -2790,6 +3736,13 @@ main(int argc, char* argv[])
     cmd.AddValue("split-ue-placement",
                  "Place UES1 inside the TN region and UES2 outside the TN region",
                  SPLIT_UE_PLACEMENT);
+    cmd.AddValue("capacity-stratified-ue-placement",
+                 "Anchor the first TN-capacity-worth of UES1 near individual TN cells, "
+                 "remaining UES1 near UAV cells, and UES2 near UAV cells",
+                 CAPACITY_STRATIFIED_UE_PLACEMENT);
+    cmd.AddValue("ue-anchor-cluster-radius-m",
+                 "Half-width/height of each locally mobile UE anchor cluster in meters",
+                 UE_ANCHOR_CLUSTER_RADIUS_M);
     cmd.AddValue("ue-outside-tn-exclusion-half-w-m",
                  "Half-width of the central TN exclusion area for outside/underserved UEs",
                  UE_OUTSIDE_TN_EXCLUSION_HALF_W_M);
@@ -2812,6 +3765,9 @@ main(int argc, char* argv[])
     cmd.AddValue("uav-mission-target-scale",
                  "Scale applied to underserved-UE cluster centroids when assigning UAV mission targets",
                  g_uavMissionTargetScale);
+    cmd.AddValue("closed-loop-uav-targeting",
+                 "Retarget UAVs from policy-dependent UE/load state; disable for matched open-loop runs",
+                 g_closedLoopUavTargeting);
     cmd.AddValue("enable-sat-backhaul-monitor",
                  "Enable parallel satellite backhaul monitor for NTN/UAV gNBs",
                  enableSatBackhaulMonitor);
@@ -2824,6 +3780,39 @@ main(int argc, char* argv[])
     cmd.AddValue("uav-switching-ai-model",
                  "Path to the ONNX model used by --enable-ai-uav-switching-xapp",
                  uavSwitchingAiModelPath);
+    cmd.AddValue("uav-outage-predictor-mode",
+                 "Forward-looking sustained-outage predictor mode: off | shadow | active",
+                 uavOutagePredictorMode);
+    cmd.AddValue("uav-outage-predictor-model",
+                 "Path to the binary sustained-outage ONNX model",
+                 uavOutagePredictorModelPath);
+    cmd.AddValue("uav-outage-predictor-model-sha256",
+                 "Expected predictor SHA-256 recorded in the inference trace",
+                 uavOutagePredictorModelSha256);
+    cmd.AddValue("uav-outage-predictor-threshold",
+                 "Locked class-1 probability threshold for sustained donor loss",
+                 uavOutagePredictorThreshold);
+    cmd.AddValue("uav-outage-predictor-consecutive",
+                 "Number of consecutive positive predictions required before anticipatory fallback",
+                 uavOutagePredictorConsecutive);
+    cmd.AddValue("uav-outage-predictor-min-dwell-s",
+                 "Minimum satellite dwell after a predictive switch",
+                 uavOutagePredictorMinDwellSec);
+    cmd.AddValue("uav-outage-predictor-max-feature-gap-s",
+                 "Maximum age gap allowed between causal history samples",
+                 uavOutagePredictorMaxFeatureGapSec);
+    cmd.AddValue("xhaul-route-update-delay-s",
+                 "Route-table actuation delay added after the configured E2 transmission delay",
+                 xhaulRouteUpdateDelaySec);
+    cmd.AddValue("backhaul-aware-handover",
+                 "When false, keep UAVs eligible for access-only handover even without an onward route",
+                 backhaulAwareHandover);
+    cmd.AddValue("xhaul-shadowing-stream",
+                 "Explicit ns-3 stream number for donor shadowing variation",
+                 xhaulShadowingStream);
+    cmd.AddValue("xhaul-fading-stream",
+                 "Explicit ns-3 stream number for donor fast-fading variation",
+                 xhaulFadingStream);
     cmd.AddValue("enable-onboard-uav-ric",
                  "Deprecated alias for --enable-uav-switching-xapp; no onboard RIC is created",
                  enableUavSwitchingXapp);
@@ -2901,6 +3890,12 @@ main(int argc, char* argv[])
     cmd.AddValue("monitored-packet-size",
                  "UDP packet size in bytes when --monitored-traffic=udp",
                  monitoredPacketSizeBytes);
+    cmd.AddValue("monitored-dl-start-s",
+                 "Start time for monitored downlink packet offers",
+                 monitoredDlStartSec);
+    cmd.AddValue("monitored-ul-start-s",
+                 "Start time for monitored uplink packet offers",
+                 monitoredUlStartSec);
     cmd.AddValue("uav-control-start",
                  "Time when the UAV autonomy movement policy starts moving UAVs toward underserved UEs",
                  uavControlStartSec);
@@ -2929,6 +3924,9 @@ main(int argc, char* argv[])
     g_enableUavSwitchingXapp = enableUavSwitchingXapp;
     g_enableAiUavSwitchingXapp = enableAiUavSwitchingXapp;
     g_uavSwitchingAiModelPath = uavSwitchingAiModelPath;
+    g_uavOutagePredictorMode = uavOutagePredictorMode;
+    g_uavOutagePredictorModelPath = uavOutagePredictorModelPath;
+    g_uavOutagePredictorModelSha256 = uavOutagePredictorModelSha256;
     g_enableXhaulChannelVariation = enableXhaulChannelVariation;
     g_xhaulShadowingStddevDb = xhaulShadowingStddevDb;
     g_xhaulFadingStddevDb = xhaulFadingStddevDb;
@@ -2967,6 +3965,7 @@ main(int argc, char* argv[])
         enableSatBackhaulMonitor = false;
         enableUavSwitchingXapp = false;
         enableAiUavSwitchingXapp = false;
+        uavOutagePredictorMode = "off";
         enableFhControl = false;
         remMode = false;
     }
@@ -2975,10 +3974,35 @@ main(int argc, char* argv[])
 
     NS_ABORT_MSG_IF(enableAiUavSwitchingXapp && !enableUavSwitchingXapp,
                     "--enable-ai-uav-switching-xapp requires --enable-uav-switching-xapp=1");
+    NS_ABORT_MSG_IF(uavOutagePredictorMode != "off" &&
+                        uavOutagePredictorMode != "shadow" &&
+                        uavOutagePredictorMode != "active",
+                    "--uav-outage-predictor-mode must be off, shadow, or active");
+    NS_ABORT_MSG_IF(uavOutagePredictorMode != "off" && !enableUavSwitchingXapp,
+                    "The outage predictor requires --enable-uav-switching-xapp=1");
+    NS_ABORT_MSG_IF(uavOutagePredictorMode != "off" && enableAiUavSwitchingXapp,
+                    "The sustained-outage predictor and legacy rule-imitation model cannot both run");
+    NS_ABORT_MSG_IF(uavOutagePredictorThreshold < 0.0 ||
+                        uavOutagePredictorThreshold > 1.0,
+                    "The outage-predictor threshold must be in [0,1]");
+    NS_ABORT_MSG_IF(uavOutagePredictorConsecutive == 0,
+                    "The outage predictor requires at least one consecutive positive");
+    NS_ABORT_MSG_IF(xhaulDegradationRampSec < 0.0,
+                    "The xHaul degradation ramp duration must be non-negative");
+    NS_ABORT_MSG_IF(xhaulShadowingStream < 0 || xhaulFadingStream < 0 ||
+                        xhaulShadowingStream == xhaulFadingStream,
+                    "Use distinct non-negative xHaul RNG stream numbers");
     if (enableAiUavSwitchingXapp)
     {
         g_uavSwitchingOnnxModel.Load(uavSwitchingAiModelPath);
     }
+    if (uavOutagePredictorMode != "off")
+    {
+        g_uavOutagePredictor.Load(uavOutagePredictorModelPath);
+    }
+    g_uavOutagePredictorMode = uavOutagePredictorMode;
+    g_xhaulShadowingRv->SetStream(xhaulShadowingStream);
+    g_xhaulFadingRv->SetStream(xhaulFadingStream);
 
     NS_ABORT_MSG_IF(useOran == false && (useOnnx || useTorch || useRsrp),
                     "Cannot use ML LM or RSRP LM without enabling O-RAN.");
@@ -2990,8 +4014,16 @@ main(int argc, char* argv[])
                     "which requires NR channel fading. Remove --enable-fading=0.");
     NS_ABORT_MSG_IF(rlcMode != "um" && rlcMode != "am",
                     "Unsupported --rlc-mode. Use um or am.");
+    NS_ABORT_MSG_IF(initialAttachStaggerSec < 0.0,
+                    "--initial-attach-stagger-s must be non-negative.");
+    NS_ABORT_MSG_IF(CAPACITY_STRATIFIED_UE_PLACEMENT && UE_ANCHOR_CLUSTER_RADIUS_M <= 0.0,
+                    "--ue-anchor-cluster-radius-m must be positive when capacity-stratified placement is enabled.");
     NS_ABORT_MSG_IF(monitoredTraffic != "udp" && monitoredTraffic != "xr",
                     "Unsupported --monitored-traffic. Use udp or xr.");
+    NS_ABORT_MSG_IF(monitoredDlStartSec < 0.0 || monitoredUlStartSec < 0.0 ||
+                        monitoredDlStartSec >= simTime.GetSeconds() ||
+                        monitoredUlStartSec >= simTime.GetSeconds(),
+                    "Monitored traffic start times must be non-negative and before --sim-time.");
 
     Time simulationStopTime = simTime + Seconds(stopTailSeconds);
 
@@ -3021,9 +4053,17 @@ main(int argc, char* argv[])
     s_tnInfrastructureTraceFile = ns3_dir + "tn-infrastructure-trace.csv";
     s_satBackhaulTraceFile = ns3_dir + "sat-backhaul-trace.txt";
     s_xhaulAutonomyTraceFile = ns3_dir + "xhaul-autonomy-trace.csv";
+    s_uavSwitchingAiTraceFile = ns3_dir + "uav-switching-ai-trace.csv";
+    s_uavSwitchingEventTraceFile = ns3_dir + "uav-switching-events.csv";
+    s_ueIdentityMapFile = ns3_dir + "ue-identity-map.csv";
+    s_monitoredPacketTraceFile = ns3_dir + "monitored-packet-events.csv";
 
     // Ensure results/nr/ directory exists
     std::filesystem::create_directories(ns3_dir);
+    g_monitoredTxSequenceByFlow.clear();
+    g_monitoredPacketTrace.open(s_monitoredPacketTraceFile, std::ios_base::trunc);
+    g_monitoredPacketTrace
+        << "Time,UE,Dir,Event,PacketUid,PacketBytes,Sequence,SenderTimestampSec\n";
 
     Ptr<OutputStreamWrapper> rsrpRsrqSinrTraceStream;
     if (enableRsrpTrace)
@@ -3032,7 +4072,7 @@ main(int argc, char* argv[])
             Create<OutputStreamWrapper>(ns3_dir + "rsrp-trace.tr", std::ios::out);
 
         *rsrpRsrqSinrTraceStream->GetStream()
-            << "Time RNTI CellId CellType RSRP RSRQ Serving CCID\n";
+            << "Time IMSI RNTI CellId CellType RSRP RSRQ Serving CCID\n";
     }
 
     if (enableOranInfoLog || enableNrHelperInfoLog)
@@ -3428,13 +4468,20 @@ main(int argc, char* argv[])
     // In the final distance-loss scenarios this is set to 5 s. UAVs then move
     // toward weak UE clusters; their TN donor-backhaul quality is determined by
     // distance/path loss and optional shadowing/fading, not by a fixed RSRP penalty.
-    Simulator::Schedule(Seconds(uavControlStartSec),
-                        &UpdateUavTargetsFromUnderservedUes,
-                        groundUeNodesS1,
-                        groundUeNodesS2,
-                        ntnGnbNrDevs,
-                        underservedRsrpThreshDbm,
-                        uavControlPeriodSec);
+    if (g_closedLoopUavTargeting)
+    {
+        Simulator::Schedule(Seconds(uavControlStartSec),
+                            &UpdateUavTargetsFromUnderservedUes,
+                            groundUeNodesS1,
+                            groundUeNodesS2,
+                            ntnGnbNrDevs,
+                            underservedRsrpThreshDbm,
+                            uavControlPeriodSec);
+    }
+    else
+    {
+        Simulator::Schedule(Seconds(uavControlStartSec), &AssignOpenLoopUavTargets);
+    }
 
     allGnbNrDevs.Add(tnGnbNrDevs);
     allGnbNrDevs.Add(ntnGnbNrDevs);
@@ -3989,6 +5036,37 @@ main(int argc, char* argv[])
         }
     }
 
+    if (monitoredTraffic == "udp")
+    {
+        for (uint32_t i = 0; i < groundUeNodesS1.GetN(); ++i)
+        {
+            xrDlSenders.Get(i)->TraceConnectWithoutContext(
+                "Tx",
+                MakeBoundCallback(&TraceMonitoredPacketEvent,
+                                  i,
+                                  std::string("DL"),
+                                  std::string("TX")));
+            xrDlSinks.Get(i)->TraceConnectWithoutContext(
+                "RxWithoutAddress",
+                MakeBoundCallback(&TraceMonitoredPacketEvent,
+                                  i,
+                                  std::string("DL"),
+                                  std::string("RX")));
+            xrUlSenders.Get(i)->TraceConnectWithoutContext(
+                "Tx",
+                MakeBoundCallback(&TraceMonitoredPacketEvent,
+                                  i,
+                                  std::string("UL"),
+                                  std::string("TX")));
+            xrUlSinks.Get(i)->TraceConnectWithoutContext(
+                "RxWithoutAddress",
+                MakeBoundCallback(&TraceMonitoredPacketEvent,
+                                  i,
+                                  std::string("UL"),
+                                  std::string("RX")));
+        }
+    }
+
     // ---------------------------------------------------------------------
     // Background traffic applications for UES2.
     //
@@ -4034,13 +5112,101 @@ main(int argc, char* argv[])
     // Dedicated QoS flows must be installed before initial attach because this
     // NR stack does not implement activating new NAS QoS flows after the
     // initial UE context has already been established.
-    nrHelper->AttachToMaxRsrpGnb(groundNrDevsS1, allGnbNrDevs);
+    //
+    // Capacity-stratified runs stagger requests per intended anchor cell. UEs
+    // anchored to different cells may attach in parallel, while requests to
+    // the same cell are separated to avoid overloading the contention-based
+    // random-access procedure. The TN-anchored cohort is deliberately admitted
+    // before the monitored UAV cohort so the requested 40/10 exposure is not a
+    // side effect of event ordering.
+    auto monitoredAttachOffsetSec = [&](uint32_t i) {
+        if (!CAPACITY_STRATIFIED_UE_PLACEMENT || initialAttachStaggerSec <= 0.0)
+        {
+            return initialAttachStaggerSec * static_cast<double>(i);
+        }
+
+        const uint64_t tnAnchorSlots =
+            static_cast<uint64_t>(tnGnbNrDevs.GetN()) * maxUesPerCellTn;
+        const uint32_t tnAnchoredUes = static_cast<uint32_t>(
+            std::min<uint64_t>(groundNrDevsS1.GetN(), tnAnchorSlots));
+        if (i < tnAnchoredUes && maxUesPerCellTn > 0)
+        {
+            return initialAttachStaggerSec * static_cast<double>(i % maxUesPerCellTn);
+        }
+
+        const double tnCohortSpanSec =
+            initialAttachStaggerSec * static_cast<double>(maxUesPerCellTn);
+        if (ntnGnbNrDevs.GetN() > 0)
+        {
+            const uint32_t uavCohortIndex = i - tnAnchoredUes;
+            return tnCohortSpanSec +
+                   initialAttachStaggerSec *
+                       static_cast<double>(uavCohortIndex / ntnGnbNrDevs.GetN());
+        }
+        return tnCohortSpanSec +
+               initialAttachStaggerSec * static_cast<double>(i - tnAnchoredUes);
+    };
+
+    for (uint32_t i = 0; i < groundNrDevsS1.GetN(); ++i)
+    {
+        NetDeviceContainer singleUe(groundNrDevsS1.Get(i));
+        Ptr<NetDevice> explicitAnchor;
+        if (CAPACITY_STRATIFIED_UE_PLACEMENT)
+        {
+            const uint64_t tnAnchorSlots =
+                static_cast<uint64_t>(tnGnbNrDevs.GetN()) * maxUesPerCellTn;
+            const uint32_t tnAnchoredUes = static_cast<uint32_t>(
+                std::min<uint64_t>(groundNrDevsS1.GetN(), tnAnchorSlots));
+            if (i < tnAnchoredUes && maxUesPerCellTn > 0)
+            {
+                explicitAnchor = tnGnbNrDevs.Get(i / maxUesPerCellTn);
+            }
+            else if (ntnGnbNrDevs.GetN() > 0)
+            {
+                explicitAnchor = ntnGnbNrDevs.Get((i - tnAnchoredUes) % ntnGnbNrDevs.GetN());
+            }
+        }
+        Simulator::Schedule(Seconds(monitoredAttachOffsetSec(i)),
+                            [nrHelper, singleUe, allGnbNrDevs, explicitAnchor]() {
+                                if (explicitAnchor)
+                                {
+                                    nrHelper->AttachToGnb(singleUe.Get(0), explicitAnchor);
+                                }
+                                else
+                                {
+                                    nrHelper->AttachToMaxRsrpGnb(singleUe, allGnbNrDevs);
+                                }
+                            });
+    }
 
     // UES2 is attached later to create background load after the monitored UES1
     // flows have started. This helps stress handover and load-aware decisions.
-    Simulator::Schedule(tLateAttach, [nrHelper, groundNrDevsS2, allGnbNrDevs]() {
-        nrHelper->AttachToMaxRsrpGnb(groundNrDevsS2, allGnbNrDevs);
-    });
+    for (uint32_t i = 0; i < groundNrDevsS2.GetN(); ++i)
+    {
+        NetDeviceContainer singleUe(groundNrDevsS2.Get(i));
+        Ptr<NetDevice> explicitAnchor;
+        if (CAPACITY_STRATIFIED_UE_PLACEMENT && ntnGnbNrDevs.GetN() > 0)
+        {
+            explicitAnchor = ntnGnbNrDevs.Get(i % ntnGnbNrDevs.GetN());
+        }
+        double backgroundOffsetSec = initialAttachStaggerSec * static_cast<double>(i);
+        if (CAPACITY_STRATIFIED_UE_PLACEMENT && ntnGnbNrDevs.GetN() > 0)
+        {
+            backgroundOffsetSec = initialAttachStaggerSec *
+                                  static_cast<double>(i / ntnGnbNrDevs.GetN());
+        }
+        Simulator::Schedule(tLateAttach + Seconds(backgroundOffsetSec),
+                            [nrHelper, singleUe, allGnbNrDevs, explicitAnchor]() {
+                                if (explicitAnchor)
+                                {
+                                    nrHelper->AttachToGnb(singleUe.Get(0), explicitAnchor);
+                                }
+                                else
+                                {
+                                    nrHelper->AttachToMaxRsrpGnb(singleUe, allGnbNrDevs);
+                                }
+                            });
+    }
 
     // Start/stop times
     xrDlSinks.Start(Seconds(1.0));
@@ -4052,19 +5218,30 @@ main(int argc, char* argv[])
         xrPingApps.Stop(Seconds(3.8));
     }
 
-    xrDlSenders.Start(Seconds(4.0));
-    xrDlSenders.Stop(simulationStopTime);
+    xrDlSenders.Start(Seconds(monitoredDlStartSec));
+    xrDlSenders.Stop(simTime);
 
     xrUlSinks.Start(Seconds(1.0));
     xrUlSinks.Stop(simulationStopTime);
 
-    xrUlSenders.Start(Seconds(4.5));
-    xrUlSenders.Stop(simulationStopTime);
+    xrUlSenders.Start(Seconds(monitoredUlStartSec));
+    xrUlSenders.Stop(simTime);
 
     ueAppsS2.Start(Seconds(1));
-    groundRemoteAppsS2.Start(tLateAttach + Seconds(0.5));
+    double backgroundAttachSpanSec =
+        groundNrDevsS2.GetN() > 0
+            ? initialAttachStaggerSec * static_cast<double>(groundNrDevsS2.GetN() - 1)
+            : 0.0;
+    if (CAPACITY_STRATIFIED_UE_PLACEMENT && groundNrDevsS2.GetN() > 0 &&
+        ntnGnbNrDevs.GetN() > 0)
+    {
+        backgroundAttachSpanSec =
+            initialAttachStaggerSec *
+            static_cast<double>((groundNrDevsS2.GetN() - 1) / ntnGnbNrDevs.GetN());
+    }
+    groundRemoteAppsS2.Start(tLateAttach + Seconds(backgroundAttachSpanSec + 0.5));
 
-    groundRemoteAppsS2.Stop(simulationStopTime);
+    groundRemoteAppsS2.Stop(simTime);
     ueAppsS2.Stop(simulationStopTime);
 
 
@@ -4087,6 +5264,7 @@ main(int argc, char* argv[])
         g_uavAutonomyXappCtx->degradationStartSec = xhaulDegradationStartSec;
         g_uavAutonomyXappCtx->degradationStopSec = xhaulDegradationStopSec;
         g_uavAutonomyXappCtx->degradationPenaltyDb = xhaulDegradationPenaltyDb;
+        g_uavAutonomyXappCtx->degradationRampSec = xhaulDegradationRampSec;
         g_uavAutonomyXappCtx->donorUnavailableStartSec = xhaulDonorUnavailableStartSec;
         g_uavAutonomyXappCtx->donorUnavailableStopSec = xhaulDonorUnavailableStopSec;
         g_uavAutonomyXappCtx->switchToSatTttSec = xhaulSwitchToSatTttSec;
@@ -4099,6 +5277,14 @@ main(int argc, char* argv[])
         g_uavAutonomyXappCtx->xhaulFadingStddevDb = xhaulFadingStddevDb;
         g_uavAutonomyXappCtx->enableUavSwitchingXapp = enableUavSwitchingXapp;
         g_uavAutonomyXappCtx->enableAiUavSwitchingXapp = enableAiUavSwitchingXapp;
+        g_uavAutonomyXappCtx->outagePredictorMode = uavOutagePredictorMode;
+        g_uavAutonomyXappCtx->outagePredictorThreshold = uavOutagePredictorThreshold;
+        g_uavAutonomyXappCtx->outagePredictorConsecutive = uavOutagePredictorConsecutive;
+        g_uavAutonomyXappCtx->outagePredictorMinDwellSec = uavOutagePredictorMinDwellSec;
+        g_uavAutonomyXappCtx->outagePredictorMaxFeatureGapSec =
+            uavOutagePredictorMaxFeatureGapSec;
+        g_uavAutonomyXappCtx->routeUpdateDelaySec = xhaulRouteUpdateDelaySec;
+        g_uavAutonomyXappCtx->backhaulAwareHandover = backhaulAwareHandover;
     }
 
 
@@ -4160,12 +5346,14 @@ main(int argc, char* argv[])
         defaultLmFactory.SetTypeId(defaultLmTid);
         defaultLm = defaultLmFactory.Create<OranLm>();
 
-        // Disable one global capacity value because this scenario has separate
-        // TN and UAV/NTN capacity maps. Each cell receives its own limit below.
-        defaultLm->SetAttribute("MaxUesPerCell", UintegerValue(0)); // per-cell map takes over
-
         if (useRsrp)
         {
+            // This attribute belongs to the RSRP handover LM, not to the no-op
+            // LM used by fixed-association backhaul experiments. Disable its
+            // global value only when that LM is actually selected; per-cell
+            // limits are then installed below.
+            defaultLm->SetAttribute("MaxUesPerCell", UintegerValue(0));
+
             Ptr<OranLmNr2NrRsrpHandoverWithTnNtn> rsrpLm =
                 DynamicCast<OranLmNr2NrRsrpHandoverWithTnNtn>(defaultLm);
 
@@ -4201,17 +5389,15 @@ main(int argc, char* argv[])
             }
         }
 
-        // If the best RSRP target is full or disallowed, try another candidate
-        // instead of immediately keeping the current serving cell.
-        defaultLm->SetAttribute("TryNextBest", BooleanValue(true));
-
-        // Reject very weak handover targets even if they are technically the
-        // strongest candidate. This prevents moving a UE to an unusable cell.
-        defaultLm->SetAttribute("MinAcceptableRsrpDbm", DoubleValue(handoverMinRsrpDbm));
-
-        // Hysteresis protects against ping-pong handovers by requiring the
-        // target cell to be better than the current cell by this margin.
-        defaultLm->SetAttribute("HysteresisDb", DoubleValue(hysteresisDb));
+        if (useRsrp)
+        {
+            // These policy attributes are defined by the RSRP handover LM and
+            // must not be applied to the fixed-association no-op LM.
+            defaultLm->SetAttribute("TryNextBest", BooleanValue(true));
+            defaultLm->SetAttribute("MinAcceptableRsrpDbm",
+                                    DoubleValue(handoverMinRsrpDbm));
+            defaultLm->SetAttribute("HysteresisDb", DoubleValue(hysteresisDb));
+        }
 
         dataRepository->SetAttribute("DatabaseFile", StringValue(dbFileName));
         defaultLm->SetName("UE_MOBILITY_XAPP");
@@ -4248,6 +5434,10 @@ main(int argc, char* argv[])
         nearRtRic->SetAttribute("LmQueryLateCommandPolicy", StringValue(lateCommandPolicy));
 
         Simulator::Schedule(Seconds(2.5), &OranNearRtRic::Start, nearRtRic);
+        // Keep the post-traffic tail exclusively for in-flight packet and
+        // handover completion.  Starting new RIC commands after the offered
+        // traffic horizon would right-censor handover-success denominators.
+        Simulator::Schedule(simTime, &OranNearRtRic::Stop, nearRtRic);
 
         for (uint32_t idx = 0; idx < groundUeNodesS1.GetN(); idx++)
         {
@@ -4504,13 +5694,31 @@ main(int argc, char* argv[])
         xhaulOut << "Time,DeploymentMode,UavIndex,UavCellId,BestDonorCellId,"
                  << "BestDonorDistanceM,XhaulConnected,"
                  << "XhaulChannelVariationDb,XhaulRsrpDbm,RawXhaulState,RawXhaulStateAgeSec,"
-                 << "XhaulState,XhaulDegradationActive,"
+                 << "XhaulState,XhaulDegradationActive,XhaulDegradationPenaltyDb,"
                  << "DonorUnavailableActive,"
                  << "SatBackhaulDlSnrDb,SatBackhaulUlSnrDb,SatBackhaulHealthy,"
                  << "UavSwitchingXappAvailable,UavSwitchingXappState,"
-                 << "BackhaulMode,RicControlState,ActiveUavRic,"
+                 << "BackhaulMode,ActualRouteMode,RicControlState,ActiveUavRic,"
                  << "NormalUeHandoverAllowed,"
                  << "E2TxDelaySec,E2SendIntervalSec,LmQueryIntervalSec,UavMode\n";
+    }
+    {
+        std::ofstream aiOut(s_uavSwitchingAiTraceFile, std::ios_base::trunc);
+        aiOut << "Time,UavIndex,UavCellId,FeatureSchemaVersion,ModelSha256,HorizonSec,"
+              << "BestDonorDistanceM,XhaulConnected,XhaulChannelVariationDb,XhaulRsrpDbm,"
+              << "RawXhaulStateAgeSec,DeltaDistance2sM,DeltaRsrp2sDb,DeltaRsrp4sDb,"
+              << "FeatureValid,PredictionProbability,Threshold,ConsecutivePositiveCount,"
+              << "RawPrediction,RuleMode,RequestedMode,GuardResult,PreviousAppliedMode,"
+              << "AppliedMode,PendingMode,ModeChanged,InferenceOk,InferenceUs,ControllerMode,"
+              << "BackhaulAwareHandover,PreviousActualRouteMode,ActualRouteMode,"
+              << "ActualRouteChanged\n";
+    }
+    {
+        std::ofstream eventOut(s_uavSwitchingEventTraceFile, std::ios_base::trunc);
+        eventOut << "DecisionTime,ApplyTime,ActuationDelaySec,UavCellId,ControllerMode,"
+                 << "GuardResult,PreviousAppliedMode,AppliedMode,ModeChanged,"
+                 << "BackhaulAwareHandover,EventType,PreviousRouteMode,ActualRouteMode,"
+                 << "RouteChanged\n";
     }
     if (ntnGnbNrDevs.GetN() > 0 && !useOran)
     {
@@ -4534,6 +5742,7 @@ main(int argc, char* argv[])
                             xhaulDegradationStartSec,
                             xhaulDegradationStopSec,
                             xhaulDegradationPenaltyDb,
+                            xhaulDegradationRampSec,
                             xhaulDonorUnavailableStartSec,
                             xhaulDonorUnavailableStopSec,
                             xhaulSwitchToSatTttSec,
@@ -4569,7 +5778,9 @@ main(int argc, char* argv[])
         std::ofstream hoOutFile(s_handoverTraceFile, std::ios_base::trunc);
         hoOutFile.close();
 
-        // Connect to handover trace so we know when a handover is successfully performed
+        // Record the true NR procedure denominator and its successful completion.
+        Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverStart",
+                        MakeCallback(&NotifyHandoverStartGnb));
         Config::Connect("/NodeList/*/DeviceList/*/NrGnbRrc/HandoverEndOk",
                         MakeCallback(&NotifyHandoverEndOkGnb));
     }
@@ -4666,7 +5877,9 @@ main(int argc, char* argv[])
 
         std::ofstream qos_vs_time;
         qos_vs_time.open(ns3_dir + "qos-vs-time.txt", std::ofstream::out | std::ofstream::trunc);
-        qos_vs_time << "Time,UE,Dir,Delay,Jitter,Throughput,PDR" << std::endl;
+        qos_vs_time << "Time,UE,Dir,Delay,Jitter,Throughput,PDR,"
+                    << "TxPackets,RxPackets,RxBytes,DelaySumSec,JitterSumSec,IntervalSec"
+                    << std::endl;
 
         g_prevFlowStats.clear();
         g_lastQosSampleTime = Seconds(0);
@@ -4678,6 +5891,25 @@ main(int argc, char* argv[])
     for (uint32_t i = 0; i < groundUeNodesS1.GetN(); i++)
     {
         user_ip[i] = ueIpIfaceS1.GetAddress(i);
+    }
+
+    // Explicit UE-index/IMSI/IP provenance for joining per-UE QoS rows to
+    // serving-cell measurements without assuming an IMSI numbering convention.
+    {
+        std::ofstream identityOut(s_ueIdentityMapFile, std::ios_base::trunc);
+        identityOut << "Group,UE,IMSI,Ipv4Address\n";
+        for (uint32_t i = 0; i < groundNrDevsS1.GetN(); ++i)
+        {
+            Ptr<NrUeNetDevice> ue = groundNrDevsS1.Get(i)->GetObject<NrUeNetDevice>();
+            identityOut << "S1," << i << "," << (ue ? ue->GetImsi() : 0) << ","
+                        << ueIpIfaceS1.GetAddress(i) << "\n";
+        }
+        for (uint32_t i = 0; i < groundNrDevsS2.GetN(); ++i)
+        {
+            Ptr<NrUeNetDevice> ue = groundNrDevsS2.Get(i)->GetObject<NrUeNetDevice>();
+            identityOut << "S2," << i << "," << (ue ? ue->GetImsi() : 0) << ","
+                        << ueIpIfaceS2.GetAddress(i) << "\n";
+        }
     }
 
     // ---- NR Radio Environment Map ----
@@ -4734,6 +5966,7 @@ main(int argc, char* argv[])
     if (g_nsLogFile.is_open()) { g_nsLogFile.close(); }
 
     if (satBackhaulOut.is_open()) { satBackhaulOut.close(); }
+    if (g_monitoredPacketTrace.is_open()) { g_monitoredPacketTrace.close(); }
 
     Simulator::Destroy();
     return 0;
