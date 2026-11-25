@@ -1,0 +1,364 @@
+% Auto-audited methodology/parameter fragment generated from frozen artifacts.
+% This is an includable fragment, not a standalone document.  It deliberately
+% separates completed evidence from configured, pending, provisional, and failed
+% work.  It makes no claim of closed-loop network benefit.
+
+\begingroup
+\setlength{\tabcolsep}{2pt}
+\subsection*{Audited simulation and machine-learning parameters}
+
+\noindent\textbf{Status convention.}
+\emph{Completed} denotes an artifact with a recorded command, hashes, and a
+successful validation result.  \emph{Configured/not completed} denotes a
+frozen executable plan for which the required run set has not finished.
+\emph{Pending} denotes a currently unvalidated run.  \emph{Provisional}
+denotes a configured value that still requires network sensitivity analysis.
+\emph{Planned} denotes an intended correction for which frozen configuration
+and run files do not yet exist.
+\emph{Failed/non-result} denotes either an aborted integration attempt or a
+normally completed process that failed its scientific evidence gates; neither
+may be used as performance evidence.  Offline prediction performance and
+network performance are reported separately.
+
+\subsubsection*{Completed offline predictor construction}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{Completed dataset-generation and model-freezing procedure.}
+\label{tab:audited_dataset_procedure}
+\begin{tabular}{p{0.18\textwidth} p{0.76\textwidth}}
+\hline
+Item & Audited value or procedure \\
+\hline
+Status & Completed offline training, grouped evaluation, final refit, ONNX export, and numerical parity checks.  The training record explicitly states that it performed no new network simulation. \\
+Source traces & Ten raw \texttt{xhaul-\allowbreak autonomy-\allowbreak trace.csv} files: one satellite and one no-satellite run for each source seed 1--5, with three UAVs per run.  The traces were read in place from \texttt{results/\allowbreak nr/\allowbreak tn-\allowbreak ntn/\allowbreak ai-\allowbreak dataset-\allowbreak v2}; they were not copied into the model directory. \\
+Trace sampling & Each source run contains 174 rows (58 samples per UAV) from 4.5 to 118.5~s at an exactly checked 2~s cadence. \\
+Archived scenario provenance & Source run identifiers record 50 monitored and 50 background UEs, four TN and three UAV gNBs, TN/UAV admission caps 20/10 and hysteresis 2~dB. The surviving traces and their hashes fix the dataset inputs. Detailed original command settings remain provisional where the archive has no execution manifest. \\
+Row construction & For each run and UAV, sort by time; validate binary connectivity, finite numeric inputs, and raw state in \{\texttt{HEALTHY}, \texttt{UNREACHABLE}\}; normalize the disconnected representation; construct the eight causal features; and construct the future label.  Exclude the first two samples (missing 4~s history) and last three samples (right-censored 6~s target).  This gives 53 rows per UAV, 159 rows per run, and 1,590 rows in total. \\
+Ordering and identifiers & Rows are ordered by seed, scenario (no-satellite before satellite), UAV index, and time, then assigned a unique \texttt{RowId}.  Each row retains source-run name, source-trace SHA-256, seed/group, scenario, time, UAV, and target-horizon end time.  The derived CSV is written from this validated DataFrame before the model input matrix is materialized as \texttt{float32} and its label vector as \texttt{int64}. \\
+Target & $Y(t)=1$ iff the instantaneous \texttt{Raw\allowbreak Xhaul\allowbreak State} is \texttt{UNREACHABLE} at all three future controller epochs $t+2$, $t+4$, and $t+6$~s; otherwise $Y(t)=0$.  Thus the horizon is 6~s at a 2~s cadence. \\
+Causality & Inputs use only measurements at $t$, $t-2$, or $t-4$~s.  Seed, scenario, future QoS, rule action, and effective \texttt{Backhaul\allowbreak Mode} are not model inputs. \\
+Dataset composition & 942 negative rows and 648 positive rows (positive prevalence 0.407547).  Dataset SHA-256: \texttt{ed6dfd5fcbc007d3\allowbreak 8a2a2c7219475f1b\allowbreak c499cbff9d58cff7\allowbreak 9063236d5a0e248d}. \\
+Frozen protocol & \texttt{uav-\allowbreak sustained-\allowbreak outage-\allowbreak v1}; protocol SHA-256: \texttt{06aa240f9d8c6f9e\allowbreak 65fb1d0c1efc8026\allowbreak e84a1d863c245e07\allowbreak 20cc98c0c736d0b3}. \\
+Reproduction command & \texttt{.venv/\allowbreak bin/\allowbreak python contrib/\allowbreak oran/\allowbreak examples/\allowbreak train-\allowbreak uav-\allowbreak sustained-\allowbreak outage-\allowbreak predictor.py --base-dir results/\allowbreak nr/\allowbreak tn-\allowbreak ntn/\allowbreak ai-\allowbreak dataset-\allowbreak v2}.  The recorded completed run used the corresponding absolute paths and took 2.349955~s wall time. \\
+Artifact root & \texttt{results/\allowbreak ai/\allowbreak uav-\allowbreak sustained-\allowbreak outage-\allowbreak v1/\allowbreak }. \\
+\hline
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{Ordered causal inputs and exact offline/online preprocessing contract.}
+\label{tab:audited_predictor_features}
+\begin{tabular}{p{0.035\textwidth} p{0.20\textwidth} p{0.38\textwidth} p{0.27\textwidth}}
+\hline
+\# & Input (unit) & Definition at controller time $t$ & Sentinel/history rule \\
+\hline
+1 & \texttt{Best\allowbreak Donor\allowbreak Distance\allowbreak M} (m) & $D(t)$, current distance to the strongest eligible terrestrial donor. & $-1$ when no eligible donor is connected. \\
+2 & \texttt{Xhaul\allowbreak Connected} (binary) & $C(t)=1$ when an eligible terrestrial donor exists; otherwise 0. & Default 0. \\
+3 & \texttt{Xhaul\allowbreak Channel\allowbreak Variation\allowbreak Db} (dB) & $V(t)$, current shadowing-minus-fading realization for the selected donor. & 0 when disconnected. \\
+4 & \texttt{Xhaul\allowbreak Rsrp\allowbreak Dbm} (dBm) & $R(t)$, current RSRP proxy for the strongest eligible donor. & $-999$ when disconnected. \\
+5 & \texttt{Raw\allowbreak Xhaul\allowbreak State\allowbreak Age\allowbreak Sec} (s) & $A(t)$, elapsed time in the current instantaneous donor state. & Finite and non-negative; default 0. \\
+6 & \texttt{delta\_\allowbreak distance\_\allowbreak 2s} (m per 2~s) & $\Delta D_{2}(t)=D(t)-D(t-2)$. & 0 unless both $C(t)=1$ and $C(t-2)=1$. \\
+7 & \texttt{delta\_\allowbreak rsrp\_\allowbreak 2s} (dB per 2~s) & $\Delta R_{2}(t)=R(t)-R(t-2)$. & 0 unless both $C(t)=1$ and $C(t-2)=1$. \\
+8 & \texttt{delta\_\allowbreak rsrp\_\allowbreak 4s} (dB per 4~s) & $\Delta R_{4}(t)=R(t)-R(t-4)$. & 0 unless both $C(t)=1$ and $C(t-4)=1$. \\
+\hline
+\end{tabular}
+
+\vspace{2pt}
+\begin{minipage}{0.96\textwidth}
+\footnotesize
+The feature vector is supplied in the numbered order as \texttt{float32}.
+There is no standardization, learned imputation, or rescaling.  A non-finite
+value invalidates inference.  Four seconds of history are required: offline
+rows lacking it are excluded, while the online controller sets
+\texttt{Feature\allowbreak Valid=0} and retains the rule policy.  This contract removes the
+previous zero-delay averaging mismatch by using the same instantaneous and
+lagged definitions online and offline; row-level online reconstruction remains
+a required network-run validation gate.
+\end{minipage}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{Completed grouped evaluation and fixed Random Forest.  Each test group contains both scenarios, all three UAVs, and every retained time row for the held-out source seed.}
+\label{tab:audited_group_splits}
+\begin{tabular}{p{0.09\textwidth} p{0.22\textwidth} p{0.07\textwidth} p{0.07\textwidth} p{0.095\textwidth} p{0.11\textwidth} p{0.115\textwidth} p{0.11\textwidth}}
+\hline
+Held-out & Training groups & Train & Test & Test 0/1 & Accuracy & Balanced accuracy & Macro-F1 \\
+\hline
+seed1 & seed2, seed3, seed4, seed5 & 1272 & 318 & 71/247 & 0.987421 & 0.991903 & 0.982220 \\
+seed2 & seed1, seed3, seed4, seed5 & 1272 & 318 & 108/210 & 0.990566 & 0.992857 & 0.989554 \\
+seed3 & seed1, seed2, seed4, seed5 & 1272 & 318 & 177/141 & 0.968553 & 0.965981 & 0.967995 \\
+seed4 & seed1, seed2, seed3, seed5 & 1272 & 318 & 284/34 & 0.902516 & 0.880696 & 0.797506 \\
+seed5 & seed1, seed2, seed3, seed4 & 1272 & 318 & 302/16 & 0.993711 & 0.996689 & 0.968927 \\
+\hline
+\end{tabular}
+
+\vspace{4pt}
+\begin{tabular}{p{0.23\textwidth} p{0.71\textwidth}}
+\hline
+Fixed estimator & \texttt{Random\allowbreak Forest\allowbreak Classifier}: 300 trees, maximum depth 8, minimum leaf size 3, \texttt{class\_\allowbreak weight=balanced}, \texttt{random\_\allowbreak state=7}, and \texttt{n\_jobs=1}.  Hyperparameters are identical in every fold and in the final all-row refit. \\
+Validation and test split & Each fold uses 1,272 training rows and 318 held-out test rows. The model parameters were fixed before training, so no separate tuning-validation set or independent sixth test seed was used. Each row supplies one held-out prediction. \\
+Pooled leave-one-seed-out OOF & $n=1590$; confusion matrix $[[912,30],[20,628]]$ in label order 0/1; accuracy 0.968553; balanced accuracy 0.968644; macro-F1 0.967517; positive-class precision/recall/F1 0.954407/0.969136/0.961715; ROC-AUC 0.991771; average precision 0.988054; Brier score 0.026687.  Mean seed macro-F1 is 0.941240. \\
+Uncertainty restriction & Only five seed groups are available.  Time rows are not independent replications; no row-level confidence interval is reported.  The weak held-out seed4 result must remain visible. \\
+Final refit & One model fit on all 1,590 seed1--5 rows after grouped OOF evaluation.  It is not an independently tested offline artifact; fresh network tests must use run groups outside source seeds 1--5. \\
+\hline
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{Completed ONNX export and numerical validation.}
+\label{tab:audited_onnx_export}
+\begin{tabular}{p{0.22\textwidth} p{0.72\textwidth}}
+\hline
+Item & Audited value \\
+\hline
+Interface & One input \texttt{features}, \texttt{tensor(float)} of shape $[N,8]$; outputs \texttt{label}, \texttt{tensor(int64)} of shape $[N]$, and \texttt{probabilities}, \texttt{tensor(float)} of shape $[N,2]$.  Positive-class probability is column 1. \\
+Conversion & \texttt{float32}, target opset 12, \texttt{zipmap=false}, CPU execution provider. \\
+Runtime versions & Offline export/parity used ONNX Runtime 1.24.1.  The ns-3 C++ executable links ONNX Runtime 1.14.1; the completed post-fix micro-smoke exercised that deployment runtime with the frozen model. \\
+Dataset parity & 1,590/1,590 exact labels; maximum absolute probability error $9.181\times10^{-7}$ (required tolerance $10^{-5}$). \\
+Synthetic-range parity & 2,000/2,000 exact labels using deterministic probe seed 7 and observed per-feature ranges with disconnected sentinels preserved; maximum absolute probability error $8.619\times10^{-7}$. \\
+Model hash & ONNX SHA-256 \texttt{2f9bb76fe6d161cf\allowbreak 8d4ab6ff5031647f\allowbreak 45fa7cb6916d6046\allowbreak 3b4cffadeca1207f}. \\
+Schema hash & SHA-256 \texttt{7602c73891c528d2\allowbreak 972cbf078032d9f4\allowbreak 2c4ef6de591f45bd\allowbreak cb2b3ccb9af2dbb9}. \\
+Joblib hash & SHA-256 \texttt{e823babb009787ef\allowbreak f061c67fabe251ce\allowbreak 0e8a1afc571d3ff3\allowbreak c4d70f85ab469bb9}. \\
+Interpretation & The output forecasts sustained donor loss.  Satellite feasibility, persistence, dwell, and route actuation are external guarded policy decisions; this is not the earlier three-class rule-imitation model. \\
+\hline
+\end{tabular}
+\end{table*}
+
+\subsubsection*{Completed route/data-plane contract (not a policy-benefit experiment)}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{Completed \texttt{route-\allowbreak contract-\allowbreak v21} check using one monitored UE, one TN gNB, and one UAV gNB.}
+\label{tab:audited_route_contract}
+\begin{tabular}{p{0.20\textwidth} p{0.74\textwidth}}
+\hline
+Item & Completed evidence \\
+\hline
+Identity & \texttt{results/\allowbreak nr/\allowbreak tn-\allowbreak ntn/\allowbreak route-\allowbreak contract-\allowbreak v21/\allowbreak }; report SHA-256 \texttt{8d48891d4f749bd2\allowbreak 113a939b510b81d0\allowbreak 3bfe008aa4bbdcb0\allowbreak 7c60d160bfcc69a3}; frozen-input manifest SHA-256 \texttt{e824caac48b3ac6e\allowbreak ce9cc53b8dbfbef1\allowbreak fa7344766ed8f3bd\allowbreak 02a97351133b6421}.  This rerun binds the post-fix source and executable identities. \\
+Transitions & Actual route loss at 15.50~s, satellite route applied at 20.65~s, and TN route restored at 40.65~s; ordered-transition gate passed. \\
+Pre-TN cohort & 153/156 received, PDR 0.980769, mean delay 0.011231~s. \\
+Unavailable cohort & 0/149 received, PDR 0, as required by the route gate. \\
+Satellite cohort & 588/593 received, PDR 0.991568, mean delay 0.251066~s. \\
+Post-TN cohort & 276/276 received, PDR 1.0, mean delay 0.009231~s. \\
+Packet integrity & 1,435 unique TX and 1,257 unique RX records; zero duplicate TX/RX keys, orphan RX keys, or invalid sequences. \\
+Claim boundary & This verifies route gating, satellite delay, loss while unavailable, and restoration for the frozen binary.  It does not establish that the predictor improves switching or UE QoS. \\
+\hline
+\end{tabular}
+\end{table*}
+
+\subsubsection*{Frozen 100-UE matched integration experiment}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{Frozen common configuration used by the completed 100-UE integration arms in \texttt{run-\allowbreak uav-\allowbreak reviewer-\allowbreak integration-\allowbreak pair-\allowbreak v10.sh}.}
+\label{tab:audited_network_configuration}
+\begin{tabular}{p{0.20\textwidth} p{0.74\textwidth}}
+\hline
+Group & Configured value \\
+\hline
+Population and topology & 50 monitored UEs plus 50 delayed background UEs; four TN gNBs and three UAV gNBs; maximum 10 UEs/TN cell and 30 UEs/UAV cell; intended initial monitored exposure 40 TN-served and 10 UAV-served UEs. \\
+O-RAN/association scope & \texttt{use-oran=1}; an in-process ns-O-RAN Near-RT RIC, E2 terminators/reporters, satellite monitor, and UAV backhaul-switching logic module are enabled.  UE association is fixed with \texttt{Nr\allowbreak No\allowbreak Op\allowbreak Handover\allowbreak Algorithm}; the RSRP, ONNX, and Torch mobility LMs are disabled, so the RIC retains \texttt{OranLmNoop}.  Consequently, handover success and UE ping-pong are not applicable in this experiment.  This is not an external RIC or standardized E2SM route-control deployment. \\
+Placement and attach & Capacity-stratified placement around deterministic, separated access anchors; each UE remains locally mobile within a 25~m half-width/height cluster around its TN/UAV anchor.  Initial association uses explicit anchor attachment.  UE global-area parameters are $\pm10{,}000$~m east--west and $\pm5{,}000$~m north--south.  Background attach begins at 5~s.  Same-cell attach spacing is 0.25~s; monitored TN anchors are admitted before monitored UAV anchors. \\
+Radio/bearer & RLC-UM, HARQ retransmissions enabled, dedicated QoS flows enabled, fading enabled; channel update 100~ms, channel-condition update 200~ms, PDCP discard timer 1,000~ms.  TN/UAV/UE access powers are 46/37/23~dBm; minimum initial RSRP is $-110$~dBm. \\
+Access bands and scheduler & The frozen scenario source uses 4.0~GHz TN access with 20~MHz and one TDD BWP, and a 4.2~GHz UAV access band with 20~MHz total over distinct DL and UL BWPs. Access channel models are 3GPP UMa for TN and NTN-Urban for UAV access. The source defaults select OFDMA proportional fair, adaptive MCS, and the \texttt{NrEesmIrT2} error model. \\
+Monitored traffic & Bidirectional UDP, 1,000-byte packets, 0.20~Mbit/s DL and 0.05~Mbit/s UL per monitored UE; DL starts at 6~s and UL at 6.5~s.  Validation requires, in each applicable direction/window, PDR $\geq0.90$, mean delay $\leq0.30$~s, and rates of at least 0.18~Mbit/s DL and 0.045~Mbit/s UL. \\
+RIC timing & LM query interval 2~s, E2 reporting interval 2~s, E2 transmission delay 0.1~s, and route-update delay 0.05~s. \\
+UAV motion & Initial placement half-area 1,000$\times$800~m; mission half-area 3,000$\times$1,500~m; closed-loop targeting disabled; stationary UAV anchors (0~m/s); controller begins at 5~s with a 2~s period; target scale 1. \\
+Node heights and UE motion & UAV heights are 120, 125 and 130~m. UE height is 1.5~m. Monitored and background UE waypoint speeds are 5 and 4~m/s within their respective anchor clusters. Positions update every 200~ms. \\
+\hline
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{Backhaul channel, controller settings, and frozen implementation identities for v10.}
+\label{tab:audited_backhaul_configuration}
+\begin{tabular}{p{0.20\textwidth} p{0.74\textwidth}}
+\hline
+Group & Configured value \\
+\hline
+Donor proxy/channel & 4~GHz source default, 46~dBm donor power, 100~m reference distance, log-distance exponent 4.5, healthy cutoff $-100$~dBm, stochastic variation enabled with 6~dB shadowing standard deviation and 4~dB fading-loss standard deviation; RNG streams 7301 and 7302. \\
+Controlled impairment & 14--22~s impairment, 35~dB maximum RSRP penalty, 2~s ramp; explicit donor-unavailable window disabled. \\
+Satellite guard & \texttt{NTN-\allowbreak Suburban}, minimum SNR 0~dB, 500~ms logging.  Satellite feasibility remains an external guard. \\
+Satellite monitor & Frozen source defaults use a GEO satellite at 35,786~km altitude, 20~GHz carrier and 400~MHz bandwidth. The monitor uses 120~kHz spectral bins and a 0~dB minimum backhaul SNR. \\
+Packet transport & The TN-to-core path is 10~Gb/s with 0~ms configured propagation delay. UAV-to-satellite and satellite-to-gateway are each 1~Gb/s and 120~ms. Gateway-to-core is 10~Gb/s and 1~ms. The abstract satellite route has a 1~Gb/s bottleneck and 241~ms configured one-way propagation delay. \\
+Predictor guard & Active-arm threshold 0.5; two consecutive positives; minimum dwell 6~s; maximum feature gap 3~s.  These operational values were not selected by the completed offline evaluation. \\
+Run lengths/groups & Exactly one matched integration pair: rule followed by active predictor, each with 36~s offered-traffic horizon plus 2~s drain, \texttt{RngSeed=1}, and \texttt{RngRun=6}.  This is not a campaign or a multiseed efficacy experiment. \\
+Frozen identities & Source SHA-256 \texttt{fea74e9e6dd1721d\allowbreak e7be0c1ed2a304b7\allowbreak 06dbecfb01c65c24\allowbreak ed559216007abfa7}; executable SHA-256 \texttt{60a5045198bbe843\allowbreak a2e7cf2eba237549\allowbreak fc7f3f75facac076\allowbreak d37f2ae056ce45e9}; NR library SHA-256 \texttt{20c771dccdbdd76b\allowbreak 1793acf6ea985c1f\allowbreak cb8c6f5e2497c861\allowbreak cf722140d9566f24}; route-helper SHA-256 \texttt{3e4d810761120eb0\allowbreak 84061a9b38351e8f\allowbreak 06e8bd4fbcbe75ad\allowbreak f764c35c3894aaaf}.  These identities are pinned to the passing \texttt{route-\allowbreak contract-\allowbreak v21} report and manifest above. \\
+\hline
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{Policy arms and their current execution status.}
+\label{tab:audited_policy_arms}
+\begin{tabular}{p{0.15\textwidth} p{0.30\textwidth} p{0.17\textwidth} p{0.28\textwidth}}
+\hline
+Arm & Deployment/controller & SAT/TN time-to-trigger & Status and interpretation \\
+\hline
+Rule & TN--UAV--satellite; sustained-loss predictor off & 5~s / 5~s & Completed v10 arm with 26/27 checks passed. \\
+Predictor & Same deployment; new eight-input ONNX active & Rule TTT remains 5~s / 5~s, with predictor guards above & Completed v10 arm with 23/27 checks passed, including deployment ONNX replay. \\
+Fast-rule & Same deployment; predictor off & 0~s / 5~s & Planned campaign comparator separating prediction benefit from simply removing the rule delay. \\
+No-satellite & TN--UAV; satellite monitor disabled; predictor off & 5~s / 5~s & Planned counterfactual for fallback availability. \\
+\hline
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{Configured settings for the separate active-mobility integration.}
+\label{tab:audited_mobility_configuration}
+\begin{tabular}{p{0.22\textwidth} p{0.72\textwidth}}
+\hline
+Group & Configured value \\
+\hline
+Scope & One 100-UE rule diagnostic with an active in-process O-RAN RSRP mobility controller and a native NR no-op algorithm. The backhaul predictor and switching policy are disabled. The validator requires healthy terrestrial backhaul throughout. \\
+Topology and radio & Four TN and three UAV gNBs, admission caps 20 TN and 30 UAV per cell, initial monitored association 40 TN and 10 UAV, RLC-UM, and HARQ retransmissions disabled. \\
+Motion and duration & Four monitored UEs use reciprocal TN-to-TN corridors with 10~m lane separation. Other UEs and UAVs remain stationary. Scripted positions update every 200~ms. The traffic horizon is 30~s with a 2~s drain. \\
+Handover controller & RSRP hysteresis 2~dB, target minimum $-110$~dBm, 2~s warmup, TTT, retry timeout, minimum handover interval and low-RSRP recheck. TN floor $-110$~dBm. The extra NTN-entry and TN-return margins are 3~dB and 5~dB. \\
+Measurement & Join each \texttt{HandoverStart} to its outcome by attempt identity. Report eligible opportunities, attempts, completions and continuous adjacent completed-handover pairs as separate denominators. A return to the original cell within 10~s counts as a ping-pong. \\
+\hline
+\end{tabular}
+\end{table*}
+
+\subsubsection*{Completed integration evidence}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{Feasibility baseline and post-fix component checks.}
+\label{tab:audited_integration_feasibility}
+\begin{tabular}{p{0.17\textwidth} p{0.25\textwidth} p{0.49\textwidth}}
+\hline
+Status & Path/item & Required interpretation \\
+\hline
+Completed & \texttt{results/\allowbreak nr/\allowbreak tn-\allowbreak ntn/\allowbreak reviewer-\allowbreak smoke-\allowbreak v8/\allowbreak } & The corrected rule smoke passed overall and every run gate.  The process exited 0 in 4,107~s (1:08:26), with maximum resident set size 1,527,076~kB.  Validation-report SHA-256: \texttt{4ec82d54469c72fa\allowbreak a140d1ee3f276e5d\allowbreak 636c25186f1ac737\allowbreak 712a83367e5dcf4e}; raw-artifact-manifest SHA-256: \texttt{bc5b8cc9e7ef393e\allowbreak 19b511a53981c97a\allowbreak e19ae7998e980f7a\allowbreak 4b2f8c1925d53685}. \\
+Completed & v8 attachment and service baseline & The 25~m UE anchor clusters and stationary UAVs (0~m/s) produced the intended 40 TN/10 UAV association, with all 50 monitored UEs attached before first transmission.  In $[10,22)$~s, DL delivered 15,000/15,000 packets (mean/maximum delay 0.004106991/0.011099991~s) and UL delivered 3,750/3,750 (mean/maximum delay 0.0280932990053/0.058030357~s); both directions reached 50/50 UEs.  Service satisfaction was 300/300 UE samples and effective-coverage proxy was 1,300/1,300 UE-seconds. \\
+Completed & v8 integrity and claim boundary & Packet integrity passed with 24,850 raw TX and 24,850 raw RX records and zero duplicate, orphan, mismatch, or invalid records.  All 18/18 xHaul samples were \texttt{HEALTHY} with reconstructed \texttt{TN\_DIRECT} routing.  There were zero handover events; handover success and UE ping-pong are not applicable.  This is a pre-impairment fixed-association feasibility baseline only, not a rule/predictor comparison or evidence of switching benefit. \\
+Completed & Predictor loader correction & The source now keeps the owning ONNX \texttt{TypeInfo} alive while reading the $[N,8]$ shape.  A 100-UE, 0.1~s load/setup check exited 0; this proves loader/setup compatibility only.  The post-fix source and executable are the frozen identities listed above, and \texttt{route-\allowbreak contract-\allowbreak v21} passed with them. \\
+Completed & \texttt{results/\allowbreak nr/\allowbreak tn-\allowbreak ntn/\allowbreak predictor-\allowbreak microsmoke-\allowbreak v1/\allowbreak } & A 10~s, one-TN/one-UAV/two-UE active-predictor micro-smoke exited 0 at the unchanged 2~s controller cadence.  At 8.5~s it emitted one valid online inference row with schema \texttt{uav-\allowbreak sustained-\allowbreak outage-\allowbreak v1}, the exact model hash, probability 0.877095282, positive raw prediction, and 1,025.899~$\mu$s inference time.  Trace SHA-256: \texttt{548700db2c3475f2\allowbreak 3f49ab440e919404\allowbreak df6593036e3d361b\allowbreak 7c21bd9121a599e9}.  This validates the C++ inference path, not network benefit. \\
+\hline
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{Completed v10 one-pair integration diagnostics under fixed association. The original overall validator returned failure.}
+\label{tab:audited_v10_diagnostics}
+\begin{tabular}{p{0.24\textwidth} p{0.68\textwidth}}
+\hline
+Item & Measured value or validation finding \\
+\hline
+Run completion & Both 100-UE arms exited 0. Rule: 6,889~s and 1,567,464~kB peak RSS. Predictor: 7,070~s and 1,585,016~kB peak RSS. Combined arm wall time: 3~h~52~min~39~s. \\
+Validation & Rule passed 26/27 checks, predictor 23/27, design 2/2, and pair matching 6/6. The original validator used a 28.5~s terminal feature epoch for both arms. The v10 trace sequences ran from 4.5 to 34.5~s at the expected 2~s cadence. \\
+Online inputs/ONNX & Zero mismatches across 336 reconstructed feature values in each arm. Active-arm replay passed on 42/42 online rows with exact model and schema identities, maximum absolute probability error $7.7451\times10^{-7}$ and zero threshold-output mismatches. \\
+Timing and policy checks & At raw-outage onset (14.5~s), the rule lost the route on cells 5--7 until 20.65~s. The predictor applied satellite at 12.65~s on cell 5 and 14.65~s on cells 6 and 7. The first action matched the forecast target and violated the required direct-route baseline $[10,14)$~s. Cell 7 applied satellite again at 34.65~s with a right-censored target, so it failed the controlled-episode linkage requirement. \\
+Packet cohorts & Over $[14,22)$~s, PDR was 10,570/12,500 (84.560\%) for rule and 12,469/12,500 (99.752\%) for predictor, with mean delivered-packet delay of 18.246 and 54.777~ms respectively. Full-window PDR over $[10,36]$~s was 38,672/40,650 and 40,570/40,650 respectively. PDR denominators are unique application TX attempts paired by UE, direction and sequence. \\
+Route interruption & Rule: 6.15~s on each affected UAV. Predictor: 0, 0.15, and 0.15~s on cells 5--7. The mean reduction in this pair was 6.05~s over three linked outages within one run group. Applied mode changes totaled 6 for rule and 7 for predictor. \\
+Claim boundary & These diagnostics describe one matched run group. A prospectively frozen, replicated comparison remains pending. Handover success and UE ping-pong are NA for both arms. \\
+\hline
+\end{tabular}
+\end{table*}
+
+{\footnotesize\raggedright
+\noindent The v10 command was \texttt{bash contrib/\allowbreak oran/\allowbreak examples/\allowbreak run-\allowbreak uav-\allowbreak reviewer-\allowbreak integration-\allowbreak pair-\allowbreak v10.sh pair}. The raw command arguments, process status and file manifests are in the two arm metadata directories. The original validation JSON is under \texttt{results/\allowbreak nr/\allowbreak tn-\allowbreak ntn/\allowbreak reviewer-\allowbreak integration-\allowbreak pair-\allowbreak v10/}.
+\par\noindent Validation SHA-256 \texttt{4e0220ea7015ca8b\allowbreak 520d1c373eee756e\allowbreak 6c66fbbae59f498f\allowbreak 775014bca354bf42}.\par}
+\subsubsection*{Earlier attempts and open evaluation}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{Earlier integration attempts with failed validation or failed execution.}
+\label{tab:audited_earlier_attempts}
+\begin{tabular}{p{0.17\textwidth} p{0.25\textwidth} p{0.49\textwidth}}
+\hline
+Status & Path/item & Required interpretation \\
+\hline
+Failed/non-result & \texttt{results/\allowbreak nr/\allowbreak tn-\allowbreak ntn/\allowbreak reviewer-\allowbreak integration-\allowbreak pair-\allowbreak v9/\allowbreak } & Final validation has \texttt{overall\_\allowbreak passed=false}, zero paired comparisons, and evidence status ``one-seed integration-only; not manuscript efficacy evidence.''  Validation-report SHA-256: \texttt{4138ca7564f26890\allowbreak 245286d893a604a1\allowbreak 0448479d0920cdee\allowbreak e0f581f55c9a8656}.  The network-metrics CSV contains a rule row and a blank predictor row; the paired-comparison CSV contains only its header. \\
+Failed/non-result & v9 rule arm & The process exited 0 in 5,657~s with maximum resident set size 1,549,344~kB.  Clean $[10,14)$ application pairing gave DL 5,000/5,000 and UL 1,250/1,250.  All three UAV routes became unavailable at 14.5~s and changed to satellite at 20.65~s (6.15~s interruption), but only cells 6 and 7 achieved sustained raw/TN recovery; cell 5 remained on satellite.  Thus the required three-cell recovery gate failed.  These diagnostics are not a rule/predictor comparison. \\
+Failed/non-result & v9 predictor arm & The process aborted before simulation output (exit 134; 1~s) with \texttt{std::length\_\allowbreak error}; no result directory, feature row, probability, switch event, or network metric exists.  GDB traced this to an unowned ONNX tensor-shape view retained after its owning temporary was destroyed, not to model quality.  The process-status SHA-256 is \texttt{5a7e967dada6dcf2\allowbreak ccadab6dac18e14a\allowbreak 577c73de5b3f4f10\allowbreak 90a44a0395788471}. \\
+\hline
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{Earlier 100-UE v7 access smoke and validation findings.}
+\label{tab:audited_v7_attempt}
+\begin{tabular}{p{0.17\textwidth} p{0.25\textwidth} p{0.49\textwidth}}
+\hline
+Status & Path/item & Required interpretation \\
+\hline
+Failed/non-result & \texttt{results/\allowbreak nr/\allowbreak tn-\allowbreak ntn/\allowbreak reviewer-\allowbreak smoke-\allowbreak v7/\allowbreak } & The rule smoke process completed with exit 0 in 4,332~s (1:12:11), with maximum resident set size 1,561,948~kB, but \texttt{smoke-\allowbreak validation.json} reports both \texttt{overall\_\allowbreak passed=false} and run-level \texttt{gates\_\allowbreak passed=false}.  Validation-report SHA-256: \texttt{16af147fd1b21d96\allowbreak d5d0ada98eba053f\allowbreak 40bdb88af9b480d2\allowbreak bb91109db1684a48}; raw-artifact-manifest SHA-256: \texttt{c07beaf7f439740e\allowbreak 24d1e855e3d884fb\allowbreak 27b30b84f9482ff4\allowbreak a62ef18566645cc5}. \\
+Failed/non-result & v7 exposure and service gates & Initial association met the intended 40 TN/10 UAV split, and all 50 monitored UEs attached before their first transmission.  In $[10,22)$~s, DL delivered 14,797/15,000 packets (PDR 0.9864667; mean/maximum delay 0.0068293280/0.144099991~s) to 50/50 UEs.  UL delivered 2,577/3,750 (PDR 0.6872; mean/maximum delay 0.0328429930/0.158030357~s) to 44/50 UEs.  Missing UL receptions for UE indexes 4, 24, 29, 40, 44, and 49 caused the \texttt{monitored\_\allowbreak attachment\_\allowbreak and\_\allowbreak uav\_\allowbreak exposure} and \texttt{access\_\allowbreak radio\_\allowbreak baseline} gates to fail. \\
+Failed/non-result & v7 integrity and claim scope & Packet integrity passed for 24,850 raw TX and 23,318 raw RX records, with zero duplicates, orphans, mismatches, or invalid records.  All 18/18 pre-event xHaul samples were \texttt{HEALTHY} with reconstructed \texttt{TN\_DIRECT} routing.  Handover success and UE ping-pong are not applicable under fixed association.  These passed checks do not override the two failed evidence gates. \\
+\hline
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{Additional early failures and experimental work with outcomes pending.}
+\label{tab:audited_pending_provisional}
+\begin{tabular}{p{0.17\textwidth} p{0.25\textwidth} p{0.49\textwidth}}
+\hline
+Status & Path/item & Required interpretation \\
+\hline
+Failed/non-result & \texttt{results/\allowbreak nr/\allowbreak tn-\allowbreak ntn/\allowbreak reviewer-\allowbreak smoke-\allowbreak v6/\allowbreak } & The rule smoke process completed with exit 0 in 4,700~s (1:18:20), with maximum resident set size 1,556,920~kB, but \texttt{smoke-\allowbreak validation.json} reports both \texttt{overall\_\allowbreak passed=false} and run-level \texttt{gates\_\allowbreak passed=false}.  Validation-report SHA-256: \texttt{5797c9c0d0d6ebb9\allowbreak 8af6244009e64ac1\allowbreak 394a003aa5f2929a\allowbreak 0bbeb6cc4f0a4b8d}. \\
+Failed/non-result & v6 exposure and service gates & Initial association was 39 TN/11 UAV rather than 40/10, and only 48/50 monitored UEs attached before their first packet transmission.  In the audited pre-event window $[10,22)$~s, DL delivered 14,218/15,000 packets (PDR 0.9478667; mean delay 0.0113728~s), whereas UL delivered 1,924/3,750 (PDR 0.5130667; mean delay 0.0324832~s) and reached only 30/50 monitored UEs. \\
+Failed/non-result & v6 integrity and claim scope & Packet integrity itself passed: 24,351 raw RX and 28,000 raw TX records, with no duplicate or orphan records.  All 18/18 pre-event xHaul samples were \texttt{HEALTHY} with reconstructed \texttt{TN\_DIRECT} routing.  There were zero handover starts, completions, or failures, so handover success and UE ping-pong are not applicable.  These checks do not override the failed exposure/access gates. \\
+\hline
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{Early setup or access failures.}
+\label{tab:audited_setup_failures}
+\begin{tabular}{p{0.17\textwidth} p{0.25\textwidth} p{0.49\textwidth}}
+\hline
+Status & Path/item & Required interpretation \\
+\hline
+Failed/non-result & \texttt{reviewer-\allowbreak pilot-\allowbreak v2} & Aborted at the first successful handover (simulated 20.615~s) with heap corruption; only 7/100 UEs were attached at 20~s and the intended exposure was absent.  It is not evidence. \\
+Failed/non-result & \texttt{reviewer-\allowbreak smoke-\allowbreak v3} and \texttt{reviewer-\allowbreak smoke-\allowbreak v4} & Both aborted during setup (exit 134, 1~s wall) because RSRP-LM-only attributes were applied to the no-op LM. \\
+Failed/non-result & \texttt{reviewer-\allowbreak smoke-\allowbreak v5} & Aborted during initial access (exit 134, 113~s wall) after a late random-access response arrived in \texttt{IDLE\_\allowbreak WAIT\_\allowbreak SIB2}; this motivated anchor-aware same-cell staggering. \\
+\hline
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\caption{Open evaluation and provisional settings.}
+\label{tab:audited_next_experiments}
+\begin{tabular}{p{0.17\textwidth} p{0.25\textwidth} p{0.49\textwidth}}
+\hline
+Status & Path/item & Required interpretation \\
+\hline
+Failed preflight & Separate active O-RAN mobility & The six-UE RLC-UM/HARQ-off preflight used active O-RAN RSRP mobility and deterministic corridor input. It exited 134 at 53.33 wall seconds after reaching 14.00~s of simulated time. Both handover traces were empty. \\
+Completed diagnostic & Revised six-UE mobility preflight & After lane separation, the process exited 0 in 103.20~s. Both recorded handover attempts completed. Their approximately 15.07~ms completion delays describe the two raw outcomes. The candidate CSV had an incomplete terminal row and required a trace flush correction. \\
+Completed integration diagnostic & 100-UE mobility integration & The rule-only run exited 0 in 6,601 wall seconds and passed all 22 checks. Five RRC starts matched five completions, including all four registered target opportunities. One completed reversal occurred within 10~s. This single run verifies event reconciliation under healthy terrestrial backhaul. \\
+Planned & Replicated backhaul comparison & The historical v7 120~s pair and four-policy campaign were configured but unexecuted. Future comparisons need a prospective horizon/endpoint policy, independent matched run groups, and a deterministic timing comparator. \\
+Provisional & Model policy and scenario sensitivity & The predictor threshold 0.5, two-positive persistence, six-second dwell, 3~s history-gap guard, controlled impairment and mobility settings remain operating choices whose sensitivity has yet to be assessed. \\
+\hline
+\end{tabular}
+\end{table*}
+\endgroup

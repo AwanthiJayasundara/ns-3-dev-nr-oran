@@ -1,0 +1,5 @@
+ue_index,cohort,source_cell,target_cell,start_east_m,start_north_m,end_east_m,end_north_m,start_time_s,stop_time_s,altitude_m
+0,S1,TN1,TN3,-2005,-576,-2005,576,10,18,1.5
+10,S1,TN2,TN4,1995,-576,1995,576,10,18,1.5
+20,S1,TN3,TN1,-1995,576,-1995,-576,10,18,1.5
+30,S1,TN4,TN2,2005,576,2005,-576,10,18,1.5

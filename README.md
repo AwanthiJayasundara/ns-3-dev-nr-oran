@@ -318,6 +318,15 @@ Compare the runs using `qos-vs-time.txt`, `tn-infrastructure-trace.csv`,
 and `ml-ho-dataset.csv` in the corresponding `results/nr/tn-ntn/...` output
 directory.
 
+### Sustained donor-loss prediction and reviewer integration
+
+The [reviewer workflow](audit/reviewer_evidence/README.md) documents the
+eight-input Random Forest, the optimized ns-3 build, and commands to regenerate
+the seed-grouped offline evaluation. It also describes the fixed-association
+v10 integration, the one-UE route contract, and the separate 100-UE RSRP mobility
+diagnostic. The historical clustered UAV experiments used the legacy
+14-input backhaul-mode classifier.
+
 ### TN/NTN, security, and satellite-backhaul scenarios
 
 ```bash

@@ -1,0 +1,32 @@
+{
+  "status": "gate-2 integration configuration",
+  "rng_run": 6,
+  "rng_seed": 1,
+  "streams": {
+    "manifest_ue_motion": {
+      "consumes_rng": false,
+      "definition": "audit/reviewer_evidence/mobility_corridors_v2.csv"
+    },
+    "stationary_ue_positions": {
+      "consumes_rng": false,
+      "definition": "deterministic sunflower offsets inside the registered access anchors"
+    },
+    "uav_access_positions": {
+      "consumes_rng": false,
+      "definition": "three deterministic initial anchors"
+    },
+    "xhaul_shadowing": {
+      "enabled": false,
+      "stream": 7301
+    },
+    "xhaul_fading": {
+      "enabled": false,
+      "stream": 7302
+    }
+  },
+  "unassigned_internal_streams": [
+    "NR access-channel condition and fading/error processes",
+    "scheduler and random-access internals"
+  ],
+  "limitation": "The NR stream allocation requires explicit assignment before the matched manuscript experiment. Gate 2 uses one diagnostic run."
+}

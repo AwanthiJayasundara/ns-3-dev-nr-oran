@@ -230,6 +230,12 @@ OranLmNr2NrRsrpHandoverWithTnNtn::Run(void)
         std::vector<UeInfo> ueInfos = GetUeInfos(data);
         std::vector<GnbInfo> gnbInfos = GetGnbInfos(data);
         commands = GetHandoverCommands(data, ueInfos, gnbInfos);
+        if (m_decisionCsv.is_open())
+        {
+            // Keep complete query records even when the RIC retains the LM at teardown.
+            m_decisionCsv.flush();
+            NS_ABORT_MSG_IF(!m_decisionCsv, "Could not flush decision CSV " << m_decisionCsvFilename);
+        }
     }
 
     return commands;

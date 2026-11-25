@@ -61,6 +61,7 @@
 #include <complex>
 #include <cstdint>
 #include <deque>
+#include <exception>
 #include <iomanip>
 #include <limits>
 
@@ -154,6 +155,9 @@ static bool SPLIT_UE_PLACEMENT = false;   // Place UES1 near TN and UES2 outside
 // hoping that a large random region happens to fill TN admission capacity.
 static bool CAPACITY_STRATIFIED_UE_PLACEMENT = false;
 static double UE_ANCHOR_CLUSTER_RADIUS_M = 100.0;
+static std::string g_ueMobilityManifest;
+static int32_t g_monitoredInitialTnUes = -1;
+static bool g_freezeUavAccessPositions = false;
 static double UE_OUTSIDE_TN_EXCLUSION_HALF_W_M = 2500.0;
 static double UE_OUTSIDE_TN_EXCLUSION_HALF_H_M = 1200.0;
 static bool CLUSTERED_UES2_PLACEMENT = false; // Place UES2 in three outside underserved clusters.
@@ -830,6 +834,10 @@ ThroughputMonitor(FlowMonitorHelper* fmhelper, Ptr<FlowMonitor> flowMon)
 void TraceUeS1Positions(NodeContainer ues)
 {
     std::ofstream f(s_ueS1PositionTraceFile, std::ios_base::app);
+    if (!g_ueMobilityManifest.empty())
+    {
+        f << std::setprecision(std::numeric_limits<double>::max_digits10);
+    }
     double t = Simulator::Now().GetSeconds();
 
     for (uint32_t i = 0; i < ues.GetN(); ++i)
@@ -852,6 +860,10 @@ void TraceUeS1Positions(NodeContainer ues)
 void TraceUeS2Positions(NodeContainer ues)
 {
     std::ofstream f(s_ueS2PositionTraceFile, std::ios_base::app);
+    if (!g_ueMobilityManifest.empty())
+    {
+        f << std::setprecision(std::numeric_limits<double>::max_digits10);
+    }
     double t = Simulator::Now().GetSeconds();
 
     for (uint32_t i = 0; i < ues.GetN(); ++i)
@@ -874,6 +886,10 @@ void TraceUeS2Positions(NodeContainer ues)
 void TraceUavPositions(NodeContainer uavs)
 {
     std::ofstream f(s_uavPositionTraceFile, std::ios_base::app);
+    if (!g_ueMobilityManifest.empty())
+    {
+        f << std::setprecision(std::numeric_limits<double>::max_digits10);
+    }
     double t = Simulator::Now().GetSeconds();
 
     for (uint32_t i = 0; i < uavs.GetN(); ++i)
@@ -2770,15 +2786,153 @@ AssignOpenLoopUavTargets()
         state->hasTarget = true;
     }
 }
-///
+static uint32_t
+MonitoredTnAnchorCount(uint32_t monitoredCount, uint32_t tnCount)
+{
+    if (g_monitoredInitialTnUes >= 0)
+    {
+        return static_cast<uint32_t>(g_monitoredInitialTnUes);
+    }
+    return std::min<uint64_t>(monitoredCount,
+                              static_cast<uint64_t>(tnCount) * maxUesPerCellTn);
+}
 
-///
+static uint32_t
+MonitoredUesPerTnAnchor(uint32_t tnCount)
+{
+    if (g_monitoredInitialTnUes >= 0 && tnCount > 0)
+    {
+        return static_cast<uint32_t>(g_monitoredInitialTnUes) / tnCount;
+    }
+    return maxUesPerCellTn;
+}
+
+struct UeMobilityCorridor
+{
+    Vector start;
+    Vector end;
+    Time startTime;
+    Time stopTime;
+};
+
+static std::map<uint32_t, UeMobilityCorridor>
+LoadUeMobilityCorridors(uint32_t monitoredCount, uint32_t tnCount, uint32_t uavCount,
+                       Time trafficStop)
+{
+    std::ifstream input(g_ueMobilityManifest);
+    std::string line;
+    const std::string header =
+        "ue_index,cohort,source_cell,target_cell,start_east_m,start_north_m,"
+        "end_east_m,end_north_m,start_time_s,stop_time_s,altitude_m";
+    NS_ABORT_MSG_IF(!std::getline(input, line) || line != header,
+                    "Invalid mobility manifest header: " << g_ueMobilityManifest);
+
+    const auto tnAnchoredUes = MonitoredTnAnchorCount(monitoredCount, tnCount);
+    const auto perTnAnchor = MonitoredUesPerTnAnchor(tnCount);
+    std::set<std::string> cellNames;
+    for (uint32_t i = 1; i <= tnCount; ++i)
+    {
+        cellNames.insert("TN" + std::to_string(i));
+    }
+    for (uint32_t i = 1; i <= uavCount; ++i)
+    {
+        cellNames.insert("UAV" + std::to_string(i));
+    }
+
+    std::map<uint32_t, UeMobilityCorridor> corridors;
+    uint32_t lineNumber = 1;
+    while (std::getline(input, line))
+    {
+        ++lineNumber;
+        std::istringstream row(line);
+        std::vector<std::string> fields;
+        std::string field;
+        while (std::getline(row, field, ','))
+        {
+            fields.push_back(field);
+        }
+        NS_ABORT_MSG_IF(fields.size() != 11 || fields[1] != "S1",
+                        "Invalid mobility manifest row " << lineNumber);
+        try
+        {
+            std::size_t consumed = 0;
+            const auto ue = std::stoul(fields[0], &consumed);
+            NS_ABORT_MSG_IF(consumed != fields[0].size() || ue >= monitoredCount,
+                            "Invalid monitored UE index on manifest row " << lineNumber);
+            const auto expectedSource =
+                ue < tnAnchoredUes ? "TN" + std::to_string(ue / perTnAnchor + 1)
+                                   : "UAV" + std::to_string((ue - tnAnchoredUes) % uavCount + 1);
+            NS_ABORT_MSG_IF(fields[2] != expectedSource || !cellNames.count(fields[3]) ||
+                                fields[2] == fields[3],
+                            "Invalid source/target on mobility manifest row " << lineNumber);
+            std::array<double, 7> values{};
+            for (std::size_t i = 0; i < values.size(); ++i)
+            {
+                values[i] = std::stod(fields[i + 4], &consumed);
+                NS_ABORT_MSG_IF(consumed != fields[i + 4].size() || !std::isfinite(values[i]),
+                                "Invalid coordinate or time on mobility manifest row " << lineNumber);
+            }
+            NS_ABORT_MSG_IF(values[4] < 0 || values[5] <= values[4] ||
+                                values[5] >= trafficStop.GetSeconds() || values[6] < 0,
+                            "Invalid motion interval or altitude on manifest row " << lineNumber);
+            const UeMobilityCorridor corridor{
+                Vector(values[0], values[1], values[6]),
+                Vector(values[2], values[3], values[6]),
+                Seconds(values[4]),
+                Seconds(values[5]),
+            };
+            NS_ABORT_MSG_IF(!corridors.emplace(ue, corridor).second,
+                            "Duplicate monitored UE on mobility manifest row " << lineNumber);
+        }
+        catch (const std::exception& error)
+        {
+            NS_ABORT_MSG("Invalid value on mobility manifest row " << lineNumber << ": "
+                                                                 << error.what());
+        }
+    }
+    NS_ABORT_MSG_IF(input.bad() || corridors.empty(), "Cannot load any UE mobility corridors");
+    return corridors;
+}
+
+static Vector
+StationaryAnchorPosition(uint32_t index, uint32_t cohortSize, double centerLat, double centerLon)
+{
+    // Fixed low-discrepancy offsets give each terminal a distinct access position.
+    const double angle = index * M_PI * (3.0 - std::sqrt(5.0));
+    const double radius = UE_ANCHOR_CLUSTER_RADIUS_M * std::sqrt((index + 0.5) / cohortSize);
+    return LocalToGeo(radius * std::cos(angle), radius * std::sin(angle), 1.5,
+                      centerLat, centerLon);
+}
+
+static void
+InstallUeCorridor(Ptr<GeocentricConstantPositionMobilityModel> mob,
+                  const UeMobilityCorridor& corridor)
+{
+    const auto changePosition = [mob, corridor](double fraction) {
+        const Vector position = corridor.start + (corridor.end - corridor.start) * fraction;
+        mob->SetGeographicPosition(LocalToGeo(position.x, position.y, position.z,
+                                               g_refLat, g_refLon));
+    };
+    changePosition(0.0);
+    const Time interval = MilliSeconds(g_mobilityUpdateMs);
+    const Time duration = corridor.stopTime - corridor.startTime;
+    for (Time offset = interval; offset < duration; offset += interval)
+    {
+        const double fraction = offset.GetSeconds() / duration.GetSeconds();
+        Simulator::Schedule(corridor.startTime + offset, [changePosition, fraction]() {
+            changePosition(fraction);
+        });
+    }
+    Simulator::Schedule(corridor.stopTime, [changePosition]() { changePosition(1.0); });
+}
+
 void
 install_mobility_geocentric(NodeContainer staticNodes,
                             NodeContainer tnGnbNodes,
                             NodeContainer ntnGnbNodes,
                             NodeContainer groundUeNodesS1,
-                            NodeContainer groundUeNodesS2)
+                            NodeContainer groundUeNodesS2,
+                            const std::map<uint32_t, UeMobilityCorridor>& corridors)
 {
     auto setFixedGeo = [&](Ptr<Node> n, double lat, double lon, double alt)
     {
@@ -2879,10 +3033,13 @@ install_mobility_geocentric(NodeContainer staticNodes,
         g_uavStates.push_back(st.get());
         g_geoStates.push_back(std::move(st));
 
-        Simulator::Schedule(MilliSeconds(g_mobilityUpdateMs),
-                            &MoveGeoNodeToAssignedTarget,
-                            g_uavStates.back(),
-                            g_mobilityUpdateMs);
+        if (!g_freezeUavAccessPositions)
+        {
+            Simulator::Schedule(MilliSeconds(g_mobilityUpdateMs),
+                                &MoveGeoNodeToAssignedTarget,
+                                g_uavStates.back(),
+                                g_mobilityUpdateMs);
+        }
     }
 
     for (uint32_t i = 0; i < groundUeNodesS1.GetN(); ++i)
@@ -2897,16 +3054,15 @@ install_mobility_geocentric(NodeContainer staticNodes,
 
         if (CAPACITY_STRATIFIED_UE_PLACEMENT)
         {
-            const uint64_t tnAnchorSlots =
-                static_cast<uint64_t>(tnGnbNodes.GetN()) * maxUesPerCellTn;
-            const uint32_t tnAnchoredUes = static_cast<uint32_t>(
-                std::min<uint64_t>(groundUeNodesS1.GetN(), tnAnchorSlots));
+            const uint32_t tnAnchoredUes =
+                MonitoredTnAnchorCount(groundUeNodesS1.GetN(), tnGnbNodes.GetN());
+            const uint32_t perTnAnchor = MonitoredUesPerTnAnchor(tnGnbNodes.GetN());
 
             Ptr<Node> anchor;
-            if (i < tnAnchoredUes && tnGnbNodes.GetN() > 0 && maxUesPerCellTn > 0)
+            if (i < tnAnchoredUes && perTnAnchor > 0)
             {
                 const uint32_t anchorIndex =
-                    std::min<uint32_t>(i / maxUesPerCellTn, tnGnbNodes.GetN() - 1);
+                    std::min<uint32_t>(i / perTnAnchor, tnGnbNodes.GetN() - 1);
                 anchor = tnGnbNodes.Get(anchorIndex);
             }
             else if (ntnGnbNodes.GetN() > 0)
@@ -2934,6 +3090,25 @@ install_mobility_geocentric(NodeContainer staticNodes,
         {
             mobilityHalfWidthM = TN_GNB_HALF_W_M;
             mobilityHalfHeightM = TN_GNB_HALF_H_M;
+        }
+
+        if (!corridors.empty())
+        {
+            setFixedGeo(groundUeNodesS1.Get(i), mobilityCenterLatDeg, mobilityCenterLonDeg, 1.5);
+            auto mob = groundUeNodesS1.Get(i)->GetObject<GeocentricConstantPositionMobilityModel>();
+            const auto corridor = corridors.find(i);
+            if (corridor != corridors.end())
+            {
+                InstallUeCorridor(mob, corridor->second);
+            }
+            else
+            {
+                mob->SetGeographicPosition(StationaryAnchorPosition(i,
+                                                                    groundUeNodesS1.GetN(),
+                                                                    mobilityCenterLatDeg,
+                                                                    mobilityCenterLonDeg));
+            }
+            continue;
         }
 
         Vector initGeo = RandomGeoFromCenter(mobilityCenterLatDeg,
@@ -2992,6 +3167,15 @@ install_mobility_geocentric(NodeContainer staticNodes,
             mobilityCenterLonDeg = anchorGeo.y;
             mobilityHalfWidthM = UE_ANCHOR_CLUSTER_RADIUS_M;
             mobilityHalfHeightM = UE_ANCHOR_CLUSTER_RADIUS_M;
+            if (!corridors.empty())
+            {
+                const auto geo = StationaryAnchorPosition(i,
+                                                          groundUeNodesS2.GetN(),
+                                                          mobilityCenterLatDeg,
+                                                          mobilityCenterLonDeg);
+                setFixedGeo(groundUeNodesS2.Get(i), geo.x, geo.y, geo.z);
+                continue;
+            }
             initGeo = RandomGeoFromCenter(mobilityCenterLatDeg,
                                           mobilityCenterLonDeg,
                                           1.5,
@@ -3613,6 +3797,7 @@ main(int argc, char* argv[])
     double hysteresisDb = 2.0; // dB, for RSRP-based handover decisions (if used)
 
     std::string xrAppType = "VR";  // VR | AR | CG (Cloud Gaming)
+    std::string ueMobilityMode = "waypoint";
     std::string monitoredTraffic = "udp"; // udp | xr
     double monitoredDlRateMbps = 1.0;
     double monitoredUlRateMbps = 0.25;
@@ -3629,6 +3814,14 @@ main(int argc, char* argv[])
     cmd.AddValue("use-onnx-lm", "Use the ONNX LM", useOnnx);
     cmd.AddValue("use-torch-lm", "Use the PyTorch LM", useTorch);
     cmd.AddValue("use-rsrp-lm", "Use the RSRP-based LM", useRsrp);
+    cmd.AddValue("hysteresis-db", "RSRP mobility hysteresis in dB", hysteresisDb);
+    cmd.AddValue("ue-mobility-mode", "UE movement mode: waypoint or manifest", ueMobilityMode);
+    cmd.AddValue("ue-mobility-manifest", "CSV of deterministic monitored UE corridors",
+                 g_ueMobilityManifest);
+    cmd.AddValue("monitored-initial-tn-ues", "Explicit monitored TN population, or -1 for capacity",
+                 g_monitoredInitialTnUes);
+    cmd.AddValue("freeze-uav-access-positions", "Keep UAV access nodes at their initial anchors",
+                 g_freezeUavAccessPositions);
     cmd.AddValue("sim-time", "The duration for which traffic should flow", simTime);
     cmd.AddValue("lm-query-interval", "The LM query interval", lmQueryInterval);
     cmd.AddValue("e2-send-interval", "Interval between E2 report transmissions in seconds", e2SendInterval);
@@ -4025,6 +4218,30 @@ main(int argc, char* argv[])
                         monitoredUlStartSec >= simTime.GetSeconds(),
                     "Monitored traffic start times must be non-negative and before --sim-time.");
 
+    NS_ABORT_MSG_IF(ueMobilityMode != "waypoint" && ueMobilityMode != "manifest",
+                    "Unknown --ue-mobility-mode");
+    NS_ABORT_MSG_IF((ueMobilityMode == "manifest") != !g_ueMobilityManifest.empty(),
+                    "Supply --ue-mobility-manifest exactly when using manifest mode");
+    NS_ABORT_MSG_IF(g_monitoredInitialTnUes < -1, "Invalid monitored TN population");
+    if (g_monitoredInitialTnUes >= 0)
+    {
+        const auto count = static_cast<uint32_t>(g_monitoredInitialTnUes);
+        NS_ABORT_MSG_IF(!CAPACITY_STRATIFIED_UE_PLACEMENT || numTnGnbs == 0 ||
+                            count % numTnGnbs != 0 || count / numTnGnbs > maxUesPerCellTn ||
+                            count > numGroundUesS1 || (count < numGroundUesS1 && numNtnGnbs == 0),
+                        "Explicit monitored TN population must fit equal per-cell anchors");
+    }
+    std::map<uint32_t, UeMobilityCorridor> ueCorridors;
+    if (ueMobilityMode == "manifest")
+    {
+        NS_ABORT_MSG_IF(!CAPACITY_STRATIFIED_UE_PLACEMENT || numTnGnbs == 0 || numNtnGnbs == 0 ||
+                            !g_freezeUavAccessPositions || g_closedLoopUavTargeting ||
+                            !std::isfinite(g_mobilityUpdateMs) || g_mobilityUpdateMs < 1.0,
+                        "Manifest mode requires capacity-stratified TN/UAV anchors, fixed UAVs, "
+                        "and a finite mobility update of at least one millisecond");
+        ueCorridors = LoadUeMobilityCorridors(numGroundUesS1, numTnGnbs, numNtnGnbs, simTime);
+    }
+
     Time simulationStopTime = simTime + Seconds(stopTailSeconds);
 
     // ----------------------------------------------------------------------
@@ -4060,6 +4277,10 @@ main(int argc, char* argv[])
 
     // Ensure results/nr/ directory exists
     std::filesystem::create_directories(ns3_dir);
+    if (!ueCorridors.empty())
+    {
+        std::filesystem::copy_file(g_ueMobilityManifest, ns3_dir + "mobility-manifest-applied.csv");
+    }
     g_monitoredTxSequenceByFlow.clear();
     g_monitoredPacketTrace.open(s_monitoredPacketTraceFile, std::ios_base::trunc);
     g_monitoredPacketTrace
@@ -4357,7 +4578,8 @@ main(int argc, char* argv[])
                                 tnGnbNodes,
                                 ntnGnbNodes,
                                 groundUeNodesS1,
-                                groundUeNodesS2);
+                                groundUeNodesS2,
+                                ueCorridors);
 
     // ---------------- SAT / GW nodes ----------------
     // SAT is placed at GEO altitude above the Dublin reference point. GW is a
@@ -5125,17 +5347,16 @@ main(int argc, char* argv[])
             return initialAttachStaggerSec * static_cast<double>(i);
         }
 
-        const uint64_t tnAnchorSlots =
-            static_cast<uint64_t>(tnGnbNrDevs.GetN()) * maxUesPerCellTn;
-        const uint32_t tnAnchoredUes = static_cast<uint32_t>(
-            std::min<uint64_t>(groundNrDevsS1.GetN(), tnAnchorSlots));
-        if (i < tnAnchoredUes && maxUesPerCellTn > 0)
+        const uint32_t tnAnchoredUes =
+            MonitoredTnAnchorCount(groundNrDevsS1.GetN(), tnGnbNrDevs.GetN());
+        const uint32_t perTnAnchor = MonitoredUesPerTnAnchor(tnGnbNrDevs.GetN());
+        if (i < tnAnchoredUes && perTnAnchor > 0)
         {
-            return initialAttachStaggerSec * static_cast<double>(i % maxUesPerCellTn);
+            return initialAttachStaggerSec * static_cast<double>(i % perTnAnchor);
         }
 
         const double tnCohortSpanSec =
-            initialAttachStaggerSec * static_cast<double>(maxUesPerCellTn);
+            initialAttachStaggerSec * static_cast<double>(perTnAnchor);
         if (ntnGnbNrDevs.GetN() > 0)
         {
             const uint32_t uavCohortIndex = i - tnAnchoredUes;
@@ -5153,13 +5374,12 @@ main(int argc, char* argv[])
         Ptr<NetDevice> explicitAnchor;
         if (CAPACITY_STRATIFIED_UE_PLACEMENT)
         {
-            const uint64_t tnAnchorSlots =
-                static_cast<uint64_t>(tnGnbNrDevs.GetN()) * maxUesPerCellTn;
-            const uint32_t tnAnchoredUes = static_cast<uint32_t>(
-                std::min<uint64_t>(groundNrDevsS1.GetN(), tnAnchorSlots));
-            if (i < tnAnchoredUes && maxUesPerCellTn > 0)
+            const uint32_t tnAnchoredUes =
+                MonitoredTnAnchorCount(groundNrDevsS1.GetN(), tnGnbNrDevs.GetN());
+            const uint32_t perTnAnchor = MonitoredUesPerTnAnchor(tnGnbNrDevs.GetN());
+            if (i < tnAnchoredUes && perTnAnchor > 0)
             {
-                explicitAnchor = tnGnbNrDevs.Get(i / maxUesPerCellTn);
+                explicitAnchor = tnGnbNrDevs.Get(i / perTnAnchor);
             }
             else if (ntnGnbNrDevs.GetN() > 0)
             {

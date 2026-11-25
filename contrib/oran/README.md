@@ -626,6 +626,16 @@ and satellite backhaul behavior depending on the scenario.
 ./ns3 run "oran-nr-hybrid-tn-ntn-uav-satellite-handover-example"
 ```
 
+### Sustained donor-loss predictor
+
+The UAV xHaul autonomy example can use an eight-input ONNX model to predict
+sustained TN donor loss from current and recent measurements. An in-process
+Near-RT RIC logic module uses the prediction with satellite feasibility and
+timing guards. UE handover uses a separately configured mobility controller.
+The [reviewer workflow](../../audit/reviewer_evidence/README.md) lists the
+optimized build, offline model regeneration, route contract, and RSRP mobility
+diagnostic commands.
+
 ### NR TN/NTN UAV satellite handover with O-RAN LM logs
 To write `NS_LOG_INFO` messages such as `LOAD`, `TTT_WAIT`, `LM HO`, and
 `LM HO_FAIL_LOW_RSRP` to `ns3-oran-lm.log`, configure the optimized build with
